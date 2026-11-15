@@ -3,8 +3,8 @@ using Polymorfa.Sdk;
 using var stop = new CancellationTokenSource();
 Console.CancelKeyPress += (_, e) => { e.Cancel = true; stop.Cancel(); };
 var token = Environment.GetEnvironmentVariable("POLYMORFA_API_KEY") ?? throw new InvalidOperationException("POLYMORFA_API_KEY is required.");
-var session = Environment.GetEnvironmentVariable("POLYMORFA_SESSION") ?? throw new InvalidOperationException("POLYMORFA_SESSION is required.");
-await using var calls = new CallsClient(token, new() { Session = session, Participant = "agent" });
+var connection = Environment.GetEnvironmentVariable("POLYMORFA_CONNECTION") ?? throw new InvalidOperationException("POLYMORFA_CONNECTION is required.");
+await using var calls = new CallsClient(token, new() { Connection = connection, Participant = "agent" });
 await calls.ConnectAsync(stop.Token);
 try
 {

@@ -1,4 +1,4 @@
-//! Team-owned Number lifecycle, reviewed tier changes and resolved safety settings.
+//! Team-owned Connection lifecycle, reviewed tier changes and resolved safety settings.
 use crate::{
     models::*,
     transport::{configuration, encode, HttpTransport},
@@ -9,28 +9,28 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionProjectContext {
+pub struct ConnectionProjectContext {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionBatchRequest {
+pub struct ConnectionBatchRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
-    pub session_ids: Vec<String>,
+    pub connection_ids: Vec<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SessionBatchStopResult {
+pub struct ConnectionBatchStopResult {
     pub stopping: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct SessionBatchRemoveResult {
+pub struct ConnectionBatchRemoveResult {
     pub removed: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum NumberTier {
+pub enum ConnectionTier {
     Free,
     Standard,
     Pro,
@@ -52,21 +52,21 @@ pub enum HybridResolution {
         transport: HybridTransport,
     },
     Split {
-        existing_number_transport: HybridTransport,
-        new_number_name: String,
+        existing_connection_transport: HybridTransport,
+        new_connection_name: String,
     },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HybridMerge {
-    pub absorb_number_id: String,
+    pub absorb_connection_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberTierQuoteRequest {
+pub struct ConnectionTierQuoteRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
-    pub tier_override: Option<NumberTier>,
+    pub tier_override: Option<ConnectionTier>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub hybrid_resolution: Option<HybridResolution>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -74,14 +74,14 @@ pub struct NumberTierQuoteRequest {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionTierOverrideRequest {
+pub struct ConnectionTierOverrideRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
     pub quote_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum NumberTierChangeStatus {
+pub enum ConnectionTierChangeStatus {
     Quoted,
     Queued,
     Applied,
@@ -89,14 +89,14 @@ pub enum NumberTierChangeStatus {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum NumberTierChangeAction {
+pub enum ConnectionTierChangeAction {
     Upgrade,
     Downgrade,
     Configure,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum NumberHybridTransitionStatus {
+pub enum ConnectionHybridTransitionStatus {
     Scheduled,
     Running,
     Completed,
@@ -105,10 +105,10 @@ pub enum NumberHybridTransitionStatus {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberHybridTransitionProgress {
-    pub surviving_number_id: String,
+pub struct ConnectionHybridTransitionProgress {
+    pub surviving_connection_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub status: Option<NumberHybridTransitionStatus>,
+    pub status: Option<ConnectionHybridTransitionStatus>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub failure_reason: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -122,47 +122,47 @@ pub struct NumberHybridTransitionProgress {
     rename_all = "snake_case",
     rename_all_fields = "camelCase"
 )]
-pub enum NumberHybridTransition {
+pub enum ConnectionHybridTransition {
     Keep {
         #[serde(flatten)]
-        progress: NumberHybridTransitionProgress,
+        progress: ConnectionHybridTransitionProgress,
         keep_transport: HybridTransport,
     },
     Split {
         #[serde(flatten)]
-        progress: NumberHybridTransitionProgress,
-        existing_number_transport: HybridTransport,
-        new_number_name: String,
+        progress: ConnectionHybridTransitionProgress,
+        existing_connection_transport: HybridTransport,
+        new_connection_name: String,
         #[serde(skip_serializing_if = "Option::is_none")]
-        new_number_id: Option<String>,
+        new_connection_id: Option<String>,
     },
     Merge {
         #[serde(flatten)]
-        progress: NumberHybridTransitionProgress,
-        absorb_number_id: String,
+        progress: ConnectionHybridTransitionProgress,
+        absorb_connection_id: String,
     },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberTierQuote {
+pub struct ConnectionTierQuote {
     pub tier: String,
     pub tier_override: Option<String>,
     pub amount_cents: f64,
     pub price_version: String,
-    pub action: NumberTierChangeAction,
+    pub action: ConnectionTierChangeAction,
     pub effective_at_ms: u64,
     pub replaces_window_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub hybrid_transition: Option<NumberHybridTransition>,
+    pub hybrid_transition: Option<ConnectionHybridTransition>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberTierChange {
+pub struct ConnectionTierChange {
     pub id: String,
-    pub status: NumberTierChangeStatus,
+    pub status: ConnectionTierChangeStatus,
     pub failure_reason: Option<String>,
     pub expires_at_ms: u64,
-    pub quote: NumberTierQuote,
+    pub quote: ConnectionTierQuote,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -221,7 +221,7 @@ pub struct SafeModeOverride {
     pub pacing: Inheritable<SafeModePacing>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct UpdateSessionSafeModeRequest {
+pub struct UpdateConnectionSafeModeRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub presence: Option<Inheritable<SafeModePresence>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -242,12 +242,12 @@ pub struct SafeModeApplied {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionSafeMode {
-    pub session: String,
+pub struct ConnectionSafeMode {
+    pub connection: String,
     pub project_id: String,
     pub project: SafeModeSettings,
     #[serde(rename = "override")]
-    pub session_override: SafeModeOverride,
+    pub connection_override: SafeModeOverride,
     pub effective: SafeModeSettings,
     pub applied: Option<SafeModeApplied>,
     pub mismatch: bool,
@@ -256,14 +256,14 @@ pub struct SessionSafeMode {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionCapabilitySource {
+pub enum ConnectionCapabilitySource {
     Server,
     ClientDefault,
     AccountType,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionCapabilityUnit {
+pub enum ConnectionCapabilityUnit {
     Seconds,
     Count,
     Characters,
@@ -271,76 +271,76 @@ pub enum SessionCapabilityUnit {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "kind", rename_all = "snake_case")]
-pub enum SessionCapability {
+pub enum ConnectionCapability {
     Feature {
         key: String,
-        source: Option<SessionCapabilitySource>,
+        source: Option<ConnectionCapabilitySource>,
         unit: (),
         value: Option<bool>,
     },
     Limit {
         key: String,
-        source: Option<SessionCapabilitySource>,
-        unit: SessionCapabilityUnit,
+        source: Option<ConnectionCapabilitySource>,
+        unit: ConnectionCapabilityUnit,
         value: Option<i64>,
     },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionCapabilitiesStatus {
+pub enum ConnectionCapabilitiesStatus {
     Synced,
     Unknown,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionAccountType {
+pub enum ConnectionAccountType {
     Business,
     Personal,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionCapabilities {
-    pub session: String,
+pub struct ConnectionCapabilities {
+    pub connection: String,
     pub project_id: String,
-    pub status: SessionCapabilitiesStatus,
+    pub status: ConnectionCapabilitiesStatus,
     pub synced_at: Option<String>,
     pub checked_at: Option<String>,
-    pub account_type: Option<SessionAccountType>,
-    pub capabilities: Vec<SessionCapability>,
+    pub account_type: Option<ConnectionAccountType>,
+    pub capabilities: Vec<ConnectionCapability>,
 }
 
-pub struct PlatformSessions<'a>(pub(crate) &'a HttpTransport);
+pub struct PlatformConnections<'a>(pub(crate) &'a HttpTransport);
 fn path(id: &str) -> String {
-    format!("/platform/sessions/{}", encode(id))
+    format!("/platform/connections/{}", encode(id))
 }
-impl PlatformSessions<'_> {
+impl PlatformConnections<'_> {
     pub async fn list(
         &self,
-        context: &SessionProjectContext,
+        context: &ConnectionProjectContext,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Vec<PlatformSession>>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Vec<PlatformConnection>>>> {
         let query = context
             .project_id
             .as_ref()
             .map(|p| vec![("projectId", p.clone())])
             .unwrap_or_default();
         self.0
-            .request::<_, ()>(Method::GET, "/platform/sessions", &query, None, options)
+            .request::<_, ()>(Method::GET, "/platform/connections", &query, None, options)
             .await
     }
     pub async fn retrieve(
         &self,
         id: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<Connection>>> {
         self.0.get(&path(id), options).await
     }
     pub async fn update(
         &self,
         id: &str,
-        body: &crate::configuration::UpdateSessionRequest,
+        body: &crate::configuration::UpdateConnectionRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<Connection>>> {
         let options = body.configuration.options(options);
         self.0
             .request(Method::PUT, &path(id), &[], Some(body), options)
@@ -349,9 +349,9 @@ impl PlatformSessions<'_> {
     pub async fn start(
         &self,
         id: &str,
-        body: &SessionProjectContext,
+        body: &ConnectionProjectContext,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionStartResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionStartResult>>> {
         self.0
             .request(
                 Method::POST,
@@ -365,9 +365,9 @@ impl PlatformSessions<'_> {
     pub async fn stop(
         &self,
         id: &str,
-        body: &SessionProjectContext,
+        body: &ConnectionProjectContext,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionStopResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionStopResult>>> {
         self.0
             .request(
                 Method::POST,
@@ -380,13 +380,13 @@ impl PlatformSessions<'_> {
     }
     pub async fn stop_many(
         &self,
-        body: &SessionBatchRequest,
+        body: &ConnectionBatchRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionBatchStopResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionBatchStopResult>>> {
         self.0
             .request(
                 Method::POST,
-                "/platform/sessions/stop",
+                "/platform/connections/stop",
                 &[],
                 Some(body),
                 options,
@@ -397,20 +397,20 @@ impl PlatformSessions<'_> {
         &self,
         id: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionRemoveResult>>> {
         self.0
             .request::<_, ()>(Method::DELETE, &path(id), &[], None, options)
             .await
     }
     pub async fn delete_many(
         &self,
-        body: &SessionBatchRequest,
+        body: &ConnectionBatchRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionBatchRemoveResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionBatchRemoveResult>>> {
         self.0
             .request(
                 Method::POST,
-                "/platform/sessions/delete",
+                "/platform/connections/delete",
                 &[],
                 Some(body),
                 options,
@@ -420,9 +420,9 @@ impl PlatformSessions<'_> {
     pub async fn quote_tier_change(
         &self,
         id: &str,
-        body: &NumberTierQuoteRequest,
+        body: &ConnectionTierQuoteRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
         if body.hybrid_resolution.is_some() && body.hybrid_merge.is_some() {
             return Err(configuration("hybridResolution or hybridMerge"));
         }
@@ -441,7 +441,7 @@ impl PlatformSessions<'_> {
         id: &str,
         quote_id: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
         self.0
             .get(
                 &format!("{}/tier-quotes/{}", path(id), encode(quote_id)),
@@ -452,9 +452,9 @@ impl PlatformSessions<'_> {
     pub async fn set_tier_override(
         &self,
         id: &str,
-        body: &SessionTierOverrideRequest,
+        body: &ConnectionTierOverrideRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<NumberTierChange>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
         if body.quote_id.trim().is_empty() {
             return Err(configuration("quoteId"));
         }
@@ -466,7 +466,7 @@ impl PlatformSessions<'_> {
         &self,
         id: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionCapabilities>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionCapabilities>>> {
         self.0
             .get(&format!("{}/capabilities", path(id)), options)
             .await
@@ -475,7 +475,7 @@ impl PlatformSessions<'_> {
         &self,
         id: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionSafeMode>>> {
         self.0
             .get(&format!("{}/safe-mode", path(id)), options)
             .await
@@ -483,9 +483,9 @@ impl PlatformSessions<'_> {
     pub async fn update_safe_mode(
         &self,
         id: &str,
-        body: &UpdateSessionSafeModeRequest,
+        body: &UpdateConnectionSafeModeRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionSafeMode>>> {
         self.0
             .request(
                 Method::PUT,

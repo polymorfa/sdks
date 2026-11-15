@@ -7,7 +7,7 @@ fn fixture() -> Value {
 fn event(payload: Value) -> StorageEvent {
     StorageEvent {
         id: "descriptor-event".into(),
-        session: "descriptor-session".into(),
+        connection: "descriptor-session".into(),
         timestamp: "2026-10-17T00:00:00Z".into(),
         event: "history.sync".into(),
         payload,
@@ -24,7 +24,7 @@ async fn descriptor_missing_decoder_refuses_consumption() {
             .is_err(),
         "undecoded descriptor was consumed"
     );
-    assert!(!s.has_event(&e.session, &e.id).await.unwrap());
+    assert!(!s.has_event(&e.connection, &e.id).await.unwrap());
     assert!(a.rows(Entity::HistoryProgress).is_empty());
 }
 use base64::{engine::general_purpose::STANDARD, Engine as _};
@@ -74,11 +74,11 @@ impl HistoryDescriptorDecoder for Decoder {
             }
             if let Some(s) = &self.storage {
                 s.apply(&OperationBatch {
-                    session_id: "*".into(),
+                    connection_id: "*".into(),
                     event_id: None,
                     event_type: None,
                     operations: vec![StorageOperation::Checkpoint {
-                        session_id: "*".into(),
+                        connection_id: "*".into(),
                         stream: "events".into(),
                         cursor: "competitor".into(),
                         expected_cursor: Some(None),
@@ -173,7 +173,7 @@ async fn signed_public_descriptor_dispatch_and_secret_safe_replay() {
             let result = apply_verified_event(&s, signed.envelope(), opts).await;
             let failed = matches!(mode, "missing" | "archive" | "null" | "error" | "invalid");
             assert_eq!(result.is_err(), failed, "{branch}/{mode}");
-            assert_eq!(s.has_event(&e.session, &e.id).await.unwrap(), !failed);
+            assert_eq!(s.has_event(&e.connection, &e.id).await.unwrap(), !failed);
             assert_eq!(a.rows(Entity::Messages).len(), usize::from(mode == "full"));
             assert_eq!(!a.rows(Entity::HistoryProgress).is_empty(), !failed);
             if failed {
@@ -496,7 +496,7 @@ async fn raw_unprojected_descriptor_fields_fail_before_writes() {
         }
         let e = StorageEvent {
             id: "event".into(),
-            session: "session".into(),
+            connection: "connection".into(),
             timestamp: "2026-10-17T00:00:00Z".into(),
             event: "history.sync".into(),
             payload,
@@ -514,7 +514,7 @@ async fn raw_unprojected_descriptor_fields_fail_before_writes() {
             .is_err(),
             "unprojected {branch} consumed"
         );
-        assert!(!s.has_event("session", "event").await.unwrap());
+        assert!(!s.has_event("connection", "event").await.unwrap());
         assert!(a.rows(Entity::HistoryProgress).is_empty());
         assert!(a.rows(Entity::Messages).is_empty());
     }

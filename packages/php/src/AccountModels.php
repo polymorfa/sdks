@@ -16,8 +16,8 @@ namespace Polymorfa;
  * @phpstan-type Business array{name:string,website:string,supportEmail:string}
  * @phpstan-type Enrollment array{id:string,teamId:string,name:string,slug:string,stage:'development',operationId:string,enrollmentStatus:'requested'|'approval_required'|'provisioning'|'ready',billingMode:'payg'}
  * @phpstan-type EnrollmentCommand array{operationId:string,action:'approve'|'cancel',accepted:true}
- * @phpstan-type MergeNumber array{id:string,name:string,transport:'linked_devices'|'official_api',status:string,canBeAbsorbed:bool}
- * @phpstan-type MergeCandidate array{connections:array{MergeNumber,MergeNumber},eligible:bool,ineligibleReason?:'deletion_in_progress'|'not_coexistence'|'different_customer'|'connection_disabled'|'not_connected'|'transition_in_progress'|'pairing_in_progress'|'hms_enabled'}
+ * @phpstan-type MergeConnection array{id:string,name:string,transport:'linked_devices'|'official_api',status:string,canBeAbsorbed:bool}
+ * @phpstan-type MergeCandidate array{connections:array{MergeConnection,MergeConnection},eligible:bool,ineligibleReason?:'deletion_in_progress'|'not_coexistence'|'different_customer'|'connection_disabled'|'not_connected'|'transition_in_progress'|'pairing_in_progress'|'hms_enabled'}
  */
 final class AccountModels
 {

@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
+  "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
+  "sourceSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
   "scope": "Analytics operations and their referenced schemas only; all other SDK operations retain contracts/source.json",
   "published": false,
   "paths": {

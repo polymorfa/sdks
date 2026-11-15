@@ -21,7 +21,7 @@ use tokio_util::sync::CancellationToken;
 #[serde(rename_all = "camelCase")]
 pub struct PlaceCallRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session: Option<String>,
+    pub connection: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub to: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -107,7 +107,7 @@ impl<'a> Calls<'a> {
         // TS chooses one destination form, so omit `to` when group/participants is used.
         let mut value = serde_json::to_value(body).map_err(|_| configuration("call"))?;
         if self.http.is_client_token() {
-            value.as_object_mut().unwrap().remove("session");
+            value.as_object_mut().unwrap().remove("connection");
             value.as_object_mut().unwrap().remove("participant");
         }
         if body.group_id.is_some() {
@@ -240,7 +240,7 @@ impl<'a> Calls<'a> {
     }
     pub async fn reject_incoming(
         &self,
-        session: &str,
+        connection: &str,
         call_id: &str,
         from: &str,
         options: RequestOptions,
@@ -254,7 +254,7 @@ impl<'a> Calls<'a> {
                 Method::POST,
                 &format!(
                     "/messaging/{}/calls/{}/reject",
-                    encode(session),
+                    encode(connection),
                     encode(call_id)
                 ),
                 &[],
@@ -363,22 +363,22 @@ impl<'a> Calls<'a> {
         Ok(media)
     }
     /// Native lifecycle socket. Client-token identity comes from the grant;
-    /// server credentials send only session and participant in the URL.
+    /// server credentials send only connection and participant in the URL.
     pub async fn open_lifecycle(
         &self,
-        session: &str,
+        connection: &str,
         participant: Option<&str>,
         cancellation: CancellationToken,
     ) -> Result<LifecycleSocket> {
-        if session.trim().is_empty() || participant.is_some_and(|p| !is_participant_name(p)) {
-            return Err(configuration("session or participant"));
+        if connection.trim().is_empty() || participant.is_some_and(|p| !is_participant_name(p)) {
+            return Err(configuration("connection or participant"));
         }
         let mut url = crate::transport::api_url(&self.http.options.base_url, "/voip/ws")?;
         url.set_query(None);
         url.set_scheme(if url.scheme() == "https" { "wss" } else { "ws" })
             .map_err(|_| configuration("socket URL"))?;
         if !self.http.is_client_token() {
-            url.query_pairs_mut().append_pair("session", session);
+            url.query_pairs_mut().append_pair("connection", connection);
             if let Some(participant) = participant {
                 url.query_pairs_mut()
                     .append_pair("participant", participant);

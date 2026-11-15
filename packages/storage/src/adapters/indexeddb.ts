@@ -215,6 +215,7 @@ export async function upgradeIndexedDbSchema2(
     STORAGE_SCHEMA_VERSION,
   );
   let upgraded = false;
+  let blocked = false;
   let failure: unknown;
   const abort = (error: unknown) => {
     failure = error;
@@ -222,6 +223,10 @@ export async function upgradeIndexedDbSchema2(
   };
   request.onupgradeneeded = (event) => {
     const tx = request.transaction!;
+    if (blocked) {
+      tx.abort();
+      return;
+    }
     const db = request.result;
     const expected = ENTITY_NAMES.map((name) =>
       name === "connections" ? "sessions" : name,
@@ -270,7 +275,6 @@ export async function upgradeIndexedDbSchema2(
     };
   };
   await new Promise<void>((resolve, reject) => {
-    let blocked = false;
     request.onblocked = () => {
       blocked = true;
       reject(

@@ -22,6 +22,11 @@ function run(command, args, options = {}) {
     throw new Error(`${command} failed (${result.status})`);
   return result.stdout;
 }
+if (language === "rust" || language === "dotnet")
+  run("node", [
+    "--test",
+    resolve(root, "packages/storage/test/native-schema3-upgrade.node.mjs"),
+  ]);
 if (language === "go") {
   const files = readdirSync(cwd).filter((file) => file.endsWith(".go"));
   if (run("gofmt", ["-l", ...files], { capture: true }).trim())

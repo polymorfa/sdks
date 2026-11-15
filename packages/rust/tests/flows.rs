@@ -5,7 +5,7 @@ use serde_json::{json, Value};
 const PROJECT: &str = "00000000-0000-0000-0000-000000000001";
 const FLOW: &str = "00000000-0000-0000-0000-000000000002";
 fn summary() -> Value {
-    json!({"id":FLOW,"name":"contact","status":"ready","version":"7.3","screenCount":1,"metaLinks":[{"session":"support","sessionId":"sid","wabaId":"waba","metaFlowId":"meta","status":"DRAFT","categories":["CONTACT_US"],"validationErrors":[{"error":"invalid","errorType":"JSON","message":"fix","lineStart":1,"lineEnd":2,"columnStart":1,"columnEnd":5,"pointers":[{"path":"screens[0]","lineStart":1}]}],"uploadState":"valid","previewUrl":"https://preview.example.com","previewExpiresAt":1000,"lastSyncedAt":999,"definitionDigest":"abc","simulated":false}],"createdAt":900,"updatedAt":1000})
+    json!({"id":FLOW,"name":"contact","status":"ready","version":"7.3","screenCount":1,"metaLinks":[{"connection":"support","connectionId":"sid","wabaId":"waba","metaFlowId":"meta","status":"DRAFT","categories":["CONTACT_US"],"validationErrors":[{"error":"invalid","errorType":"JSON","message":"fix","lineStart":1,"lineEnd":2,"columnStart":1,"columnEnd":5,"pointers":[{"path":"screens[0]","lineStart":1}]}],"uploadState":"valid","previewUrl":"https://preview.example.com","previewExpiresAt":1000,"lastSyncedAt":999,"definitionDigest":"abc","simulated":false}],"createdAt":900,"updatedAt":1000})
 }
 fn draft() -> Value {
     let mut v = summary();
@@ -13,10 +13,10 @@ fn draft() -> Value {
     v
 }
 fn operation() -> Value {
-    json!({"id":"operation","requestId":"request","flowId":FLOW,"flowName":"contact","sessionId":"sid","session":"support","action":"upload","state":"uncertain","resolution":null,"wabaId":"waba","metaFlowId":"meta","definitionDigest":"abc","providerStatus":"DRAFT","errorCode":"provider_unavailable","providerCode":503,"providerSubcode":1,"createdAt":1000,"updatedAt":1001,"completedAt":null})
+    json!({"id":"operation","requestId":"request","flowId":FLOW,"flowName":"contact","connectionId":"sid","connection":"support","action":"upload","state":"uncertain","resolution":null,"wabaId":"waba","metaFlowId":"meta","definitionDigest":"abc","providerStatus":"DRAFT","errorCode":"provider_unavailable","providerCode":503,"providerSubcode":1,"createdAt":1000,"updatedAt":1001,"completedAt":null})
 }
 fn endpoint() -> Value {
-    json!({"id":"endpoint","teamId":"team","projectId":PROJECT,"flowId":FLOW,"sessionId":"sid","mode":"function","url":null,"functionId":"function","deploymentId":null,"enabled":true,"revision":2,"endpointUri":"https://api.example.com/flow","createdAt":1000,"updatedAt":1001})
+    json!({"id":"endpoint","teamId":"team","projectId":PROJECT,"flowId":FLOW,"connectionId":"sid","mode":"function","url":null,"functionId":"function","deploymentId":null,"enabled":true,"revision":2,"endpointUri":"https://api.example.com/flow","createdAt":1000,"updatedAt":1001})
 }
 fn key() -> Value {
     json!({"id":"key","state":"active","fingerprint":"abc","publicKey":"PUBLIC KEY","errorCode":null,"createdAt":1000,"activatedAt":1001,"retireAfter":null})
@@ -74,7 +74,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
     );
     wire_unwrapped_team!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete(FLOW,RequestOptions::default()));
     let body = FlowProviderRequest {
-        session_id: "support".into(),
+        connection_id: "support".into(),
         categories: Some(vec![FlowCategory::ContactUs]),
         request_id: Some("request".into()),
     };
@@ -83,7 +83,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/upload",
         Some(
-            json!({"projectId":PROJECT,"sessionId":"support","categories":["CONTACT_US"],"requestId":"request"})
+            json!({"projectId":PROJECT,"connectionId":"support","categories":["CONTACT_US"],"requestId":"request"})
         ),
         json!({"data":{"operation":operation(),"flow":draft()}}),
         client
@@ -97,7 +97,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/publish",
         Some(
-            json!({"projectId":PROJECT,"sessionId":"support","categories":["CONTACT_US"],"requestId":"request"})
+            json!({"projectId":PROJECT,"connectionId":"support","categories":["CONTACT_US"],"requestId":"request"})
         ),
         json!({"data":{"operation":operation(),"flow":draft()}}),
         client
@@ -111,7 +111,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/deprecate",
         Some(
-            json!({"projectId":PROJECT,"sessionId":"support","categories":["CONTACT_US"],"requestId":"request"})
+            json!({"projectId":PROJECT,"connectionId":"support","categories":["CONTACT_US"],"requestId":"request"})
         ),
         json!({"data":{"operation":operation(),"flow":draft()}}),
         client
@@ -125,7 +125,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/discard",
         Some(
-            json!({"projectId":PROJECT,"sessionId":"support","categories":["CONTACT_US"],"requestId":"request"})
+            json!({"projectId":PROJECT,"connectionId":"support","categories":["CONTACT_US"],"requestId":"request"})
         ),
         json!({"data":{"operation":null,"flow":draft()}}),
         client
@@ -139,7 +139,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/sync",
         Some(
-            json!({"projectId":PROJECT,"sessionId":"support","categories":["CONTACT_US"],"requestId":"request"})
+            json!({"projectId":PROJECT,"connectionId":"support","categories":["CONTACT_US"],"requestId":"request"})
         ),
         json!({"data":{"operation":operation(),"flow":draft()}}),
         client
@@ -153,23 +153,23 @@ async fn drafts_and_provider_reconciliation_native_wire() {
 }
 #[tokio::test]
 async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_wire() {
-    let number = FlowNumberRequest {
-        session_id: "support".into(),
+    let number = FlowConnectionRequest {
+        connection_id: "support".into(),
     };
-    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":{"endpoint":endpoint(),"encryption":encryption()}}),client.project(PROJECT).unwrap().flows().endpoint(FLOW,&number,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?connectionId=support&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"endpoint":endpoint(),"encryption":encryption()}}),client.project(PROJECT).unwrap().flows().endpoint(FLOW,&number,RequestOptions::default()));
     wire_unwrapped_team!(
         client,
         "PUT",
         "/platform/flows/00000000-0000-0000-0000-000000000002/endpoint",
         Some(
-            json!({"projectId":PROJECT,"mode":"function","sessionId":"support","expectedRevision":1,"functionId":"function","deploymentId":null})
+            json!({"projectId":PROJECT,"mode":"function","connectionId":"support","expectedRevision":1,"functionId":"function","deploymentId":null})
         ),
         json!({"data":{"endpoint":endpoint(),"encryption":encryption()}}),
         client.project(PROJECT).unwrap().flows().set_endpoint(
             FLOW,
             &SetFlowEndpointRequest::Function {
                 common: EndpointCommon {
-                    session_id: "support".into(),
+                    connection_id: "support".into(),
                     enabled: None,
                     expected_revision: Some(1)
                 },
@@ -184,14 +184,14 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
         "PUT",
         "/platform/flows/00000000-0000-0000-0000-000000000002/endpoint",
         Some(
-            json!({"projectId":PROJECT,"mode":"forward","sessionId":"support","url":"https://example.com/flow?q=1","rotateSigningSecret":true})
+            json!({"projectId":PROJECT,"mode":"forward","connectionId":"support","url":"https://example.com/flow?q=1","rotateSigningSecret":true})
         ),
         json!({"data":{"endpoint":endpoint(),"signingSecret":"one-time-example","encryption":encryption()}}),
         client.project(PROJECT).unwrap().flows().set_endpoint(
             FLOW,
             &SetFlowEndpointRequest::Forward {
                 common: EndpointCommon {
-                    session_id: "support".into(),
+                    connection_id: "support".into(),
                     enabled: None,
                     expected_revision: None
                 },
@@ -201,16 +201,16 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
             RequestOptions::default()
         )
     );
-    wire_unwrapped_team!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete_endpoint(FLOW,&number,RequestOptions::default()));
-    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint/receipts?limit=5&projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":[{"id":"receipt","flowId":FLOW,"endpointId":"endpoint","sessionId":"sid","mode":"function","action":"INIT","outcome":"succeeded","httpStatus":200,"errorCode":null,"keyId":"key","functionInvocationId":"invocation","durationMs":2.5,"createdAt":1000,"completedAt":1001}]}),client.project(PROJECT).unwrap().flows().endpoint_receipts(FLOW,&ListEndpointReceiptsParameters{session_id:Some("support".into()),limit:Some(5)},RequestOptions::default()));
-    wire_unwrapped_team!(client,"GET","/platform/flow-encryption-keys?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":encryption()}),client.project(PROJECT).unwrap().flows().encryption_key(&number,RequestOptions::default()));
+    wire_unwrapped_team!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?connectionId=support&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete_endpoint(FLOW,&number,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint/receipts?connectionId=support&limit=5&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":[{"id":"receipt","flowId":FLOW,"endpointId":"endpoint","connectionId":"sid","mode":"function","action":"INIT","outcome":"succeeded","httpStatus":200,"errorCode":null,"keyId":"key","functionInvocationId":"invocation","durationMs":2.5,"createdAt":1000,"completedAt":1001}]}),client.project(PROJECT).unwrap().flows().endpoint_receipts(FLOW,&ListEndpointReceiptsParameters{connection_id:Some("support".into()),limit:Some(5)},RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flow-encryption-keys?connectionId=support&projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":encryption()}),client.project(PROJECT).unwrap().flows().encryption_key(&number,RequestOptions::default()));
     let mut rotation = encryption();
     rotation["key"] = key();
     wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flow-encryption-keys/rotate",
-        Some(json!({"projectId":PROJECT,"sessionId":"support"})),
+        Some(json!({"projectId":PROJECT,"connectionId":"support"})),
         json!({"data":rotation}),
         client
             .project(PROJECT)
@@ -246,7 +246,7 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
             FLOW,
             &SetFlowEndpointRequest::Direct {
                 common: EndpointCommon {
-                    session_id: "support".into(),
+                    connection_id: "support".into(),
                     enabled: None,
                     expected_revision: None
                 },
@@ -261,7 +261,7 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
         .endpoint_receipts(
             FLOW,
             &ListEndpointReceiptsParameters {
-                session_id: None,
+                connection_id: None,
                 limit: Some(101)
             },
             RequestOptions::default()

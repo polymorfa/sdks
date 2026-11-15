@@ -2,9 +2,9 @@
 use crate::{
     models::{DataEnvelope, SuccessEnvelope},
     platform::Projects,
-    platform_sessions::{
-        HybridTransport, SafeModePacing, SafeModePresence, SafeModeReads, SafeModeSettings,
-        SafeModeTyping, SessionSafeMode, UpdateSessionSafeModeRequest,
+    platform_connections::{
+        ConnectionSafeMode, HybridTransport, SafeModePacing, SafeModePresence, SafeModeReads,
+        SafeModeSettings, SafeModeTyping, UpdateConnectionSafeModeRequest,
     },
     transport::{encode, HttpTransport},
     ApiResponse, RequestOptions, Result,
@@ -80,7 +80,7 @@ pub struct UpdateProjectInsuranceEvidenceRequest {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum ProjectHealthSessionAction {
+pub enum ProjectHealthConnectionAction {
     None,
     Stop,
     SlowDown,
@@ -99,7 +99,7 @@ pub struct ProjectHealthPolicy {
     pub version: u64,
     pub enabled: bool,
     pub threshold: f64,
-    pub session_action: ProjectHealthSessionAction,
+    pub connection_action: ProjectHealthConnectionAction,
     pub slow_down_mps: Option<f64>,
     pub email_notification: bool,
     pub webhook_notification: bool,
@@ -111,7 +111,7 @@ pub struct UpdateProjectHealthPolicyRequest {
     pub version: u64,
     pub enabled: bool,
     pub threshold: f64,
-    pub session_action: ProjectHealthSessionAction,
+    pub connection_action: ProjectHealthConnectionAction,
     pub slow_down_mps: Option<f64>,
     pub email_notification: bool,
     pub webhook_notification: bool,
@@ -130,7 +130,7 @@ pub enum HybridMergeIneligibleReason {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct HybridMergeCandidateNumber {
+pub struct HybridMergeCandidateConnection {
     pub id: String,
     pub name: String,
     pub transport: HybridTransport,
@@ -140,7 +140,7 @@ pub struct HybridMergeCandidateNumber {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HybridMergeCandidate {
-    pub numbers: [HybridMergeCandidateNumber; 2],
+    pub connections: [HybridMergeCandidateConnection; 2],
     pub eligible: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub ineligible_reason: Option<HybridMergeIneligibleReason>,
@@ -375,30 +375,30 @@ impl MessagingBanSafe<'_> {
             )
             .await
     }
-    pub async fn get_session_safe_mode(
+    pub async fn get_connection_safe_mode(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<SessionSafeMode>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<ConnectionSafeMode>>> {
         self.0.server()?;
         self.0
             .get(
-                &format!("/messaging/{}/safe-mode", encode(session)),
+                &format!("/messaging/{}/safe-mode", encode(connection)),
                 options,
             )
             .await
     }
-    pub async fn update_session_safe_mode(
+    pub async fn update_connection_safe_mode(
         &self,
-        session: &str,
-        body: &UpdateSessionSafeModeRequest,
+        connection: &str,
+        body: &UpdateConnectionSafeModeRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<SessionSafeMode>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<ConnectionSafeMode>>> {
         self.0.server()?;
         self.0
             .request(
                 Method::PUT,
-                &format!("/messaging/{}/safe-mode", encode(session)),
+                &format!("/messaging/{}/safe-mode", encode(connection)),
                 &[],
                 Some(body),
                 options,

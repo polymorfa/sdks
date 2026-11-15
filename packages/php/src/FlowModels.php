@@ -9,9 +9,9 @@ namespace Polymorfa;
  * @phpstan-type DraftStatus 'draft'|'ready'|'archived'
  * @phpstan-type Pointer array{path?:string,lineStart?:int|float,lineEnd?:int|float,columnStart?:int|float,columnEnd?:int|float}
  * @phpstan-type Issue array{error?:string,errorType?:string,message?:string,pointers?:list<Pointer>,lineStart?:int|float,lineEnd?:int|float,columnStart?:int|float,columnEnd?:int|float}
- * @phpstan-type NumberLink array{connection:string,connectionId?:string,wabaId:string,metaFlowId:string,status:string,categories:list<string>,validationErrors:list<Issue>,uploadState:'stale'|'creating'|'uploading'|'valid'|'invalid'|'failed',previewUrl?:string,previewExpiresAt?:int|float,lastSyncedAt:int|float,definitionDigest?:string,simulated?:bool}
- * @phpstan-type Summary array{id:string,name:string,status:DraftStatus,version:string,screenCount:int,metaLinks:list<NumberLink>,createdAt:int|float,updatedAt:int|float}
- * @phpstan-type Draft array{id:string,name:string,status:DraftStatus,version:string,screenCount:int,metaLinks:list<NumberLink>,createdAt:int|float,updatedAt:int|float,definition:array<string,mixed>}
+ * @phpstan-type ConnectionLink array{connection:string,connectionId?:string,wabaId:string,metaFlowId:string,status:string,categories:list<string>,validationErrors:list<Issue>,uploadState:'stale'|'creating'|'uploading'|'valid'|'invalid'|'failed',previewUrl?:string,previewExpiresAt?:int|float,lastSyncedAt:int|float,definitionDigest?:string,simulated?:bool}
+ * @phpstan-type Summary array{id:string,name:string,status:DraftStatus,version:string,screenCount:int,metaLinks:list<ConnectionLink>,createdAt:int|float,updatedAt:int|float}
+ * @phpstan-type Draft array{id:string,name:string,status:DraftStatus,version:string,screenCount:int,metaLinks:list<ConnectionLink>,createdAt:int|float,updatedAt:int|float,definition:array<string,mixed>}
  * @phpstan-type CreateInput array{draftId?:string,name:string,definition:array<string,mixed>}
  * @phpstan-type UpdateInput array{expectedUpdatedAt:int|float,name?:string,status?:DraftStatus,definition?:array<string,mixed>}
  * @phpstan-type ProviderInput array{connectionId:string,categories?:list<Category>,requestId?:string}

@@ -10,14 +10,14 @@ use serde::{Deserialize, Serialize};
 pub enum BillingScope {
     Project,
     Customer,
-    Number,
+    Connection,
 }
 impl BillingScope {
     fn wire(self) -> &'static str {
         match self {
             Self::Project => "project",
             Self::Customer => "customer",
-            Self::Number => "number",
+            Self::Connection => "connection",
         }
     }
 }
@@ -25,7 +25,7 @@ impl BillingScope {
 #[serde(rename_all = "lowercase")]
 pub enum BillingResourceScope {
     Customer,
-    Number,
+    Connection,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub enum BillingCurrency {
@@ -42,7 +42,7 @@ pub struct BillingBalance {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BillingUsage {
-    pub active_numbers: u64,
+    pub active_connections: u64,
     pub total_charged_cents: f64,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
@@ -59,7 +59,7 @@ pub struct BillingTransaction {
     pub balance_after_cents: f64,
     pub r#type: String,
     pub description: String,
-    pub session_id: Option<String>,
+    pub connection_id: Option<String>,
     pub project_id: Option<String>,
     pub tier: Option<String>,
     pub currency: Option<String>,
@@ -95,7 +95,7 @@ pub struct BillingPriorities {
     pub revision: u32,
     pub projects: Vec<BillingPriority>,
     pub customers: Vec<ProjectResourceBillingPriority>,
-    pub numbers: Vec<ProjectResourceBillingPriority>,
+    pub connections: Vec<ProjectResourceBillingPriority>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -185,7 +185,7 @@ pub enum ReorderBillingPrioritiesRequest {
         #[serde(rename = "expectedRevision")]
         expected_revision: u32,
     },
-    Number {
+    Connection {
         #[serde(rename = "projectId")]
         project_id: String,
         #[serde(rename = "resourceIds")]

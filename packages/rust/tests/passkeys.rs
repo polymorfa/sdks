@@ -7,7 +7,7 @@ use polymorfa_sdk::{passkeys::*, RequestOptions};
 use serde_json::{json, Value};
 fn fixture() -> Value {
     serde_json::from_str(include_str!(
-        "../../../contracts/fixtures/passkeys.candidate.json"
+        "../../../contracts/fixtures/connections/passkeys.candidate.json"
     ))
     .unwrap()
 }

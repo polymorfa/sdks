@@ -43,7 +43,7 @@ mod tests {
     use super::*;
     #[tokio::test]
     async fn raw_body_signature_is_required_and_verified_before_acknowledgement() {
-        let body=Bytes::from_static(br#"{"id":"evt_fixture","session":"support","timestamp":"2026-08-19T10:00:00Z","event":"future.ready","payload":{"capability":42}}"#);
+        let body=Bytes::from_static(br#"{"id":"evt_fixture","connection":"support","timestamp":"2026-08-19T10:00:00Z","event":"future.ready","payload":{"capability":42}}"#);
         let mut headers = HeaderMap::new();
         assert_eq!(
             webhook(

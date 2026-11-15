@@ -3,13 +3,13 @@
 The Yew application renders the existing Polymorfa Web Components. Its WASM
 binary has no dependency on the Rust server SDK. Axum owns the project token,
 authenticates a local example user, and mints short-lived browser tokens for
-that user's server-assigned WhatsApp session. The inbox uses native server sends.
+that user's server-assigned WhatsApp Connection. The inbox uses native server sends.
 
 The inbox calls the native Rust SDK on Axum for text sends. Verified native
 webhooks at `/webhooks/polymorfa` update its application-owned in-memory
 conversation. Register `message.received` and `message.ack` for the assigned
-Number with the configured signing secret. Incoming events must match the
-Number and canonical conversation ID from the send receipt. This does not
+Connection with the configured signing secret. Incoming events must match the
+Connection and canonical conversation ID from the send receipt. This does not
 enable HMS.
 
 The example retains at most 100 messages, 128 send attempts and 1024 recent
@@ -37,10 +37,10 @@ Configure these environment variables in the server process before running it:
 | Variable                      | Purpose                                                  |
 | ----------------------------- | -------------------------------------------------------- |
 | `POLYMORFA_PROJECT_TOKEN`     | Server project credential; never passed to WASM          |
-| `POLYMORFA_SESSION`           | Session assigned by your application to the example user |
+| `POLYMORFA_CONNECTION`           | Connection assigned by your application to the example user |
 | `POLYMORFA_RECIPIENT`         | Server-assigned recipient phone                          |
 | `POLYMORFA_WEBHOOK_SECRET`    | Native webhook signing secret                            |
-| `POLYMORFA_EXAMPLE_TRANSPORT` | Set `local-test-number` to label simulated transport     |
+| `POLYMORFA_EXAMPLE_TRANSPORT` | Set `local-test-connection` to label simulated transport     |
 | `EXAMPLE_APP_USERNAME`        | Local example login name                                 |
 | `EXAMPLE_APP_PASSWORD`        | Local example login password                             |
 | `POLYMORFA_EXAMPLE_PORT`      | Loopback port, defaults to `3000`                        |
@@ -48,7 +48,7 @@ Configure these environment variables in the server process before running it:
 
 Open `http://127.0.0.1:3000` (or the selected port). Sign in with the local
 example credentials. The browser receives an opaque, HttpOnly, SameSite cookie;
-it cannot choose the session, customer, or ephemeral ID sent to Polymorfa.
+it cannot choose the Connection, customer, or ephemeral ID sent to Polymorfa.
 POST requests check the exact application origin. Logout revokes the server-side
 application session immediately. Token responses are marked `no-store` and
 include the grant consumed by `defineUiKit`.
@@ -56,7 +56,7 @@ include the grant consumed by `defineUiKit`.
 The login and bounded in-memory session store are for this loopback example.
 Replace them with your application's durable authentication and live
 membership/assignment checks before deployment. Production cookies require
-HTTPS and `Secure`. Preserve the server-derived session and user identity.
+HTTPS and `Secure`. Preserve the server-derived Connection and user identity.
 Do not replace authentication with a browser identity header or unsigned cookie.
 
 Verification:
@@ -69,10 +69,10 @@ cargo check --locked --manifest-path examples/rust/yew/frontend/Cargo.toml --tar
 
 The native integration test exercises real Axum HTTP login, cookie validation,
 logout, and the Rust SDK's authenticated token request. It verifies that foreign
-origins, forged cookies, and browser-supplied session/identity fields cannot select
+origins, forged cookies, and browser-supplied Connection/identity fields cannot select
 a different grant. Browser rendering and native API fixtures are separate from
 live WhatsApp pairing or retained-history acceptance.
 
 Local Inspector video acceptance is separate from HTTP contract tests. It uses
-paired simulated WhatsApp numbers, native Rust sends and signed HTTPS webhook
+paired simulated WhatsApp Connections, native Rust sends and signed HTTPS webhook
 replies. Registry, staging and production availability remain separate gates.

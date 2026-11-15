@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
+  "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
   "excludedContracts": [
     {
       "family": "graph",
@@ -11298,9 +11298,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
-      "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
-      "sdkContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
+      "sourceContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+      "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
+      "sdkContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
       "go": {
         "status": "covered",
         "method": "TeamClient.Analytics.Get"
@@ -11332,9 +11332,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "f72d53a45f5203425f79948424a3c247cdc5f7c581acee91ac3a2d42c17c18ee",
-      "sourceContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
-      "sdkContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
-      "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
+      "sourceContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+      "sdkContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+      "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
       "go": {
         "status": "covered",
         "method": "TeamClient.Analytics.Metrics"
@@ -14424,9 +14424,9 @@
         "status": "covered",
         "method": "Client.analytics.get"
       },
-      "sourceContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
-      "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
-      "sdkContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
+      "sourceContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+      "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
+      "sdkContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
       "go": {
         "status": "covered",
         "method": "ProjectClient.Analytics.Get"
@@ -14458,9 +14458,9 @@
         "method": "Client.analytics.metrics"
       },
       "fingerprint": "7884e3c2c3c7cb07bc04a96e188019435ecfef5d66f72ff0684d15d8c0adb781",
-      "sourceContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
-      "sdkContractSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
-      "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
+      "sourceContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+      "sdkContractSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+      "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
       "go": {
         "status": "covered",
         "method": "ProjectClient.Analytics.Metrics"

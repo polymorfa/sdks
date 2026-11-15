@@ -61,11 +61,11 @@ fn signal(base: String, timeout: Duration) -> SignalClient {
     options.timeout = timeout;
     SignalClient::new(options).unwrap()
 }
-fn event(session: &str) -> Value {
-    json!({"id":"e","type":"message","session_id":session,"chat":"c","sender":"p","message_id":"m","timestamp":1,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"","text":"private"})
+fn event(connection: &str) -> Value {
+    json!({"id":"e","type":"message","connection_id":connection,"chat":"c","sender":"p","message_id":"m","timestamp":1,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"","text":"private"})
 }
-fn frame(session: &str) -> String {
-    format!("id: e\nevent: message\ndata: {}\n\n", event(session))
+fn frame(connection: &str) -> String {
+    format!("id: e\nevent: message\ndata: {}\n\n", event(connection))
 }
 
 #[tokio::test]
@@ -190,7 +190,7 @@ async fn calls_base_prefix_and_first_frame_authority_are_retained() {
                     let _socket = client
                         .calls()
                         .open_lifecycle(
-                            "session/a ?&b",
+                            "connection/a ?&b",
                             Some("agent:one@example.test"),
                             CancellationToken::new(),
                         )
@@ -203,7 +203,7 @@ async fn calls_base_prefix_and_first_frame_authority_are_retained() {
                 } else if client_token {
                     "/voip/ws"
                 } else {
-                    "/voip/ws?session=session%2Fa+%3F%26b&participant=agent%3Aone%40example.test"
+                    "/voip/ws?connection=connection%2Fa+%3F%26b&participant=agent%3Aone%40example.test"
                 };
                 assert_eq!(
                     *target.lock().unwrap(),
@@ -290,7 +290,7 @@ async fn signal_finite_response_has_one_header_and_body_deadline() {
     let start = tokio::time::Instant::now();
     let error = match tokio::time::timeout(
         Duration::from_millis(500),
-        client.sessions(&CancellationToken::new()),
+        client.connections(&CancellationToken::new()),
     )
     .await
     {
@@ -304,13 +304,13 @@ async fn signal_finite_response_has_one_header_and_body_deadline() {
     let _ = task.await;
 }
 #[tokio::test]
-async fn signal_stream_rejects_cross_session_events() {
+async fn signal_stream_rejects_cross_connection_events() {
     let (peer, base) = listener().await;
     let task = tokio::spawn(async move {
         let (mut socket, _) = peer.accept().await.unwrap();
         assert!(headers(&mut socket, SECRET)
             .await
-            .starts_with("GET /v1/events?session_id=assigned%20%2F%2B "));
+            .starts_with("GET /v1/events?connection_id=assigned%20%2F%2B "));
         reply(&mut socket, 200, "text/event-stream", &frame("other")).await;
     });
     let mut events =
@@ -320,7 +320,7 @@ async fn signal_stream_rejects_cross_session_events() {
         .await
         .unwrap()
         .err()
-        .expect("cross-session event escaped");
+        .expect("cross-connection event escaped");
     assert_eq!(error.code.as_deref(), Some("invalid_response"));
     task.await.unwrap();
 }
@@ -353,7 +353,7 @@ async fn signal_stream_reports_truncated_frames_and_preserves_clean_eof() {
         assert_eq!(error.code.as_deref(), Some("invalid_response"));
         task.await.unwrap();
     }
-    for session in [None, Some("s")] {
+    for connection in [None, Some("s")] {
         let (peer, base) = listener().await;
         let task = tokio::spawn(async move {
             let (mut socket, _) = peer.accept().await.unwrap();
@@ -367,7 +367,7 @@ async fn signal_stream_reports_truncated_frames_and_preserves_clean_eof() {
             .await;
         });
         let mut events =
-            signal(base, Duration::from_secs(2)).events(session, CancellationToken::new());
+            signal(base, Duration::from_secs(2)).events(connection, CancellationToken::new());
         assert!(events.next().await.unwrap().is_ok());
         assert!(events.next().await.is_none());
         task.await.unwrap();

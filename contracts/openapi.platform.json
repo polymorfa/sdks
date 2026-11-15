@@ -473,7 +473,7 @@
                 "team",
                 "project",
                 "customer",
-                "number"
+                "connection"
               ]
             }
           },
@@ -589,7 +589,7 @@
                 "team",
                 "project",
                 "customer",
-                "number"
+                "connection"
               ]
             }
           },
@@ -35052,7 +35052,7 @@
               "enum": [
                 "project",
                 "customer",
-                "number"
+                "connection"
               ]
             }
           },
@@ -35153,7 +35153,7 @@
               "enum": [
                 "project",
                 "customer",
-                "number"
+                "connection"
               ]
             }
           },
@@ -35401,7 +35401,7 @@
               "enum": [
                 "project",
                 "customer",
-                "number"
+                "connection"
               ]
             }
           },
@@ -35664,7 +35664,7 @@
                               "type": "string",
                               "enum": [
                                 "customer",
-                                "number"
+                                "connection"
                               ]
                             },
                             "resourceId": {
@@ -35732,7 +35732,7 @@
                         "type": "string",
                         "enum": [
                           "customer",
-                          "number"
+                          "connection"
                         ]
                       },
                       "projectId": {
@@ -35858,7 +35858,7 @@
               "enum": [
                 "project",
                 "customer",
-                "number"
+                "connection"
               ]
             }
           },
@@ -51131,9 +51131,10 @@
             "name": "connectionId",
             "in": "path",
             "required": true,
-            "description": "Database connection UUID or stable connection slug.",
+            "description": "Client-chosen media connection identifier.",
             "schema": {
-              "$ref": "#/components/schemas/ConnectionIdentifier"
+              "type": "string",
+              "pattern": "^[A-Za-z0-9_-]{8,64}$"
             }
           }
         ],
@@ -54573,7 +54574,7 @@
             "enum": [
               "project",
               "customer",
-              "number"
+              "connection"
             ]
           },
           "resourceId": {
@@ -55062,7 +55063,7 @@
                   "team",
                   "project",
                   "customer",
-                  "number"
+                  "connection"
                 ]
               },
               "scopeId": {
@@ -55136,7 +55137,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55163,7 +55164,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55190,7 +55191,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55217,7 +55218,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55240,7 +55241,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55263,7 +55264,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55286,7 +55287,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55311,7 +55312,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55336,7 +55337,7 @@
                       "source": {
                         "type": "string",
                         "enum": [
-                          "number",
+                          "connection",
                           "customer",
                           "project",
                           "team",
@@ -55451,7 +55452,7 @@
                   "team",
                   "project",
                   "customer",
-                  "number"
+                  "connection"
                 ]
               },
               "scopeId": {
@@ -62916,7 +62917,7 @@
             "type": "string",
             "enum": [
               "team",
-              "number",
+              "connection",
               "project",
               "campaign"
             ],

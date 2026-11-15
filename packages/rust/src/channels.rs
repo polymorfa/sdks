@@ -105,51 +105,51 @@ pub enum ChannelLiveUpdatesResponse {
     Subscribed(SuccessEnvelope<ChannelLiveUpdates>),
 }
 pub struct Channels<'a>(pub(crate) &'a HttpTransport);
-fn root(session: &str) -> String {
-    format!("/messaging/{}/channels", encode(session))
+fn root(connection: &str) -> String {
+    format!("/messaging/{}/channels", encode(connection))
 }
-fn path(session: &str, id: &str) -> String {
-    format!("{}/{}", root(session), encode(id))
+fn path(connection: &str, id: &str) -> String {
+    format!("{}/{}", root(connection), encode(id))
 }
 impl Channels<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<Channel>>>> {
-        self.0.get(&root(session), options).await
+        self.0.get(&root(connection), options).await
     }
     pub async fn create(
         &self,
-        session: &str,
+        connection: &str,
         body: &CreateChannelRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<ChannelCreateResponse>> {
         self.0
-            .request(Method::POST, &root(session), &[], Some(body), options)
+            .request(Method::POST, &root(connection), &[], Some(body), options)
             .await
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Channel>>> {
-        self.0.get(&path(session, id), options).await
+        self.0.get(&path(connection, id), options).await
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<ChannelDeleteResponse>> {
         self.0
-            .request::<_, ()>(Method::DELETE, &path(session, id), &[], None, options)
+            .request::<_, ()>(Method::DELETE, &path(connection, id), &[], None, options)
             .await
     }
     pub async fn list_messages(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         params: &ChannelMessagesParams,
         options: RequestOptions,
@@ -159,7 +159,7 @@ impl Channels<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/messages", path(session, id)),
+                &format!("{}/messages", path(connection, id)),
                 &query,
                 None,
                 options,
@@ -168,7 +168,7 @@ impl Channels<'_> {
     }
     pub async fn list_message_updates(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         params: &ChannelMessageUpdatesParams,
         options: RequestOptions,
@@ -178,7 +178,7 @@ impl Channels<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/message-updates", path(session, id)),
+                &format!("{}/message-updates", path(connection, id)),
                 &query,
                 None,
                 options,
@@ -187,7 +187,7 @@ impl Channels<'_> {
     }
     pub async fn mark_message_viewed(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         message_id: &str,
         options: RequestOptions,
@@ -197,7 +197,7 @@ impl Channels<'_> {
                 Method::POST,
                 &format!(
                     "{}/messages/{}/viewed",
-                    path(session, id),
+                    path(connection, id),
                     encode(message_id)
                 ),
                 &[],
@@ -208,7 +208,7 @@ impl Channels<'_> {
     }
     pub async fn react_to_message(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         message_id: &str,
         body: &ChannelReactionRequest,
@@ -219,7 +219,7 @@ impl Channels<'_> {
                 Method::POST,
                 &format!(
                     "{}/messages/{}/reaction",
-                    path(session, id),
+                    path(connection, id),
                     encode(message_id)
                 ),
                 &[],
@@ -230,14 +230,14 @@ impl Channels<'_> {
     }
     pub async fn subscribe_to_live_updates(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<ChannelLiveUpdatesResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/live-updates", path(session, id)),
+                &format!("{}/live-updates", path(connection, id)),
                 &[],
                 None,
                 options,
@@ -246,39 +246,39 @@ impl Channels<'_> {
     }
     pub async fn follow(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<ActionResponse>> {
-        self.action(session, id, "follow", options).await
+        self.action(connection, id, "follow", options).await
     }
     pub async fn unfollow(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<ActionResponse>> {
-        self.action(session, id, "unfollow", options).await
+        self.action(connection, id, "unfollow", options).await
     }
     pub async fn mute(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<ActionResponse>> {
-        self.action(session, id, "mute", options).await
+        self.action(connection, id, "mute", options).await
     }
     pub async fn unmute(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<ActionResponse>> {
-        self.action(session, id, "unmute", options).await
+        self.action(connection, id, "unmute", options).await
     }
     async fn action(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         action: &str,
         options: RequestOptions,
@@ -286,7 +286,7 @@ impl Channels<'_> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/{action}", path(session, id)),
+                &format!("{}/{action}", path(connection, id)),
                 &[],
                 None,
                 options,

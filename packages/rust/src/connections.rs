@@ -1,6 +1,6 @@
 //! Official API credential checks, Hybrid Link policies, and client-token grants.
 use crate::{
-    messaging::Sessions,
+    messaging::Connections,
     models::*,
     transport::{configuration, encode, HttpTransport},
     ApiResponse, RequestOptions, Result,
@@ -31,7 +31,7 @@ pub struct CloudCredentialHealth {
 pub struct CloudReauthorization {
     pub quicklink_id: String,
     pub url: String,
-    pub session: String,
+    pub connection: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 pub struct MetaPricingParameters {
@@ -55,10 +55,10 @@ pub struct MetaPricingSummary {
     pub messages: u64,
     pub groups: Vec<MetaPricingGroup>,
 }
-impl Sessions<'_> {
+impl Connections<'_> {
     pub async fn get_meta_pricing(
         &self,
-        session: &str,
+        connection: &str,
         parameters: &MetaPricingParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MetaPricingSummary>>> {
@@ -73,7 +73,7 @@ impl Sessions<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("/messaging/{}/meta-pricing", encode(session)),
+                &format!("/messaging/{}/meta-pricing", encode(connection)),
                 &query,
                 None,
                 options,
@@ -82,20 +82,20 @@ impl Sessions<'_> {
     }
     pub async fn get_cloud_credential_health(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudCredentialHealth>>> {
         self.0.server()?;
         self.0
             .get(
-                &format!("/messaging/{}/cloud-credentials", encode(session)),
+                &format!("/messaging/{}/cloud-credentials", encode(connection)),
                 options,
             )
             .await
     }
     pub async fn reauthorize_cloud_credentials(
         &self,
-        session: &str,
+        connection: &str,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudReauthorization>>> {
         self.0.server()?;
@@ -105,7 +105,7 @@ impl Sessions<'_> {
                 Method::POST,
                 &format!(
                     "/messaging/{}/cloud-credentials/reauthorize",
-                    encode(session)
+                    encode(connection)
                 ),
                 &[],
                 None,
@@ -128,10 +128,10 @@ pub enum HybridPolicyScope {
         #[serde(rename = "projectId")]
         project_id: String,
     },
-    Session {
+    Connection {
         #[serde(rename = "projectId")]
         project_id: String,
-        session: String,
+        connection: String,
     },
 }
 impl HybridPolicyScope {
@@ -142,13 +142,13 @@ impl HybridPolicyScope {
                 ("scope", "project".into()),
                 ("projectId", project_id.clone()),
             ],
-            Self::Session {
+            Self::Connection {
                 project_id,
-                session,
+                connection,
             } => vec![
-                ("scope", "session".into()),
+                ("scope", "connection".into()),
                 ("projectId", project_id.clone()),
-                ("session", session.clone()),
+                ("connection", connection.clone()),
             ],
         }
     }
@@ -228,20 +228,20 @@ impl HybridLink<'_> {
     }
     pub async fn state(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridLinkState>>> {
         self.0.server()?;
         self.0
             .get(
-                &format!("/messaging/{}/hybrid-link", encode(session)),
+                &format!("/messaging/{}/hybrid-link", encode(connection)),
                 options,
             )
             .await
     }
     pub async fn set_paused(
         &self,
-        session: &str,
+        connection: &str,
         body: &SetHybridLinkPausedRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridLinkPaused>>> {
@@ -249,7 +249,7 @@ impl HybridLink<'_> {
         self.0
             .request(
                 Method::PUT,
-                &format!("/messaging/{}/hybrid-link", encode(session)),
+                &format!("/messaging/{}/hybrid-link", encode(connection)),
                 &[],
                 Some(body),
                 options,
@@ -274,7 +274,7 @@ pub enum CustomerClientAction {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionClientAction {
+pub enum ConnectionClientAction {
     SendMessage,
     SendReaction,
     SendTyping,
@@ -294,10 +294,10 @@ pub enum SessionClientAction {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum ClientTokenTarget {
-    Session {
-        session: String,
+    Connection {
+        connection: String,
         #[serde(skip_serializing_if = "Option::is_none")]
-        allow: Option<Vec<SessionClientAction>>,
+        allow: Option<Vec<ConnectionClientAction>>,
     },
     Customer {
         customer: String,
@@ -372,11 +372,11 @@ impl ClientTokens<'_> {
     ) -> Result<ApiResponse<SuccessEnvelope<ClientTokenValue>>> {
         self.0.server()?;
         let target = match &body.target {
-            ClientTokenTarget::Session { session, .. } => session,
+            ClientTokenTarget::Connection { connection, .. } => connection,
             ClientTokenTarget::Customer { customer, .. } => customer,
         };
         if target.is_empty() {
-            return Err(configuration("session or customer"));
+            return Err(configuration("connection or customer"));
         }
         self.0
             .request(
@@ -390,34 +390,40 @@ impl ClientTokens<'_> {
     }
     pub async fn retrieve_rules(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ClientRules>>> {
         self.0.server()?;
-        self.0.get(&rules_path(session), options).await
+        self.0.get(&rules_path(connection), options).await
     }
     pub async fn update_rules(
         &self,
-        session: &str,
+        connection: &str,
         body: &SetClientRulesRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0.server()?;
         self.0
-            .request(Method::PUT, &rules_path(session), &[], Some(body), options)
+            .request(
+                Method::PUT,
+                &rules_path(connection),
+                &[],
+                Some(body),
+                options,
+            )
             .await
     }
     pub async fn delete_rules(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0.server()?;
         self.0
-            .request::<_, ()>(Method::DELETE, &rules_path(session), &[], None, options)
+            .request::<_, ()>(Method::DELETE, &rules_path(connection), &[], None, options)
             .await
     }
 }
-fn rules_path(session: &str) -> String {
-    format!("/platform/sessions/{}/client-rules", encode(session))
+fn rules_path(connection: &str) -> String {
+    format!("/platform/connections/{}/client-rules", encode(connection))
 }

@@ -167,7 +167,7 @@ model!(HistoryIdentityIndex{conversations:BTreeMap<String,String>,contacts:BTree
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct HistoryChunkInput {
-    pub session_id: String,
+    pub connection_id: String,
     pub chunk: HistorySyncChunk,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub identities: Option<HistoryIdentityIndex>,
@@ -600,13 +600,13 @@ fn media_fields(kind: &str, p: &Value, chat: &str, version: f64) -> FieldWrites 
 }
 pub fn reduce_web_message_info(
     info: &WebMessageInfo,
-    session: &str,
+    connection: &str,
     keys: &HistoryKeys,
     chat_jid: Option<&str>,
 ) -> Vec<StorageOperation> {
     reduce_web(
         &serde_json::to_value(info).unwrap_or(Value::Null),
-        session,
+        connection,
         keys,
         chat_jid,
     )
@@ -1001,7 +1001,7 @@ fn conversation(s: &str, c: &Value, keys: &HistoryKeys) -> Vec<StorageOperation>
 pub fn reduce_history_chunk(input: &HistoryChunkInput) -> OperationBatch {
     let keys = HistoryKeys::new(input.identities.as_ref(), Some(&input.chunk));
     let chunk = serde_json::to_value(&input.chunk).unwrap_or(Value::Null);
-    let s = &input.session_id;
+    let s = &input.connection_id;
     let mut ops = vec![];
     for c in array(&chunk["conversations"]) {
         ops.extend(conversation(s, c, &keys));
@@ -1093,7 +1093,7 @@ pub fn reduce_history_chunk(input: &HistoryChunkInput) -> OperationBatch {
         },
     ));
     OperationBatch {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         event_id: input.chunk_id.as_ref().map(|id| format!("history:{id}")),
         event_type: Some("history.chunk".into()),
         operations: ops,

@@ -9,9 +9,9 @@ internal static class CampaignWebhookMetadataTests
     public static void Run()
     {
         var dir = new DirectoryInfo(Directory.GetCurrentDirectory());
-        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "contracts/fixtures/campaign-webhook-metadata.json"))) dir = dir.Parent;
+        while (dir is not null && !File.Exists(Path.Combine(dir.FullName, "contracts/fixtures/connections/campaign-webhook-metadata.json"))) dir = dir.Parent;
         if (dir is null) throw new Exception("Missing campaign fixture");
-        using var fixture = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(dir.FullName, "contracts/fixtures/campaign-webhook-metadata.json")));
+        using var fixture = JsonDocument.Parse(File.ReadAllBytes(Path.Combine(dir.FullName, "contracts/fixtures/connections/campaign-webhook-metadata.json")));
         var secret = fixture.RootElement.GetProperty("secret").GetString()!;
         var events = fixture.RootElement.GetProperty("events").EnumerateArray().ToArray();
         VerifiedWebhookDelivery Signed(byte[] raw) => Webhooks.ConstructDelivery(raw, Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(secret), raw)), secret);

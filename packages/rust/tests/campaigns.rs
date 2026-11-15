@@ -772,7 +772,7 @@ async fn receipt_timed_follow_up_native_campaign_requests_and_optional_responses
 }
 #[tokio::test]
 async fn follow_up_reports_and_recipient_receipts_native_wire() {
-    let summary = json!({"id":"follow-up","numberId":"number","status":"outcome_unknown","anchorKind":"read","firstDeliveredAt":9007199254740993u64,"firstReadAt":9007199254740994u64,"dueAt":null,"expiresAt":9007199254740995u64,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":"wait_expired","commandId":null});
+    let summary = json!({"id":"follow-up","connectionId":"number","status":"outcome_unknown","anchorKind":"read","firstDeliveredAt":9007199254740993u64,"firstReadAt":9007199254740994u64,"dueAt":null,"expiresAt":9007199254740995u64,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":"wait_expired","commandId":null});
     let mut rows = recipients();
     rows[0]["followUp"] = summary.clone();
     wire_messaging!(

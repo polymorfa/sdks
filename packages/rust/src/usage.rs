@@ -93,7 +93,7 @@ pub struct UsageRecord {
     pub source_kind: UsageSourceKind,
     pub source_id: String,
     pub project_id: Option<String>,
-    pub session: Option<String>,
+    pub connection: Option<String>,
     pub occurred_at: String,
     pub recorded_at: String,
     pub revision: u64,
@@ -118,8 +118,8 @@ pub struct UsageMeterTotal {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberUsageTotal {
-    pub session: String,
+pub struct ConnectionUsageTotal {
+    pub connection: String,
     pub project_id: Option<String>,
     pub meters: Vec<UsageMeterTotal>,
 }
@@ -130,11 +130,11 @@ pub struct UsageSummary {
     pub start: String,
     pub end: String,
     pub project_id: Option<String>,
-    pub session: Option<String>,
+    pub connection: Option<String>,
     pub billing_enabled: bool,
     pub meters: Vec<UsageMeterTotal>,
-    pub numbers: Vec<NumberUsageTotal>,
-    pub numbers_truncated: bool,
+    pub connections: Vec<ConnectionUsageTotal>,
+    pub connections_truncated: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub enum UsageGateKey {
@@ -192,7 +192,7 @@ pub enum UsageGateKind {
 #[serde(rename_all = "snake_case")]
 pub enum UsageGateSubject {
     Team,
-    Number,
+    Connection,
     Project,
     Campaign,
 }
@@ -231,7 +231,7 @@ pub struct UsageGate {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct UsageGateList {
-    pub session: Option<String>,
+    pub connection: Option<String>,
     pub gates: Vec<UsageGate>,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -240,7 +240,7 @@ pub struct UsageSummaryParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session: Option<String>,
+    pub connection: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub period: Option<String>,
 }
@@ -264,7 +264,7 @@ pub struct UsageGateParams {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session: Option<String>,
+    pub connection: Option<String>,
 }
 pub struct Usage<'a> {
     pub(crate) http: &'a HttpTransport,

@@ -9,7 +9,7 @@ namespace Polymorfa.Storage.IndexedDb.BrowserTests;
 internal static class BrowserCases
 {
     private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
-    private static IReadOnlyDictionary<string, string> Key(string id) => new Dictionary<string, string> { { "sessionId", "browser-native" }, { "messageId", id } };
+    private static IReadOnlyDictionary<string, string> Key(string id) => new Dictionary<string, string> { { "connectionId", "browser-native" }, { "messageId", id } };
     private static StorageRow Row(string id) => StorageMerge.EmptyRow(StorageEntity.Messages, Key(id)) with { Revision = 1 };
     internal sealed class CancelRequest(CancellationTokenSource source)
     {
@@ -28,7 +28,7 @@ internal static class BrowserCases
         try { await adapter.QueryAsync(StorageEntity.Messages, new("unknown", new Dictionary<string, string>(), 1)); throw new Exception("Open schema index accepted"); } catch (StorageValidationException) { }
         await using (var bounded = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = name, MaxQueryRows = 1 }))
         {
-            try { await bounded.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { { "sessionId", "no-match" }, { "chatId", "no-match" } }, 1)); throw new Exception("Unbounded scan accepted"); } catch (StorageValidationException) { }
+            try { await bounded.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { { "connectionId", "no-match" }, { "chatId", "no-match" } }, 1)); throw new Exception("Unbounded scan accepted"); } catch (StorageValidationException) { }
         }
         await Mutation(runtime, name);
         await Cancellation(adapter, harness);
@@ -47,7 +47,7 @@ internal static class BrowserCases
         paused.Arm(); var pending = adapter.CommitAsync(writes); await paused.Started.Task;
         writes.Clear(); fields["extra"] = JsonSerializer.SerializeToElement("mutated"); versions["extra"] = 999; document.Dispose(); paused.Release.TrySetResult(); Check((await pending).Ok, "Prepared mutation commit failed");
         var saved = (await adapter.GetAsync(StorageEntity.Messages, new[] { row.Id }))[row.Id]; Check(saved.Fields["extra"].GetProperty("original").GetBoolean() && saved.Versions["extra"] == 2, "Caller mutation changed prepared row");
-        var equals = new Dictionary<string, string> { { "sessionId", "browser-native" }, { "chatId", "original-chat" } };
+        var equals = new Dictionary<string, string> { { "connectionId", "browser-native" }, { "chatId", "original-chat" } };
         paused.Arm(); var query = adapter.QueryAsync(StorageEntity.Messages, new("by_chat", equals, 10)); await paused.Started.Task; equals["chatId"] = "mutated-chat"; paused.Release.TrySetResult(); Check((await query).Single().Id == row.Id, "Caller mutation changed query scope");
     }
     private static async Task Cancellation(IndexedDbStorageAdapter adapter, IJSObjectReference harness)
@@ -92,14 +92,24 @@ internal static class BrowserCases
     }
     private static async Task Schema(IJSRuntime runtime, string name, IJSObjectReference harness)
     {
-        var row = Row("version-one"); var upgrade = name + "_upgrade";
-        await harness.InvokeVoidAsync("prepareVersion1", upgrade, row, false);
+        var unsupported = name + "_version_one";
+        await harness.InvokeVoidAsync("prepareVersion1", unsupported, null, false);
+        try { await using var rejected = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = unsupported }); throw new Exception("Unsupported schema was accepted"); }
+        catch (StorageProviderException) { }
+        var old = await harness.InvokeAsync<DatabaseInfo>("inspect", unsupported); Check(old.Version == 1 && old.Stores.Length == 1, "Unsupported schema changed");
+        var row = Row("version-two"); var upgrade = name + "_upgrade";
+        await harness.InvokeVoidAsync("prepareSchema2", upgrade, row, false);
+        try { await using var rejected = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = upgrade }); throw new Exception("Ordinary open upgraded schema 2"); }
+        catch (StorageProviderException) { }
+        await IndexedDbStorageAdapter.UpgradeSchema2Async(runtime, new("browser-tests") { DatabaseName = upgrade });
         await using (var adapter = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = upgrade })) Check((await adapter.GetAsync(StorageEntity.Messages, new[] { row.Id })).Count == 1, "Upgrade lost existing row");
-        var info = await harness.InvokeAsync<DatabaseInfo>("inspect", upgrade); Check(info.Version == 2 && info.Stores.Length == 17, "Upgrade did not install the closed schema");
-        var blocked = name + "_blocked"; await harness.InvokeVoidAsync("prepareVersion1", blocked, null, true);
-        try { await using var rejected = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = blocked }); throw new Exception("Blocked upgrade reported success"); }
+        var info = await harness.InvokeAsync<DatabaseInfo>("inspect", upgrade); Check(info.Version == 3 && info.Stores.Length == 17 && !info.Stores.Contains("sessions"), "Upgrade did not install the closed schema");
+        var blocked = name + "_blocked"; await harness.InvokeVoidAsync("prepareSchema2", blocked, null, true);
+        try { await IndexedDbStorageAdapter.UpgradeSchema2Async(runtime, new("browser-tests") { DatabaseName = blocked }); throw new Exception("Blocked upgrade reported success"); }
         catch (StorageProviderException error) { Check(error.InnerException is null, "Blocked upgrade leaked native error"); }
         finally { await harness.InvokeVoidAsync("releaseVersion1", blocked); }
+        var refused = await harness.InvokeAsync<DatabaseInfo>("inspect", blocked); Check(refused.Version == 2 && refused.Stores.Contains("sessions"), "Blocked upgrade changed retained schema");
+        await IndexedDbStorageAdapter.UpgradeSchema2Async(runtime, new("browser-tests") { DatabaseName = blocked });
         await using var recovered = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = blocked }); await recovered.SetupAsync();
     }
     private sealed class PausedRuntime(IJSRuntime runtime) : IJSRuntime

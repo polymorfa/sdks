@@ -25,7 +25,7 @@ pub struct SipTrunkOutbound {
 pub struct SipTrunkInbound {
     pub username: String,
     pub realm: String,
-    pub session: Option<String>,
+    pub connection: Option<String>,
     pub allowed_addresses: Vec<String>,
     pub allowed_destinations: Vec<String>,
 }
@@ -122,7 +122,7 @@ pub struct SipTrunkInboundInput {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
-    pub session: Option<Option<String>>,
+    pub connection: Option<Option<String>>,
     pub allowed_addresses: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_destinations: Option<Vec<String>>,
@@ -189,7 +189,7 @@ pub struct SipTrunkInboundPatch {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "crate::configuration::deserialize_present_option"
     )]
-    pub session: Option<Option<String>>,
+    pub connection: Option<Option<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub allowed_addresses: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -9,7 +9,7 @@ public sealed record SqlStorageOptions
     public string? Schema { get; init; }
     public bool CreateTables { get; init; } = true;
 }
-/// <summary>Schema-2 DDL. Identifiers are validated; caller data never enters an SQL identifier.</summary>
+/// <summary>Schema-3 DDL. Identifiers are validated; caller data never enters an SQL identifier.</summary>
 public static class StorageSqlSchema
 {
     internal static string Quote(StorageSqlDialect dialect, string name)
@@ -47,7 +47,7 @@ public static class StorageSqlSchema
             foreach (var index in definition.Indexes) { var name = Quote(dialect, options.TablePrefix + definition.Name + "_" + index.Name); var fields = string.Join(", ", index.EqualFields.Concat(new[] { index.Sort, "_id" }).Select(Q)); if (dialect == StorageSqlDialect.MySql) columns.Add($"KEY {name} ({fields})"); else indexes.Add($"CREATE INDEX IF NOT EXISTS {name} ON {table} ({fields})"); }
             if (dialect == StorageSqlDialect.MySql) columns.Add($"UNIQUE KEY {Quote(dialect, options.TablePrefix + definition.Name + "_key")} ({string.Join(", ", definition.Key.Select(Q))})"); result.Add($"CREATE TABLE IF NOT EXISTS {table} ({string.Join(", ", columns)})" + (dialect == StorageSqlDialect.MySql ? " ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin" : "")); result.AddRange(indexes);
         }
-        var meta = Table(dialect, options, "storage_schema"); var id = Quote(dialect, "id"); var version = Quote(dialect, "version"); result.Add($"CREATE TABLE IF NOT EXISTS {meta} ({id} {KeyType(dialect)} PRIMARY KEY, {version} integer NOT NULL)"); result.Add($"INSERT INTO {meta} ({id},{version}) VALUES ('storage',2) " + (dialect == StorageSqlDialect.MySql ? $"ON DUPLICATE KEY UPDATE {version}=VALUES({version})" : $"ON CONFLICT ({id}) DO UPDATE SET {version}=excluded.{version}")); return result;
+        var meta = Table(dialect, options, "storage_schema"); var id = Quote(dialect, "id"); var version = Quote(dialect, "version"); result.Add($"CREATE TABLE IF NOT EXISTS {meta} ({id} {KeyType(dialect)} PRIMARY KEY, {version} integer NOT NULL)"); result.Add($"INSERT INTO {meta} ({id},{version}) VALUES ('storage',3) " + (dialect == StorageSqlDialect.MySql ? $"ON DUPLICATE KEY UPDATE {id}={id}" : $"ON CONFLICT ({id}) DO NOTHING")); return result;
     }
 }
 
@@ -66,11 +66,11 @@ public static class SupabaseStoragePreset
         var preset = configuration ?? new(); var options = preset.Sql with { Schema = preset.Sql.Schema ?? "public" }; string Q(string name) => StorageSqlSchema.Quote(StorageSqlDialect.Postgres, name);
         if (string.Equals(preset.ServerRole, preset.ReaderRole, StringComparison.OrdinalIgnoreCase) || string.Equals(preset.ServerRole, "public", StringComparison.OrdinalIgnoreCase) || string.Equals(preset.ReaderRole, "public", StringComparison.OrdinalIgnoreCase)) throw new StorageValidationException("Storage reader and server roles must be distinct named roles.");
         var writer = Q(preset.ServerRole); var reader = Q(preset.ReaderRole); var members = Q(options.Schema!) + "." + Q(options.TablePrefix + "storage_memberships"); var statements = StorageSqlSchema.Statements(StorageSqlDialect.Postgres, options).ToList();
-        statements.AddRange(new[] { $"CREATE TABLE IF NOT EXISTS {members} (session_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (session_id, subject))", $"ALTER TABLE {members} ENABLE ROW LEVEL SECURITY", $"ALTER TABLE {members} FORCE ROW LEVEL SECURITY", $"REVOKE ALL ON {members} FROM PUBLIC", $"GRANT USAGE ON SCHEMA {Q(options.Schema!)} TO {reader}, {writer}", $"GRANT SELECT ON {members} TO {reader}", $"GRANT SELECT, INSERT, UPDATE, DELETE ON {members} TO {writer}", $"CREATE POLICY {Q(options.TablePrefix + "members_self")} ON {members} FOR SELECT TO {reader} USING (subject = auth.uid())", $"CREATE POLICY {Q(options.TablePrefix + "members_writer")} ON {members} TO {writer} USING (true) WITH CHECK (true)" });
+        statements.AddRange(new[] { $"CREATE TABLE IF NOT EXISTS {members} (connection_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (connection_id, subject))", $"ALTER TABLE {members} ENABLE ROW LEVEL SECURITY", $"ALTER TABLE {members} FORCE ROW LEVEL SECURITY", $"REVOKE ALL ON {members} FROM PUBLIC", $"GRANT USAGE ON SCHEMA {Q(options.Schema!)} TO {reader}, {writer}", $"GRANT SELECT ON {members} TO {reader}", $"GRANT SELECT, INSERT, UPDATE, DELETE ON {members} TO {writer}", $"CREATE POLICY {Q(options.TablePrefix + "members_self")} ON {members} FOR SELECT TO {reader} USING (subject = auth.uid())", $"CREATE POLICY {Q(options.TablePrefix + "members_writer")} ON {members} TO {writer} USING (true) WITH CHECK (true)" });
         foreach (var entity in Enum.GetValues<StorageEntity>())
         {
             var definition = StorageSchema.Definition(entity); var table = StorageSqlSchema.Table(StorageSqlDialect.Postgres, options, definition.Name);
-            statements.AddRange(new[] { $"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY", $"ALTER TABLE {table} FORCE ROW LEVEL SECURITY", $"REVOKE ALL ON {table} FROM PUBLIC", $"GRANT SELECT ON {table} TO {reader}", $"GRANT SELECT, INSERT, UPDATE, DELETE ON {table} TO {writer}", $"CREATE POLICY {Q(options.TablePrefix + definition.Name + "_reader")} ON {table} FOR SELECT TO {reader} USING (EXISTS (SELECT 1 FROM {members} m WHERE m.session_id = {table}.session_id AND m.subject = auth.uid()))", $"CREATE POLICY {Q(options.TablePrefix + definition.Name + "_writer")} ON {table} TO {writer} USING (true) WITH CHECK (true)" });
+            statements.AddRange(new[] { $"ALTER TABLE {table} ENABLE ROW LEVEL SECURITY", $"ALTER TABLE {table} FORCE ROW LEVEL SECURITY", $"REVOKE ALL ON {table} FROM PUBLIC", $"GRANT SELECT ON {table} TO {reader}", $"GRANT SELECT, INSERT, UPDATE, DELETE ON {table} TO {writer}", $"CREATE POLICY {Q(options.TablePrefix + definition.Name + "_reader")} ON {table} FOR SELECT TO {reader} USING (EXISTS (SELECT 1 FROM {members} m WHERE m.connection_id = {table}.connection_id AND m.subject = auth.uid()))", $"CREATE POLICY {Q(options.TablePrefix + definition.Name + "_writer")} ON {table} TO {writer} USING (true) WITH CHECK (true)" });
         }
         return string.Join(";\n", statements) + ";\n";
     }

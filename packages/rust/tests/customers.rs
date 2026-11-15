@@ -6,10 +6,10 @@ fn customer() -> serde_json::Value {
     json!({"id":"customer","teamId":"team","projectId":"project","name":"Customer","externalCustomerId":"external","status":"active","isDefault":false,"archivedAt":null,"createdAt":1000,"updatedAt":2000})
 }
 fn number() -> serde_json::Value {
-    json!({"id":"number","customerId":"customer","sessionId":"session","name":"Number","phoneMasked":"+1555***4567","status":"connected","backend":"linked_devices","createdAt":1000})
+    json!({"id":"number","customerId":"customer","connectionId":"connection","name":"Number","phoneMasked":"+1555***4567","status":"connected","backend":"linked_devices","createdAt":1000})
 }
 fn link() -> serde_json::Value {
-    json!({"id":"link","teamId":"team","projectId":"project","customerId":"customer","expectedPhoneMasked":"+1555***4567","methods":["qr","phone"],"locale":"pt-BR","theme":"system","expiresAt":2000,"status":"connecting","attemptCount":1,"maxAttempts":3,"pendingSessionId":"session","createdBy":"user","reservedAt":1000,"openedAt":1100,"connectingAt":1200,"connectedAt":null,"failedAt":null,"expiredAt":null,"revokedAt":null,"lastErrorCode":null,"failedExchangeCount":0,"phoneMismatchCount":0,"createdAt":1000,"updatedAt":1200})
+    json!({"id":"link","teamId":"team","projectId":"project","customerId":"customer","expectedPhoneMasked":"+1555***4567","methods":["qr","phone"],"locale":"pt-BR","theme":"system","expiresAt":2000,"status":"connecting","attemptCount":1,"maxAttempts":3,"pendingConnectionId":"connection","createdBy":"user","reservedAt":1000,"openedAt":1100,"connectingAt":1200,"connectedAt":null,"failedAt":null,"expiredAt":null,"revokedAt":null,"lastErrorCode":null,"failedExchangeCount":0,"phoneMismatchCount":0,"createdAt":1000,"updatedAt":1200})
 }
 #[tokio::test]
 async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() {
@@ -28,18 +28,18 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
         "POST",
         "/platform/projects/project/customers/enable",
         None,
-        json!({"data":{"enabled":true,"enabledAt":1000,"enabledBy":"user","defaultCustomer":customer(),"migratedNumberCount":2}}),
+        json!({"data":{"enabled":true,"enabledAt":1000,"enabledBy":"user","defaultCustomer":customer(),"migratedConnectionCount":2}}),
         client
             .customers()
             .enable("project", RequestOptions::default())
     );
     let mut summary = customer();
-    summary["numberCount"] = json!(2);
-    summary["connectedNumberCount"] = json!(1);
+    summary["connectionCount"] = json!(2);
+    summary["connectedConnectionCount"] = json!(1);
     summary["activePairingLinkState"] = json!("connecting");
     summary["lastActivityAt"] = json!(2000);
     summary["needsAttention"] = json!(true);
-    wire_team!(client,"GET","/platform/customers?projectId=project&cursor=cursor&search=Customer&limit=25&status=all&isDefault=false&hasNumbers=true&needsAttention=true",None,json!({"data":[summary],"page":{"nextCursor":"next","hasMore":true}}),client.customers().list(&ListCustomersParameters{project_id:"project".into(),cursor:Some("cursor".into()),search:Some("Customer".into()),limit:Some(25),status:Some(CustomerListStatus::All),is_default:Some(false),has_numbers:Some(true),needs_attention:Some(true)},RequestOptions::default()));
+    wire_team!(client,"GET","/platform/customers?projectId=project&cursor=cursor&search=Customer&limit=25&status=all&isDefault=false&hasConnections=true&needsAttention=true",None,json!({"data":[summary],"page":{"nextCursor":"next","hasMore":true}}),client.customers().list(&ListCustomersParameters{project_id:"project".into(),cursor:Some("cursor".into()),search:Some("Customer".into()),limit:Some(25),status:Some(CustomerListStatus::All),is_default:Some(false),has_connections:Some(true),needs_attention:Some(true)},RequestOptions::default()));
     wire_team!(
         client,
         "POST",
@@ -115,19 +115,19 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
     wire_team!(
         client,
         "GET",
-        "/platform/customers/customer/numbers?projectId=project",
+        "/platform/customers/customer/connections?projectId=project",
         None,
         json!({"data":[number()]}),
         client
             .customers()
-            .list_numbers("customer", "project", RequestOptions::default())
+            .list_connections("customer", "project", RequestOptions::default())
     );
     wire_team!(
         client,
         "GET",
         "/platform/customers/customer/events?projectId=project&limit=25",
         None,
-        json!({"data":[{"id":"event","action":"updated","fromStatus":"active","toStatus":"active","sessionId":null,"pairingLinkId":"link","metadata":{"fields":["name","externalCustomerId"]},"occurredAt":1000}]}),
+        json!({"data":[{"id":"event","action":"updated","fromStatus":"active","toStatus":"active","connectionId":null,"pairingLinkId":"link","metadata":{"fields":["name","externalCustomerId"]},"occurredAt":1000}]}),
         client.customers().list_events(
             "customer",
             &ListCustomerEventsParameters {
@@ -187,13 +187,13 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
     wire_team!(
         client,
         "POST",
-        "/platform/customers/customer/numbers/session/transfer",
+        "/platform/customers/customer/connections/connection/transfer",
         Some(json!({"projectId":"project","sourceCustomerId":"source","confirm":true})),
         json!({"data":number()}),
-        client.customers().transfer_number(
+        client.customers().transfer_connection(
             "customer",
-            "session",
-            &TransferCustomerNumberRequest {
+            "connection",
+            &TransferCustomerConnectionRequest {
                 project_id: "project".into(),
                 source_customer_id: "source".into(),
                 confirm: true
@@ -205,10 +205,10 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
     assert_eq!(
         client
             .customers()
-            .transfer_number(
+            .transfer_connection(
                 "customer",
-                "session",
-                &TransferCustomerNumberRequest {
+                "connection",
+                &TransferCustomerConnectionRequest {
                     project_id: "project".into(),
                     source_customer_id: "source".into(),
                     confirm: false

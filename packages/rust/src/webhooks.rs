@@ -11,7 +11,7 @@ use sha2::Sha256;
 #[serde(rename_all = "camelCase")]
 pub struct WebhookEnvelope {
     pub id: String,
-    pub session: String,
+    pub connection: String,
     pub external_id: Option<String>,
     pub timestamp: String,
     pub event: String,
@@ -27,7 +27,7 @@ impl std::fmt::Debug for WebhookEnvelope {
             };
         f.debug_struct("WebhookEnvelope")
             .field("id", &self.id)
-            .field("session", &self.session)
+            .field("connection", &self.connection)
             .field("timestamp", &self.timestamp)
             .field("event", &self.event)
             .field("payload", payload)
@@ -45,9 +45,9 @@ pub enum WebhookEvent {
         envelope: WebhookEnvelope,
         payload: Box<MessageSentPayload>,
     },
-    SessionStatus {
+    ConnectionStatus {
         envelope: WebhookEnvelope,
-        payload: SessionStatusPayload,
+        payload: ConnectionStatusPayload,
     },
     Known {
         envelope: WebhookEnvelope,
@@ -60,7 +60,7 @@ impl WebhookEvent {
         match self {
             Self::MessageReceived { envelope, .. }
             | Self::MessageSent { envelope, .. }
-            | Self::SessionStatus { envelope, .. }
+            | Self::ConnectionStatus { envelope, .. }
             | Self::Known { envelope, .. }
             | Self::Unknown(envelope) => envelope,
         }
@@ -251,7 +251,7 @@ pub fn parse_verified_event(raw_body: &[u8]) -> Result<WebhookEvent> {
             payload: decode_payload(payload)?,
             envelope,
         }),
-        "session.status" => Ok(WebhookEvent::SessionStatus {
+        "connection.status" => Ok(WebhookEvent::ConnectionStatus {
             payload: serde_json::from_value(payload).map_err(|_| {
                 Error::local(
                     ErrorKind::Validation,
@@ -404,9 +404,9 @@ pub const KNOWN_EVENT_TYPES: &[&str] = &[
     "customer.archiving",
     "customer.created",
     "customer.enabled",
-    "customer.number.attached",
-    "customer.number.disconnected",
-    "customer.number.transferred",
+    "customer.connection.attached",
+    "customer.connection.disconnected",
+    "customer.connection.transferred",
     "customer.pairing_link.connected",
     "customer.pairing_link.created",
     "customer.pairing_link.expired",
@@ -433,12 +433,12 @@ pub const KNOWN_EVENT_TYPES: &[&str] = &[
     "newsletter.update",
     "order.payment_updated",
     "presence.update",
-    "session.capabilities_updated",
-    "session.connected",
-    "session.logged_out",
-    "session.phone_offline",
-    "session.restriction_updated",
-    "session.status",
+    "connection.capabilities_updated",
+    "connection.connected",
+    "connection.logged_out",
+    "connection.phone_offline",
+    "connection.restriction_updated",
+    "connection.status",
     "template.status",
     "usage.recorded",
     "voice.asset_failed",

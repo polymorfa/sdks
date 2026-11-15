@@ -12,7 +12,7 @@ async fn official_api_credential_and_pricing_native_wire_contracts() {
         None,
         json!({"success":true,"data":{"status":"healthy","checkedAt":"2026-10-11T12:00:00Z","nextCheckAt":"2026-10-12T12:00:00Z","token":{"status":"valid","expiresAt":null},"missingPermissions":[],"phoneRegistration":"registered","webhookSubscription":"subscribed","failureCode":null}}),
         client
-            .sessions()
+            .connections()
             .get_cloud_credential_health("s", RequestOptions::default())
     );
     wire_messaging!(
@@ -20,9 +20,9 @@ async fn official_api_credential_and_pricing_native_wire_contracts() {
         "POST",
         "/messaging/s/cloud-credentials/reauthorize",
         None,
-        json!({"success":true,"data":{"quicklinkId":"link","url":"https://link.polymorfa.com/link","session":"s"}}),
+        json!({"success":true,"data":{"quicklinkId":"link","url":"https://link.polymorfa.com/link","connection":"s"}}),
         client
-            .sessions()
+            .connections()
             .reauthorize_cloud_credentials("s", RequestOptions::default())
     );
     wire_messaging!(
@@ -31,7 +31,7 @@ async fn official_api_credential_and_pricing_native_wire_contracts() {
         "/messaging/s/meta-pricing?since=2026-10-01&until=2026-10-11",
         None,
         json!({"success":true,"data":{"source":"meta","since":"2026-10-01","until":"2026-10-11","messages":5,"groups":[{"category":"marketing","pricingModel":"PMP","pricingType":"regular","billable":true,"messages":5}]}}),
-        client.sessions().get_meta_pricing(
+        client.connections().get_meta_pricing(
             "s",
             &MetaPricingParameters {
                 since: Some("2026-10-01".into()),
@@ -61,15 +61,15 @@ async fn hybrid_link_native_wire_contracts() {
     wire_messaging!(
         client,
         "PUT",
-        "/messaging/routing/hybrid?scope=session&projectId=project&session=s",
+        "/messaging/routing/hybrid?scope=connection&projectId=project&connection=s",
         Some(
             json!({"expectedRevision":"rev0","prefer":null,"allowedTransports":["linked_devices"]})
         ),
-        json!({"success":true,"data":{"scope":"session","revision":"rev1","prefer":null,"allowedTransports":["linked_devices"]}}),
+        json!({"success":true,"data":{"scope":"connection","revision":"rev1","prefer":null,"allowedTransports":["linked_devices"]}}),
         client.hybrid_link().set_policy(
-            &HybridPolicyScope::Session {
+            &HybridPolicyScope::Connection {
                 project_id: "project".into(),
-                session: "s".into()
+                connection: "s".into()
             },
             &SetHybridRoutingPolicyRequest {
                 expected_revision: "rev0".into(),
@@ -105,7 +105,7 @@ async fn hybrid_link_native_wire_contracts() {
 }
 
 #[tokio::test]
-async fn session_client_token_ceiling_survives_native_json_and_http() {
+async fn connection_client_token_ceiling_survives_native_json_and_http() {
     for allow in [
         json!([]),
         json!([
@@ -119,7 +119,7 @@ async fn session_client_token_ceiling_survives_native_json_and_http() {
             "voip_signal"
         ]),
     ] {
-        let expected = json!({"ephemeralId":"visitor","session":"s","allow":allow});
+        let expected = json!({"ephemeralId":"visitor","connection":"s","allow":allow});
         let body: MintClientTokenRequest = serde_json::from_value(expected.clone()).unwrap();
         wire_messaging!(
             client,
@@ -135,27 +135,27 @@ async fn session_client_token_ceiling_survives_native_json_and_http() {
 }
 
 #[test]
-fn session_client_token_ceiling_has_public_typed_actions() {
+fn connection_client_token_ceiling_has_public_typed_actions() {
     let body = MintClientTokenRequest {
         ephemeral_id: "visitor".into(),
         ttl_seconds: None,
-        target: ClientTokenTarget::Session {
-            session: "s".into(),
+        target: ClientTokenTarget::Connection {
+            connection: "s".into(),
             allow: Some(vec![
-                SessionClientAction::ChatsRead,
-                SessionClientAction::ChatsManage,
-                SessionClientAction::ContactWrite,
-                SessionClientAction::ContactDelete,
-                SessionClientAction::Mcp,
-                SessionClientAction::VoipPlace,
-                SessionClientAction::VoipAnswer,
-                SessionClientAction::VoipSignal,
+                ConnectionClientAction::ChatsRead,
+                ConnectionClientAction::ChatsManage,
+                ConnectionClientAction::ContactWrite,
+                ConnectionClientAction::ContactDelete,
+                ConnectionClientAction::Mcp,
+                ConnectionClientAction::VoipPlace,
+                ConnectionClientAction::VoipAnswer,
+                ConnectionClientAction::VoipSignal,
             ]),
         },
     };
     assert_eq!(
         serde_json::to_value(body).unwrap(),
-        json!({"ephemeralId":"visitor","session":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal"]})
+        json!({"ephemeralId":"visitor","connection":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal"]})
     );
 }
 
@@ -165,14 +165,14 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
         client,
         "POST",
         "/platform/client-tokens",
-        Some(json!({"ephemeralId":"visitor","ttlSeconds":300,"session":"s"})),
+        Some(json!({"ephemeralId":"visitor","ttlSeconds":300,"connection":"s"})),
         json!({"success":true,"data":{"token":"pmfa_ct_Zml4dHVyZQ","expiresAt":"2026-10-11T12:05:00Z"}}),
         client.client_tokens().mint(
             &MintClientTokenRequest {
                 ephemeral_id: "visitor".into(),
                 ttl_seconds: Some(300),
-                target: ClientTokenTarget::Session {
-                    session: "s".into(),
+                target: ClientTokenTarget::Connection {
+                    connection: "s".into(),
                     allow: None
                 }
             },
@@ -209,7 +209,7 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
     wire_messaging!(
         client,
         "GET",
-        "/platform/sessions/s/client-rules",
+        "/platform/connections/s/client-rules",
         None,
         json!({"success":true,"data":{"recipientMode":"conversation","allowedActions":"send_message","rateLimit":1,"maxDaily":10,"allowedOrigins":"https://example.test","conversationTtlSeconds":86400,"maxConcurrency":1,"maxSetupsPerMinute":10,"allowedNumber":"+15551234567","enabled":true}}),
         client
@@ -220,7 +220,7 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
     wire_messaging!(
         client,
         "PUT",
-        "/platform/sessions/s/client-rules",
+        "/platform/connections/s/client-rules",
         Some(
             json!({"recipientMode":"conversation","enabled":true,"allowedActions":"send_message","conversationTtlSeconds":86400})
         ),
@@ -232,7 +232,7 @@ async fn client_token_mint_and_rules_native_wire_contracts() {
     wire_messaging!(
         client,
         "DELETE",
-        "/platform/sessions/s/client-rules",
+        "/platform/connections/s/client-rules",
         None,
         json!({"success":true}),
         client

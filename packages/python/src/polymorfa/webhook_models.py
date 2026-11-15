@@ -703,7 +703,7 @@ class BanSafeRequiredFinding(TypedDict):
 class BanSafeActionPayload(TypedDict):
     phoneNumber: str
     action: Literal["applied", "changed", "lifted", "daily_allowance_reached"]
-    scope: Literal["number", "team"]
+    scope: Literal["connection", "team"]
     rung: BanSafeEventRung
     previousRung: BanSafeEventRung | None
     reason: Literal[

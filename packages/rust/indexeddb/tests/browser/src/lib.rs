@@ -16,7 +16,7 @@ fn row(id: &str) -> StoredRow {
     let mut row = empty_row(
         Entity::Messages,
         &RowKey::from([
-            ("sessionId".into(), "browser".into()),
+            ("connectionId".into(), "browser".into()),
             ("messageId".into(), id.into()),
         ]),
     )
@@ -76,7 +76,7 @@ pub async fn run_conformance(name: String) -> Result<String, JsValue> {
             &IndexQuery {
                 index: "by_chat".into(),
                 equals: RowKey::from([
-                    ("sessionId".into(), "s".into()),
+                    ("connectionId".into(), "s".into()),
                     ("chatId".into(), "c".into())
                 ]),
                 range: None,

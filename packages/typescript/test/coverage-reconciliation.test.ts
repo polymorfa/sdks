@@ -197,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("b23680d19accfecf2f0b7166bdfa11e433947362");
+    expect(source.commit).toBe("8354399b827d9127210b9759cd055586e967449e");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -221,7 +221,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.supplements).toBeUndefined();
     expect(source.contracts.platform.sha256).toBe(
-      "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
+      "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
     );
     for (const id of [
       "getWhatsAppAnalytics",

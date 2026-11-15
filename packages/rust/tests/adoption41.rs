@@ -97,7 +97,7 @@ fn verified_history(
 ) -> polymorfa_sdk::Result<polymorfa_sdk::webhooks::WebhookEvent> {
     use hmac::{Hmac, Mac};
     use sha2::Sha256;
-    let raw=serde_json::to_vec(&json!({"id":"event-id","session":"s","timestamp":"2026-10-14T00:00:00Z","event":"history.sync","payload":payload})).unwrap();
+    let raw=serde_json::to_vec(&json!({"id":"event-id","connection":"s","timestamp":"2026-10-14T00:00:00Z","event":"history.sync","payload":payload})).unwrap();
     let mut mac = Hmac::<Sha256>::new_from_slice(b"synthetic-secret").unwrap();
     mac.update(&raw);
     polymorfa_sdk::webhooks::construct_event(
@@ -124,10 +124,10 @@ fn campaign41() -> serde_json::Value {
     json!({"id":"1234567890123456789","name":"Stored","status":"draft","templateId":null,"recipientListId":null,"recipientCount":0,"sentCount":0,"deliveredCount":0,"readCount":0,"failedCount":0,"skippedCount":0,"scheduledAt":null,"launchedAt":null,"completedAt":null,"createdAt":0,"updatedAt":0,"sendWindow":null,"trackedLinks":[],"experimentOutcome":null,"followUp":null,"messages":{"stored":"opaque"},"variableMapping":null,"future":false})
 }
 fn configuration41() -> serde_json::Value {
-    json!({"effective":{"observation":{"presenceMode":"off","typingMode":"off","labelMode":"off","quickReplyMode":"off"},"historySync":{"mode":"metadata_only","requestFull":false,"delivery":"archive"},"hms":{"enabled":false}},"overrides":{"historySync":{"delivery":"descriptor"}},"sources":{"historySync.mode":"consent","historySync.requestFull":"consent","historySync.delivery":"platform","hms":"platform","observation.presenceMode":"platform","observation.typingMode":"platform","observation.labelMode":"platform","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":false,"delivery":"descriptor"},"historyConsent":"pending","revisions":{"team":0,"project":0,"session":0},"application":null})
+    json!({"effective":{"observation":{"presenceMode":"off","typingMode":"off","labelMode":"off","quickReplyMode":"off"},"historySync":{"mode":"metadata_only","requestFull":false,"delivery":"archive"},"hms":{"enabled":false}},"overrides":{"historySync":{"delivery":"descriptor"}},"sources":{"historySync.mode":"consent","historySync.requestFull":"consent","historySync.delivery":"platform","hms":"platform","observation.presenceMode":"platform","observation.typingMode":"platform","observation.labelMode":"platform","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":false,"delivery":"descriptor"},"historyConsent":"pending","revisions":{"team":0,"project":0,"connection":0},"application":null})
 }
-fn session41() -> serde_json::Value {
-    json!({"sessionId":"sid","name":"s","tenantId":"team","type":"linked_devices","testMode":false,"status":"connected","createdAt":"2026-10-14T00:00:00Z","updatedAt":"2026-10-14T00:00:00Z","signalMode":"zero_knowledge","configuration":configuration41()})
+fn connection41() -> serde_json::Value {
+    json!({"connectionId":"sid","name":"s","tenantId":"team","type":"whatsapp","method":"linked_device","testMode":false,"status":"connected","createdAt":"2026-10-14T00:00:00Z","updatedAt":"2026-10-14T00:00:00Z","signalMode":"zero_knowledge","configuration":configuration41()})
 }
 #[tokio::test]
 async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_results() {
@@ -392,8 +392,8 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         (200, json!({"data":configuration41()})),
         (200, json!({"data":configuration41()})),
         (200, json!({"data":configuration41()})),
-        (200, json!({"success":true,"data":session41()})),
-        (200, json!({"success":true,"data":session41()})),
+        (200, json!({"success":true,"data":connection41()})),
+        (200, json!({"success":true,"data":connection41()})),
         (200, json!({"data":configuration41()})),
         (200, json!({"data":configuration41()})),
     ])
@@ -401,7 +401,7 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
     let team = support::team(wire.base.clone());
     let bound = team.project(PROJECT41).unwrap();
     let view = team
-        .session_configuration()
+        .connection_configuration()
         .retrieve(Default::default())
         .await
         .unwrap();
@@ -419,15 +419,15 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
     ));
     assert_eq!(view.data.revisions.project, 0);
     bound
-        .session_configuration()
+        .connection_configuration()
         .retrieve(RequestOptions {
             api_version: Some("2026-10-14".into()),
             ..Default::default()
         })
         .await
         .unwrap();
-    let patch = SessionConfigurationPatch {
-        set: Some(SessionConfigurationOverrides {
+    let patch = ConnectionConfigurationPatch {
+        set: Some(ConnectionConfigurationOverrides {
             history_sync: Some(HistorySyncPolicyPatch {
                 delivery: Some(HistorySyncDeliveryWrite::Descriptor),
                 request_full: Some(false),
@@ -437,9 +437,9 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         }),
         reset: None,
     };
-    team.session_configuration()
+    team.connection_configuration()
         .update(
-            &polymorfa_sdk::settings::UpdateSessionDefaults {
+            &polymorfa_sdk::settings::UpdateConnectionDefaults {
                 configuration: patch.clone(),
                 revision: 0,
             },
@@ -448,10 +448,10 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         .await
         .unwrap();
     let result = team
-        .sessions()
+        .connections()
         .update(
             "s /",
-            &UpdateSessionRequest {
+            &UpdateConnectionRequest {
                 configuration: patch.clone(),
                 revision: 0,
             },
@@ -464,10 +464,10 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         Some(polymorfa_sdk::campaign_contracts::SignalCustodyMode::ZeroKnowledge)
     );
     support::messaging(wire.base.clone())
-        .sessions()
+        .connections()
         .update(
             "s /",
-            &UpdateSessionRequest {
+            &UpdateConnectionRequest {
                 configuration: patch,
                 revision: 0,
             },
@@ -479,12 +479,12 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         .await
         .unwrap();
     bound
-        .session_configuration()
+        .connection_configuration()
         .update(
-            &polymorfa_sdk::settings::UpdateSessionDefaults {
-                configuration: SessionConfigurationPatch {
+            &polymorfa_sdk::settings::UpdateConnectionDefaults {
+                configuration: ConnectionConfigurationPatch {
                     set: None,
-                    reset: Some(vec![SessionConfigurationReset::HistorySync]),
+                    reset: Some(vec![ConnectionConfigurationReset::HistorySync]),
                 },
                 revision: 0,
             },
@@ -493,12 +493,12 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         .await
         .unwrap();
     bound
-        .session_configuration()
+        .connection_configuration()
         .update(
-            &polymorfa_sdk::settings::UpdateSessionDefaults {
-                configuration: SessionConfigurationPatch {
+            &polymorfa_sdk::settings::UpdateConnectionDefaults {
+                configuration: ConnectionConfigurationPatch {
                     set: None,
-                    reset: Some(vec![SessionConfigurationReset::HistorySyncDelivery]),
+                    reset: Some(vec![ConnectionConfigurationReset::HistorySyncDelivery]),
                 },
                 revision: 0,
             },
@@ -524,7 +524,7 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         rows[2].body()["configuration"]["set"]["historySync"]["requestFull"],
         false
     );
-    assert_eq!(rows[3].path, "/platform/sessions/s%20%2F");
+    assert_eq!(rows[3].path, "/platform/connections/s%20%2F");
     assert_eq!(rows[5].body()["projectId"], PROJECT41);
     assert_eq!(
         rows[5].body()["configuration"]["reset"],
@@ -533,7 +533,7 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
 }
 #[tokio::test]
 async fn quicklink_branch_and_new_intent_preserve_consent_and_versions() {
-    let receipt = json!({"success":true,"data":{"id":"link","url":"https://example.com/link","purpose":"initial","session":"s","connectionGoal":"hybrid","expiresAt":null}});
+    let receipt = json!({"success":true,"data":{"id":"link","url":"https://example.com/link","purpose":"initial","connection":"s","connectionGoal":"hybrid","expiresAt":null}});
     let wire=Wire::new(vec![(200,receipt.clone()),(200,receipt.clone()),(200,receipt),(400,json!({"error":{"code":"invalid_parameter","param":"Polymorfa-Version","message":"fixture"}}))]).await;
     let client = support::messaging(wire.base.clone());
     client
@@ -592,13 +592,13 @@ async fn quicklink_branch_and_new_intent_preserve_consent_and_versions() {
     );
     let denied = support::messaging("http://127.0.0.1:1".into());
     for value in [
-        json!({"session":"s"}),
-        json!({"addConnection":"linked_devices"}),
-        json!({"purpose":"add_connection","session":"s"}),
-        json!({"purpose":"add_connection","session":"s","addConnection":"official_api","signalMode":"standard"}),
-        json!({"purpose":"add_connection","session":"s","addConnection":"official_api","externalId":"x"}),
-        json!({"purpose":"add_connection","session":"s","addConnection":"official_api","customerId":"c"}),
-        json!({"purpose":"add_connection","session":"s","addConnection":"official_api","connectionGoal":"single"}),
+        json!({"connection":"s"}),
+        json!({"addMethod":"linked_devices"}),
+        json!({"purpose":"add_method","connection":"s"}),
+        json!({"purpose":"add_method","connection":"s","addMethod":"official_api","signalMode":"standard"}),
+        json!({"purpose":"add_method","connection":"s","addMethod":"official_api","externalId":"x"}),
+        json!({"purpose":"add_method","connection":"s","addMethod":"official_api","customerId":"c"}),
+        json!({"purpose":"add_method","connection":"s","addMethod":"official_api","connectionGoal":"single"}),
     ] {
         let body: CreateQuickLinkRequest = serde_json::from_value(value).unwrap();
         assert_eq!(
@@ -623,22 +623,22 @@ async fn quicklink_branch_and_new_intent_preserve_consent_and_versions() {
 #[test]
 fn immutable_signal_fact_and_delivery_source_presence_are_strict() {
     for value in [json!(null), json!("wrong")] {
-        let mut v = session41();
+        let mut v = connection41();
         v["signalMode"] = value;
-        assert!(serde_json::from_value::<polymorfa_sdk::models::Session>(v).is_err());
+        assert!(serde_json::from_value::<polymorfa_sdk::models::Connection>(v).is_err());
     }
-    let mut legacy = session41();
+    let mut legacy = connection41();
     legacy.as_object_mut().unwrap().remove("signalMode");
-    assert!(serde_json::from_value::<polymorfa_sdk::models::Session>(legacy).is_ok());
+    assert!(serde_json::from_value::<polymorfa_sdk::models::Connection>(legacy).is_ok());
     for value in [json!(null), json!("consent")] {
         let mut v = configuration41();
         v["sources"]["historySync.delivery"] = value;
-        assert!(serde_json::from_value::<SessionConfigurationView>(v).is_err());
+        assert!(serde_json::from_value::<ConnectionConfigurationView>(v).is_err());
     }
     assert!(
         serde_json::from_value::<HistorySyncPolicyPatch>(json!({"delivery":"archive"})).is_err()
     );
-    assert!(serde_json::from_value::<SessionConfigurationOverrides>(
+    assert!(serde_json::from_value::<ConnectionConfigurationOverrides>(
         json!({"signalMode":"standard"})
     )
     .is_err());
@@ -801,7 +801,7 @@ async fn history_canonical_outcomes_shapes_versions_limits_and_safe_errors() {
         chunk_message_id: Some("x._:-".into()),
         regenerate: Some(false),
     };
-    let wire=Wire::new(vec![(200,json!({"success":true,"data":{"requestId":"request","status":"requested"}})),(200,json!({"success":true,"data":{"status":"deleted"}})),(409,json!({"error":{"code":"zero_knowledge_session","param":"session","message":"Synthetic refusal"}}))]).await;
+    let wire=Wire::new(vec![(200,json!({"success":true,"data":{"requestId":"request","status":"requested"}})),(200,json!({"success":true,"data":{"status":"deleted"}})),(409,json!({"error":{"code":"zero_knowledge_connection","param":"connection","message":"Synthetic refusal"}}))]).await;
     let m = support::messaging(wire.base.clone());
     let result = m
         .history_sync()
@@ -832,8 +832,8 @@ async fn history_canonical_outcomes_shapes_versions_limits_and_safe_errors() {
         .request_chunk_retry("s", &retry, Default::default())
         .await
         .unwrap_err();
-    assert_eq!(error.code.as_deref(), Some("zero_knowledge_session"));
-    assert_eq!(error.param.as_deref(), Some("session"));
+    assert_eq!(error.code.as_deref(), Some("zero_knowledge_connection"));
+    assert_eq!(error.param.as_deref(), Some("connection"));
     assert_eq!(
         error
             .metadata
@@ -1271,7 +1271,7 @@ async fn four_replay_routes_preserve_explicit_key_exact_body_and_default_single_
 async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_envelopes() {
     use polymorfa_sdk::{onboarding::*, request_logs::*};
     let group = json!({"success":true,"data":{"status":"unknown","syncedAt":null,"checkedAt":null,"capabilities":[{"key":"polls.endTime","kind":"feature","unit":null,"value":null,"source":null},{"key":"polls.hideVoters","kind":"feature","unit":null,"value":false,"source":"server"}]}});
-    let wire=Wire::new(vec![(200,group),(200,json!({"session":"s","phone":"+15550001111","online":false,"devices":[{"deviceId":1},{"deviceId":99}]})),(202,json!({"session":"s","to":"+15550002222","messageId":null})),(200,json!({"session":"s","deviceId":1,"unlinked":true})),(200,json!({"session":"s","deviceId":99,"unlinked":true}))]).await;
+    let wire=Wire::new(vec![(200,group),(200,json!({"connection":"s","phone":"+15550001111","online":false,"devices":[{"deviceId":1},{"deviceId":99}]})),(202,json!({"connection":"s","to":"+15550002222","messageId":null})),(200,json!({"connection":"s","deviceId":1,"unlinked":true})),(200,json!({"connection":"s","deviceId":99,"unlinked":true}))]).await;
     let scoped = client41(wire.base.clone());
     let g = scoped
         .groups()
@@ -1280,14 +1280,14 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
         .unwrap();
     assert!(matches!(
         g.data.data.status,
-        polymorfa_sdk::platform_sessions::SessionCapabilitiesStatus::Unknown
+        polymorfa_sdk::platform_connections::ConnectionCapabilitiesStatus::Unknown
     ));
     assert_eq!(g.data.data.capabilities[0].value, None);
     assert_eq!(g.data.data.capabilities[1].value, Some(false));
     let m = support::messaging(wire.base.clone());
     let phone = m
         .testing()
-        .get_phone("p /", "s /", Default::default())
+        .get_phone("s /", Default::default())
         .await
         .unwrap();
     assert!(!phone.data.online);
@@ -1295,7 +1295,6 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     let sent = m
         .testing()
         .send_phone_message(
-            "p /",
             "s /",
             &SendTestingPhoneMessageRequest {
                 to: "+15550002222".into(),
@@ -1313,7 +1312,7 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     for device in [1, 99] {
         assert!(
             m.testing()
-                .unlink_phone_device("p /", "s /", device, Default::default())
+                .unlink_phone_device("s /", device, Default::default())
                 .await
                 .unwrap()
                 .data
@@ -1330,27 +1329,26 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     wire.check(
         1,
         "GET",
-        "/messaging/testing/p%20%2F/numbers/s%20%2F/phone",
+        "/messaging/s%20%2F/phone",
         json!(null),
         "2026-09-22",
     );
     wire.check(
         2,
         "POST",
-        "/messaging/testing/p%20%2F/numbers/s%20%2F/phone/messages",
+        "/messaging/s%20%2F/phone/messages",
         json!({"to":"+15550002222","text":"Synthetic test"}),
         "2026-10-14",
     );
     assert!(!wire.captured()[2].headers.contains_key("idempotency-key"));
     assert!(scoped
         .testing()
-        .get_phone("p", "s", Default::default())
+        .get_phone("s", Default::default())
         .await
         .is_err());
     assert!(scoped
         .testing()
         .send_phone_message(
-            "p",
             "s",
             &SendTestingPhoneMessageRequest {
                 to: "x".into(),
@@ -1362,21 +1360,21 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
         .is_err());
     assert!(scoped
         .testing()
-        .unlink_phone_device("p", "s", 1, Default::default())
+        .unlink_phone_device("s", 1, Default::default())
         .await
         .is_err());
     assert_eq!(wire.captured().len(), 5);
     for device in [0, 100] {
         assert_eq!(
             m.testing()
-                .unlink_phone_device("p", "s", device, Default::default())
+                .unlink_phone_device("s", device, Default::default())
                 .await
                 .unwrap_err()
                 .kind,
             ErrorKind::Validation
         );
     }
-    let log = json!({"id":"1234567890123456789","projectId":"A","createdAt":"2026-10-14T00:00:00Z","method":"POST","route":"/messaging/:session/messages/send","status":null,"durationMs":null,"result":"failure","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null});
+    let log = json!({"id":"1234567890123456789","projectId":"A","createdAt":"2026-10-14T00:00:00Z","method":"POST","route":"/messaging/:connection/messages/send","status":null,"durationMs":null,"result":"failure","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null});
     let page = json!({"data":[log],"page":{"nextCursor":null,"hasMore":false,"followCursor":""}});
     let w = Wire::new(vec![(200, page.clone()), (200, page.clone()), (200, page)]).await;
     let o = support::team(w.base.clone());
@@ -1448,7 +1446,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     let w = Wire::raw(vec![(200, "<html>fixture</html>".into(), vec![])]).await;
     let e = support::messaging(w.base.clone())
         .testing()
-        .get_phone("p", "s", Default::default())
+        .get_phone("s", Default::default())
         .await
         .unwrap_err();
     assert_eq!(e.code.as_deref(), Some("invalid_response"));
@@ -1462,13 +1460,12 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
         let error = match kind {
             0 => m
                 .testing()
-                .get_phone("p", "s", Default::default())
+                .get_phone("s", Default::default())
                 .await
                 .unwrap_err(),
             1 => m
                 .testing()
                 .send_phone_message(
-                    "p",
                     "s",
                     &SendTestingPhoneMessageRequest {
                         to: "x".into(),
@@ -1480,7 +1477,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
                 .unwrap_err(),
             _ => m
                 .testing()
-                .unlink_phone_device("p", "s", 1, Default::default())
+                .unlink_phone_device("s", 1, Default::default())
                 .await
                 .unwrap_err(),
         };
@@ -1507,7 +1504,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     );
     assert_eq!(
         m.testing()
-            .get_phone("p", "s", options.clone())
+            .get_phone("s", options.clone())
             .await
             .unwrap_err()
             .kind,
@@ -1516,7 +1513,6 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     assert_eq!(
         m.testing()
             .send_phone_message(
-                "p",
                 "s",
                 &SendTestingPhoneMessageRequest {
                     to: "x".into(),
@@ -1531,7 +1527,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
     );
     assert_eq!(
         m.testing()
-            .unlink_phone_device("p", "s", 1, options.clone())
+            .unlink_phone_device("s", 1, options.clone())
             .await
             .unwrap_err()
             .kind,
@@ -1716,11 +1712,11 @@ async fn request_bounds_flatten_collisions_and_supplementary_controls() {
             .kind,
         ErrorKind::Validation
     );
-    let receipt = json!({"success":true,"data":{"id":"link","url":"https://example.com/link","purpose":"add_connection","session":"s","connectionGoal":"hybrid","addConnection":"official_api","expiresAt":null}});
+    let receipt = json!({"success":true,"data":{"id":"link","url":"https://example.com/link","purpose":"add_method","connection":"s","connectionGoal":"hybrid","addMethod":"official_api","expiresAt":null}});
     let wire = Wire::new(vec![
         (200, receipt),
-        (200, json!({"success":true,"data":session41()})),
-        (200, json!({"success":true,"data":session41()})),
+        (200, json!({"success":true,"data":connection41()})),
+        (200, json!({"success":true,"data":connection41()})),
     ])
     .await;
     let client = support::messaging(wire.base.clone());
@@ -1728,9 +1724,9 @@ async fn request_bounds_flatten_collisions_and_supplementary_controls() {
         .quick_links()
         .create(
             &CreateQuickLinkRequest {
-                purpose: Some(polymorfa_sdk::models::CreateQuickLinkPurpose::AddConnection),
-                session: Some("s".into()),
-                add_connection: Some(polymorfa_sdk::models::ConnectionKind::OfficialApi),
+                purpose: Some(polymorfa_sdk::models::CreateQuickLinkPurpose::AddMethod),
+                connection: Some("s".into()),
+                add_method: Some(polymorfa_sdk::models::ConnectionKind::OfficialApi),
                 connection_goal: Some(polymorfa_sdk::models::ConnectionGoal::Hybrid),
                 ..Default::default()
             },
@@ -1739,13 +1735,13 @@ async fn request_bounds_flatten_collisions_and_supplementary_controls() {
         .await
         .unwrap();
     client
-        .sessions()
+        .connections()
         .retrieve("s", Default::default())
         .await
         .unwrap();
     let team = support::team(wire.base.clone());
     let fact = team
-        .sessions()
+        .connections()
         .retrieve(
             "s",
             RequestOptions {
@@ -1795,11 +1791,10 @@ fn regression41_projected_provider_ids_require_an_actual_nonnull_reference() {
 }
 #[tokio::test]
 async fn regression41_testing_message_requires_its_nullable_id() {
-    let w = Wire::new(vec![(202, json!({"session":"s","to":"phone"}))]).await;
+    let w = Wire::new(vec![(202, json!({"connection":"s","to":"phone"}))]).await;
     assert!(support::messaging(w.base.clone())
         .testing()
         .send_phone_message(
-            "p",
             "s",
             &polymorfa_sdk::onboarding::SendTestingPhoneMessageRequest {
                 to: "phone".into(),
@@ -1814,12 +1809,12 @@ async fn regression41_testing_message_requires_its_nullable_id() {
 async fn regression41_unlink_requires_the_acknowledged_true_outcome() {
     let w = Wire::new(vec![(
         200,
-        json!({"session":"s","deviceId":1,"unlinked":false}),
+        json!({"connection":"s","deviceId":1,"unlinked":false}),
     )])
     .await;
     assert!(support::messaging(w.base.clone())
         .testing()
-        .unlink_phone_device("p", "s", 1, Default::default())
+        .unlink_phone_device("s", 1, Default::default())
         .await
         .is_err());
 }

@@ -1,7 +1,7 @@
 //! Handwritten native webhook payloads. Explicit provider-extension fields preserve unknown JSON.
 use crate::{
     models::{ConversationIdentity, WhatsAppMessageIds},
-    platform_sessions::SessionCapabilities,
+    platform_connections::ConnectionCapabilities,
     usage::UsageRecord,
 };
 use serde::{Deserialize, Serialize};
@@ -211,7 +211,7 @@ pub struct MessageDeletePayload {
     pub from_me: bool,
 }
 payload!(PollVotePayload {conversation:EventConversation,poll_message_id:String,voter:ConversationIdentity,selected_hashes:Vec<String>,timestamp:u64} {});
-payload!(RuntimeSessionStatusPayload {status:String} {status_reason:String,ban_code:u32,ban_reason:String,ban_expires_at:u64,detail:String});
+payload!(RuntimeConnectionStatusPayload {status:String} {status_reason:String,ban_code:u32,ban_reason:String,ban_expires_at:u64,detail:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CloudAccountNotificationKind {
@@ -227,11 +227,11 @@ pub enum MetaSource {
 payload!(CloudAccountStatusPayload {source:MetaSource,kind:CloudAccountNotificationKind,value:BTreeMap<String,serde_json::Value>} {waba_id:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
-pub enum SessionStatusPayload {
-    Runtime(RuntimeSessionStatusPayload),
+pub enum ConnectionStatusPayload {
+    Runtime(RuntimeConnectionStatusPayload),
     OfficialApi(CloudAccountStatusPayload),
 }
-payload!(SessionRestrictionUpdatedPayload {r#type:SessionRestrictionType,active:bool,enforcement_type:Option<String>,expires_at:Option<String>,observed_at:String} {});
+payload!(ConnectionRestrictionUpdatedPayload {r#type:ConnectionRestrictionType,active:bool,enforcement_type:Option<String>,expires_at:Option<String>,observed_at:String} {});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PhonePlatform {
@@ -248,16 +248,16 @@ pub enum WhatsAppAccountType {
     MetaCloud,
     MetaCoexistence,
 }
-payload!(SessionConnectedPayload {phone_number:String,push_name:String,phone_platform:PhonePlatform,account_type:WhatsAppAccountType} {id:String,business_name:String});
+payload!(ConnectionConnectedPayload {phone_number:String,push_name:String,phone_platform:PhonePlatform,account_type:WhatsAppAccountType} {id:String,business_name:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionLoggedOutReason {
+pub enum ConnectionLoggedOutReason {
     Banned,
     DeviceRemoved,
     Unknown,
 }
-payload!(SessionLoggedOutPayload {reason:SessionLoggedOutReason,code:u32} {});
-payload!(SessionPhoneOfflinePayload {days_since_last_seen:u32,days_remaining:u32,last_seen:String,action:String} {});
+payload!(ConnectionLoggedOutPayload {reason:ConnectionLoggedOutReason,code:u32} {});
+payload!(ConnectionPhoneOfflinePayload {days_since_last_seen:u32,days_remaining:u32,last_seen:String,action:String} {});
 payload!(OfficialGroupError {code:u32} {title:String});
 payload!(GroupUpdatePayload {id:String} {new_subject:String,new_description:String,action:String,request_id:String,invite_link:String,join_approval_required:bool,picture_changed:bool,failed_changes:Vec<GroupFailedChange>,errors:Vec<OfficialGroupError>});
 payload!(FailedGroupParticipant {participant:ConversationIdentity} {errors:Vec<OfficialGroupError>});
@@ -270,7 +270,7 @@ pub enum JoinRequestState {
 payload!(GroupJoinRequest {join_request_id:String,user:ConversationIdentity,state:JoinRequestState} {});
 payload!(GroupParticipantPayload {id:String} {joined:Vec<ConversationIdentity>,left:Vec<ConversationIdentity>,promoted:Vec<ConversationIdentity>,demoted:Vec<ConversationIdentity>,reason:String,initiated_by:GroupInitiatedBy,request_id:String,failed_participants:Vec<FailedGroupParticipant>,errors:Vec<OfficialGroupError>,join_request:GroupJoinRequest});
 payload!(PresenceUpdatePayload {observed_at:u64} {from:ConversationIdentity,sender:ConversationIdentity,state:String,media:String,unavailable:bool,last_seen:u64});
-payload!(ContactOptPayload {phone:String,source:ContactOptSource,keyword:String,session:String} {project_id:String});
+payload!(ContactOptPayload {phone:String,source:ContactOptSource,keyword:String,connection:String} {project_id:String});
 payload!(ContactUpdatePayload {id:String} {parent_bsuid:String,identity_change:crate::official_round2::ContactIdentityChange,phone_number:String,bsuid:String,full_name:String,first_name:String,push_name:String,old_push_name:String,business_name:String,old_business_name:String,picture_id:String,picture_removed:bool,username:String});
 payload!(ChatArchivePayload {from:ConversationIdentity} {archive:bool,pinned:bool});
 payload!(ChatMutePayload {from:ConversationIdentity,muted:bool} {mute_end_timestamp:u64});
@@ -284,11 +284,11 @@ pub enum MessagingConnection {
     LinkedDevice,
     CloudApi,
 }
-payload!(CallReceivedPayload {from:ConversationIdentity,call_id:String,has_video:bool} {session_connection:MessagingConnection,capabilities:WebhookCallCapabilities});
+payload!(CallReceivedPayload {from:ConversationIdentity,call_id:String,has_video:bool} {connection_method:MessagingConnection,capabilities:WebhookCallCapabilities});
 payload!(CallMissedPayload {from:ConversationIdentity,call_id:String,reason:String} {});
-payload!(CallAcceptedPayload {from:ConversationIdentity,call_id:String} {answered_by:String,exclusive:bool,session_connection:MessagingConnection,capabilities:WebhookCallCapabilities});
+payload!(CallAcceptedPayload {from:ConversationIdentity,call_id:String} {answered_by:String,exclusive:bool,connection_method:MessagingConnection,capabilities:WebhookCallCapabilities});
 payload!(CallRejectedPayload {from:ConversationIdentity,call_id:String} {});
-payload!(CallEndedPayload {from:Option<ConversationIdentity>,call_id:String,duration_seconds:f64,reason:String,direction:crate::history::MessageDirection,had_video:bool} {session_connection:MessagingConnection});
+payload!(CallEndedPayload {from:Option<ConversationIdentity>,call_id:String,duration_seconds:f64,reason:String,direction:crate::history::MessageDirection,had_video:bool} {connection_method:MessagingConnection});
 payload!(CallTelemetryPayload {call_id:String,setup_ms:f64,ring_ms:f64,duration_seconds:f64,terminate_reason:String,codec:String,jitter_ms:f64,packets_lost:u64,rtt_ms:f64,recv_kbps:f64,send_kbps:f64} {});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -629,14 +629,14 @@ pub enum CustomerUpdatedField {
 pub struct CustomerEnabledPayload {
     #[serde(flatten)]
     pub customer: CustomerEventPayload,
-    pub migrated_number_count: u32,
+    pub migrated_connection_count: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomerArchivingPayload {
     #[serde(flatten)]
     pub customer: CustomerEventPayload,
-    pub blocking_number_count: u32,
+    pub blocking_connection_count: u32,
     pub revoked_pairing_link_count: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -651,7 +651,7 @@ pub struct CustomerPairingLinkPayload {
 pub struct CustomerPairingLinkConnectedPayload {
     #[serde(flatten)]
     pub link: CustomerPairingLinkPayload,
-    pub session_id: String,
+    pub connection_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -678,30 +678,30 @@ pub struct CustomerPairingLinkRevokedPayload {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CustomerNumberAttachedPayload {
+pub struct CustomerConnectionAttachedPayload {
     #[serde(flatten)]
     pub customer: CustomerEventPayload,
-    pub session_id: String,
+    pub connection_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub pairing_link_id: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CustomerNumberTransferredPayload {
+pub struct CustomerConnectionTransferredPayload {
     #[serde(flatten)]
     pub customer: CustomerEventPayload,
-    pub session_id: String,
+    pub connection_id: String,
     pub source_customer_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CustomerNumberDisconnectedPayload {
+pub struct CustomerConnectionDisconnectedPayload {
     #[serde(flatten)]
     pub customer: CustomerEventPayload,
-    pub session_id: String,
+    pub connection_id: String,
     pub reason: String,
 }
-payload!(BanSafeHealthThresholdPayload {session_id:String,project_id:String,health:f64,threshold:f64,health_source:BanSafeHealthSource,estimator_version:String,model_version:Option<String>,evaluated_at:String,policy_version:u64,episode_id:String,action_id:String} {});
+payload!(BanSafeHealthThresholdPayload {connection_id:String,project_id:String,health:f64,threshold:f64,health_source:BanSafeHealthSource,estimator_version:String,model_version:Option<String>,evaluated_at:String,policy_version:u64,episode_id:String,action_id:String} {});
 payload!(BanSafeRequiredFinding {finding_key:String,title:String,severity:BanSafeSeverity} {});
 payload!(BanSafeActionPayload {phone_number:String,action:BanSafeActionKind,scope:BanSafeScope,rung:BanSafeEventRung,previous_rung:Option<BanSafeEventRung>,reason:BanSafeActionReason,health:Option<f64>,health_band:BanSafeHealthBand,requires:Vec<BanSafeRequiredFinding>,throughput_per_minute:Option<f64>,eligible_lift_at:Option<String>,lift_requires:String,appeal_url:String,started_at:String,docs:String} {});
 payload!(BanSafeIncidentPayload {id:String,phone_number:String,kind:BanSafeIncidentKind,source:BanSafeIncidentSource,started_at:String,ends_at:Option<String>,belief:f64,resolution:BanSafeIncidentResolution,claim_id:Option<String>,closed_at:Option<String>} {});
@@ -746,7 +746,7 @@ pub enum OrderPaymentUpdatedPayload {
 #[serde(rename_all = "snake_case")]
 pub enum MessageFailedReason {
     InvalidRecipient,
-    SessionNotConnected,
+    ConnectionNotConnected,
     AckTimeout,
     SendFailed,
     BlockedBySafety,
@@ -780,12 +780,12 @@ payload!(CampaignResumedPayload {campaign_id:String,sent_count:u32,remaining_cou
 payload!(CampaignCompletedPayload {campaign_id:String,sent_count:u32,delivered_count:u32,read_count:u32,failed_count:u32,skipped_count:u32,response_count:u32,completed_at:u64,duration_ms:u64} {});
 payload!(CampaignFailedPayload {campaign_id:String,reason:String,failed_at:u64} {});
 payload!(CampaignStoppedPayload {campaign_id:String,sent_count:u32,abandoned_count:u32,stopped_at:u64} {});
-payload!(CampaignRecipientSentPayload {campaign_id:String,recipient_id:String,phone:String,session_key:String,external_message_id:String,variant_key:String,attempt:u32} {});
+payload!(CampaignRecipientSentPayload {campaign_id:String,recipient_id:String,phone:String,connection_key:String,external_message_id:String,variant_key:String,attempt:u32} {});
 payload!(CampaignRecipientFailedPayload {campaign_id:String,recipient_id:String,phone:String,attempts:u32,error:String,failed_at:u64} {});
 // Skipped timestamp is Unix milliseconds; message_index is a nonnegative sequence position.
 payload!(CampaignRecipientSkippedPayload {campaign_id:String,recipient_id:String,phone:String,reason:String,skipped_at:u64} {message_index:u64,follow_up_id:String});
-payload!(CampaignThrottledPayload {campaign_id:String,session_key:String,reason:String,deferred_count:u32,at:u64} {});
-payload!(CampaignCapReachedPayload {campaign_id:String,session_key:String,phone:String,cap_type:String,cap_limit:u32,window_resets_at:u64,at:u64} {});
+payload!(CampaignThrottledPayload {campaign_id:String,connection_key:String,reason:String,deferred_count:u32,at:u64} {});
+payload!(CampaignCapReachedPayload {campaign_id:String,connection_key:String,phone:String,cap_type:String,cap_limit:u32,window_resets_at:u64,at:u64} {});
 payload!(CampaignColdBlockedPayload {campaign_id:String,recipient_id:String,phone:String,surface:String,reason:String,at:u64} {});
 payload!(VoiceAssetEventPayload {event_id:String,occurred_at:String,team_id:String,project_id:String,asset_id:String,name:String,source:String} {});
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -806,9 +806,9 @@ pub struct VoiceAssetFailedPayload {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionCapabilitiesUpdatedPayload {
+pub struct ConnectionCapabilitiesUpdatedPayload {
     #[serde(flatten)]
-    pub state: SessionCapabilities,
+    pub state: ConnectionCapabilities,
     pub changed_keys: Vec<String>,
 }
 /// A closed event discriminator with typed payloads. Future event names remain
@@ -912,12 +912,12 @@ pub enum KnownWebhookPayload {
     CustomerCreated(Box<CustomerEventPayload>),
     #[serde(rename = "customer.enabled")]
     CustomerEnabled(Box<CustomerEnabledPayload>),
-    #[serde(rename = "customer.number.attached")]
-    CustomerNumberAttached(Box<CustomerNumberAttachedPayload>),
-    #[serde(rename = "customer.number.disconnected")]
-    CustomerNumberDisconnected(Box<CustomerNumberDisconnectedPayload>),
-    #[serde(rename = "customer.number.transferred")]
-    CustomerNumberTransferred(Box<CustomerNumberTransferredPayload>),
+    #[serde(rename = "customer.connection.attached")]
+    CustomerConnectionAttached(Box<CustomerConnectionAttachedPayload>),
+    #[serde(rename = "customer.connection.disconnected")]
+    CustomerConnectionDisconnected(Box<CustomerConnectionDisconnectedPayload>),
+    #[serde(rename = "customer.connection.transferred")]
+    CustomerConnectionTransferred(Box<CustomerConnectionTransferredPayload>),
     #[serde(rename = "customer.pairing_link.connected")]
     CustomerPairingLinkConnected(Box<CustomerPairingLinkConnectedPayload>),
     #[serde(rename = "customer.pairing_link.created")]
@@ -970,18 +970,18 @@ pub enum KnownWebhookPayload {
     OrderPaymentUpdated(Box<OrderPaymentUpdatedPayload>),
     #[serde(rename = "presence.update")]
     PresenceUpdate(Box<PresenceUpdatePayload>),
-    #[serde(rename = "session.capabilities_updated")]
-    SessionCapabilitiesUpdated(Box<SessionCapabilitiesUpdatedPayload>),
-    #[serde(rename = "session.connected")]
-    SessionConnected(Box<SessionConnectedPayload>),
-    #[serde(rename = "session.logged_out")]
-    SessionLoggedOut(Box<SessionLoggedOutPayload>),
-    #[serde(rename = "session.phone_offline")]
-    SessionPhoneOffline(Box<SessionPhoneOfflinePayload>),
-    #[serde(rename = "session.restriction_updated")]
-    SessionRestrictionUpdated(Box<SessionRestrictionUpdatedPayload>),
-    #[serde(rename = "session.status")]
-    SessionStatus(Box<SessionStatusPayload>),
+    #[serde(rename = "connection.capabilities_updated")]
+    ConnectionCapabilitiesUpdated(Box<ConnectionCapabilitiesUpdatedPayload>),
+    #[serde(rename = "connection.connected")]
+    ConnectionConnected(Box<ConnectionConnectedPayload>),
+    #[serde(rename = "connection.logged_out")]
+    ConnectionLoggedOut(Box<ConnectionLoggedOutPayload>),
+    #[serde(rename = "connection.phone_offline")]
+    ConnectionPhoneOffline(Box<ConnectionPhoneOfflinePayload>),
+    #[serde(rename = "connection.restriction_updated")]
+    ConnectionRestrictionUpdated(Box<ConnectionRestrictionUpdatedPayload>),
+    #[serde(rename = "connection.status")]
+    ConnectionStatus(Box<ConnectionStatusPayload>),
     #[serde(rename = "template.status")]
     TemplateStatus(Box<TemplateStatusPayload>),
     #[serde(rename = "usage.recorded")]
@@ -993,7 +993,7 @@ pub enum KnownWebhookPayload {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionRestrictionType {
+pub enum ConnectionRestrictionType {
     ReachoutTimelock,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -1072,7 +1072,7 @@ pub enum BanSafeActionKind {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BanSafeScope {
-    Number,
+    Connection,
     Team,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]

@@ -1,6 +1,6 @@
 #[allow(dead_code)]
 mod support;
-use polymorfa_sdk::{platform_sessions::*, policies::*, RequestOptions};
+use polymorfa_sdk::{platform_connections::*, policies::*, RequestOptions};
 use serde_json::json;
 fn safety() -> serde_json::Value {
     json!({"projectId":"project","ceiling":{"presence":"dark","typing":"before_text","reads":"replied_chats","pacing":"jittered","onlineStart":9.0,"onlineEnd":18.0},"entitled":true,"entitlementReason":null})
@@ -12,7 +12,7 @@ fn insurance() -> serde_json::Value {
     json!({"projectId":"project","enabled":true,"banInsuranceIncluded":true})
 }
 fn health() -> serde_json::Value {
-    json!({"projectId":"project","version":3,"enabled":true,"threshold":50.0,"sessionAction":"slow_down","slowDownMps":1.5,"emailNotification":true,"webhookNotification":true,"integrations":{"emailConfigured":true,"webhookConfigured":true}})
+    json!({"projectId":"project","version":3,"enabled":true,"threshold":50.0,"connectionAction":"slow_down","slowDownMps":1.5,"emailNotification":true,"webhookNotification":true,"integrations":{"emailConfigured":true,"webhookConfigured":true}})
 }
 fn update_safety() -> UpdateProjectSafeModeRequest {
     UpdateProjectSafeModeRequest {
@@ -34,7 +34,7 @@ fn update_health() -> UpdateProjectHealthPolicyRequest {
         version: 3,
         enabled: true,
         threshold: 50.0,
-        session_action: ProjectHealthSessionAction::SlowDown,
+        connection_action: ProjectHealthConnectionAction::SlowDown,
         slow_down_mps: Some(1.5),
         email_notification: true,
         webhook_notification: true,
@@ -121,7 +121,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
         "PUT",
         "/platform/projects/project/health-policy",
         Some(
-            json!({"version":3,"enabled":true,"threshold":50.0,"sessionAction":"slow_down","slowDownMps":1.5,"emailNotification":true,"webhookNotification":true})
+            json!({"version":3,"enabled":true,"threshold":50.0,"connectionAction":"slow_down","slowDownMps":1.5,"emailNotification":true,"webhookNotification":true})
         ),
         json!({"data":health()}),
         client.projects().update_health_policy(
@@ -135,7 +135,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
         "GET",
         "/platform/projects/project/hybrid-merge-candidates",
         None,
-        json!({"data":[{"numbers":[{"id":"one","name":"Support","transport":"linked_devices","status":"CONNECTED","canBeAbsorbed":true},{"id":"two","name":"Official","transport":"official_api","status":"CONNECTED","canBeAbsorbed":false}],"eligible":false,"ineligibleReason":"hms_enabled"}]}),
+        json!({"data":[{"connections":[{"id":"one","name":"Support","transport":"linked_devices","status":"CONNECTED","canBeAbsorbed":true},{"id":"two","name":"Official","transport":"official_api","status":"CONNECTED","canBeAbsorbed":false}],"eligible":false,"ineligibleReason":"hms_enabled"}]}),
         client
             .projects()
             .list_hybrid_merge_candidates("project", RequestOptions::default())
@@ -224,7 +224,7 @@ async fn messaging_project_and_number_safety_settings_native_wire() {
         "PUT",
         "/messaging/projects/project/health-policy",
         Some(
-            json!({"version":3,"enabled":true,"threshold":50.0,"sessionAction":"slow_down","slowDownMps":1.5,"emailNotification":true,"webhookNotification":true})
+            json!({"version":3,"enabled":true,"threshold":50.0,"connectionAction":"slow_down","slowDownMps":1.5,"emailNotification":true,"webhookNotification":true})
         ),
         json!({"success":true,"data":health()}),
         client.ban_safe().update_project_health_policy(
@@ -233,7 +233,7 @@ async fn messaging_project_and_number_safety_settings_native_wire() {
             RequestOptions::default()
         )
     );
-    let safety = json!({"session":"s","projectId":"project","project":safety()["ceiling"],"override":{"presence":"inherit","typing":"inherit","reads":"inherit","pacing":"inherit"},"effective":safety()["ceiling"],"applied":null,"mismatch":false,"entitled":false,"entitlementReason":"access_unavailable"});
+    let safety = json!({"connection":"s","projectId":"project","project":safety()["ceiling"],"override":{"presence":"inherit","typing":"inherit","reads":"inherit","pacing":"inherit"},"effective":safety()["ceiling"],"applied":null,"mismatch":false,"entitled":false,"entitlementReason":"access_unavailable"});
     wire_messaging!(
         client,
         "GET",
@@ -242,7 +242,7 @@ async fn messaging_project_and_number_safety_settings_native_wire() {
         json!({"success":true,"data":safety}),
         client
             .ban_safe()
-            .get_session_safe_mode("s", RequestOptions::default())
+            .get_connection_safe_mode("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
@@ -250,9 +250,9 @@ async fn messaging_project_and_number_safety_settings_native_wire() {
         "/messaging/s/safe-mode",
         Some(json!({"typing":"off"})),
         json!({"success":true,"data":safety}),
-        client.ban_safe().update_session_safe_mode(
+        client.ban_safe().update_connection_safe_mode(
             "s",
-            &UpdateSessionSafeModeRequest {
+            &UpdateConnectionSafeModeRequest {
                 typing: Some(Inheritable::Setting(SafeModeTyping::Off)),
                 ..Default::default()
             },

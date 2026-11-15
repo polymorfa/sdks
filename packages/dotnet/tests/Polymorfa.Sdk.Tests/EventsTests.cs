@@ -60,7 +60,7 @@ internal static class EventsTests
     }
     private static async Task SourceAsync()
     {
-        var webhook = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"id\":\"w1\",\"session\":\"support\",\"timestamp\":\"2026-10-11\",\"event\":\"future.event\",\"payload\":{\"value\":42}}"));
+        var webhook = Convert.ToBase64String(System.Text.Encoding.UTF8.GetBytes("{\"id\":\"w1\",\"connection\":\"support\",\"timestamp\":\"2026-10-11\",\"event\":\"future.event\",\"payload\":{\"value\":42}}"));
         var retained = Event.Replace("\"not_retained\"", "\"available\"").Replace("\"payload\":null", "\"payload\":{\"encoding\":\"base64\",\"data\":\"" + webhook + "\"}");
         static string Frame(string record, string cursor, long sequence) => "data: {\"type\":\"event\",\"event\":" + record + ",\"cursor\":\"" + cursor + "\",\"streamId\":\"stream\",\"sequence\":" + sequence + "}";
         using (var fixture = new WireFixture { Authorization = "Bearer " + Key, FragmentBytes = 1 })

@@ -42,7 +42,7 @@ pub mod operations;
 pub mod pagination;
 pub mod passkeys;
 pub mod platform;
-pub mod platform_sessions;
+pub mod platform_connections;
 pub mod policies;
 pub mod raw;
 pub mod settings;

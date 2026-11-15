@@ -14,7 +14,7 @@ internal static class DescriptorStorageTests
     private static void Check(bool value, string message) { checks++; if (!value) throw new Exception(message); }
     private static WebhookEvent Signed(JsonElement payload)
     {
-        var raw = JsonSerializer.SerializeToUtf8Bytes(new { id = "descriptor-event", session = "descriptor-session", timestamp = "2026-10-17T00:00:00Z", @event = "history.sync", payload });
+        var raw = JsonSerializer.SerializeToUtf8Bytes(new { id = "descriptor-event", connection = "descriptor-session", timestamp = "2026-10-17T00:00:00Z", @event = "history.sync", payload });
         return Webhooks.ConstructEvent(raw, Convert.ToHexString(HMACSHA256.HashData("synthetic-secret"u8, raw)), "synthetic-secret");
     }
     private static WebhookEvent Raw(JsonElement payload) => new UnknownWebhookEvent(new("descriptor-event", "descriptor-session", "2026-10-17T00:00:00Z", "history.sync", payload));

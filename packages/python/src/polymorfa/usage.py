@@ -124,7 +124,7 @@ class GateDecisions(TypedDict):
 class Gate(TypedDict):
     key: GateKey
     kind: Literal["capability", "quota", "limit", "concurrency"]
-    subject: Literal["team", "number", "project", "campaign"]
+    subject: Literal["team", "connection", "project", "campaign"]
     mode: Literal["off", "record", "enforce"]
     active: bool
     limit: float | None

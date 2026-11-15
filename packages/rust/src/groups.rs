@@ -119,7 +119,7 @@ pub struct GroupCapability {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GroupCapabilities {
-    pub status: crate::platform_sessions::SessionCapabilitiesStatus,
+    pub status: crate::platform_connections::ConnectionCapabilitiesStatus,
     #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub synced_at: Option<String>,
     #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
@@ -127,40 +127,40 @@ pub struct GroupCapabilities {
     pub capabilities: Vec<GroupCapability>,
 }
 pub struct Groups<'a>(pub(crate) &'a HttpTransport);
-fn root(session: &str) -> String {
-    format!("/messaging/{}/groups", encode(session))
+fn root(connection: &str) -> String {
+    format!("/messaging/{}/groups", encode(connection))
 }
-fn path(session: &str, id: &str) -> String {
-    format!("{}/{}", root(session), encode(id))
+fn path(connection: &str, id: &str) -> String {
+    format!("{}/{}", root(connection), encode(id))
 }
 impl Groups<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<Group>>>> {
-        self.0.get(&root(session), options).await
+        self.0.get(&root(connection), options).await
     }
     pub async fn create(
         &self,
-        session: &str,
+        connection: &str,
         body: &CreateGroupRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Group>>> {
         self.0
-            .request(Method::POST, &root(session), &[], Some(body), options)
+            .request(Method::POST, &root(connection), &[], Some(body), options)
             .await
     }
     pub async fn get_join_info(
         &self,
-        session: &str,
+        connection: &str,
         code: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<GroupInviteInfo>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/join-info", root(session)),
+                &format!("{}/join-info", root(connection)),
                 &[("code", code.into())],
                 None,
                 options,
@@ -169,14 +169,14 @@ impl Groups<'_> {
     }
     pub async fn join(
         &self,
-        session: &str,
+        connection: &str,
         body: &JoinGroupRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/join", root(session)),
+                &format!("{}/join", root(connection)),
                 &[],
                 Some(body),
                 options,
@@ -185,21 +185,21 @@ impl Groups<'_> {
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Group>>> {
-        self.0.get(&path(session, id), options).await
+        self.0.get(&path(connection, id), options).await
     }
     pub async fn get_capabilities(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<GroupCapabilities>>> {
         let response: ApiResponse<SuccessEnvelope<GroupCapabilities>> = self
             .0
-            .get(&format!("{}/capabilities", path(session, id)), options)
+            .get(&format!("{}/capabilities", path(connection, id)), options)
             .await?;
         if response.metadata.status != 200 || !response.data.success {
             return Err(crate::Error::local(
@@ -213,24 +213,24 @@ impl Groups<'_> {
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
-            .request::<_, ()>(Method::DELETE, &path(session, id), &[], None, options)
+            .request::<_, ()>(Method::DELETE, &path(connection, id), &[], None, options)
             .await
     }
     pub async fn leave(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/leave", path(session, id)),
+                &format!("{}/leave", path(connection, id)),
                 &[],
                 None,
                 options,
@@ -239,42 +239,43 @@ impl Groups<'_> {
     }
     pub async fn set_subject(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &SetGroupFieldRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "subject", body, options).await
+        self.update(connection, id, "subject", body, options).await
     }
     pub async fn set_description(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &SetGroupFieldRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "description", body, options).await
+        self.update(connection, id, "description", body, options)
+            .await
     }
     pub async fn get_invite_code(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<GroupInviteCode>>> {
         self.0
-            .get(&format!("{}/invite-code", path(session, id)), options)
+            .get(&format!("{}/invite-code", path(connection, id)), options)
             .await
     }
     pub async fn revoke_invite_code(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<GroupInviteCode>>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/invite-code/revoke", path(session, id)),
+                &format!("{}/invite-code/revoke", path(connection, id)),
                 &[],
                 None,
                 options,
@@ -283,106 +284,106 @@ impl Groups<'_> {
     }
     pub async fn list_participants(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<GroupParticipant>>>> {
         self.0
-            .get(&format!("{}/participants", path(session, id)), options)
+            .get(&format!("{}/participants", path(connection, id)), options)
             .await
     }
     pub async fn add_participants(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupParticipantsRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.mutate(session, id, "participants/add", body, options)
+        self.mutate(connection, id, "participants/add", body, options)
             .await
     }
     pub async fn remove_participants(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupParticipantsRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.mutate(session, id, "participants/remove", body, options)
+        self.mutate(connection, id, "participants/remove", body, options)
             .await
     }
     pub async fn promote_participants(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupParticipantsRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.mutate(session, id, "admin/promote", body, options)
+        self.mutate(connection, id, "admin/promote", body, options)
             .await
     }
     pub async fn demote_participants(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupParticipantsRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.mutate(session, id, "admin/demote", body, options)
+        self.mutate(connection, id, "admin/demote", body, options)
             .await
     }
     pub async fn set_picture(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &SetGroupPictureRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "picture", body, options).await
+        self.update(connection, id, "picture", body, options).await
     }
     pub async fn set_info_editing(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupAdminOnlySettingRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "settings/info-edit", body, options)
+        self.update(connection, id, "settings/info-edit", body, options)
             .await
     }
     pub async fn set_messaging(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupAdminOnlySettingRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "settings/messages", body, options)
+        self.update(connection, id, "settings/messages", body, options)
             .await
     }
     pub async fn set_member_add_mode(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupMemberAddModeRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "settings/member-add", body, options)
+        self.update(connection, id, "settings/member-add", body, options)
             .await
     }
     pub async fn set_join_approval(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &GroupJoinApprovalRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
-        self.update(session, id, "settings/join-approval", body, options)
+        self.update(connection, id, "settings/join-approval", body, options)
             .await
     }
     async fn update<T: Serialize>(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         suffix: &str,
         body: &T,
@@ -391,7 +392,7 @@ impl Groups<'_> {
         self.0
             .request(
                 Method::PUT,
-                &format!("{}/{suffix}", path(session, id)),
+                &format!("{}/{suffix}", path(connection, id)),
                 &[],
                 Some(body),
                 options,
@@ -400,7 +401,7 @@ impl Groups<'_> {
     }
     async fn mutate<T: Serialize>(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         suffix: &str,
         body: &T,
@@ -409,7 +410,7 @@ impl Groups<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/{suffix}", path(session, id)),
+                &format!("{}/{suffix}", path(connection, id)),
                 &[],
                 Some(body),
                 options,

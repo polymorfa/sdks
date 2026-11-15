@@ -138,3 +138,30 @@ it.each([2, 4])(
     db.close();
   },
 );
+
+it("leaves a blocked IndexedDB upgrade unchanged after the blocking handle closes", async () => {
+  const databaseName = "upgrade-blocked";
+  await seed(databaseName);
+  const held = await new Promise<IDBDatabase>((resolve, reject) => {
+    const request = indexedDB.open(databaseName, 2);
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+  await expect(
+    upgradeIndexedDbSchema2({ namespace: "fixture", databaseName, indexedDB }),
+  ).rejects.toThrow("blocked");
+  held.close();
+  await new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open(databaseName, 2);
+    request.onsuccess = () => {
+      expect(request.result.version).toBe(2);
+      expect(request.result.objectStoreNames.contains("sessions")).toBe(true);
+      expect(request.result.objectStoreNames.contains("connections")).toBe(
+        false,
+      );
+      request.result.close();
+      resolve();
+    };
+    request.onerror = () => reject(request.error);
+  });
+});

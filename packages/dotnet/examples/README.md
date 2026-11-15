@@ -4,21 +4,21 @@ These source examples use the development SDK. They do not establish registry or
 
 ## ASP.NET Core
 
-`aspnet-core` compiles against .NET 8. Set `POLYMORFA_PROJECT_TOKEN` (or `POLYMORFA_API_KEY`), `POLYMORFA_SESSION`, `POLYMORFA_RECIPIENT` and `POLYMORFA_WEBHOOK_SECRET` in server configuration. Run `dotnet run --project aspnet-core/Polymorfa.Example.AspNet.csproj` from this directory.
+`aspnet-core` compiles against .NET 8. Set `POLYMORFA_PROJECT_TOKEN` (or `POLYMORFA_API_KEY`), `POLYMORFA_CONNECTION`, `POLYMORFA_RECIPIENT` and `POLYMORFA_WEBHOOK_SECRET` in server configuration. Run `dotnet run --project aspnet-core/Polymorfa.Example.AspNet.csproj` from this directory.
 
-The Development-only sign-in route requires `POLYMORFA_EXAMPLE_PASSWORD`; it is disabled without that setting or outside Development. It signs an opaque HttpOnly cookie, validates its server-owned session on every request and revokes it at logout. Restarting this example clears its sessions and signing authority. Replace this demonstration identity with your application's authentication scheme before deployment. Token requests require an authenticated subject and a `polymorfa_session` claim equal to the configured session. Resolve that claim from trusted application authorization; never copy a browser-supplied session or customer identifier into it. The token endpoint uses POST, checks the same origin, returns a five-minute client token and disables caching. The token body includes the browser grant; untrusted request fields cannot change the subject or session.
+The Development-only sign-in route requires `POLYMORFA_EXAMPLE_PASSWORD`; it is disabled without that setting or outside Development. It signs an opaque HttpOnly cookie, validates its server-owned session on every request and revokes it at logout. Restarting this example clears its sessions and signing authority. Replace this demonstration identity with your application's authentication scheme before deployment. Token requests require an authenticated subject and a `polymorfa_connection` claim equal to the configured connection. Resolve that claim from trusted application authorization; never copy a browser-supplied connection or customer identifier into it. The token endpoint uses POST, checks the same origin, returns a five-minute client token and disables caching. The token body includes the browser grant; untrusted request fields cannot change the subject or connection.
 
-The webhook endpoint verifies the exact bounded raw body using `x-webhook-signature`. The ASP.NET native inbox projects assigned-Number replies and receipts into a bounded application-owned conversation after signature verification. Do not log the request body.
+The webhook endpoint verifies the exact bounded raw body using `x-webhook-signature`. The ASP.NET native inbox projects assigned Connection replies and receipts into a bounded application-owned conversation after signature verification. Do not log the request body.
 
 From the repository root run `npm ci`, `npm run build:workspaces`, and `node packages/dotnet/examples/build-elements.mjs` before starting the example. It mounts the existing Web Components with a custom application data source. Every
 text send calls the native C# SDK on the server. Replies arrive through a signed
-native webhook, restricted to the assigned Number and canonical conversation ID.
+native webhook, restricted to the assigned Connection and canonical conversation ID.
 The state holds up to 100 messages, 128 send attempts and 1024 recent event IDs
 until the server stops. It does not enable HMS. A UUID key belongs to one text;
 unknown outcomes retain it for retry. Display timestamps use whole seconds,
 matching native events. Reload restores the authenticated inbox.
 
-Set `POLYMORFA_EXAMPLE_TRANSPORT=local-test-number` to label simulated transport.
+Set `POLYMORFA_EXAMPLE_TRANSPORT=local-test-connection` to label simulated transport.
 The local Inspector recording covers the ASP.NET custom UI, a paired simulated
 WhatsApp peer, signed HTTPS delivery, reload and logout. It does not establish
 registry, staging or production availability. Blazor and MAUI below still use
@@ -42,13 +42,13 @@ See [the MAUI instructions](maui/README.md) for the supported workload, build an
 
 ## Programmatic Calls
 
-`calls-agent` connects the server lifecycle socket, answers incoming calls and consumes typed PCM frames. Set `POLYMORFA_API_KEY` and `POLYMORFA_SESSION`, then run `dotnet run --project calls-agent/Polymorfa.Example.Calls.csproj`. Add consent and application policy before answering. Ctrl+C cancels the event and media consumers. Production providers can use `CallsTokenSource` to supply and refresh short-lived credentials.
+`calls-agent` connects the server lifecycle socket, answers incoming calls and consumes typed PCM frames. Set `POLYMORFA_API_KEY` and `POLYMORFA_CONNECTION`, then run `dotnet run --project calls-agent/Polymorfa.Example.Calls.csproj`. Add consent and application policy before answering. Ctrl+C cancels the event and media consumers. Production providers can use `CallsTokenSource` to supply and refresh short-lived credentials.
 
 The client reconnects media with the same connection identity, restores acknowledged media preferences and bounds retry attempts. Browser call media remains in the TypeScript Calls package.
 
 The authenticated ASP.NET connect route adds Linked Devices to its server-assigned
-Number. Set `POLYMORFA_SESSION` to an existing Number with an eligible Official
+Connection. Set `POLYMORFA_CONNECTION` to an existing Connection with an eligible Official
 API connection. The route requests a supplementary hybrid QuickLink and ignores
-client-supplied session choices. Initial invitations must omit session and
+client-supplied connection choices. Initial invitations must omit connection and
 addConnection. Blazor and MAUI use this same authenticated route; bridge/build
 checks do not establish browser pairing or live provider acceptance.

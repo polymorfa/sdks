@@ -24,7 +24,7 @@ enumeration!(WarmupTenure {History=>"history",Link=>"link",Plan=>"plan"});
 enumeration!(FindingStatus {Open=>"open",Acknowledged=>"acknowledged",Resolved=>"resolved",NotMeasured=>"not_measured"});
 enumeration!(FindingQueryStatus {Open=>"open",Acknowledged=>"acknowledged",Resolved=>"resolved"});
 enumeration!(FindingSeverity {Info=>"info",Warning=>"warning",Critical=>"critical"});
-enumeration!(ResolveReason {Clean=>"clean",KeyRetired=>"key_retired",NumberRemoved=>"number_removed",Stale=>"stale"});
+enumeration!(ResolveReason {Clean=>"clean",KeyRetired=>"key_retired",ConnectionRemoved=>"connection_removed",Stale=>"stale"});
 enumeration!(IncidentKind {CapWarning=>"cap_warning",CapReached=>"cap_reached",Timelock=>"timelock",TemporaryBan=>"temporary_ban",PermanentBan=>"permanent_ban",ConnectBlocked=>"connect_blocked",CustomerReport=>"customer_report"});
 enumeration!(IncidentSource {Runtime=>"runtime",Customer=>"customer"});
 enumeration!(ClaimStatus {Filed=>"filed",UnderReview=>"under_review",Approved=>"approved",Denied=>"denied",Paid=>"paid",Reversed=>"reversed"});
@@ -64,39 +64,39 @@ model!(ObservedAccountState {
     source: ObservedSource
 });
 model!(HealthProjection {health:Option<f64>,band:HealthBand,health_source:HealthSource,health_estimator_version:Option<String>,health_model_version:Option<String>,health_evaluated_at:Option<String>,health_feature_coverage:Option<f64>,health_reliability:HealthReliability,health_unavailable_reason:Option<HealthUnavailableReason>,health_probabilities:Option<HealthProbabilities>,most_likely_health_state:Option<HealthState>,health_explanation:Option<HealthExplanation>,observed_account_state:Option<ObservedAccountState>});
-model!(NumberEnforcement {rung:EnforcementRung,previous_rung:EnforcementRung,team_floor:EnforcementRung,reason:String,source:EnforcementSource,throughput_per_minute:Option<f64>,blocks_unsolicited:bool,suspended:bool,started_at:String,eligible_lift_at:Option<String>,exit_progress:f64,blocking_findings:Vec<String>,operator_hold:bool,appeal_state:AppealState,state:EnforcementState});
+model!(ConnectionEnforcement {rung:EnforcementRung,previous_rung:EnforcementRung,team_floor:EnforcementRung,reason:String,source:EnforcementSource,throughput_per_minute:Option<f64>,blocks_unsolicited:bool,suspended:bool,started_at:String,eligible_lift_at:Option<String>,exit_progress:f64,blocking_findings:Vec<String>,operator_hold:bool,appeal_state:AppealState,state:EnforcementState});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BanSafeNumber {
+pub struct BanSafeConnection {
     #[serde(flatten)]
     pub health: HealthProjection,
-    pub session_id: String,
-    pub session: String,
+    pub connection_id: String,
+    pub connection: String,
     pub phone_number: String,
     pub project_id: String,
-    pub enforcement: Option<NumberEnforcement>,
+    pub enforcement: Option<ConnectionEnforcement>,
 }
-model!(NumberWarmup {enabled:bool,tenure_source:Option<WarmupTenure>,tenure_day:u32,allowance:Option<u64>,sent_today:Option<u64>,resets_at:Option<String>,curve:Vec<crate::policies::WarmupCurvePoint>});
+model!(ConnectionWarmup {enabled:bool,tenure_source:Option<WarmupTenure>,tenure_day:u32,allowance:Option<u64>,sent_today:Option<u64>,resets_at:Option<String>,curve:Vec<crate::policies::WarmupCurvePoint>});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberDetail {
+pub struct ConnectionDetail {
     #[serde(flatten)]
-    pub number: BanSafeNumber,
-    pub warmup: NumberWarmup,
+    pub number: BanSafeConnection,
+    pub warmup: ConnectionWarmup,
     pub findings: Vec<Finding>,
     pub lift_requires: Option<String>,
     pub appeal_state: AppealState,
 }
 model!(HealthPoint {health:Option<f64>,band:Option<HealthBand>,health_source:HealthSource,health_estimator_version:Option<String>,health_model_version:Option<String>,health_evaluated_at:String,health_feature_coverage:Option<f64>,health_reliability:HealthReliability,health_unavailable_reason:Option<HealthUnavailableReason>,health_probabilities:Option<HealthProbabilities>,most_likely_health_state:Option<HealthState>,health_explanation:Option<HealthExplanation>,observed_account_state:Option<ObservedAccountState>});
-model!(HealthHistory {session_id:String,session:String,points:Vec<HealthPoint>});
-model!(Finding {id:Option<String>,key:String,title:String,summary:String,fix:String,status:FindingStatus,severity:Option<FindingSeverity>,occurrences:u64,reopened_count:u64,evidence:BTreeMap<String,f64>,session_id:String,session:String,phone_number:String,first_seen_at:Option<String>,last_seen_at:Option<String>,acknowledged_at:Option<String>,acknowledged_by:Option<String>,acknowledgement_note:Option<String>,snoozed_until:Option<String>,resolved_at:Option<String>,resolve_reason:Option<ResolveReason>});
+model!(HealthHistory {connection_id:String,connection:String,points:Vec<HealthPoint>});
+model!(Finding {id:Option<String>,key:String,title:String,summary:String,fix:String,status:FindingStatus,severity:Option<FindingSeverity>,occurrences:u64,reopened_count:u64,evidence:BTreeMap<String,f64>,connection_id:String,connection:String,phone_number:String,first_seen_at:Option<String>,last_seen_at:Option<String>,acknowledged_at:Option<String>,acknowledged_by:Option<String>,acknowledgement_note:Option<String>,snoozed_until:Option<String>,resolved_at:Option<String>,resolve_reason:Option<ResolveReason>});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EnforcementSummary {
     #[serde(flatten)]
     pub health: HealthProjection,
-    pub session_id: String,
-    pub session: String,
+    pub connection_id: String,
+    pub connection: String,
     pub phone_number: String,
     pub project_id: String,
     pub rung: EnforcementRung,
@@ -108,7 +108,7 @@ pub struct EnforcementSummary {
     pub blocks_unsolicited: bool,
     pub suspended: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub enforcement: Option<NumberEnforcement>,
+    pub enforcement: Option<ConnectionEnforcement>,
     pub blocking_findings: Vec<String>,
     pub started_at: String,
     pub eligible_lift_at: Option<String>,
@@ -117,11 +117,11 @@ pub struct EnforcementSummary {
     pub appeal_state: AppealState,
     pub state: EnforcementState,
 }
-model!(Incident {id:String,session_id:String,session:String,phone_number:String,project_id:String,kind:IncidentKind,source:IncidentSource,resolution:String,ambiguous:bool,started_at:String,ends_at:Option<String>,closed_at:Option<String>,closed_by:Option<String>,claim_id:Option<String>,note:Option<String>,reported_by:Option<String>,created_at:String});
+model!(Incident {id:String,connection_id:String,connection:String,phone_number:String,project_id:String,kind:IncidentKind,source:IncidentSource,resolution:String,ambiguous:bool,started_at:String,ends_at:Option<String>,closed_at:Option<String>,closed_by:Option<String>,claim_id:Option<String>,note:Option<String>,reported_by:Option<String>,created_at:String});
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ReportIncidentRequest {
-    pub session: String,
+    pub connection: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub occurred_at: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -130,12 +130,12 @@ pub struct ReportIncidentRequest {
 model!(IncidentReceipt {
     incident_id: String,
     created: bool,
-    session_id: String,
-    session: String,
+    connection_id: String,
+    connection: String,
     occurred_at: String
 });
 model!(ClaimEvidence {attribution_rule_version:Option<u32>,window_days:u32,device_evidence:bool,other_devices:u32,restricted_in_window:bool,critical_finding_days:u32,shared_connection:bool,simultaneous_calls:bool,measured_hours:u32});
-model!(Claim {id:String,incident_id:String,session_id:String,session:String,phone_number:String,project_id:String,status:ClaimStatus,verdict:ClaimVerdict,window_start:String,window_end:String,measured_cents:f64,cap_cents:f64,amount_cents:f64,evidence:ClaimEvidence,summary:String,reason:String,decided_at:Option<String>,paid_at:Option<String>,created_at:String});
+model!(Claim {id:String,incident_id:String,connection_id:String,connection:String,phone_number:String,project_id:String,status:ClaimStatus,verdict:ClaimVerdict,window_start:String,window_end:String,measured_cents:f64,cap_cents:f64,amount_cents:f64,evidence:ClaimEvidence,summary:String,reason:String,decided_at:Option<String>,paid_at:Option<String>,created_at:String});
 model!(SignalDefinition {
     key: String,
     label: String,
@@ -168,9 +168,9 @@ pub struct Signal {
 }
 model!(CollectionStatus {state:CollectionState,latest_flushed_at:Option<String>,latest_received_at:Option<String>,fresh_until:Option<String>,record_version:Option<u32>,collector_version:Option<u32>,partial:Option<bool>,dropped_records:Option<u64>});
 model!(TelemetrySnapshot {bucket_start:String,flushed_at:String,received_at:String,partial:bool,record_version:Option<u32>,signals:Vec<Signal>});
-model!(CollectionSession {
-    session_id: String,
-    session: String,
+model!(CollectionConnection {
+    connection_id: String,
+    connection: String,
     project_id: String,
     collection: CollectionStatus
 });
@@ -178,10 +178,10 @@ model!(CollectionSession {
 #[serde(rename_all = "camelCase")]
 pub struct TelemetryDetail {
     #[serde(flatten)]
-    pub session: CollectionSession,
+    pub connection: CollectionConnection,
     pub snapshot: Option<TelemetrySnapshot>,
 }
-model!(HealthAction {id:String,session_id:String,session:String,project_id:String,mode:HealthActionMode,action:HealthActionKind,status:HealthActionStatus,health:f64,threshold:f64,health_source:HealthActionSource,estimator_version:String,model_version:Option<String>,slow_down_mps:Option<f64>,evaluated_at:String,created_at:String,completed_at:Option<String>,outcome:Option<HealthActionOutcome>});
+model!(HealthAction {id:String,connection_id:String,connection:String,project_id:String,mode:HealthActionMode,action:HealthActionKind,status:HealthActionStatus,health:f64,threshold:f64,health_source:HealthActionSource,estimator_version:String,model_version:Option<String>,slow_down_mps:Option<f64>,evaluated_at:String,created_at:String,completed_at:Option<String>,outcome:Option<HealthActionOutcome>});
 macro_rules! parameters {($name:ident {$($field:ident:$kind:ty),* $(,)?})=>{#[derive(Clone,Debug,Default,Serialize)] #[serde(rename_all="camelCase")] pub struct $name {$(#[serde(skip_serializing_if="Option::is_none")] pub $field:Option<$kind>),*}};}
 parameters!(ListHealthParameters {
     project_id: String,
@@ -196,7 +196,7 @@ parameters!(ListFindingsParameters {
     project_id: String,
     cursor: String,
     limit: u32,
-    session: String,
+    connection: String,
     status: FindingQueryStatus,
     severity: FindingSeverity
 });
@@ -210,13 +210,13 @@ parameters!(ListIncidentsParameters {
     project_id: String,
     cursor: String,
     limit: u32,
-    session: String
+    connection: String
 });
 parameters!(ListClaimsParameters {
     project_id: String,
     cursor: String,
     limit: u32,
-    session: String,
+    connection: String,
     status: ClaimStatus
 });
 parameters!(ListTelemetryHistoryParameters {
@@ -229,7 +229,7 @@ parameters!(ListHealthActionsParameters {
     project_id: String,
     cursor: String,
     limit: u32,
-    session: String,
+    connection: String,
     status: HealthActionStatus
 });
 pub type ListCollectionParameters = ListHealthParameters;
@@ -265,30 +265,30 @@ impl BanSafe<'_> {
         &self,
         parameters: &ListHealthParameters,
         options: RequestOptions,
-    ) -> Result<ApiResponse<CursorEnvelope<BanSafeNumber>>> {
+    ) -> Result<ApiResponse<CursorEnvelope<BanSafeConnection>>> {
         self.get("/platform/bansafe/health", parameters, options)
             .await
     }
     pub async fn get_health(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<NumberDetail>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionDetail>>> {
         self.0
             .get(
-                &format!("/platform/bansafe/health/{}", encode(session)),
+                &format!("/platform/bansafe/health/{}", encode(connection)),
                 options,
             )
             .await
     }
     pub async fn list_health_history(
         &self,
-        session: &str,
+        connection: &str,
         parameters: &ListHealthHistoryParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<DataEnvelope<HealthHistory>>> {
         self.get(
-            &format!("/platform/bansafe/health/{}/history", encode(session)),
+            &format!("/platform/bansafe/health/{}/history", encode(connection)),
             parameters,
             options,
         )
@@ -302,24 +302,24 @@ impl BanSafe<'_> {
     }
     pub async fn get_telemetry(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<DataEnvelope<TelemetryDetail>>> {
         self.0
             .get(
-                &format!("/platform/bansafe/telemetry/{}", encode(session)),
+                &format!("/platform/bansafe/telemetry/{}", encode(connection)),
                 options,
             )
             .await
     }
     pub async fn list_telemetry_history(
         &self,
-        session: &str,
+        connection: &str,
         parameters: &ListTelemetryHistoryParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<CursorEnvelope<TelemetrySnapshot>>> {
         self.get(
-            &format!("/platform/bansafe/telemetry/{}/history", encode(session)),
+            &format!("/platform/bansafe/telemetry/{}/history", encode(connection)),
             parameters,
             options,
         )
@@ -329,7 +329,7 @@ impl BanSafe<'_> {
         &self,
         parameters: &ListCollectionParameters,
         options: RequestOptions,
-    ) -> Result<ApiResponse<CursorEnvelope<CollectionSession>>> {
+    ) -> Result<ApiResponse<CursorEnvelope<CollectionConnection>>> {
         self.get("/platform/bansafe/collection", parameters, options)
             .await
     }

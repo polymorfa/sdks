@@ -102,7 +102,7 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
     adapter.setup().await.unwrap();
     let mut writes = Vec::new();
     for entity in ALL_ENTITIES {
-        for session in ["session-a", "session-b"] {
+        for connection in ["session-a", "session-b"] {
             let keys = entity
                 .definition()
                 .key
@@ -110,8 +110,8 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
                 .map(|key| {
                     (
                         (*key).to_owned(),
-                        if *key == "sessionId" {
-                            session.to_owned()
+                        if *key == "connectionId" {
+                            connection.to_owned()
                         } else {
                             "row".into()
                         },
@@ -129,7 +129,7 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
     }
     assert!(adapter.commit(&writes).await.unwrap().ok);
     let members = format!("\"{schema}\".\"{prefix}storage_memberships\"");
-    sqlx::query(&format!("INSERT INTO {members} (session_id,subject) VALUES ('session-a',$1::uuid),('session-b',$2::uuid)")).bind(&subject_a).bind(&subject_b).execute(&admin).await.unwrap();
+    sqlx::query(&format!("INSERT INTO {members} (connection_id,subject) VALUES ('session-a',$1::uuid),('session-b',$2::uuid)")).bind(&subject_a).bind(&subject_b).execute(&admin).await.unwrap();
     let browser = PgPoolOptions::new()
         .max_connections(1)
         .connect(&role_url(&reader))
@@ -143,12 +143,12 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
         .unwrap();
     for entity in ALL_ENTITIES {
         let table = format!("\"{schema}\".\"{prefix}{}\"", entity.definition().name);
-        let rows = sqlx::query(&format!("SELECT session_id FROM {table}"))
+        let rows = sqlx::query(&format!("SELECT connection_id FROM {table}"))
             .fetch_all(&mut *connection)
             .await
             .unwrap();
         assert_eq!(rows.len(), 1);
-        assert_eq!(rows[0].get::<String, _>("session_id"), "session-a");
+        assert_eq!(rows[0].get::<String, _>("connection_id"), "session-a");
     }
     assert_eq!(
         sqlx::query(&format!("SELECT count(*) AS n FROM {members}"))
@@ -158,7 +158,7 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
             .get::<i64, _>("n"),
         1
     );
-    for sql in [format!("DELETE FROM {members}"),format!("UPDATE \"{schema}\".app_messages SET text='forbidden'"),format!("INSERT INTO \"{schema}\".app_events (_id,session_id,event_id,_rev,_v) VALUES ('fake','session-a','fake',1,'{{}}')")]{let error=sqlx::query(&sql).execute(&mut *connection).await.unwrap_err();assert_eq!(error.as_database_error().unwrap().code().as_deref(),Some("42501"));}
+    for sql in [format!("DELETE FROM {members}"),format!("UPDATE \"{schema}\".app_messages SET text='forbidden'"),format!("INSERT INTO \"{schema}\".app_events (_id,connection_id,event_id,_rev,_v) VALUES ('fake','session-a','fake',1,'{{}}')")]{let error=sqlx::query(&sql).execute(&mut *connection).await.unwrap_err();assert_eq!(error.as_database_error().unwrap().code().as_deref(),Some("42501"));}
     let guest = PgPoolOptions::new()
         .max_connections(1)
         .connect(&role_url(&anonymous))
@@ -195,7 +195,7 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
     let flags=sqlx::query("SELECT count(*) AS n FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname=$1 AND c.relrowsecurity AND c.relforcerowsecurity").bind(&schema).fetch_one(&admin).await.unwrap().get::<i64,_>("n");
     assert_eq!(flags, 18);
     sqlx::query(&format!(
-        "DELETE FROM {members} WHERE session_id='session-a'"
+        "DELETE FROM {members} WHERE connection_id='session-a'"
     ))
     .execute(&admin)
     .await
@@ -226,7 +226,7 @@ async fn actual_postgres_nonprivileged_roles_force_live_membership_and_read_only
     );
     let store = Storage::new(adapter.clone(), StorageOptions::default()).unwrap();
     let batch = OperationBatch {
-        session_id: "server-session".into(),
+        connection_id: "server-connection".into(),
         event_id: Some("writer-event".into()),
         event_type: None,
         operations: vec![],

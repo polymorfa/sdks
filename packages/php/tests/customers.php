@@ -16,11 +16,11 @@ $cases = [
  ['PATCH','/platform/customers/customer',['name' => null,'externalCustomerId' => null],['data' => $customer],fn ($c) => $c->customers->update('customer', ['name' => null,'externalCustomerId' => null])],
  ['POST','/platform/customers/customer/archive',[],['data' => $customer],fn ($c) => $c->customers->archive('customer')],
  ['POST','/platform/customers/customer/restore',['projectId' => 'project'],['data' => $customer],fn ($c) => $c->customers->restore('customer', ['projectId' => 'project'])],
- ['GET','/platform/customers/customer/connections?projectId=project',null,['data' => [$number]],fn ($c) => $c->customers->listNumbers('customer', 'project')],
+ ['GET','/platform/customers/customer/connections?projectId=project',null,['data' => [$number]],fn ($c) => $c->customers->listConnections('customer', 'project')],
  ['GET','/platform/customers/customer/events?projectId=project&limit=2',null,['data' => [$event]],fn ($c) => $c->customers->listEvents('customer', ['projectId' => 'project','limit' => 2])],
  ['POST','/platform/customers/customer/pairing-links',['expectedPhone' => null,'methods' => ['qr']],['data' => $link + ['url' => null]],fn ($c) => $c->customers->createPairingLink('customer', ['expectedPhone' => null,'methods' => ['qr']])],
  ['GET','/platform/customers/customer/pairing-links?projectId=project',null,['data' => [$link]],fn ($c) => $c->customers->listPairingLinks('customer', 'project')],
  ['DELETE','/platform/customers/customer/pairing-links/link?projectId=project',null,['data' => $link],fn ($c) => $c->customers->revokePairingLink('customer', 'link', 'project')],
- ['POST','/platform/customers/customer/connections/support/transfer',['projectId' => 'project','sourceCustomerId' => 'other','confirm' => true],['data' => $number],fn ($c) => $c->customers->transferNumber('customer', 'support', ['projectId' => 'project','sourceCustomerId' => 'other','confirm' => true])],
+ ['POST','/platform/customers/customer/connections/support/transfer',['projectId' => 'project','sourceCustomerId' => 'other','confirm' => true],['data' => $number],fn ($c) => $c->customers->transferConnection('customer', 'support', ['projectId' => 'project','sourceCustomerId' => 'other','confirm' => true])],
 ];
 nativeCases($cases, fn ($credential, $url) => new Polymorfa\Client($credential, baseUrl:$url));

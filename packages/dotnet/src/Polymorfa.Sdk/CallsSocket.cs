@@ -11,7 +11,7 @@ public sealed record CallsSocketOptions
 {
     public Uri BaseUrl { get; init; } = new("https://api.polymorfa.com");
     public IWebProxy? Proxy { get; init; }
-    public string? Session { get; init; }
+    public string? Connection { get; init; }
     public string? Participant { get; init; }
     public TimeSpan ReadyTimeout { get; init; } = TimeSpan.FromSeconds(10);
     public TimeSpan Heartbeat { get; init; } = TimeSpan.FromSeconds(5);
@@ -60,10 +60,10 @@ public sealed class CallsSocket : IAsyncDisposable
         {
             result.token = await tokens.GetAsync(refresh, bound.Token).ConfigureAwait(false);
             var clientToken = result.token.Value.StartsWith("pmfa_ct_", StringComparison.Ordinal);
-            if (!clientToken) { if (OperatingSystem.IsBrowser()) throw new PolymorfaConfigurationException("Server Calls credentials cannot be used in a browser."); if (callId is null && (string.IsNullOrWhiteSpace(options.Session) || options.Session.Length > 128)) throw new PolymorfaConfigurationException("Server lifecycle sockets require a session."); }
+            if (!clientToken) { if (OperatingSystem.IsBrowser()) throw new PolymorfaConfigurationException("Server Calls credentials cannot be used in a browser."); if (callId is null && (string.IsNullOrWhiteSpace(options.Connection) || options.Connection.Length > 128)) throw new PolymorfaConfigurationException("Server lifecycle sockets require a connection."); }
             var path = callId is null ? "/voip/ws" : "/voip/calls/" + Uri.EscapeDataString(callId) + "/media";
             var uri = new UriBuilder(new Uri(options.BaseUrl.AbsoluteUri.TrimEnd('/') + path)) { Scheme = options.BaseUrl.Scheme == "https" ? "wss" : "ws" };
-            if (callId is null && !clientToken) uri.Query = "session=" + Uri.EscapeDataString(options.Session!) + (options.Participant is null ? "" : "&participant=" + Uri.EscapeDataString(options.Participant));
+            if (callId is null && !clientToken) uri.Query = "connection=" + Uri.EscapeDataString(options.Connection!) + (options.Participant is null ? "" : "&participant=" + Uri.EscapeDataString(options.Participant));
             if (callId is not null) result.socket.Options.AddSubProtocol(CallsProtocol.MediaSubprotocol);
             result.socket.Options.KeepAliveInterval = TimeSpan.Zero;
             if (options.Proxy is not null) result.socket.Options.Proxy = options.Proxy;

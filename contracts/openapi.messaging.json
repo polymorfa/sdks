@@ -2863,7 +2863,7 @@
               "linked_device",
               "cloud_api"
             ],
-            "description": "Connection of the connection that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "description": "Method that carries the call: a linked device or the WhatsApp Business Cloud API.",
             "example": "linked_device"
           },
           "capabilities": {
@@ -3016,7 +3016,7 @@
               "linked_device",
               "cloud_api"
             ],
-            "description": "Connection of the connection that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "description": "Method that carries the call: a linked device or the WhatsApp Business Cloud API.",
             "example": "linked_device"
           },
           "capabilities": {
@@ -3205,7 +3205,7 @@
               "linked_device",
               "cloud_api"
             ],
-            "description": "Connection of the connection that carries the call: a linked device or the WhatsApp Business Cloud API.",
+            "description": "Method that carries the call: a linked device or the WhatsApp Business Cloud API.",
             "example": "linked_device"
           }
         },

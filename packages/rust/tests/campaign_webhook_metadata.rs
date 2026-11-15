@@ -61,7 +61,7 @@ fn check(event: &WebhookEvent, expected: &Value, index: usize) {
 #[test]
 fn campaign_metadata_signed_single_and_mixed_batch() {
     let fixture: Value = serde_json::from_str(include_str!(
-        "../../../contracts/fixtures/campaign-webhook-metadata.json"
+        "../../../contracts/fixtures/connections/campaign-webhook-metadata.json"
     ))
     .unwrap();
     let secret = fixture["secret"].as_str().unwrap();

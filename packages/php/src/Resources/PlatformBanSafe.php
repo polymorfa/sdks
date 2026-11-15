@@ -7,8 +7,8 @@ namespace Polymorfa\Resources;
 use Polymorfa\{ApiResponse,RequestOptions,BanSafeTelemetryModels};
 
 /**
- * @phpstan-import-type NumberHealth from BanSafeTelemetryModels
- * @phpstan-import-type NumberDetail from BanSafeTelemetryModels
+ * @phpstan-import-type ConnectionHealth from BanSafeTelemetryModels
+ * @phpstan-import-type ConnectionDetail from BanSafeTelemetryModels
  * @phpstan-import-type HealthPoint from BanSafeTelemetryModels
  * @phpstan-import-type SignalDefinition from BanSafeTelemetryModels
  * @phpstan-import-type TelemetryDetail from BanSafeTelemetryModels
@@ -27,13 +27,13 @@ use Polymorfa\{ApiResponse,RequestOptions,BanSafeTelemetryModels};
 final class PlatformBanSafe extends Resource
 {
     /** @param ListParams $params
-     * @return ApiResponse<array{data:list<NumberHealth>,page:array{nextCursor:?string,hasMore:bool}}> */
+     * @return ApiResponse<array{data:list<ConnectionHealth>,page:array{nextCursor:?string,hasMore:bool}}> */
     public function listHealth(array $params = [], ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:list<NumberHealth>,page:array{nextCursor:?string,hasMore:bool}}> */ return $this->request('GET', '/platform/bansafe/health', query:$params, options:$options);
+    { /** @var ApiResponse<array{data:list<ConnectionHealth>,page:array{nextCursor:?string,hasMore:bool}}> */ return $this->request('GET', '/platform/bansafe/health', query:$params, options:$options);
     }
-    /** @return ApiResponse<array{data:NumberDetail}> */
+    /** @return ApiResponse<array{data:ConnectionDetail}> */
     public function getHealth(string $connection, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{data:NumberDetail}> */ return $this->request('GET', '/platform/bansafe/health/'.self::segment($connection), options:$options);
+    { /** @var ApiResponse<array{data:ConnectionDetail}> */ return $this->request('GET', '/platform/bansafe/health/'.self::segment($connection), options:$options);
     }
     /** @param array{since?:string,limit?:int} $params
      * @return ApiResponse<array{data:array{connectionId:string,connection:string,points:list<HealthPoint>}}> */

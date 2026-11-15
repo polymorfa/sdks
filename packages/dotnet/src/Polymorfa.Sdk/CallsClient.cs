@@ -5,7 +5,7 @@ namespace Polymorfa.Sdk;
 
 public sealed record CallsClientOptions
 {
-    public required string Session { get; init; }
+    public required string Connection { get; init; }
     public string Participant { get; init; } = "default";
     public ClientOptions Http { get; init; } = new();
     public CallsSocketOptions? Socket { get; init; }
@@ -28,7 +28,7 @@ public sealed class CallsClient : IAsyncDisposable
 {
     internal CallsTokenSource Tokens { get; }
     internal CallsClientOptions Options { get; }
-    internal CallsSocketOptions SocketOptions => (Options.Socket ?? new() { BaseUrl = Options.Http.BaseUrl }) with { Session = Options.Session, Participant = Options.Participant, Proxy = Options.Socket?.Proxy ?? Options.Http.Proxy };
+    internal CallsSocketOptions SocketOptions => (Options.Socket ?? new() { BaseUrl = Options.Http.BaseUrl }) with { Connection = Options.Connection, Participant = Options.Participant, Proxy = Options.Socket?.Proxy ?? Options.Http.Proxy };
     private readonly object gate = new();
     private readonly Dictionary<string, Call> calls = [];
     private readonly Dictionary<string, List<CallLifecycleEvent>> early = [];
@@ -46,7 +46,7 @@ public sealed class CallsClient : IAsyncDisposable
     public CallsClient(string token, CallsClientOptions options) : this(new CallsTokenSource(token), options) { }
     public CallsClient(CallsTokenSource tokens, CallsClientOptions options)
     {
-        if (string.IsNullOrWhiteSpace(options.Session) || options.Session.Length > 128 || !CallsProtocol.Participant(options.Participant) || options.ReconnectAttempts < 0 || options.MinBackoff <= TimeSpan.Zero || options.MaxBackoff < options.MinBackoff) throw new PolymorfaConfigurationException("Invalid Calls client configuration.");
+        if (string.IsNullOrWhiteSpace(options.Connection) || options.Connection.Length > 128 || !CallsProtocol.Participant(options.Participant) || options.ReconnectAttempts < 0 || options.MinBackoff <= TimeSpan.Zero || options.MaxBackoff < options.MinBackoff) throw new PolymorfaConfigurationException("Invalid Calls client configuration.");
         Tokens = tokens; Options = options; HttpTransport.ValidateUrl(options.Http.BaseUrl);
     }
     public IAsyncEnumerable<CallsClientEvent> EventsAsync(CancellationToken cancellationToken = default) => events.Reader.ReadAllAsync(cancellationToken);
@@ -112,7 +112,7 @@ public sealed class CallsClient : IAsyncDisposable
     public async Task<Call> PlaceAsync(PlaceCallRequest input, RequestOptions? options = null)
     {
         var peer = input.To ?? input.GroupId ?? input.Participants?.FirstOrDefault() ?? "";
-        var started = Volatile.Read(ref generation); var response = await RequestAsync(async (client, participant, request) => (await client.Calls.PlaceAsync(input with { Session = participant is null ? null : Options.Session, Participant = participant }, request.WithIdempotency()).ConfigureAwait(false)).Data.Data, options).ConfigureAwait(false);
+        var started = Volatile.Read(ref generation); var response = await RequestAsync(async (client, participant, request) => (await client.Calls.PlaceAsync(input with { Connection = participant is null ? null : Options.Connection, Participant = participant }, request.WithIdempotency()).ConfigureAwait(false)).Data.Data, options).ConfigureAwait(false);
         Call call; lock (gate) { call = calls.GetValueOrDefault(response.CallId) ?? Track(new(this, response.CallId, "outbound", peer, input.Video == true, input.Exclusive == true)); }
         if (started != Volatile.Read(ref generation) || lifetime.IsCancellationRequested) { await call.EndAsync().ConfigureAwait(false); throw new CallsSocketException("Calls client disconnected during placement.", "client_disconnected"); }
         return call;

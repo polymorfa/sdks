@@ -16,7 +16,7 @@ use tokio_util::sync::CancellationToken;
 #[tokio::test]
 async fn server_call_control_native_http_contracts() {
     let body = PlaceCallRequest {
-        session: Some("s".into()),
+        connection: Some("s".into()),
         to: Some("+15551234567".into()),
         video: Some(false),
         participants: None,
@@ -27,8 +27,8 @@ async fn server_call_control_native_http_contracts() {
     let (base, server) = support::wire(
         "POST",
         "/messaging/voip/calls",
-        Some(json!({"session":"s","to":"+15551234567","video":false,"participant":"bot"})),
-        json!({"success":true,"data":{"callId":"call","session":"s","video":false}}),
+        Some(json!({"connection":"s","to":"+15551234567","video":false,"participant":"bot"})),
+        json!({"success":true,"data":{"callId":"call","connection":"s","video":false}}),
     )
     .await;
     let client = support::messaging(base);
@@ -244,7 +244,7 @@ async fn lifecycle_socket_authentication_candidates_events_and_revocation() {
             json!({"type":"auth","token":"pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()})
         );
         ws.send(Message::Text(
-            "{\"type\":\"ready\",\"session\":\"s/one\",\"participant\":\"server:bot\"}".into(),
+            "{\"type\":\"ready\",\"connection\":\"s/one\",\"participant\":\"server:bot\"}".into(),
         ))
         .await
         .unwrap();
@@ -333,7 +333,7 @@ fn lifecycle_handshake(
 {
     assert_eq!(
         req.uri().to_string(),
-        "/voip/ws?session=s%2Fone&participant=bot"
+        "/voip/ws?connection=s%2Fone&participant=bot"
     );
     assert!(req.headers().get("authorization").is_none());
     Ok(response)

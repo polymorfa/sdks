@@ -9,7 +9,7 @@ internal static class WireChecks
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static string Frame(bool payload = true)
     {
-        var body = Encoding.UTF8.GetBytes("{\"id\":\"wire-event\",\"session\":\"wire\",\"timestamp\":\"2026-10-01T12:00:00Z\",\"event\":\"message.received\",\"payload\":{\"id\":\"wire-message\",\"conversation\":{\"id\":\"wire-chat\"},\"timestamp\":1790856000,\"type\":\"text\",\"text\":\"native TCP\"}}");
+        var body = Encoding.UTF8.GetBytes("{\"id\":\"wire-event\",\"connection\":\"wire\",\"timestamp\":\"2026-10-01T12:00:00Z\",\"event\":\"message.received\",\"payload\":{\"id\":\"wire-message\",\"conversation\":{\"id\":\"wire-chat\"},\"timestamp\":1790856000,\"type\":\"text\",\"text\":\"native TCP\"}}");
         var record = new EventRecord("wire-event", "team", "bound", "message.received", "runtime", "development", "2026-10-01", payload ? "available" : "not_retained", payload ? new("base64", Convert.ToBase64String(body)) : null, null, "2026-10-15");
         return "data: {\"type\":\"ready\",\"heartbeatIntervalMs\":1000}\n\ndata: " + JsonSerializer.Serialize(new { type = "event", @event = record, cursor = "wire-cursor", streamId = "wire-stream", sequence = 1 }, Json) + "\n\n";
     }

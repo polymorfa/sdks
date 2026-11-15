@@ -27,7 +27,7 @@ fn customer() -> Value {
     json!({"eventId":"event","occurredAt":"2026-10-11T12:00:00Z","teamId":"team","projectId":"project","customerId":"customer","actorKind":"team_key"})
 }
 fn signed(event: &str, payload: Value) -> WebhookEvent {
-    let raw=serde_json::to_vec(&json!({"id":"event","session":"s","externalId":"external","timestamp":"2026-10-11T12:00:00Z","event":event,"payload":payload})).unwrap();
+    let raw=serde_json::to_vec(&json!({"id":"event","connection":"s","externalId":"external","timestamp":"2026-10-11T12:00:00Z","event":event,"payload":payload})).unwrap();
     let mut mac = Hmac::<Sha256>::new_from_slice(b"native-secret").unwrap();
     mac.update(&raw);
     let signature = format!("sha256={}", hex::encode(mac.finalize().into_bytes()));
@@ -42,13 +42,13 @@ fn signed(event: &str, payload: Value) -> WebhookEvent {
 #[test]
 fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_preserve_json() {
     let participant = json!({"id":"p","phoneNumber":"+15551234567","bsuid":"bsuid","username":"pat","audioMuted":false,"video":false,"state":"connected","handRaised":true});
-    let capabilities = json!({"session":"s","projectId":"project","status":"synced","syncedAt":null,"checkedAt":null,"accountType":"business","capabilities":[{"key":"channels","kind":"feature","unit":null,"value":true,"source":"server"}],"changedKeys":["channels"]});
+    let capabilities = json!({"connection":"s","projectId":"project","status":"synced","syncedAt":null,"checkedAt":null,"accountType":"business","capabilities":[{"key":"channels","kind":"feature","unit":null,"value":true,"source":"server"}],"changedKeys":["channels"]});
     let customer_link = merge(customer(), json!({"pairingLinkId":"link"}));
     let voice = json!({"eventId":"event","occurredAt":"2026-10-11T12:00:00Z","teamId":"team","projectId":"project","assetId":"asset","name":"Greeting","source":"tts"});
     let cases = vec![
         (
             "bansafe.action",
-            json!({"phoneNumber":"+15551234567","action":"applied","scope":"number","rung":"notify","previousRung":null,"reason":"health","health":50.0,"healthBand":"fair","requires":[{"findingKey":"finding","title":"Review","severity":"warning"}],"throughputPerMinute":10.0,"eligibleLiftAt":null,"liftRequires":"review","appealUrl":"https://example.com/appeal","startedAt":"2026-10-11","docs":"https://example.com/docs"}),
+            json!({"phoneNumber":"+15551234567","action":"applied","scope":"connection","rung":"notify","previousRung":null,"reason":"health","health":50.0,"healthBand":"fair","requires":[{"findingKey":"finding","title":"Review","severity":"warning"}],"throughputPerMinute":10.0,"eligibleLiftAt":null,"liftRequires":"review","appealUrl":"https://example.com/appeal","startedAt":"2026-10-11","docs":"https://example.com/docs"}),
         ),
         (
             "bansafe.claim",
@@ -56,7 +56,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "bansafe.health_threshold",
-            json!({"sessionId":"s","projectId":"project","health":50.0,"threshold":60.0,"healthSource":"rules_v1","estimatorVersion":"1","modelVersion":null,"evaluatedAt":"2026-10-11","policyVersion":1,"episodeId":"episode","actionId":"action"}),
+            json!({"connectionId":"s","projectId":"project","health":50.0,"threshold":60.0,"healthSource":"rules_v1","estimatorVersion":"1","modelVersion":null,"evaluatedAt":"2026-10-11","policyVersion":1,"episodeId":"episode","actionId":"action"}),
         ),
         (
             "bansafe.incident",
@@ -72,7 +72,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "call.accepted",
-            json!({"from":identity(),"callId":"call","answeredBy":"bot","exclusive":true,"sessionConnection":"linked_device","capabilities":{"video":true,"invite":true}}),
+            json!({"from":identity(),"callId":"call","answeredBy":"bot","exclusive":true,"connectionMethod":"linked_device","capabilities":{"video":true,"invite":true}}),
         ),
         (
             "call.connection_joined",
@@ -84,7 +84,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "call.ended",
-            json!({"from":null,"callId":"call","durationSeconds":6.5,"reason":"pod_lost","direction":"outbound","hadVideo":false,"sessionConnection":"cloud_api"}),
+            json!({"from":null,"callId":"call","durationSeconds":6.5,"reason":"pod_lost","direction":"outbound","hadVideo":false,"connectionMethod":"cloud_api"}),
         ),
         (
             "call.missed",
@@ -108,7 +108,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "call.received",
-            json!({"from":identity(),"callId":"call","hasVideo":true,"sessionConnection":"linked_device","capabilities":{"video":true,"invite":true}}),
+            json!({"from":identity(),"callId":"call","hasVideo":true,"connectionMethod":"linked_device","capabilities":{"video":true,"invite":true}}),
         ),
         ("call.rejected", json!({"from":identity(),"callId":"call"})),
         (
@@ -117,7 +117,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "campaign.cap_reached",
-            json!({"campaignId":"c","sessionKey":"s","phone":"+15551234567","capType":"daily","capLimit":1,"windowResetsAt":1800000000,"at":1800000000}),
+            json!({"campaignId":"c","connectionKey":"s","phone":"+15551234567","capType":"daily","capLimit":1,"windowResetsAt":1800000000,"at":1800000000}),
         ),
         (
             "campaign.cold_blocked",
@@ -145,7 +145,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "campaign.recipient_sent",
-            json!({"campaignId":"c","recipientId":"r","phone":"+15551234567","sessionKey":"s","externalMessageId":"message","variantKey":"v","attempt":1}),
+            json!({"campaignId":"c","recipientId":"r","phone":"+15551234567","connectionKey":"s","externalMessageId":"message","variantKey":"v","attempt":1}),
         ),
         (
             "campaign.recipient_skipped",
@@ -165,7 +165,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "campaign.throttled",
-            json!({"campaignId":"c","sessionKey":"s","reason":"rate","deferredCount":1,"at":1800000000}),
+            json!({"campaignId":"c","connectionKey":"s","reason":"rate","deferredCount":1,"at":1800000000}),
         ),
         (
             "chat.archive",
@@ -184,11 +184,11 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "contact.opted_in",
-            json!({"phone":"+15551234567","source":"stop-keyword","keyword":"START","session":"s","projectId":"project"}),
+            json!({"phone":"+15551234567","source":"stop-keyword","keyword":"START","connection":"s","projectId":"project"}),
         ),
         (
             "contact.opted_out",
-            json!({"phone":"+15551234567","source":"stop-keyword","keyword":"STOP","session":"s","projectId":"project"}),
+            json!({"phone":"+15551234567","source":"stop-keyword","keyword":"STOP","connection":"s","projectId":"project"}),
         ),
         (
             "contact.sync",
@@ -206,32 +206,35 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             "customer.archiving",
             merge(
                 customer(),
-                json!({"blockingNumberCount":1,"revokedPairingLinkCount":2}),
+                json!({"blockingConnectionCount":1,"revokedPairingLinkCount":2}),
             ),
         ),
         ("customer.created", customer()),
         (
             "customer.enabled",
-            merge(customer(), json!({"migratedNumberCount":2})),
+            merge(customer(), json!({"migratedConnectionCount":2})),
         ),
         (
-            "customer.number.attached",
-            merge(customer(), json!({"sessionId":"s","pairingLinkId":"link"})),
-        ),
-        (
-            "customer.number.disconnected",
-            merge(customer(), json!({"sessionId":"s","reason":"removed"})),
-        ),
-        (
-            "customer.number.transferred",
+            "customer.connection.attached",
             merge(
                 customer(),
-                json!({"sessionId":"s","sourceCustomerId":"old"}),
+                json!({"connectionId":"s","pairingLinkId":"link"}),
+            ),
+        ),
+        (
+            "customer.connection.disconnected",
+            merge(customer(), json!({"connectionId":"s","reason":"removed"})),
+        ),
+        (
+            "customer.connection.transferred",
+            merge(
+                customer(),
+                json!({"connectionId":"s","sourceCustomerId":"old"}),
             ),
         ),
         (
             "customer.pairing_link.connected",
-            merge(customer_link.clone(), json!({"sessionId":"s"})),
+            merge(customer_link.clone(), json!({"connectionId":"s"})),
         ),
         ("customer.pairing_link.created", customer_link.clone()),
         ("customer.pairing_link.expired", customer_link.clone()),
@@ -306,25 +309,25 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             "presence.update",
             json!({"observedAt":1800000000,"from":identity(),"sender":identity(),"state":"online","media":"audio","unavailable":false,"lastSeen":1800000000}),
         ),
-        ("session.capabilities_updated", capabilities),
+        ("connection.capabilities_updated", capabilities),
         (
-            "session.connected",
+            "connection.connected",
             json!({"phoneNumber":"+15551234567","id":"person","pushName":"Pat","phonePlatform":"android","accountType":"business_app","businessName":"Shop"}),
         ),
         (
-            "session.logged_out",
+            "connection.logged_out",
             json!({"reason":"device_removed","code":401}),
         ),
         (
-            "session.phone_offline",
+            "connection.phone_offline",
             json!({"daysSinceLastSeen":7,"daysRemaining":7,"lastSeen":"2026-10-04","action":"reminder"}),
         ),
         (
-            "session.restriction_updated",
+            "connection.restriction_updated",
             json!({"type":"reachout_timelock","active":true,"enforcementType":null,"expiresAt":null,"observedAt":"2026-10-11"}),
         ),
         (
-            "session.status",
+            "connection.status",
             json!({"status":"FAILED","statusReason":"ban","banCode":403,"banReason":"ban","banExpiresAt":1800000000,"detail":"provider"}),
         ),
         (
@@ -333,7 +336,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         (
             "usage.recorded",
-            json!({"id":"usage","meter":"call.duration","quantity":6.5,"unit":"second","dimensions":{"direction":"outbound","video":false,"participants":1.0},"keySource":"none","sourceKind":"call","sourceId":"call","projectId":"project","session":"s","occurredAt":"2026-10-11","recordedAt":"2026-10-11","revision":1,"pricingState":"unpriced","rateCard":null,"pricedCredits":null}),
+            json!({"id":"usage","meter":"call.duration","quantity":6.5,"unit":"second","dimensions":{"direction":"outbound","video":false,"participants":1.0},"keySource":"none","sourceKind":"call","sourceId":"call","projectId":"project","connection":"s","occurredAt":"2026-10-11","recordedAt":"2026-10-11","revision":1,"pricingState":"unpriced","rateCard":null,"pricedCredits":null}),
         ),
         (
             "marketing.onboarding_updated",
@@ -362,11 +365,13 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             .collect::<BTreeSet<_>>(),
         KNOWN_EVENT_TYPES.iter().copied().collect()
     );
-    let pinned: Value =
-        serde_json::from_str(include_str!("fixtures/known-webhook-events.json")).unwrap();
+    let pinned: Value = serde_json::from_str(include_str!(
+        "fixtures/known-webhook-events.connections.json"
+    ))
+    .unwrap();
     assert_eq!(
         pinned["sourceSdkCommit"],
-        "ff51567105b64bf6997e7330ba8eb502d875e7b9"
+        "90e3d6d0275a33b661f5a224db6196f88cde1492"
     );
     assert_eq!(
         KNOWN_EVENT_TYPES.iter().copied().collect::<BTreeSet<_>>(),
@@ -382,7 +387,9 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         let typed = match &result {
             WebhookEvent::MessageReceived { payload, .. } => serde_json::to_value(payload).unwrap(),
             WebhookEvent::MessageSent { payload, .. } => serde_json::to_value(payload).unwrap(),
-            WebhookEvent::SessionStatus { payload, .. } => serde_json::to_value(payload).unwrap(),
+            WebhookEvent::ConnectionStatus { payload, .. } => {
+                serde_json::to_value(payload).unwrap()
+            }
             WebhookEvent::Known { payload, .. } => {
                 serde_json::to_value(payload).unwrap()["payload"].clone()
             }
@@ -409,9 +416,9 @@ fn cloud_variants_and_payment_method_selections_preserve_distinct_shapes() {
     ));
     let cloud_status = json!({"source":"meta","kind":"account_alerts","wabaId":"waba","value":{"alert":"warning"}});
     assert!(matches!(
-        signed("session.status", cloud_status),
-        WebhookEvent::SessionStatus {
-            payload: SessionStatusPayload::OfficialApi(_),
+        signed("connection.status", cloud_status),
+        WebhookEvent::ConnectionStatus {
+            payload: ConnectionStatusPayload::OfficialApi(_),
             ..
         }
     ));

@@ -37,12 +37,12 @@ impl MediaUploadTransport for Capture {
     }
     fn upload<'a>(
         &'a self,
-        session: &'a str,
+        connection: &'a str,
         body: EncryptedUploadBody<'a>,
         _: CancellationToken,
     ) -> UploadTransportFuture<'a> {
         Box::pin(async move {
-            assert_eq!(session, "session");
+            assert_eq!(connection, "connection");
             self.calls.fetch_add(1, Ordering::SeqCst);
             assert_eq!(body.media_type(), UploadMediaType::Document);
             assert_eq!(body.encrypted_length(), self.expected.len() as u64);
@@ -84,7 +84,7 @@ async fn custom_transport_gets_verified_ciphertext_metadata_offsets_and_dynamic_
     let expected = encrypt_media(&plaintext, options()).await.unwrap();
     let capture = Capture::new(expected.ciphertext.clone());
     let result = upload_with_transport(
-        "session",
+        "connection",
         MediaSource::Bytes(plaintext.clone()),
         options(),
         &capture,
@@ -116,10 +116,15 @@ async fn changed_second_pass_never_reaches_custom_finalization() {
             async move { Ok(Box::pin(stream::iter(vec![Ok(Bytes::from(vec![value; 80]))])) as _) },
         )
     });
-    let error = upload_with_transport("session", MediaSource::Reopen(factory), options(), &capture)
-        .await
-        .err()
-        .unwrap();
+    let error = upload_with_transport(
+        "connection",
+        MediaSource::Reopen(factory),
+        options(),
+        &capture,
+    )
+    .await
+    .err()
+    .unwrap();
     assert_eq!(error.code.as_deref(), Some("media_enc_hash_mismatch"));
     assert!(!capture.committed.load(Ordering::SeqCst));
     assert!(capture.emitted.load(Ordering::SeqCst) < capture.expected.len());
@@ -146,16 +151,21 @@ impl MediaUploadTransport for Failure {
 }
 #[tokio::test]
 async fn custom_errors_and_preabort_are_preserved_without_opening_a_source() {
-    let error = upload_with_transport("session", MediaSource::Bytes(vec![1]), options(), &Failure)
-        .await
-        .err()
-        .unwrap();
+    let error = upload_with_transport(
+        "connection",
+        MediaSource::Bytes(vec![1]),
+        options(),
+        &Failure,
+    )
+    .await
+    .err()
+    .unwrap();
     assert_eq!(error.code.as_deref(), Some("custom_transport_refused"));
     let mut cancelled = options();
     cancelled.cancellation.cancel();
     let factory: SourceFactory = Arc::new(|| panic!("Cancelled upload opened plaintext"));
     let error = upload_with_transport(
-        "session",
+        "connection",
         MediaSource::Reopen(factory),
         cancelled.clone(),
         &Failure,
@@ -213,7 +223,7 @@ async fn cancellation_drops_the_inflight_custom_upload() {
     let upload_transport = transport.clone();
     let work = tokio::spawn(async move {
         upload_with_transport(
-            "session",
+            "connection",
             MediaSource::Bytes(vec![1]),
             settings,
             upload_transport.as_ref(),

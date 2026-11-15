@@ -15,7 +15,7 @@ pub struct TrickleCandidate {
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum LifecycleFrame {
     Ready {
-        session: Option<String>,
+        connection: Option<String>,
         participant: Option<String>,
     },
     Event {

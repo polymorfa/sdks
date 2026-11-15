@@ -129,18 +129,18 @@ fn forwarded_flow_signature_preserves_exact_timestamp_body_and_ecmascript_gramma
 fn webhook_fixture_has_exact_json_headers_independent_signature_and_tamper_refusal() {
     let event = WebhookEvent::Unknown(WebhookEnvelope {
         id: "event".into(),
-        session: "".into(),
+        connection: "".into(),
         external_id: None,
         timestamp: "2026-10-11T00:00:00Z".into(),
         event: "future.event".into(),
         payload: json!({"opaque":true}),
     });
     let fixture = create_fixture(&event, "fixture-secret").unwrap();
-    assert_eq!(fixture.body, br#"{"id":"event","session":"","externalId":null,"timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"opaque":true}}"#);
+    assert_eq!(fixture.body, br#"{"id":"event","connection":"","externalId":null,"timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"opaque":true}}"#);
     assert_eq!(fixture.content_type, "application/json");
     assert_eq!(
         fixture.signature,
-        "072d86fd11b622a36cdb1166e4124bbbb6121640dec3c989ca98316e73d3d8eb"
+        "1fd48968184e897ebe734bc7dbbef6035d39038883a23297f93cb87749acd1d2"
     );
     assert_eq!(fixture.headers.len(), 2);
     assert_eq!(fixture.headers["content-type"], "application/json");
@@ -157,13 +157,13 @@ fn webhook_fixture_has_exact_json_headers_independent_signature_and_tamper_refus
     ));
     assert_eq!(
         create_fixture(&event, "").unwrap().signature,
-        "44f7dc1eb2c249ff96b383a9e230271e2cb07e12771687796e7f8ef7d8ea496c"
+        "acf3575518e0cf60895bb1457a85ce67bf4a5cf7807303da3703546ff31ccbe3"
     );
     // Known, typed payloads use the same verified fixture path.
-    let known = parse_verified_event(br#"{"id":"known","session":"s","timestamp":"now","event":"session.status","payload":{"status":"connected"}}"#).unwrap();
+    let known = parse_verified_event(br#"{"id":"known","connection":"s","timestamp":"now","event":"connection.status","payload":{"status":"connected"}}"#).unwrap();
     let fixture = create_fixture(&known, "fixture-secret").unwrap();
     assert!(matches!(
         construct_event(&fixture.body, &fixture.signature, "fixture-secret").unwrap(),
-        WebhookEvent::SessionStatus { .. }
+        WebhookEvent::ConnectionStatus { .. }
     ));
 }

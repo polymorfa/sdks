@@ -177,7 +177,7 @@ func (r *Customers) RevokePairingLink(ctx context.Context, id, link, project str
 }
 func (r *Customers) TransferConnection(ctx context.Context, id, connection string, b TransferCustomerConnectionRequest, o ...RequestOptions) (Response[Envelope[CustomerConnection]], error) {
 	if !b.Confirm {
-		return Response[Envelope[CustomerConnection]]{}, validation("Number transfer requires confirm:true.")
+		return Response[Envelope[CustomerConnection]]{}, validation("Connection transfer requires confirm:true.")
 	}
 	return request[Envelope[CustomerConnection]](ctx, r.t, "POST", customerPath(id)+"/connections/"+escaped(connection)+"/transfer", nil, b, options(o))
 }

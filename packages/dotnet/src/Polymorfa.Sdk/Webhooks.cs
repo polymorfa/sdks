@@ -5,11 +5,11 @@ using System.Text.Json;
 
 namespace Polymorfa.Sdk;
 
-public sealed record WebhookEnvelope(string Id, string Session, string Timestamp, string Event, JsonElement Payload, string? ExternalId = null)
+public sealed record WebhookEnvelope(string Id, string Connection, string Timestamp, string Event, JsonElement Payload, string? ExternalId = null)
 {
     public override string ToString() => Event == "history.sync" && Payload.ValueKind == JsonValueKind.Object && Payload.TryGetProperty("delivery", out _)
         ? "WebhookEnvelope(descriptor history redacted)"
-        : $"WebhookEnvelope {{ Id = {Id}, Session = {Session}, Timestamp = {Timestamp}, Event = {Event}, Payload = {Payload}, ExternalId = {ExternalId} }}";
+        : $"WebhookEnvelope {{ Id = {Id}, Connection = {Connection}, Timestamp = {Timestamp}, Event = {Event}, Payload = {Payload}, ExternalId = {ExternalId} }}";
 }
 public abstract record WebhookEvent(WebhookEnvelope Envelope);
 public sealed record UnknownWebhookEvent(WebhookEnvelope Envelope) : WebhookEvent(Envelope);
@@ -65,7 +65,7 @@ public static partial class Webhooks
         {
             _ = new UTF8Encoding(false, true).GetString(rawBody);
             var envelope = JsonSerializer.Deserialize<WebhookEnvelope>(rawBody, HttpTransport.Json);
-            if (envelope is null || string.IsNullOrEmpty(envelope.Id) || envelope.Session is null || string.IsNullOrEmpty(envelope.Timestamp) || string.IsNullOrEmpty(envelope.Event) || envelope.Payload.ValueKind == JsonValueKind.Undefined) throw new PolymorfaValidationException("Invalid event envelope.", "invalid_webhook_event");
+            if (envelope is null || string.IsNullOrEmpty(envelope.Id) || envelope.Connection is null || string.IsNullOrEmpty(envelope.Timestamp) || string.IsNullOrEmpty(envelope.Event) || envelope.Payload.ValueKind == JsonValueKind.Undefined) throw new PolymorfaValidationException("Invalid event envelope.", "invalid_webhook_event");
             return ParsePayload(envelope);
         }
         catch (DecoderFallbackException) { throw new PolymorfaValidationException("Webhook body must contain valid UTF-8.", "invalid_webhook_body"); }
@@ -93,7 +93,7 @@ public static partial class Webhooks
         "call.accepted","call.connection_joined","call.connection_left","call.ended","call.missed","call.participant_joined","call.participant_left","call.participant_state","call.permission_changed","call.received","call.rejected","call.telemetry",
         "campaign.cap_reached","campaign.cold_blocked","campaign.completed","campaign.failed","campaign.launched","campaign.paused","campaign.recipient_failed","campaign.recipient_sent","campaign.recipient_skipped","campaign.rescheduled","campaign.resumed","campaign.stopped","campaign.throttled",
         "chat.archive","chat.clear","chat.delete","chat.mute","chat.read","command.result","contact.opted_in","contact.opted_out","contact.sync","contact.update", "marketing.onboarding_updated", "contact.marketing_preference_updated",
-        "customer.archived","customer.archiving","customer.created","customer.enabled","customer.number.attached","customer.number.disconnected","customer.number.transferred","customer.pairing_link.connected","customer.pairing_link.created","customer.pairing_link.expired","customer.pairing_link.failed","customer.pairing_link.opened","customer.pairing_link.revoked","customer.restored","customer.updated",
-        "group.participant","group.update","history.sync","labels.update","message.ack","message.delete","message.echo","message.edited","message.failed","message.reaction","message.received","message.revoked","message.sent","message.update","message.vote","newsletter.update","order.payment_updated","presence.update","session.capabilities_updated","session.connected","session.logged_out","session.phone_offline","session.restriction_updated","session.status","template.status","usage.recorded","voice.asset_failed","voice.asset_ready"
+        "customer.archived","customer.archiving","customer.created","customer.enabled","customer.connection.attached","customer.connection.disconnected","customer.connection.transferred","customer.pairing_link.connected","customer.pairing_link.created","customer.pairing_link.expired","customer.pairing_link.failed","customer.pairing_link.opened","customer.pairing_link.revoked","customer.restored","customer.updated",
+        "group.participant","group.update","history.sync","labels.update","message.ack","message.delete","message.echo","message.edited","message.failed","message.reaction","message.received","message.revoked","message.sent","message.update","message.vote","newsletter.update","order.payment_updated","presence.update","connection.capabilities_updated","connection.connected","connection.logged_out","connection.phone_offline","connection.restriction_updated","connection.status","template.status","usage.recorded","voice.asset_failed","voice.asset_ready"
     }.ToFrozenSet(StringComparer.Ordinal);
 }

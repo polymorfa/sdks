@@ -9,7 +9,7 @@ internal static class StreamRepairTests
     private const int Limit = 4 * 1024 * 1024;
     private const string Key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
     private static string Frame(string cursor, string payload) => "data: " + JsonSerializer.Serialize(new { type = "event", cursor, streamId = "stream", sequence = 1, @event = new { id = "record", teamId = "team", projectId = "p", type = "future.event", source = "runtime", environment = "production", createdAt = "now", payloadAvailability = "available", payload = new { encoding = "base64", contentType = "application/json", data = payload }, metadataExpiresAt = "later" } }) + "\n\n";
-    private static string ValidPayload => Convert.ToBase64String("{\"id\":\"webhook\",\"session\":\"s\",\"timestamp\":\"now\",\"event\":\"future.event\",\"payload\":{}}"u8);
+    private static string ValidPayload => Convert.ToBase64String("{\"id\":\"webhook\",\"connection\":\"s\",\"timestamp\":\"now\",\"event\":\"future.event\",\"payload\":{}}"u8);
     private static TeamClient Client(HttpMessageHandler handler) => new(Credential.TeamApiKey(Key), new() { TransportHandler = handler, MaxNetworkRetries = 0 });
     private static EventStreamOptions Options(string? since = "initial") => new() { Since = since, ManualAcknowledgement = true, InitialReconnectDelay = TimeSpan.FromMilliseconds(1), MaximumReconnectDelay = TimeSpan.FromMilliseconds(1) };
     private sealed class Handler(Func<HttpRequestMessage, Task<HttpResponseMessage>> send) : HttpMessageHandler

@@ -80,7 +80,7 @@ CASES = [
         {
             "phoneNumber": "+1555",
             "action": "applied",
-            "scope": "number",
+            "scope": "connection",
             "rung": "throttle",
             "previousRung": "notify",
             "reason": "health",

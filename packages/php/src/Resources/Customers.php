@@ -86,7 +86,7 @@ final class Customers extends Resource
     {/** @var ApiResponse<array{data:Customer}> */return $this->request('POST', self::path($id).'/restore', (object)$body, options:$options);
     }
     /** @return ApiResponse<array{data:list<CustomerConnection>}> */
-    public function listNumbers(string $id, string $projectId, ?RequestOptions $options = null): ApiResponse
+    public function listConnections(string $id, string $projectId, ?RequestOptions $options = null): ApiResponse
     {/** @var ApiResponse<array{data:list<CustomerConnection>}> */return $this->request('GET', self::path($id).'/connections', query:['projectId' => $projectId], options:$options);
     }
     /** @param EventParams $params
@@ -109,7 +109,7 @@ final class Customers extends Resource
     }
     /** @param Transfer $body
      * @return ApiResponse<array{data:CustomerConnection}> */
-    public function transferNumber(string $id, string $connection, array $body, ?RequestOptions $options = null): ApiResponse
+    public function transferConnection(string $id, string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {/** @var ApiResponse<array{data:CustomerConnection}> */return $this->request('POST', self::path($id).'/connections/'.self::segment($connection).'/transfer', $body, options:$options);
     }
     private static function path(string $id): string
