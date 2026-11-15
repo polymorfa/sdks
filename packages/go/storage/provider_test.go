@@ -171,7 +171,7 @@ func TestMongoReplicaSetNativeConformance(t *testing.T) {
 	if err = client.Ping(ctx, nil); err != nil {
 		t.Fatal("borrowed Mongo client closed")
 	}
-	if _, err = db.Collection(a.prefix+"storage_schema").UpdateOne(ctx, bson.M{"_id": "storage"}, bson.M{"$set": bson.M{"version": 3}}); err != nil {
+	if _, err = db.Collection(a.prefix+"storage_schema").UpdateOne(ctx, bson.M{"_id": "storage"}, bson.M{"$set": bson.M{"version": 4}}); err != nil {
 		t.Fatal("mutate owned metadata")
 	}
 	if _, err = NewMongoAdapter(ctx, db, ProviderOptions{Namespace: namespace, Create: true}); err == nil {
@@ -231,7 +231,7 @@ func TestDynamoNativeConformance(t *testing.T) {
 		t.Fatal("borrowed Dynamo client closed")
 	}
 	item := a.key("storage_schema", "storage")
-	item["version"] = &types.AttributeValueMemberN{Value: "3"}
+	item["version"] = &types.AttributeValueMemberN{Value: "4"}
 	if _, err = client.PutItem(ctx, &dynamodb.PutItemInput{TableName: aws.String(table), Item: item}); err != nil {
 		t.Fatal("Dynamo version fixture")
 	}
@@ -285,7 +285,7 @@ func TestFirestoreNativeConformance(t *testing.T) {
 	if _, err = client.Doc("borrowed/probe").Set(ctx, map[string]bool{"ok": true}); err != nil {
 		t.Fatal("borrowed Firestore closed")
 	}
-	if _, err = a.meta().Set(ctx, map[string]int{"version": 3}); err != nil {
+	if _, err = a.meta().Set(ctx, map[string]int{"version": 4}); err != nil {
 		t.Fatal("mutate owned metadata")
 	}
 	if _, err = NewFirestoreAdapter(ctx, client, ProviderOptions{Namespace: namespace, Create: true}); err == nil {

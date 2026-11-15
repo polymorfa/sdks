@@ -284,7 +284,7 @@ same-connection CAS lease write in the same atomic batch. Secrets and endpoint U
 are omitted from errors and ordinary formatting/JSON.
 
 This uses the customer Worker bridge pinned at
-`9ae35e671f7f4868a67c1562422c5af9284b95c1`, backed by the D1 Worker binding.
+`d80b581c9df122411e9149a7e39a33700a51571c`, backed by the D1 Worker binding.
 Administrative D1 REST is not an atomic adapter. Native tests exercised the
 actual bundled Worker/Miniflare binding with all-entity fixtures, 2,000-row
 pagination, rollback, fenced deletion and checkpoint CAS. Set
@@ -294,7 +294,7 @@ pagination, rollback, fenced deletion and checkpoint CAS. Set
 ## Customer-owned Signal service client
 
 The server-side sidecar client consumes the application HTTP contract pinned to
-`8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. The separate application bearer secret
+`61209057729b002a2122b898d744a8813a702fc7`. The separate application bearer secret
 is not a Polymorfa API credential: it needs at least 16 visible ASCII characters,
 and values starting with the reserved `pmfa_` prefix are rejected before any
 request or webhook HMAC check. Device keys remain with the customer-operated
@@ -582,8 +582,8 @@ locale remain explicit. Enabling requires a supported non-null locale.
 
 `project.SignalCustody()` adds `Retrieve`, `Update`, `RetrieveCustomer` and
 `UpdateCustomer`. Team aliases live on `Projects()` and `Customers()`.
-These defaults apply to future Number reservations and never convert existing
-Numbers. Project mode cannot be null. Customer null restores inheritance:
+These defaults apply to future Connection reservations and never convert existing
+Connections. Project mode cannot be null. Customer null restores inheritance:
 
 ```go
 project, err := team.Project(projectID)
@@ -767,7 +767,7 @@ ACK keep that order. These changes are unreleased source behavior.
 
 ## Official API round-2 betas
 
-Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+Native Connection catalog-cache reads/sync, marketing status, Official group JPEG
 upload, identity changes, incoming carts and signed webhook batches have source
 counterparts. These additions remain unreleased betas and may return
 `feature_unavailable`. They grant no enrollment or provider authority. See
@@ -799,7 +799,7 @@ off-to-on transition. Project tokens may disable it. The SDK forwards values
 without guessing the stored state. Existing `invalid_parameter`,
 `permission_denied` and `state_conflict` errors remain authoritative.
 
-The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+The setting affects linked-device Connections. Cloud API Connections ignore it.
 Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
 when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
@@ -880,7 +880,7 @@ Prefer keyed response struct literals when constructing synthetic settings.
 ## Direct passkey relay (unreleased)
 
 Use server credentials with `connections:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -955,7 +955,7 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP

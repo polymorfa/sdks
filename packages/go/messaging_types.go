@@ -298,6 +298,10 @@ type StarRequest struct {
 type StatusResult struct {
 	Status string `json:"status"`
 }
+type ConnectionType string
+
+const ConnectionTypeWhatsApp ConnectionType = "whatsapp"
+
 type ConnectionMethod string
 
 const (
@@ -312,7 +316,7 @@ type Connection struct {
 	Name           string                       `json:"name"`
 	ExternalID     string                       `json:"externalId,omitempty"`
 	TenantID       string                       `json:"tenantId"`
-	Type           string                       `json:"type"`
+	Type           ConnectionType               `json:"type"`
 	Method         ConnectionMethod             `json:"method"`
 	PhoneNumberID  string                       `json:"phoneNumberId,omitempty"`
 	TestMode       bool                         `json:"testMode"`

@@ -356,11 +356,11 @@ type WebhookCallCapabilities struct {
 }
 type CallReceivedPayload struct {
 	webhookPayloadBase
-	From                 WebhookIdentity          `json:"from"`
-	CallID               string                   `json:"callId"`
-	HasVideo             bool                     `json:"hasVideo"`
+	From             WebhookIdentity          `json:"from"`
+	CallID           string                   `json:"callId"`
+	HasVideo         bool                     `json:"hasVideo"`
 	ConnectionMethod string                   `json:"connectionMethod,omitempty"`
-	Capabilities         *WebhookCallCapabilities `json:"capabilities,omitempty"`
+	Capabilities     *WebhookCallCapabilities `json:"capabilities,omitempty"`
 }
 type CallMissedPayload struct {
 	webhookPayloadBase
@@ -370,12 +370,12 @@ type CallMissedPayload struct {
 }
 type CallAcceptedPayload struct {
 	webhookPayloadBase
-	From                 WebhookIdentity          `json:"from"`
-	CallID               string                   `json:"callId"`
-	AnsweredBy           string                   `json:"answeredBy,omitempty"`
-	Exclusive            *bool                    `json:"exclusive,omitempty"`
+	From             WebhookIdentity          `json:"from"`
+	CallID           string                   `json:"callId"`
+	AnsweredBy       string                   `json:"answeredBy,omitempty"`
+	Exclusive        *bool                    `json:"exclusive,omitempty"`
 	ConnectionMethod string                   `json:"connectionMethod,omitempty"`
-	Capabilities         *WebhookCallCapabilities `json:"capabilities,omitempty"`
+	Capabilities     *WebhookCallCapabilities `json:"capabilities,omitempty"`
 }
 type CallRejectedPayload struct {
 	webhookPayloadBase
@@ -384,12 +384,12 @@ type CallRejectedPayload struct {
 }
 type CallEndedPayload struct {
 	webhookPayloadBase
-	From                 *WebhookIdentity `json:"from"`
-	CallID               string           `json:"callId"`
-	DurationSeconds      float64          `json:"durationSeconds"`
-	Reason               string           `json:"reason"`
-	Direction            string           `json:"direction"`
-	HadVideo             bool             `json:"hadVideo"`
+	From             *WebhookIdentity `json:"from"`
+	CallID           string           `json:"callId"`
+	DurationSeconds  float64          `json:"durationSeconds"`
+	Reason           string           `json:"reason"`
+	Direction        string           `json:"direction"`
+	HadVideo         bool             `json:"hadVideo"`
 	ConnectionMethod string           `json:"connectionMethod,omitempty"`
 }
 type CallTelemetryPayload struct {

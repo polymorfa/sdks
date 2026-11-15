@@ -170,7 +170,7 @@ func TestCosmosNativeConformance(t *testing.T) {
 		t.Fatal("cancelled Cosmos read succeeded")
 	}
 	// Setup must never replace a customer's incompatible version marker.
-	changed, _ := json.Marshal(cosmosDocument{ID: "storage_schema:storage", Namespace: "foreign_go", Entity: "storage_schema", Version: 3})
+	changed, _ := json.Marshal(cosmosDocument{ID: "storage_schema:storage", Namespace: "foreign_go", Entity: "storage_schema", Version: 4})
 	if _, err = container.ReplaceItem(ctx, foreign.partition, "storage_schema:storage", changed, nil); err != nil {
 		t.Fatal("version fixture")
 	}

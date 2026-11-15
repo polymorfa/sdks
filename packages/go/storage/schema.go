@@ -13,8 +13,8 @@ import (
 )
 
 const SchemaVersion = 3
-const SourceSDKCommit = "3bacf46f9c4213426314001586f5bae43aaa77de"
-const D1BridgeSourceCommit = "9ae35e671f7f4868a67c1562422c5af9284b95c1"
+const SourceSDKCommit = "d80b581c9df122411e9149a7e39a33700a51571c"
+const D1BridgeSourceCommit = "d80b581c9df122411e9149a7e39a33700a51571c"
 
 //go:embed schema3.json
 var schemaBytes []byte
