@@ -174,7 +174,7 @@ type ExpectedPayloads = {
     readonly callId: string;
     readonly answeredBy?: string;
     readonly exclusive?: boolean;
-    readonly connectionConnection?: "linked_device" | "cloud_api";
+    readonly connectionMethod?: "linked_device" | "cloud_api";
     readonly capabilities?: ExpectedCallCapabilities;
   };
   readonly "call.ended": {
@@ -184,7 +184,7 @@ type ExpectedPayloads = {
     readonly reason: string;
     readonly direction: "inbound" | "outbound";
     readonly hadVideo: boolean;
-    readonly connectionConnection?: "linked_device" | "cloud_api";
+    readonly connectionMethod?: "linked_device" | "cloud_api";
   };
   readonly "call.missed": {
     readonly from: ExpectedIdentityReference;
@@ -230,7 +230,7 @@ type ExpectedPayloads = {
     readonly from: ExpectedIdentityReference;
     readonly callId: string;
     readonly hasVideo: boolean;
-    readonly connectionConnection?: "linked_device" | "cloud_api";
+    readonly connectionMethod?: "linked_device" | "cloud_api";
     readonly capabilities?: ExpectedCallCapabilities;
   };
   readonly "call.rejected": {

@@ -28,7 +28,7 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 		{"call.participant_joined call.participant_state", "CallParticipantPayload", `{"participant":{"id":"p","handRaised":false,"audioMuted":false,"video":false,"state":"connected"}}`, "participant.handRaised"},
 		{"call.participant_left", "CallParticipantLeftPayload", `{"participantId":"p","reason":"left"}`, "participantId"},
 		{"call.permission_changed", "CallPermissionChangedPayload", `{"conversation":{"id":"p"},"status":"temporary","expiresAt":null}`, "status"},
-		{"call.received", "CallReceivedPayload", `{"hasVideo":true,"connectionConnection":"official_api"}`, "hasVideo"},
+		{"call.received", "CallReceivedPayload", `{"hasVideo":true,"connectionMethod":"cloud_api"}`, "connectionMethod"},
 		{"call.rejected", "CallRejectedPayload", `{"callId":"c","from":{"phoneNumber":"+15551234567","id":"x"}}`, "from.phoneNumber"},
 		{"call.telemetry", "CallTelemetryPayload", `{"recvKbps":2.5,"rttMs":3}`, "recvKbps"},
 		{"campaign.cap_reached", "CampaignCapReachedPayload", `{"capLimit":200,"windowResetsAt":42}`, "capLimit"},

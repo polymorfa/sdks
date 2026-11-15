@@ -361,7 +361,7 @@ Connection = Literal["linked_device", "cloud_api"]
 class CallReceivedPayload(_From):
     callId: str
     hasVideo: bool
-    connectionConnection: NotRequired[Connection]
+    connectionMethod: NotRequired[Connection]
     capabilities: NotRequired[WebhookCallCapabilities]
 
 
@@ -374,7 +374,7 @@ class CallAcceptedPayload(_From):
     callId: str
     answeredBy: NotRequired[str]
     exclusive: NotRequired[bool]
-    connectionConnection: NotRequired[Connection]
+    connectionMethod: NotRequired[Connection]
     capabilities: NotRequired[WebhookCallCapabilities]
 
 
@@ -388,7 +388,7 @@ class CallEndedPayload(_NullableFrom):
     reason: str
     direction: Literal["inbound", "outbound"]
     hadVideo: bool
-    connectionConnection: NotRequired[Connection]
+    connectionMethod: NotRequired[Connection]
 
 
 class CallTelemetryPayload(TypedDict):

@@ -527,7 +527,7 @@ export interface CallReceivedPayload {
   readonly callId: string;
   readonly hasVideo: boolean;
   /** How the connection is connected to WhatsApp. */
-  readonly connectionConnection?: ConnectionMethodKind;
+  readonly connectionMethod?: ConnectionMethodKind;
   readonly capabilities?: WebhookCallCapabilities;
 }
 
@@ -544,7 +544,7 @@ export interface CallAcceptedPayload {
   readonly answeredBy?: string;
   /** The answer claimed the call: other participants stopped ringing. */
   readonly exclusive?: boolean;
-  readonly connectionConnection?: ConnectionMethodKind;
+  readonly connectionMethod?: ConnectionMethodKind;
   readonly capabilities?: WebhookCallCapabilities;
 }
 
@@ -562,7 +562,7 @@ export interface CallEndedPayload {
   readonly reason: string;
   readonly direction: "inbound" | "outbound";
   readonly hadVideo: boolean;
-  readonly connectionConnection?: ConnectionMethodKind;
+  readonly connectionMethod?: ConnectionMethodKind;
 }
 
 export interface CallTelemetryPayload {
