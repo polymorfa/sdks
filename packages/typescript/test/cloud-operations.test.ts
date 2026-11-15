@@ -70,7 +70,7 @@ describe("Official API operations", () => {
       const link = {
         quicklinkId: "ql_123",
         url: "https://pair.example/secret-link",
-        session: "support/eu",
+        connection: "support/eu",
       };
       const data = [state, pricing, health, link];
       let index = 0;
@@ -85,17 +85,17 @@ describe("Official API operations", () => {
       ).toEqual(state);
       expect(
         (
-          await sdk.sessions.getMetaPricing("support/eu", {
+          await sdk.connections.getMetaPricing("support/eu", {
             since: pricing.since,
             until: pricing.until,
           })
         ).data.data,
       ).toEqual(pricing);
       expect(
-        (await sdk.sessions.getCloudCredentialHealth("support/eu")).data.data,
+        (await sdk.connections.getCloudCredentialHealth("support/eu")).data.data,
       ).toEqual(health);
       expect(
-        (await sdk.sessions.reauthorizeCloudCredentials("support/eu")).data
+        (await sdk.connections.reauthorizeCloudCredentials("support/eu")).data
           .data,
       ).toEqual(link);
       expect(server.requests.map((r) => `${r.method} ${r.path}`)).toEqual([
@@ -113,9 +113,9 @@ describe("Official API operations", () => {
     const sdk = client(server, "clientToken");
     for (const request of [
       () => sdk.chats.getServiceWindow("support", "+5511999999999"),
-      () => sdk.sessions.getMetaPricing("support"),
-      () => sdk.sessions.getCloudCredentialHealth("support"),
-      () => sdk.sessions.reauthorizeCloudCredentials("support"),
+      () => sdk.connections.getMetaPricing("support"),
+      () => sdk.connections.getCloudCredentialHealth("support"),
+      () => sdk.connections.reauthorizeCloudCredentials("support"),
     ])
       expect(request).toThrow();
     expect(server.requests).toHaveLength(0);
@@ -130,7 +130,7 @@ describe("Official API operations", () => {
     }));
     servers.push(server);
     await expect(
-      client(server).sessions.reauthorizeCloudCredentials("support", {
+      client(server).connections.reauthorizeCloudCredentials("support", {
         idempotencyKey: "same-key",
         maxNetworkRetries: 4,
       }),

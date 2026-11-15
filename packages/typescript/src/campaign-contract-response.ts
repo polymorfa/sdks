@@ -147,7 +147,7 @@ const models = {
     id: string,
     campaignId: string,
     status: one("sent"),
-    from: object({ sessionId: string, phone: string }),
+    from: object({ connectionId: string, phone: string }),
     to: string,
     messageId: nullable(string),
     variables: map(string),
@@ -307,13 +307,13 @@ export async function requestContract<T>(
 
 const phoneModels = {
   phone: object({
-    session: string,
+    connection: string,
     phone: string,
     online: boolean,
     devices: list(object({ deviceId: integer })),
   }),
-  send: object({ session: string, to: string, messageId: nullable(string) }),
-  unlink: object({ session: string, deviceId: integer, unlinked: one(true) }),
+  send: object({ connection: string, to: string, messageId: nullable(string) }),
+  unlink: object({ connection: string, deviceId: integer, unlinked: one(true) }),
 };
 /** @internal Testing-phone endpoints return bare JSON, including accepted202. */
 export async function requestPhone<T>(

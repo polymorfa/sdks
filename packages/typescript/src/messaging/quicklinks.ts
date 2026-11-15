@@ -1,9 +1,9 @@
-import { quickLinkIntent } from "../session-delivery-validation.js";
+import { quickLinkIntent } from "../connection-delivery-validation.js";
 import { existingOptions } from "../campaign-existing-validation.js";
 import type { SignalCustodyMode } from "../campaign-contracts.js";
 import { campaignContractBody } from "../campaign-contract-validation.js";
 import { billingLimit, billingPriority } from "../platform/billing-controls.js";
-import type { SessionConfigurationOverrides } from "./session-configuration.js";
+import type { ConnectionConfigurationOverrides } from "./connection-configuration.js";
 import { PolymorfaConfigurationError } from "../errors.js";
 import type {
   QuickLinkHistorySync,
@@ -13,7 +13,7 @@ import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { MessagingCredential } from "../credentials.js";
 
-export interface QuickLinkConfiguration extends SessionConfigurationOverrides {
+export interface QuickLinkConfiguration extends ConnectionConfigurationOverrides {
   readonly testing?: {
     readonly country?: string;
     readonly configuration?: import("./testing-configuration.js").TestingConfiguration;
@@ -48,7 +48,7 @@ export type CreateQuickLinkRequest = CreateQuickLinkBase &
     | {
         readonly purpose?: "initial";
         readonly signalMode?: SignalCustodyMode;
-        readonly session?: never;
+        readonly connection?: never;
         readonly addConnection?: never;
         readonly connectionGoal?: QuickLinkConnectionGoal;
         readonly customerId?: string;
@@ -60,7 +60,7 @@ export type CreateQuickLinkRequest = CreateQuickLinkBase &
       }
     | {
         readonly purpose: "add_connection";
-        readonly session: string;
+        readonly connection: string;
         readonly addConnection: QuickLinkConnectionKind;
         readonly signalMode?: never;
         readonly connectionGoal?: "hybrid";
@@ -76,7 +76,7 @@ export interface QuickLink {
   readonly addConnection?: QuickLinkConnectionKind;
   readonly id: string;
   readonly url: string;
-  readonly session: string;
+  readonly connection: string;
   readonly expiresAt: string | null;
 }
 
@@ -130,7 +130,7 @@ export interface QuickLinkStatus {
   } | null;
   readonly id: string;
   readonly status: QuickLinkStatusValue;
-  readonly session: string;
+  readonly connection: string;
   readonly expiresAt: string | null;
   readonly openedAt: string | null;
   readonly connectedAt: string | null;
@@ -155,7 +155,7 @@ export interface CancelQuickLinkResponse {
 
 export interface HybridQuickLinkAvailabilityRequest {
   readonly projectId: string;
-  readonly session: string;
+  readonly connection: string;
 }
 
 export interface HybridQuickLinkAvailability {
@@ -212,7 +212,7 @@ export class QuickLinksResource {
     return this.transport.request({
       method: "GET",
       path: "/messaging/quicklinks/availability",
-      query: { projectId: input.projectId, session: input.session },
+      query: { projectId: input.projectId, connection: input.connection },
       ...existingOptions(options),
     });
   }

@@ -317,14 +317,14 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps batch session lifecycle to the team-key client", () => {
+  it("maps batch connection lifecycle to the team-key client", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
         typescript: { status: string; method?: string };
       }>;
     };
-    const operationIds = ["stopSessions", "deleteSessions"];
+    const operationIds = ["stopConnections", "deleteConnections"];
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) => operationIds.includes(operationId))
@@ -332,8 +332,8 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toEqual({
-      deleteSessions: "Client.sessions.deleteMany",
-      stopSessions: "Client.sessions.stopMany",
+      deleteConnections: "Client.connections.deleteMany",
+      stopConnections: "Client.connections.stopMany",
     });
   });
 
@@ -366,7 +366,7 @@ describe("coverage checker", () => {
         },
       }),
       BrowserMessagingClient: new BrowserMessagingClient({
-        session: "coverage",
+        connection: "coverage",
         getClientToken: async () => "pmfa_ct_coverage",
       }),
     };
@@ -487,8 +487,8 @@ describe("coverage checker", () => {
       getBusinessProduct: "MessagingClient.business.getProduct",
       getProjectObservationPolicy:
         "MessagingClient.observationPolicies.retrieveForProject",
-      getSessionObservationPolicy:
-        "MessagingClient.observationPolicies.retrieveForSession",
+      getConnectionObservationPolicy:
+        "MessagingClient.observationPolicies.retrieveForConnection",
       getOwnBusinessProfile: "MessagingClient.business.getProfile",
       reorderBusinessCollections: "MessagingClient.business.reorderCollections",
       setBusinessCartEnabled: "MessagingClient.business.setCartEnabled",
@@ -629,7 +629,7 @@ describe("coverage checker", () => {
       "checkCall",
       "getCallPermission",
       "getUserSecurityCode",
-      "listSessionCalls",
+      "listConnectionCalls",
       "rejectCall",
       "resolveIdentity",
     ]);
@@ -654,8 +654,8 @@ describe("coverage checker", () => {
       "listApiKeys",
       "listMembers",
       "listAuditLogs",
-      "listSessionBans",
-      "listActiveSessionBans",
+      "listConnectionBans",
+      "listActiveConnectionBans",
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
       "getPlatformOperation",
@@ -683,13 +683,13 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.auditLogs.list",
       },
-      listSessionBans: {
+      listConnectionBans: {
         status: "covered",
-        method: "Client.sessionBans.list",
+        method: "Client.connectionBans.list",
       },
-      listActiveSessionBans: {
+      listActiveConnectionBans: {
         status: "covered",
-        method: "Client.sessionBans.listActive",
+        method: "Client.connectionBans.listActive",
       },
       listSecurityIncidents: {
         status: "covered",

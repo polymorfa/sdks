@@ -17,7 +17,7 @@ const operations = [
     suffix: "/challenge",
     body: f.issue,
     reply: f.ticket,
-    call: (c: MessagingClient) => c.passkeys.issueChallenge(f.session, f.issue),
+    call: (c: MessagingClient) => c.passkeys.issueChallenge(f.connection, f.issue),
   },
   {
     method: "GET",
@@ -25,7 +25,7 @@ const operations = [
     body: undefined,
     reply: f.ticket,
     call: (c: MessagingClient) =>
-      c.passkeys.getChallenge(f.session, f.ticketId),
+      c.passkeys.getChallenge(f.connection, f.ticketId),
   },
   {
     method: "POST",
@@ -33,7 +33,7 @@ const operations = [
     body: f.assertion,
     reply: f.assertionResult,
     call: (c: MessagingClient) =>
-      c.passkeys.submitAssertion(f.session, f.assertion),
+      c.passkeys.submitAssertion(f.connection, f.assertion),
   },
   {
     method: "GET",
@@ -45,14 +45,14 @@ const operations = [
       code: "ABCD-EF12",
       skipHandoffUX: false,
     },
-    call: (c: MessagingClient) => c.passkeys.getConfirmation(f.session),
+    call: (c: MessagingClient) => c.passkeys.getConfirmation(f.connection),
   },
   {
     method: "POST",
     suffix: "/confirmation",
     body: f.confirm,
     reply: { status: "waiting_for_pairing" },
-    call: (c: MessagingClient) => c.passkeys.confirm(f.session, f.confirm),
+    call: (c: MessagingClient) => c.passkeys.confirm(f.connection, f.confirm),
   },
 ];
 describe("five direct passkey operations", () => {

@@ -58,7 +58,7 @@ const calls = [
     method: "place",
     args: [
       {
-        session: "support",
+        connection: "support",
         to: "+15550100",
         video: false,
         exclusive: true,
@@ -67,7 +67,7 @@ const calls = [
       { idempotencyKey: "place-555" },
     ],
     body: {
-      session: "support",
+      connection: "support",
       to: "+15550100",
       video: false,
       exclusive: true,
@@ -76,7 +76,7 @@ const calls = [
     status: 201,
     response: {
       success: true,
-      data: { callId, session: "support", video: false },
+      data: { callId, connection: "support", video: false },
     },
   },
   {
@@ -156,8 +156,8 @@ const calls = [
   {
     operationId: "checkCall",
     method: "check",
-    args: [{ session: "support/eu", to: "+14155550123" }],
-    body: { session: "support/eu", to: "+14155550123" },
+    args: [{ connection: "support/eu", to: "+14155550123" }],
+    body: { connection: "support/eu", to: "+14155550123" },
     status: 200,
     response: {
       success: true,
@@ -304,7 +304,7 @@ describe("reconciled coverage evidence", () => {
       expect(new URL(url).pathname).toBe(
         mapping.path
           .replace("{id}", encodeURIComponent(callId))
-          .replace("{session}", encodeURIComponent("support/eu"))
+          .replace("{connection}", encodeURIComponent("support/eu"))
           .replace("{to}", encodeURIComponent("+14155550123")),
       );
       expect(init.method).toBe(mapping.method);
@@ -325,7 +325,7 @@ describe("reconciled coverage evidence", () => {
     },
   );
 
-  it("retires session answer modes and calling tickets", () => {
+  it("retires connection answer modes and calling tickets", () => {
     for (const operationId of [
       "voipSetMode",
       "voipToken",
@@ -407,7 +407,7 @@ describe("reconciled coverage evidence", () => {
       paths: Record<string, Record<string, { security: unknown }>>;
     };
     expect(platform.paths[operation.path]!.get!.security).toEqual([
-      { ConsoleSession: [] },
+      { ConsoleConnection: [] },
     ]);
   });
 
@@ -431,7 +431,7 @@ describe("reconciled coverage evidence", () => {
       expect(
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
-      ).toEqual([{ ConsoleSession: [] }]);
+      ).toEqual([{ ConsoleConnection: [] }]);
     }
   });
 
@@ -459,7 +459,7 @@ describe("reconciled coverage evidence", () => {
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
         operationId,
-      ).toEqual([{ ConsoleSession: [] }]);
+      ).toEqual([{ ConsoleConnection: [] }]);
     }
   });
 });

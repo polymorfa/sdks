@@ -16,7 +16,7 @@ import {
 } from "../src/webhooks/index.js";
 
 const raw = Buffer.from(
-  '{"id":"evt_1","session":"support","timestamp":"2026-08-19T10:00:00Z","event":"message.received","payload":{"id":"m1","from":{"id":"chat"},"sender":{"id":"sender"},"fromMe":false,"timestamp":1787133600,"pushName":"Ada","isGroup":false,"type":"text","text":"Hello"}}',
+  '{"id":"evt_1","connection":"support","timestamp":"2026-08-19T10:00:00Z","event":"message.received","payload":{"id":"m1","from":{"id":"chat"},"sender":{"id":"sender"},"fromMe":false,"timestamp":1787133600,"pushName":"Ada","isGroup":false,"type":"text","text":"Hello"}}',
 );
 const signature =
   "52c730509d65561d9394c024bfef1e3787821749b97d6b5664c39f467a16a5b2";
@@ -72,7 +72,7 @@ describe("verifyWebhookSignature", () => {
 
 describe("webhook utilities", () => {
   it("does not advertise the retired direct-QR event", () => {
-    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain("session.qr");
+    expect(KNOWN_WEBHOOK_EVENT_TYPES).not.toContain("connection.qr");
   });
 
   it("creates canonical exact-byte fixtures and verifies them", async () => {
@@ -191,7 +191,7 @@ describe("constructWebhookEvent", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "historical-bansafe-event",
-        session: "support",
+        connection: "support",
         timestamp: "2026-09-07T00:00:00Z",
         event: name,
         payload: { legacy: true },
@@ -221,7 +221,7 @@ describe("constructWebhookEvent", () => {
       const body = Buffer.from(
         JSON.stringify({
           id: "event-555",
-          session: "support",
+          connection: "support",
           timestamp: "2026-09-07T00:00:00Z",
           event: "call.ended",
           payload,
@@ -262,7 +262,7 @@ describe("constructWebhookEvent", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "telemetry-555",
-        session: "support",
+        connection: "support",
         timestamp: "2026-09-07T00:00:00Z",
         event: "call.telemetry",
         payload,
@@ -291,7 +291,7 @@ describe("constructWebhookEvent", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "evt_campaign_stopped",
-        session: "",
+        connection: "",
         timestamp: "2026-09-23T00:00:00Z",
         event: "campaign.stopped",
         payload,
@@ -311,7 +311,7 @@ describe("constructWebhookEvent", () => {
 
   it("preserves unknown event names and payloads", async () => {
     const body = Buffer.from(
-      '{"id":"evt_future","session":"support","timestamp":"2026-08-19T10:00:00Z","event":"future.ready","payload":{"capability":42}}',
+      '{"id":"evt_future","connection":"support","timestamp":"2026-08-19T10:00:00Z","event":"future.ready","payload":{"capability":42}}',
     );
     const event = await constructWebhookEvent(
       body,

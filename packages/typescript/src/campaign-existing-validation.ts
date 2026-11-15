@@ -320,7 +320,7 @@ export function validateRecipientList(value: unknown, platform = false): void {
         "cold_held",
         "campaign_cancelled",
         "invalid_recipient",
-        "session_not_connected",
+        "connection_not_connected",
         "ack_timeout",
         "blocked_by_safety",
         "send_failed",

@@ -256,7 +256,7 @@ export interface WhatsAppMetrics {
   } | null;
 }
 export interface WhatsAppAnalytics {
-  callSeries: (CallOutcomeMetrics & { sessionId: string; ts: number })[];
+  callSeries: (CallOutcomeMetrics & { connectionId: string; ts: number })[];
   enabled: boolean;
   period: { start: number; end: number };
   requestVitals: {
@@ -272,7 +272,7 @@ export interface WhatsAppAnalytics {
       })
     | null;
   numbers: (WhatsAppMetrics & {
-    sessionId: string;
+    connectionId: string;
     projectId: string;
     projectName: string;
     name: string;
@@ -290,7 +290,7 @@ export interface WhatsAppAnalytics {
     phoneActivityMs: number;
     phoneQuietGaps: number;
     phoneQuietMs: number;
-    sessionId: string;
+    connectionId: string;
     ts: number;
     outgoingMessages: number;
     incomingMessages: number;
@@ -307,21 +307,21 @@ export interface AnalyticsSettings {
 
 export interface AnalyticsParams {
   readonly projectId?: string;
-  readonly sessionId?: string;
+  readonly connectionId?: string;
   /** Unix milliseconds; defaults to the preceding 30 days. Maximum range 366 days. */
   readonly start?: number;
   readonly end?: number;
 }
 export interface AnalyticsMetricsParams {
   readonly projectId?: string;
-  readonly sessionId?: string;
+  readonly connectionId?: string;
   /** Completed UTC hours, 1-168. Default 24. */
   readonly windowHours?: number;
   /** Include bounded metadata breakdowns. Default false. */
   readonly segments?: boolean;
   readonly format?: "prometheus" | "openmetrics";
 }
-/** Message aggregates from Linked Devices telemetry and retained call outcomes. Requires sessions:read.
+/** Message aggregates from Linked Devices telemetry and retained call outcomes. Requires connections:read.
  * Owners/admins enable Analytics in the Console. Disabled results contain no
  * business data. Read/reply percentages are completed 24-hour direct-chat
  * cohorts; null means there is no denominator or coverage is incomplete. */
@@ -336,7 +336,7 @@ export class AnalyticsResource {
     params: AnalyticsMetricsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<string>> {
-    for (const key of ["projectId", "sessionId"] as const) {
+    for (const key of ["projectId", "connectionId"] as const) {
       if (
         params[key] !== undefined &&
         !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -414,7 +414,7 @@ export class AnalyticsResource {
     params: AnalyticsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<WhatsAppAnalytics>> {
-    for (const key of ["projectId", "sessionId"] as const) {
+    for (const key of ["projectId", "connectionId"] as const) {
       const value = params[key];
       if (
         value !== undefined &&

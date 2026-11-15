@@ -48,54 +48,54 @@ export class BusinessResource {
   constructor(private readonly transport: HttpTransport) {}
 
   getProfile(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetOwnBusinessProfileResponse>> {
-    return this.get(profilePath(session), options);
+    return this.get(profilePath(connection), options);
   }
 
   updateProfile(
-    session: string,
+    connection: string,
     body: BusinessProfileUpdateRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateBusinessProfileResponse>> {
-    return this.mutate("PATCH", profilePath(session), body, options);
+    return this.mutate("PATCH", profilePath(connection), body, options);
   }
 
   setCoverPhoto(
-    session: string,
+    connection: string,
     body: BusinessCoverPhotoRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetBusinessCoverPhotoResponse>> {
     return this.mutate(
       "PUT",
-      `${profilePath(session)}/cover-photo`,
+      `${profilePath(connection)}/cover-photo`,
       body,
       options,
     );
   }
 
   deleteCoverPhoto(
-    session: string,
+    connection: string,
     coverPhotoId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DeleteBusinessCoverPhotoResponse>> {
     return this.mutate(
       "DELETE",
-      `${profilePath(session)}/cover-photo/${encodeURIComponent(coverPhotoId)}`,
+      `${profilePath(connection)}/cover-photo/${encodeURIComponent(coverPhotoId)}`,
       undefined,
       options,
     );
   }
 
   getCatalog(
-    session: string,
+    connection: string,
     params: BusinessCatalogParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessCatalogResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${businessPath(session)}/catalog`,
+      path: `${businessPath(connection)}/catalog`,
       query: {
         id: params.id,
         after: params.after,
@@ -108,115 +108,115 @@ export class BusinessResource {
   }
 
   createCatalog(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateBusinessCatalogResponse>> {
     return this.mutate(
       "POST",
-      `${businessPath(session)}/catalog`,
+      `${businessPath(connection)}/catalog`,
       undefined,
       options,
     );
   }
 
   setCartEnabled(
-    session: string,
+    connection: string,
     body: BusinessCartSettingRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetBusinessCartEnabledResponse>> {
     return this.mutate(
       "PATCH",
-      `${businessPath(session)}/catalog/cart`,
+      `${businessPath(connection)}/catalog/cart`,
       body,
       options,
     );
   }
 
   getProduct(
-    session: string,
+    connection: string,
     productId: string,
     params: BusinessProductParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessProductResponse>> {
     return this.transport.request({
       method: "GET",
-      path: productPath(session, productId),
+      path: productPath(connection, productId),
       query: { id: params.id },
       ...options,
     });
   }
 
   createProduct(
-    session: string,
+    connection: string,
     body: BusinessProductMutationRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateBusinessProductResponse>> {
     return this.mutate(
       "POST",
-      `${businessPath(session)}/products`,
+      `${businessPath(connection)}/products`,
       body,
       options,
     );
   }
 
   updateProduct(
-    session: string,
+    connection: string,
     productId: string,
     body: BusinessProductMutationRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateBusinessProductResponse>> {
-    return this.mutate("PUT", productPath(session, productId), body, options);
+    return this.mutate("PUT", productPath(connection, productId), body, options);
   }
 
   deleteProduct(
-    session: string,
+    connection: string,
     productId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DeleteBusinessProductResponse>> {
     return this.mutate(
       "DELETE",
-      productPath(session, productId),
+      productPath(connection, productId),
       undefined,
       options,
     );
   }
 
   setProductVisibility(
-    session: string,
+    connection: string,
     productId: string,
     body: BusinessProductVisibilityRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetBusinessProductVisibilityResponse>> {
     return this.mutate(
       "PATCH",
-      `${productPath(session, productId)}/visibility`,
+      `${productPath(connection, productId)}/visibility`,
       body,
       options,
     );
   }
 
   appealProduct(
-    session: string,
+    connection: string,
     productId: string,
     body: BusinessCatalogAppealRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<AppealBusinessProductResponse>> {
     return this.mutate(
       "POST",
-      `${productPath(session, productId)}/appeal`,
+      `${productPath(connection, productId)}/appeal`,
       body,
       options,
     );
   }
 
   listCollections(
-    session: string,
+    connection: string,
     params: BusinessCollectionsParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessCollectionsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${businessPath(session)}/collections`,
+      path: `${businessPath(connection)}/collections`,
       query: {
         id: params.id,
         after: params.after,
@@ -230,14 +230,14 @@ export class BusinessResource {
   }
 
   getCollection(
-    session: string,
+    connection: string,
     collectionId: string,
     params: BusinessCollectionParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessCollectionResponse>> {
     return this.transport.request({
       method: "GET",
-      path: collectionPath(session, collectionId),
+      path: collectionPath(connection, collectionId),
       query: {
         id: params.id,
         after: params.after,
@@ -250,118 +250,118 @@ export class BusinessResource {
   }
 
   createCollection(
-    session: string,
+    connection: string,
     body: BusinessCollectionCreateRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateBusinessCollectionResponse>> {
     return this.mutate(
       "POST",
-      `${businessPath(session)}/collections`,
+      `${businessPath(connection)}/collections`,
       body,
       options,
     );
   }
 
   updateCollection(
-    session: string,
+    connection: string,
     collectionId: string,
     body: BusinessCollectionUpdateRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateBusinessCollectionResponse>> {
     return this.mutate(
       "PATCH",
-      collectionPath(session, collectionId),
+      collectionPath(connection, collectionId),
       body,
       options,
     );
   }
 
   deleteCollection(
-    session: string,
+    connection: string,
     collectionId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DeleteBusinessCollectionResponse>> {
     return this.mutate(
       "DELETE",
-      collectionPath(session, collectionId),
+      collectionPath(connection, collectionId),
       undefined,
       options,
     );
   }
 
   reorderCollections(
-    session: string,
+    connection: string,
     body: BusinessCollectionReorderRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ReorderBusinessCollectionsResponse>> {
     return this.mutate(
       "POST",
-      `${businessPath(session)}/collections/reorder`,
+      `${businessPath(connection)}/collections/reorder`,
       body,
       options,
     );
   }
 
   appealCollection(
-    session: string,
+    connection: string,
     collectionId: string,
     body: BusinessCatalogAppealRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<AppealBusinessCollectionResponse>> {
     return this.mutate(
       "POST",
-      `${collectionPath(session, collectionId)}/appeal`,
+      `${collectionPath(connection, collectionId)}/appeal`,
       body,
       options,
     );
   }
 
   getOrder(
-    session: string,
+    connection: string,
     orderId: string,
     body: BusinessOrderLookupRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessOrderResponse>> {
     return this.mutate(
       "POST",
-      `${businessPath(session)}/orders/${encodeURIComponent(orderId)}/lookup`,
+      `${businessPath(connection)}/orders/${encodeURIComponent(orderId)}/lookup`,
       body,
       options,
     );
   }
 
   getMerchantCompliance(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessMerchantComplianceResponse>> {
-    return this.get(`${businessPath(session)}/compliance`, options);
+    return this.get(`${businessPath(connection)}/compliance`, options);
   }
 
   setMerchantCompliance(
-    session: string,
+    connection: string,
     body: BusinessMerchantCompliance,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetBusinessMerchantComplianceResponse>> {
     return this.mutate(
       "PUT",
-      `${businessPath(session)}/compliance`,
+      `${businessPath(connection)}/compliance`,
       body,
       options,
     );
   }
 
   getLinkedAccounts(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessLinkedAccountsResponse>> {
-    return this.get(`${businessPath(session)}/linked-accounts`, options);
+    return this.get(`${businessPath(connection)}/linked-accounts`, options);
   }
 
   getEligibility(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessEligibilityResponse>> {
-    return this.get(`${businessPath(session)}/eligibility`, options);
+    return this.get(`${businessPath(connection)}/eligibility`, options);
   }
 
   private get<T>(
@@ -386,18 +386,18 @@ export class BusinessResource {
   }
 }
 
-function businessPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/business`;
+function businessPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/business`;
 }
 
-function profilePath(session: string): string {
-  return `${businessPath(session)}/profile`;
+function profilePath(connection: string): string {
+  return `${businessPath(connection)}/profile`;
 }
 
-function productPath(session: string, productId: string): string {
-  return `${businessPath(session)}/products/${encodeURIComponent(productId)}`;
+function productPath(connection: string, productId: string): string {
+  return `${businessPath(connection)}/products/${encodeURIComponent(productId)}`;
 }
 
-function collectionPath(session: string, collectionId: string): string {
-  return `${businessPath(session)}/collections/${encodeURIComponent(collectionId)}`;
+function collectionPath(connection: string, collectionId: string): string {
+  return `${businessPath(connection)}/collections/${encodeURIComponent(collectionId)}`;
 }

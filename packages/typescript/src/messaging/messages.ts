@@ -28,7 +28,7 @@ export class MessagesResource {
 
   /** Read the issuing principal's durable attempt. This method never resends. */
   operationStatus(
-    session: string,
+    connection: string,
     operationId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<MessageOperationResponse>> {
@@ -39,14 +39,14 @@ export class MessagesResource {
       );
     return this.transport.request({
       method: "GET",
-      path: `/messaging/${encodeURIComponent(session)}/operations/${encodeURIComponent(operationId)}`,
+      path: `/messaging/${encodeURIComponent(connection)}/operations/${encodeURIComponent(operationId)}`,
       ...options,
     });
   }
 
   /** Validate interactive unions before transport and preserve idempotency and descriptor options. */
   send(
-    session: string,
+    connection: string,
     body: SendMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendMessageResponse>> {
@@ -66,7 +66,7 @@ export class MessagesResource {
           typeof value === "object" && value !== null && "descriptor" in value,
       );
     return this.post(
-      session,
+      connection,
       "send",
       descriptor ? campaignContractBody(body) : body,
       withIdempotencyKey(
@@ -78,47 +78,47 @@ export class MessagesResource {
   }
 
   markSeen(
-    session: string,
+    connection: string,
     body: SeenRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<{ readonly status: string }>>> {
-    return this.post(session, "seen", body, options);
+    return this.post(connection, "seen", body, options);
   }
 
   /** Official Numbers require an inbound id and state typing; marks it read for an indicator lasting at most 25 seconds. */
   setTyping(
-    session: string,
+    connection: string,
     body: TypingRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<{ readonly status: string }>>> {
-    return this.post(session, "typing", body, options);
+    return this.post(connection, "typing", body, options);
   }
 
   react(
-    session: string,
+    connection: string,
     body: ReactRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendReactionResponse>> {
-    return this.post(session, "react", body, withIdempotencyKey(options));
+    return this.post(connection, "react", body, withIdempotencyKey(options));
   }
 
   star(
-    session: string,
+    connection: string,
     body: StarRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<StarMessageResponse>> {
-    return this.post(session, "star", body, options);
+    return this.post(connection, "star", body, options);
   }
 
   private post<T>(
-    session: string,
+    connection: string,
     action: "send" | "seen" | "typing" | "react" | "star",
     body: unknown,
     options: RequestOptions,
   ): Promise<ApiResponse<T>> {
     return this.transport.request({
       method: "POST",
-      path: `/messaging/${encodeURIComponent(session)}/messages/${action}`,
+      path: `/messaging/${encodeURIComponent(connection)}/messages/${action}`,
       body,
       ...options,
     });

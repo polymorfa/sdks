@@ -38,7 +38,7 @@ async function setup(
 }
 const event = {
   id: "evt-1",
-  session: "support",
+  connection: "support",
   timestamp: "2026-10-21T10:00:00Z",
   event: "message.received",
   payload: {},

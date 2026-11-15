@@ -433,11 +433,11 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
   ): Promise<ApiResponse<WebhookTestFor<O>>> {
     if (
       this.prefix === "/platform" &&
-      ("body" in input || "sessionId" in input)
+      ("body" in input || "connectionId" in input)
     ) {
       return Promise.reject(
         new PolymorfaValidationError(
-          "Team webhook tests do not accept body or sessionId.",
+          "Team webhook tests do not accept body or connectionId.",
         ),
       );
     }

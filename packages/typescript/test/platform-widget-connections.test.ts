@@ -5,8 +5,8 @@ import {
   Client,
   type ApiResponse,
   type DataEnvelope,
-  type SessionBatchRemoveResult,
-  type SessionBatchStopResult,
+  type ConnectionBatchRemoveResult,
+  type ConnectionBatchStopResult,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -27,7 +27,7 @@ async function platformServer(): Promise<{
   const server = await startTestServer(() => ({
     headers: {
       "content-type": "application/json",
-      "x-request-id": "req_platform_widget_sessions",
+      "x-request-id": "req_platform_widget_connections",
     },
     body: '{"data":{"id":"fixture"}}',
   }));
@@ -45,46 +45,46 @@ async function platformServer(): Promise<{
   };
 }
 
-describe("Client batch session lifecycle", () => {
+describe("Client batch connection lifecycle", () => {
   it("requests bounded asynchronous stops without inventing per-item results", async () => {
     const { client, requests } = await platformServer();
 
-    const stopped = await client.sessions.stopMany(
+    const stopped = await client.connections.stopMany(
       {
         projectId: "project/a",
-        sessionIds: ["support", "session/a"],
+        connectionIds: ["support", "connection/a"],
       },
-      { idempotencyKey: "stop-sessions-1" },
+      { idempotencyKey: "stop-connections-1" },
     );
 
     expectTypeOf(stopped).toEqualTypeOf<
-      ApiResponse<DataEnvelope<SessionBatchStopResult>>
+      ApiResponse<DataEnvelope<ConnectionBatchStopResult>>
     >();
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: "/platform/sessions/stop",
-      body: '{"projectId":"project/a","sessionIds":["support","session/a"]}',
+      path: "/platform/connections/stop",
+      body: '{"projectId":"project/a","connectionIds":["support","connection/a"]}',
     });
-    expect(requests[0]?.headers["idempotency-key"]).toBe("stop-sessions-1");
+    expect(requests[0]?.headers["idempotency-key"]).toBe("stop-connections-1");
   });
 
-  it("permanently removes a bounded session set", async () => {
+  it("permanently removes a bounded connection set", async () => {
     const { client, requests } = await platformServer();
 
-    const removed = await client.sessions.deleteMany(
-      { sessionIds: ["support", "sales"] },
-      { idempotencyKey: "delete-sessions-1" },
+    const removed = await client.connections.deleteMany(
+      { connectionIds: ["support", "sales"] },
+      { idempotencyKey: "delete-connections-1" },
     );
 
     expectTypeOf(removed).toEqualTypeOf<
-      ApiResponse<DataEnvelope<SessionBatchRemoveResult>>
+      ApiResponse<DataEnvelope<ConnectionBatchRemoveResult>>
     >();
     expect(requests[0]).toMatchObject({
       method: "POST",
-      path: "/platform/sessions/delete",
-      body: '{"sessionIds":["support","sales"]}',
+      path: "/platform/connections/delete",
+      body: '{"connectionIds":["support","sales"]}',
     });
-    expect(requests[0]?.headers["idempotency-key"]).toBe("delete-sessions-1");
-    expect(removed.metadata.requestId).toBe("req_platform_widget_sessions");
+    expect(requests[0]?.headers["idempotency-key"]).toBe("delete-connections-1");
+    expect(removed.metadata.requestId).toBe("req_platform_widget_connections");
   });
 });

@@ -31,11 +31,11 @@ it("reads enabled or disabled analytics and confines a project token without wid
     projectId: id,
     baseUrl: server.url,
   });
-  expect((await project.analytics.get({ sessionId: id })).data.enabled).toBe(
+  expect((await project.analytics.get({ connectionId: id })).data.enabled).toBe(
     false,
   );
   expect(server.requests[1]?.path).toBe(
-    `/platform/projects/${id}/analytics?sessionId=${id}`,
+    `/platform/projects/${id}/analytics?connectionId=${id}`,
   );
   expect(server.requests[1]?.headers.authorization).toContain(PROJECT_TOKEN);
   expect(
@@ -51,7 +51,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
     root.analytics.get({ start: 10, end: 1 }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
   await expect(
-    root.analytics.get({ sessionId: "name" }),
+    root.analytics.get({ connectionId: "name" }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
 });
 
@@ -79,9 +79,9 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
   const body = {
     enabled: true,
     summary: { calls, accountActivity },
-    numbers: [{ sessionId: "number", calls }],
+    numbers: [{ connectionId: "number", calls }],
     series: [],
-    callSeries: [{ sessionId: "number", ts: 1, answered: 1, missed: 1 }],
+    callSeries: [{ connectionId: "number", ts: 1, answered: 1, missed: 1 }],
   };
   const server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
@@ -121,7 +121,7 @@ it("returns collector text and metadata with validated project filters", async (
     windowHours: 6,
     segments: true,
     format: "openmetrics",
-    sessionId: id,
+    connectionId: id,
   });
   expect(response.data).toBe(body);
   expect(response.metadata.requestId).toBe("metrics-1");
@@ -136,7 +136,7 @@ it("returns collector text and metadata with validated project filters", async (
     { windowHours: 0 },
     { windowHours: 169 },
     { windowHours: 1.5 },
-    { sessionId: "phone" },
+    { connectionId: "phone" },
     { projectId: "22222222-2222-4333-8444-555555555555" },
   ])
     await expect(client.analytics.metrics(params)).rejects.toBeInstanceOf(
@@ -268,7 +268,7 @@ it("preserves country/count/device receipt activity without changing nullable co
   const body = {
     enabled: true,
     summary: { recipientActivity },
-    numbers: [{ sessionId: "number", recipientActivity }],
+    numbers: [{ connectionId: "number", recipientActivity }],
     series: [],
     callSeries: [],
   };

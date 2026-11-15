@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { MessagingClient } from "../src/index.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
 afterEach(() => vi.unstubAllGlobals());
-it("uploads fixture content separately and advances an existing QuickLink without session credentials", async () => {
+it("uploads fixture content separately and advances an existing QuickLink without connection credentials", async () => {
   const fetcher = vi.fn<typeof globalThis.fetch>(
     async () =>
       new Response(JSON.stringify({ fixtureId: "fixture" }), {

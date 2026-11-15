@@ -138,7 +138,7 @@ describe("Client customers", () => {
     );
     await client.customers.transferNumber(
       "customer/a",
-      "session/a",
+      "connection/a",
       {
         projectId: "project/a",
         sourceCustomerId: "customer/source",
@@ -155,7 +155,7 @@ describe("Client customers", () => {
       "POST /platform/customers/customer%2Fa/pairing-links",
       "GET /platform/customers/customer%2Fa/pairing-links?projectId=project%2Fa",
       "DELETE /platform/customers/customer%2Fa/pairing-links/link%2Fa?projectId=project%2Fa",
-      "POST /platform/customers/customer%2Fa/numbers/session%2Fa/transfer",
+      "POST /platform/customers/customer%2Fa/numbers/connection%2Fa/transfer",
     ]);
     expect(requests[0]?.headers["idempotency-key"]).toBe("archive-1");
     expect(requests[1]?.headers["idempotency-key"]).toBe("restore-1");

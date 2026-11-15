@@ -5,8 +5,8 @@ import {
   PolymorfaAuthorizationError,
   type ApiResponse,
   type DataEnvelope,
-  type SessionCapabilities,
-  type SessionCapability,
+  type ConnectionCapabilities,
+  type ConnectionCapability,
 } from "../src/index.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -34,10 +34,10 @@ async function client(status: number, body: unknown) {
   };
 }
 
-describe("Client.sessions.getCapabilities", () => {
+describe("Client.connections.getCapabilities", () => {
   it("reads a number's capabilities and narrows values by kind", async () => {
     const data = {
-      session: "support",
+      connection: "support",
       projectId: "11111111-2222-4333-8444-555555555555",
       status: "synced",
       syncedAt: "2026-09-24T10:00:00.000Z",
@@ -61,18 +61,18 @@ describe("Client.sessions.getCapabilities", () => {
       ],
     };
     const { client: platform, requests } = await client(200, { data });
-    const response = await platform.sessions.getCapabilities("support/a");
+    const response = await platform.connections.getCapabilities("support/a");
     expectTypeOf(response).toEqualTypeOf<
-      ApiResponse<DataEnvelope<SessionCapabilities>>
+      ApiResponse<DataEnvelope<ConnectionCapabilities>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/sessions/support%2Fa/capabilities",
+      "GET /platform/connections/support%2Fa/capabilities",
     ]);
     expect(response.data.data).toEqual(data);
     const limits = response.data.data.capabilities.filter(
       (
         capability,
-      ): capability is Extract<SessionCapability, { kind: "limit" }> =>
+      ): capability is Extract<ConnectionCapability, { kind: "limit" }> =>
         capability.kind === "limit",
     );
     expectTypeOf(limits[0]!.value).toEqualTypeOf<number | null>();
@@ -82,7 +82,7 @@ describe("Client.sessions.getCapabilities", () => {
   it("returns unknown values as null before the first sync", async () => {
     const { client: platform } = await client(200, {
       data: {
-        session: "support",
+        connection: "support",
         projectId: "11111111-2222-4333-8444-555555555555",
         status: "unknown",
         syncedAt: null,
@@ -99,7 +99,7 @@ describe("Client.sessions.getCapabilities", () => {
         ],
       },
     });
-    const response = await platform.sessions.getCapabilities("support");
+    const response = await platform.connections.getCapabilities("support");
     expect(response.data.data.status).toBe("unknown");
     expect(response.data.data.capabilities[0]!.value).toBeNull();
   });
@@ -112,7 +112,7 @@ describe("Client.sessions.getCapabilities", () => {
       },
     });
     await expect(
-      platform.sessions.getCapabilities("support"),
+      platform.connections.getCapabilities("support"),
     ).rejects.toBeInstanceOf(PolymorfaAuthorizationError);
   });
 });

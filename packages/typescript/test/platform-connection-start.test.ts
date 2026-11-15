@@ -5,13 +5,13 @@ import {
   Client,
   type ApiResponse,
   type DataEnvelope,
-  type SessionStartResult,
+  type ConnectionStartResult,
 } from "../src/index.js";
 
-describe("Client.sessions.start", () => {
-  it("starts a team-managed session", async () => {
+describe("Client.connections.start", () => {
+  it("starts a team-managed connection", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
-      Response.json({ data: { starting: true, sessionId: "session-uuid" } }),
+      Response.json({ data: { starting: true, connectionId: "session-uuid" } }),
     );
     const client = new Client({
       credential: {
@@ -22,22 +22,22 @@ describe("Client.sessions.start", () => {
       fetch,
     });
 
-    const response = await client.sessions.start(
+    const response = await client.connections.start(
       "support/us",
       { projectId: "project-a" },
       { idempotencyKey: "start-support" },
     );
 
     expectTypeOf(response).toEqualTypeOf<
-      ApiResponse<DataEnvelope<SessionStartResult>>
+      ApiResponse<DataEnvelope<ConnectionStartResult>>
     >();
     expect(response.data.data).toEqual({
       starting: true,
-      sessionId: "session-uuid",
+      connectionId: "session-uuid",
     });
     const [url, init] = fetch.mock.calls[0]!;
     expect(new URL(String(url)).pathname).toBe(
-      "/platform/sessions/support%2Fus/start",
+      "/platform/connections/support%2Fus/start",
     );
     expect(init?.method).toBe("POST");
     expect(JSON.parse(String(init?.body))).toEqual({ projectId: "project-a" });

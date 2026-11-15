@@ -27,8 +27,8 @@ export interface SipTrunkOutbound {
 export interface SipTrunkInbound {
   readonly username: string;
   readonly realm: string;
-  /** Session that places the calls, or `null` while calls are refused. */
-  readonly session: string | null;
+  /** Connection that places the calls, or `null` while calls are refused. */
+  readonly connection: string | null;
   readonly allowedAddresses: readonly string[];
   /** E.164 prefixes your PBX may call. Empty allows every destination. */
   readonly allowedDestinations: readonly string[];
@@ -125,7 +125,7 @@ export interface SipTrunkOutboundInput {
 }
 
 export interface SipTrunkInboundInput {
-  readonly session?: string | null;
+  readonly connection?: string | null;
   readonly allowedAddresses: readonly string[];
   readonly allowedDestinations?: readonly string[];
 }
@@ -177,7 +177,7 @@ type ProjectArgument<O extends ClientOwner> = O extends "project"
 
 /**
  * SIP trunks connect a PBX or carrier trunk to the WhatsApp calls of a
- * project's sessions. Team clients name the project on `list` and `create`;
+ * project's connections. Team clients name the project on `list` and `create`;
  * project clients use their own project.
  */
 export class SipTrunksResource<O extends ClientOwner> {
@@ -208,7 +208,7 @@ export class SipTrunksResource<O extends ClientOwner> {
   /**
    * Returns the SIP address your PBX points at. Narrow the result on `status`
    * to read the host, transports and RTP range; `sip_not_hosted` is data, not
-   * an error, when the environment has no SIP address. Needs `sessions:read`;
+   * an error, when the environment has no SIP address. Needs `connections:read`;
    * client tokens are refused.
    */
   endpoint(options: RequestOptions = {}): Promise<ApiResponse<SipEndpoint>> {
@@ -268,7 +268,7 @@ export class SipTrunksResource<O extends ClientOwner> {
       .then(unwrapResponse);
   }
 
-  /** Fails with `sip_trunk_in_use` while a session routes incoming calls to the trunk. */
+  /** Fails with `sip_trunk_in_use` while a connection routes incoming calls to the trunk. */
   async delete(
     trunkId: string,
     options: RequestOptions = {},

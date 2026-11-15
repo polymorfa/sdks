@@ -37,9 +37,9 @@ export interface FlowValidationIssue extends Omit<
   readonly pointers?: readonly FlowValidationPointer[];
 }
 export interface FlowNumberLink {
-  readonly session: string;
-  /** Number session UUID, when the API reports it. */
-  readonly sessionId?: string;
+  readonly connection: string;
+  /** Number connection UUID, when the API reports it. */
+  readonly connectionId?: string;
   readonly wabaId: string;
   readonly metaFlowId: string;
   readonly status: string;
@@ -78,7 +78,7 @@ export interface UpdateFlowRequest {
   readonly definition?: Readonly<Record<string, unknown>>;
 }
 export interface FlowProviderRequest {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly categories?: readonly FlowCategory[];
   /** Reuse for the exact same operation; an uncertain operation is reconciled by sync. */
   readonly requestId?: string;
@@ -88,8 +88,8 @@ export interface FlowProviderOperation {
   readonly requestId: string | null;
   readonly flowId: string;
   readonly flowName: string;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly action: "create" | "upload" | "publish" | "deprecate" | "delete";
   readonly state:
     "pending" | "succeeded" | "rejected" | "uncertain" | "superseded";
@@ -117,7 +117,7 @@ export interface FlowEndpoint {
   readonly teamId: string;
   readonly projectId: string;
   readonly flowId: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly mode: FlowEndpointMode;
   readonly url: string | null;
   readonly functionId: string | null;
@@ -165,8 +165,8 @@ export interface FlowEndpointSetResult {
   readonly encryption: FlowEncryptionCustody;
 }
 interface FlowEndpointCommon {
-  /** Number (session) name or id in the Flow's project. */
-  readonly sessionId: string;
+  /** Number (connection) name or id in the Flow's project. */
+  readonly connectionId: string;
   readonly enabled?: boolean;
   /** Replace only when the stored revision matches. */
   readonly expectedRevision?: number;
@@ -194,11 +194,11 @@ export type SetFlowEndpointRequest =
   | FunctionFlowEndpointRequest
   | DirectFlowEndpointRequest;
 export interface FlowNumberRequest {
-  /** Number (session) name or id in the Flow's project. */
-  readonly sessionId: string;
+  /** Number (connection) name or id in the Flow's project. */
+  readonly connectionId: string;
 }
 export interface ListFlowEndpointReceiptsRequest {
-  readonly sessionId?: string;
+  readonly connectionId?: string;
   /** 1 to 100; defaults to 50. */
   readonly limit?: number;
 }
@@ -207,7 +207,7 @@ export interface FlowEndpointReceipt {
   readonly id: string;
   readonly flowId: string;
   readonly endpointId: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly mode: "forward" | "function";
   readonly action:
     "ping" | "INIT" | "data_exchange" | "BACK" | "error_notification" | null;
@@ -447,13 +447,13 @@ function flowPath(id: string): string {
 }
 
 function numberInput(params: FlowNumberRequest): FlowNumberRequest {
-  if (typeof params?.sessionId !== "string" || !params.sessionId.trim())
-    throw new PolymorfaValidationError("sessionId is required.");
-  return { sessionId: params.sessionId };
+  if (typeof params?.connectionId !== "string" || !params.connectionId.trim())
+    throw new PolymorfaValidationError("connectionId is required.");
+  return { connectionId: params.connectionId };
 }
 function validateEndpointRequest(body: SetFlowEndpointRequest): void {
-  if (typeof body?.sessionId !== "string" || !body.sessionId.trim())
-    throw new PolymorfaValidationError("sessionId is required.");
+  if (typeof body?.connectionId !== "string" || !body.connectionId.trim())
+    throw new PolymorfaValidationError("connectionId is required.");
   if (body.mode === "forward" || body.mode === "direct") {
     if (!isHttpsUrl(body.url))
       throw new PolymorfaValidationError(

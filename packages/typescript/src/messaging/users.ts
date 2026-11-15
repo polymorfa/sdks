@@ -6,13 +6,13 @@ export class UsersResource {
   constructor(private readonly transport: HttpTransport) {}
 
   getSecurityCode(
-    session: string,
+    connection: string,
     userId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetUserSecurityCodeResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `/messaging/${encodeURIComponent(session)}/users/${encodeURIComponent(userId)}/security-code`,
+      path: `/messaging/${encodeURIComponent(connection)}/users/${encodeURIComponent(userId)}/security-code`,
       ...options,
     });
   }

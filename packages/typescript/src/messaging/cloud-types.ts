@@ -68,5 +68,5 @@ export interface CloudReauthorization {
   readonly quicklinkId: string;
   /** Share only with the person who manages this Number's Meta assets. */
   readonly url: string;
-  readonly session: string;
+  readonly connection: string;
 }

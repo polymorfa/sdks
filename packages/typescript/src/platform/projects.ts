@@ -162,9 +162,9 @@ export class ProjectsResource {
   /**
    * Lists same-number pairs (one Linked Devices Number and one Official API
    * coexistence Number) that can merge into one Hybrid Link Number. Merge an
-   * eligible pair with `sessions.quoteTierChange(keepId, { tierOverride: "pro",
+   * eligible pair with `connections.quoteTierChange(keepId, { tierOverride: "pro",
    * hybridMerge: { absorbNumberId } })`; the absorbed Number must have
-   * `canBeAbsorbed: true`. Requires `sessions:read` and live Hybrid Link
+   * `canBeAbsorbed: true`. Requires `connections:read` and live Hybrid Link
    * access (otherwise `403 feature_unavailable`).
    */
   listHybridMergeCandidates(

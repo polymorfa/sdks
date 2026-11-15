@@ -30,22 +30,22 @@ export interface ObservationConfiguration {
   labelMode: "off" | "events" | "cache" | "project";
   quickReplyMode: "off" | "events" | "cache";
 }
-export interface SessionConfigurationOverrides {
+export interface ConnectionConfigurationOverrides {
   observation?: Partial<ObservationConfiguration>;
   historySync?: HistorySyncPolicyPatch;
   /** Atomic policy replacement; enabling requires separate live authorization. */
   hms?: HmsConfiguration;
 }
 
-export interface EffectiveSessionConfiguration {
+export interface EffectiveConnectionConfiguration {
   observation: ObservationConfiguration;
   historySync: HistorySyncPolicy;
   hms: HmsConfiguration;
 }
 
-export type ConfigurationSource = "platform" | "team" | "project" | "session";
+export type ConfigurationSource = "platform" | "team" | "project" | "connection";
 export type ConfigurationValueSource = ConfigurationSource | "consent";
-export type SessionConfigurationReset =
+export type ConnectionConfigurationReset =
   | "historySync"
   | "historySync.mode"
   | "historySync.requestFull"
@@ -53,13 +53,13 @@ export type SessionConfigurationReset =
   | "hms"
   | "observation"
   | `observation.${keyof ObservationConfiguration}`;
-export interface SessionConfigurationPatch {
-  set?: SessionConfigurationOverrides;
-  reset?: SessionConfigurationReset[];
+export interface ConnectionConfigurationPatch {
+  set?: ConnectionConfigurationOverrides;
+  reset?: ConnectionConfigurationReset[];
 }
-export interface ResolvedSessionConfiguration {
-  effective: EffectiveSessionConfiguration;
-  overrides: SessionConfigurationOverrides;
+export interface ResolvedConnectionConfiguration {
+  effective: EffectiveConnectionConfiguration;
+  overrides: ConnectionConfigurationOverrides;
   sources: {
     "historySync.mode": ConfigurationValueSource;
     "historySync.requestFull": ConfigurationValueSource;
@@ -72,10 +72,10 @@ export interface ResolvedSessionConfiguration {
   };
 }
 
-export interface SessionConfigurationView extends ResolvedSessionConfiguration {
+export interface ConnectionConfigurationView extends ResolvedConnectionConfiguration {
   requestedHistory: HistorySyncPolicy;
   historyConsent?: "pending" | "accepted" | "declined";
-  revisions: { team: number; project: number; session: number };
+  revisions: { team: number; project: number; connection: number };
   application?: {
     desiredGeneration: number;
     appliedGeneration: number;

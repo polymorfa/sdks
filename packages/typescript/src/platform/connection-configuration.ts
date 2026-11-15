@@ -1,16 +1,16 @@
 import { campaignContractBody } from "../campaign-contract-validation.js";
-import { configurationIntent } from "../session-delivery-validation.js";
+import { configurationIntent } from "../connection-delivery-validation.js";
 import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
-  SessionConfigurationPatch,
-  SessionConfigurationView,
-} from "../messaging/session-configuration.js";
+  ConnectionConfigurationPatch,
+  ConnectionConfigurationView,
+} from "../messaging/connection-configuration.js";
 import { type DataEnvelope, unwrapResponse } from "./response.js";
 
-/** Saved team or project defaults. Session overrides use sessions.update. */
-export class SessionConfigurationResource {
+/** Saved team or project defaults. Connection overrides use connections.update. */
+export class ConnectionConfigurationResource {
   readonly #transport: HttpTransport;
   readonly #projectId: string | null;
   constructor(transport: HttpTransport, projectId: string | null) {
@@ -20,9 +20,9 @@ export class SessionConfigurationResource {
   }
   retrieve(
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SessionConfigurationView>> {
+  ): Promise<ApiResponse<ConnectionConfigurationView>> {
     return this.#transport
-      .request<DataEnvelope<SessionConfigurationView>>({
+      .request<DataEnvelope<ConnectionConfigurationView>>({
         method: "GET",
         path: "/platform/session-configuration",
         ...(this.#projectId === null
@@ -33,12 +33,12 @@ export class SessionConfigurationResource {
       .then(unwrapResponse);
   }
   update(
-    input: { configuration: SessionConfigurationPatch; revision: number },
+    input: { configuration: ConnectionConfigurationPatch; revision: number },
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SessionConfigurationView>> {
+  ): Promise<ApiResponse<ConnectionConfigurationView>> {
     options = existingOptions(options, configurationIntent(input));
     return this.#transport
-      .request<DataEnvelope<SessionConfigurationView>>({
+      .request<DataEnvelope<ConnectionConfigurationView>>({
         method: "PUT",
         path: "/platform/session-configuration",
         body:

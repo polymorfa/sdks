@@ -34,7 +34,7 @@ export interface EmbeddedSignupResponse {
   data: { stage: string };
 }
 
-/** Trusted-server continuation of an issued QuickLink; never direct session creation. */
+/** Trusted-server continuation of an issued QuickLink; never direct connection creation. */
 export class CloudOnboardingResource {
   constructor(
     private readonly transport: HttpTransport,
@@ -75,7 +75,7 @@ export class TestingResource {
 
   /**
    * Fire a named, signed test event for a Test number. Generated events reach
-   * webhooks and event history with `source: "test"`. With `fromSession`, a
+   * webhooks and event history with `source: "test"`. With `fromConnection`, a
    * `message.received` request sends a simulated message from another Test
    * number instead. Real numbers are refused with a 400 error. Pass
    * `options.idempotencyKey` to make retries safe: repeating the request with
@@ -115,7 +115,7 @@ export class TestingResource {
    */
   getPhone(
     projectId: string,
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingPhone>> {
     assertServerCredential(this.credentialType);
@@ -123,7 +123,7 @@ export class TestingResource {
       this.transport,
       {
         method: "GET",
-        path: phonePath(projectId, session),
+        path: phonePath(projectId, connection),
         ...existingOptions(options),
       },
       "phone",
@@ -139,7 +139,7 @@ export class TestingResource {
    */
   sendPhoneMessage(
     projectId: string,
-    session: string,
+    connection: string,
     input: SendTestingPhoneMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendTestingPhoneMessageResponse>> {
@@ -148,7 +148,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(projectId, session)}/messages`,
+        path: `${phonePath(projectId, connection)}/messages`,
         body: input,
         ...existingOptions(options),
       },
@@ -164,7 +164,7 @@ export class TestingResource {
    */
   unlinkPhoneDevice(
     projectId: string,
-    session: string,
+    connection: string,
     deviceId: number,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UnlinkTestingPhoneDeviceResponse>> {
@@ -177,7 +177,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(projectId, session)}/devices/${deviceId}/unlink`,
+        path: `${phonePath(projectId, connection)}/devices/${deviceId}/unlink`,
         ...existingOptions(options),
       },
       "unlink",
@@ -185,8 +185,8 @@ export class TestingResource {
     );
   }
 }
-function phonePath(projectId: string, session: string): string {
-  return `/messaging/testing/${encodeURIComponent(projectId)}/numbers/${encodeURIComponent(session)}/phone`;
+function phonePath(projectId: string, connection: string): string {
+  return `/messaging/testing/${encodeURIComponent(projectId)}/numbers/${encodeURIComponent(connection)}/phone`;
 }
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")

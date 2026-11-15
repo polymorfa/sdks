@@ -53,17 +53,17 @@ describe("MessagingClient.quickLinks", () => {
     expect(server.requests).toHaveLength(1);
   });
 
-  it("requires an existing session for supplementary setup at compile time", () => {
+  it("requires an existing connection for supplementary setup at compile time", () => {
     const initial = {} satisfies CreateQuickLinkRequest;
     const supplement = {
       purpose: "add_connection",
-      session: "existing/number",
+      connection: "existing/number",
       addConnection: "official_api",
     } satisfies CreateQuickLinkRequest;
-    // @ts-expect-error supplementary setup requires an existing Number session
+    // @ts-expect-error supplementary setup requires an existing Number connection
     const invalid: CreateQuickLinkRequest = { purpose: "add_connection" };
     expect(initial).toEqual({});
-    expect(supplement.session).toBe("existing/number");
+    expect(supplement.connection).toBe("existing/number");
     expect(invalid.purpose).toBe("add_connection");
   });
   it("creates, retrieves, and cancels the exact hosted QuickLink resource", async () => {
@@ -77,7 +77,7 @@ describe("MessagingClient.quickLinks", () => {
             data: {
               id: "ql_123",
               url: "https://connect.polymorfa.com/quicklink/token",
-              session: "quicklink-123",
+              connection: "quicklink-123",
               expiresAt: "2026-09-08T12:15:00.000Z",
             },
           }),
@@ -100,7 +100,7 @@ describe("MessagingClient.quickLinks", () => {
           data: {
             id: "ql_123",
             status: "pending",
-            session: "quicklink-123",
+            connection: "quicklink-123",
             expiresAt: "2026-09-08T12:15:00.000Z",
             openedAt: null,
             connectedAt: null,
@@ -186,22 +186,22 @@ describe("MessagingClient.quickLinks", () => {
       projectId: "project-1",
       purpose: "add_connection",
       connectionGoal: "hybrid",
-      session: "existing/number",
+      connection: "existing/number",
       addConnection: "linked_devices",
     });
     const availability = await client.quickLinks.availability({
       projectId: "project-1",
-      session: "existing/number",
+      connection: "existing/number",
     });
     expect(JSON.parse(server.requests[0]!.body)).toEqual({
       projectId: "project-1",
       purpose: "add_connection",
       connectionGoal: "hybrid",
-      session: "existing/number",
+      connection: "existing/number",
       addConnection: "linked_devices",
     });
     expect(server.requests[1]!.path).toBe(
-      "/messaging/quicklinks/availability?projectId=project-1&session=existing%2Fnumber",
+      "/messaging/quicklinks/availability?projectId=project-1&connection=existing%2Fnumber",
     );
     expect(availability.data.data.allowed).toBe(false);
   });
@@ -213,7 +213,7 @@ describe("MessagingClient.quickLinks", () => {
         data: {
           id: "ql_project",
           status: "pending",
-          session: "quicklink-project",
+          connection: "quicklink-project",
           expiresAt: "2026-09-08T12:15:00.000Z",
           openedAt: null,
           connectedAt: null,
@@ -270,7 +270,7 @@ describe("MessagingClient.quickLinks", () => {
     expect(() =>
       client.quickLinks.availability({
         projectId: "project-1",
-        session: "number",
+        connection: "number",
       }),
     ).toThrow(PolymorfaConfigurationError);
     expect(fetch).not.toHaveBeenCalled();
@@ -286,7 +286,7 @@ it("applies initial financial controls in the create request and rejects test-nu
       data: {
         id: "ql_budget",
         url: "https://example.test/budget",
-        session: "reserved",
+        connection: "reserved",
         expiresAt: null,
       },
     }),

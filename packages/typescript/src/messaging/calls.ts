@@ -6,14 +6,14 @@ export class CallsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   reject(
-    session: string,
+    connection: string,
     callId: string,
     body: RejectCallRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<RejectCallResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `/messaging/${encodeURIComponent(session)}/calls/${encodeURIComponent(callId)}/reject`,
+      path: `/messaging/${encodeURIComponent(connection)}/calls/${encodeURIComponent(callId)}/reject`,
       body,
       ...options,
     });

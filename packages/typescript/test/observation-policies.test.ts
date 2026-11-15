@@ -6,9 +6,9 @@ import {
   ObservationPoliciesResource,
   type ApiResponse,
   type ProjectObservationPolicy,
-  type SessionObservationPolicy,
+  type ConnectionObservationPolicy,
   type UpdateProjectObservationPolicyRequest,
-  type UpdateSessionObservationPolicyRequest,
+  type UpdateConnectionObservationPolicyRequest,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -30,8 +30,8 @@ const projectPolicy: ProjectObservationPolicy = {
   quickReplyMode: "off",
 };
 
-const sessionPolicy: SessionObservationPolicy = {
-  sessionName: "support",
+const connectionPolicy: ConnectionObservationPolicy = {
+  connectionName: "support",
   projectId: projectPolicy.projectId,
   project: {
     presenceMode: "events",
@@ -62,7 +62,7 @@ async function policiesServer(): Promise<{
     },
     body: JSON.stringify({
       success: true,
-      data: request.path.includes("/projects/") ? projectPolicy : sessionPolicy,
+      data: request.path.includes("/projects/") ? projectPolicy : connectionPolicy,
     }),
   }));
   servers.push(server);
@@ -80,7 +80,7 @@ async function policiesServer(): Promise<{
 }
 
 describe("MessagingClient observation policies", () => {
-  it("exports exact project, session, and update shapes", () => {
+  it("exports exact project, connection, and update shapes", () => {
     expectTypeOf<ProjectObservationPolicy>().toEqualTypeOf<{
       readonly projectId: string;
       readonly presenceMode: "off" | "events" | "cache";
@@ -88,7 +88,7 @@ describe("MessagingClient observation policies", () => {
       readonly labelMode: "off" | "events" | "cache" | "project";
       readonly quickReplyMode?: "off" | "events" | "cache";
     }>();
-    expectTypeOf<SessionObservationPolicy["override"]>().toEqualTypeOf<{
+    expectTypeOf<ConnectionObservationPolicy["override"]>().toEqualTypeOf<{
       readonly presenceMode: "inherit" | "off" | "events" | "cache";
       readonly typingMode: "inherit" | "off" | "events" | "cache";
       readonly labelMode: "inherit" | "off" | "events" | "cache" | "project";
@@ -99,7 +99,7 @@ describe("MessagingClient observation policies", () => {
       readonly typingMode: "off" | "events" | "cache";
       readonly labelMode?: "off" | "events" | "cache" | "project";
     }>();
-    expectTypeOf<UpdateSessionObservationPolicyRequest>().toEqualTypeOf<{
+    expectTypeOf<UpdateConnectionObservationPolicyRequest>().toEqualTypeOf<{
       readonly presenceMode: "inherit" | "off" | "events" | "cache";
       readonly typingMode: "inherit" | "off" | "events" | "cache";
       readonly labelMode?: "inherit" | "off" | "events" | "cache" | "project";
@@ -109,15 +109,15 @@ describe("MessagingClient observation policies", () => {
     >().toEqualTypeOf<ObservationPoliciesResource>();
   });
 
-  it("maps project and session reads with encoded identifiers and metadata", async () => {
+  it("maps project and connection reads with encoded identifiers and metadata", async () => {
     const { client, requests } = await policiesServer();
 
     const project = await client.observationPolicies.retrieveForProject(
       "00000000-0000-4000-8000-000000000001",
       { apiVersion: "next" },
     );
-    const session =
-      await client.observationPolicies.retrieveForSession("support/eu");
+    const connection =
+      await client.observationPolicies.retrieveForConnection("support/eu");
 
     expectTypeOf(project).toEqualTypeOf<
       ApiResponse<{
@@ -126,7 +126,7 @@ describe("MessagingClient observation policies", () => {
       }>
     >();
     expect(project.metadata.requestId).toBe("req_policy");
-    expect(session.data.data.sessionName).toBe("support");
+    expect(connection.data.data.connectionName).toBe("support");
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /messaging/projects/00000000-0000-4000-8000-000000000001/observation-policy",
       "GET /messaging/support%2Feu/observation-policy",
@@ -136,9 +136,9 @@ describe("MessagingClient observation policies", () => {
 
   it("replaces policy writes with unified configuration", async () => {
     const { client, requests } = await policiesServer();
-    expect(client.observationPolicies).not.toHaveProperty("updateForSession");
+    expect(client.observationPolicies).not.toHaveProperty("updateForConnection");
     expect(client.observationPolicies).not.toHaveProperty("updateForProject");
-    await client.sessions.update("support", {
+    await client.connections.update("support", {
       revision: 2,
       configuration: { set: { observation: { presenceMode: "events" } } },
     });

@@ -1,43 +1,43 @@
 import { campaignContractBody } from "../campaign-contract-validation.js";
-import { configurationIntent } from "../session-delivery-validation.js";
+import { configurationIntent } from "../connection-delivery-validation.js";
 import { existingOptions } from "../campaign-existing-validation.js";
 import { HttpTransport } from "../transport/http.js";
 import { PolymorfaValidationError } from "../errors.js";
 import type {
-  GetSessionResponse,
-  UpdateSessionRequest,
-  UpdateSessionResponse,
+  GetConnectionResponse,
+  UpdateConnectionRequest,
+  UpdateConnectionResponse,
 } from "../messaging/types.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   DataEnvelope,
-  ListPlatformSessionsParams,
+  ListPlatformConnectionsParams,
   NumberTierChange,
   NumberTierQuoteRequest,
-  PlatformSession,
-  SessionBatchRemoveResult,
-  SessionBatchRequest,
-  SessionBatchStopResult,
-  SessionCapabilities,
-  SessionProjectContext,
-  SessionRemoveResult,
-  SessionStartResult,
-  SessionStopResult,
-  SessionTierOverrideRequest,
-  SessionSafeMode,
-  UpdateSessionSafeModeRequest,
+  PlatformConnection,
+  ConnectionBatchRemoveResult,
+  ConnectionBatchRequest,
+  ConnectionBatchStopResult,
+  ConnectionCapabilities,
+  ConnectionProjectContext,
+  ConnectionRemoveResult,
+  ConnectionStartResult,
+  ConnectionStopResult,
+  ConnectionTierOverrideRequest,
+  ConnectionSafeMode,
+  UpdateConnectionSafeModeRequest,
 } from "./types.js";
 
-export class PlatformSessionsResource {
+export class PlatformConnectionsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
-    params: ListPlatformSessionsParams = {},
+    params: ListPlatformConnectionsParams = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<readonly PlatformSession[]>>> {
+  ): Promise<ApiResponse<DataEnvelope<readonly PlatformConnection[]>>> {
     return this.transport.request({
       method: "GET",
-      path: "/platform/sessions",
+      path: "/platform/connections",
       ...(params.projectId === undefined
         ? {}
         : { query: { projectId: params.projectId } }),
@@ -46,64 +46,64 @@ export class PlatformSessionsResource {
   }
 
   retrieve(
-    sessionId: string,
+    connectionId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<GetSessionResponse>> {
+  ): Promise<ApiResponse<GetConnectionResponse>> {
     return this.transport.request({
       method: "GET",
-      path: sessionPath(sessionId),
+      path: connectionPath(connectionId),
       ...existingOptions(options),
     });
   }
 
   update(
-    sessionId: string,
-    body: UpdateSessionRequest,
+    connectionId: string,
+    body: UpdateConnectionRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<UpdateSessionResponse>> {
+  ): Promise<ApiResponse<UpdateConnectionResponse>> {
     options = existingOptions(options, configurationIntent(body));
     return this.transport.request({
       method: "PUT",
-      path: sessionPath(sessionId),
+      path: connectionPath(connectionId),
       body: campaignContractBody(body),
       ...existingOptions(options),
     });
   }
 
   start(
-    sessionId: string,
-    body: SessionProjectContext = {},
+    connectionId: string,
+    body: ConnectionProjectContext = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionStartResult>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionStartResult>>> {
     return this.transport.request({
       method: "POST",
-      path: `${sessionPath(sessionId)}/start`,
+      path: `${connectionPath(connectionId)}/start`,
       body,
       ...existingOptions(options),
     });
   }
 
   stop(
-    sessionId: string,
-    body: SessionProjectContext = {},
+    connectionId: string,
+    body: ConnectionProjectContext = {},
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionStopResult>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionStopResult>>> {
     return this.transport.request({
       method: "POST",
-      path: `${sessionPath(sessionId)}/stop`,
+      path: `${connectionPath(connectionId)}/stop`,
       body,
       ...existingOptions(options),
     });
   }
 
-  /** Requests asynchronous stops for the matching 1 through 100 sessions. */
+  /** Requests asynchronous stops for the matching 1 through 100 connections. */
   stopMany(
-    body: SessionBatchRequest,
+    body: ConnectionBatchRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionBatchStopResult>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionBatchStopResult>>> {
     return this.transport.request({
       method: "POST",
-      path: "/platform/sessions/stop",
+      path: "/platform/connections/stop",
       body,
       ...existingOptions(options),
     });
@@ -111,12 +111,12 @@ export class PlatformSessionsResource {
 
   /** Removes a testing Number. Production Numbers return HTTP 409. */
   delete(
-    sessionId: string,
+    connectionId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionRemoveResult>>> {
     return this.transport.request({
       method: "DELETE",
-      path: sessionPath(sessionId),
+      path: connectionPath(connectionId),
       ...existingOptions(options),
     });
   }
@@ -126,12 +126,12 @@ export class PlatformSessionsResource {
    * the API returns HTTP 409 before removing any Number in the batch.
    */
   deleteMany(
-    body: SessionBatchRequest,
+    body: ConnectionBatchRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionBatchRemoveResult>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionBatchRemoveResult>>> {
     return this.transport.request({
       method: "POST",
-      path: "/platform/sessions/delete",
+      path: "/platform/connections/delete",
       body,
       ...existingOptions(options),
     });
@@ -143,11 +143,11 @@ export class PlatformSessionsResource {
    * A Hybrid Link Number leaving Pro needs `hybridResolution` (keep one
    * connection or split the Number); without it the API returns
    * `hybrid_choice_required`. An upgrade to Pro can merge a same-number
-   * pair with `hybridMerge`; `sessionId` keeps its ID. The quote echoes the
+   * pair with `hybridMerge`; `connectionId` keeps its ID. The quote echoes the
    * plan in `quote.hybridTransition`.
    */
   quoteTierChange(
-    sessionId: string,
+    connectionId: string,
     body: NumberTierQuoteRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
@@ -161,28 +161,28 @@ export class PlatformSessionsResource {
     }
     return this.transport.request({
       method: "POST",
-      path: `${sessionPath(sessionId)}/tier-quotes`,
+      path: `${connectionPath(connectionId)}/tier-quotes`,
       body,
       ...existingOptions(options),
     });
   }
 
   retrieveTierChange(
-    sessionId: string,
+    connectionId: string,
     quoteId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
     return this.transport.request({
       method: "GET",
-      path: `${sessionPath(sessionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
+      path: `${connectionPath(connectionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
       ...existingOptions(options),
     });
   }
 
   /** Confirms a reviewed quote. Poll retrieveTierChange until applied or rejected. */
   setTierOverride(
-    sessionId: string,
-    body: SessionTierOverrideRequest,
+    connectionId: string,
+    body: ConnectionTierOverrideRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
     if (typeof body?.quoteId !== "string" || !body.quoteId.trim()) {
@@ -192,7 +192,7 @@ export class PlatformSessionsResource {
     }
     return this.transport.request({
       method: "PATCH",
-      path: sessionPath(sessionId),
+      path: connectionPath(connectionId),
       body,
       ...existingOptions(options),
     });
@@ -203,41 +203,41 @@ export class PlatformSessionsResource {
    * its last configuration sync. Beta: returns 403 until the team enrolls.
    */
   getCapabilities(
-    sessionId: string,
+    connectionId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionCapabilities>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionCapabilities>>> {
     return this.transport.request({
       method: "GET",
-      path: `${sessionPath(sessionId)}/capabilities`,
+      path: `${connectionPath(connectionId)}/capabilities`,
       ...existingOptions(options),
     });
   }
 
   getSafeMode(
-    sessionId: string,
+    connectionId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionSafeMode>>> {
     return this.transport.request({
       method: "GET",
-      path: `${sessionPath(sessionId)}/safe-mode`,
+      path: `${connectionPath(connectionId)}/safe-mode`,
       ...existingOptions(options),
     });
   }
 
   updateSafeMode(
-    sessionId: string,
-    body: UpdateSessionSafeModeRequest,
+    connectionId: string,
+    body: UpdateConnectionSafeModeRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<SessionSafeMode>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionSafeMode>>> {
     return this.transport.request({
       method: "PUT",
-      path: `${sessionPath(sessionId)}/safe-mode`,
+      path: `${connectionPath(connectionId)}/safe-mode`,
       body,
       ...existingOptions(options),
     });
   }
 }
 
-function sessionPath(sessionId: string): string {
-  return `/platform/sessions/${encodeURIComponent(sessionId)}`;
+function connectionPath(connectionId: string): string {
+  return `/platform/connections/${encodeURIComponent(connectionId)}`;
 }

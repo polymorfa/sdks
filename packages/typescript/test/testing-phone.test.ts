@@ -33,7 +33,7 @@ function client(response: Response, type: "apiKey" | "clientToken" = "apiKey") {
 
 it("reads a Test number's phone", async () => {
   const phone: TestingPhone = {
-    session: "test a",
+    connection: "test a",
     phone: "+15550100001",
     online: true,
     devices: [{ deviceId: 33 }, { deviceId: 74 }],
@@ -49,7 +49,7 @@ it("reads a Test number's phone", async () => {
 });
 
 it("sends a message from the phone", async () => {
-  const sent = { session: "test-a", to: "+15550100002", messageId: "3EB0AA" };
+  const sent = { connection: "test-a", to: "+15550100002", messageId: "3EB0AA" };
   const { client: messaging, fetcher } = client(json(sent, 202));
   const input = { to: "+15550100002", text: "hello" };
   const result = await messaging.testing.sendPhoneMessage(
@@ -67,7 +67,7 @@ it("sends a message from the phone", async () => {
 });
 
 it("unlinks a companion", async () => {
-  const unlinked = { session: "test-a", deviceId: 74, unlinked: true };
+  const unlinked = { connection: "test-a", deviceId: 74, unlinked: true };
   const { client: messaging, fetcher } = client(json(unlinked));
   const result = await messaging.testing.unlinkPhoneDevice(
     "project-a",
@@ -134,30 +134,30 @@ it("matches the pinned Testing phone contract", () => {
   const route = (operationId: string) => contract.operations[operationId]!;
   expect(route("getTestingPhone")).toMatchObject({
     method: "GET",
-    path: "/messaging/testing/{projectId}/numbers/{session}/phone",
+    path: "/messaging/testing/{projectId}/numbers/{connection}/phone",
   });
   expect(route("sendTestingPhoneMessage")).toMatchObject({
     method: "POST",
-    path: "/messaging/testing/{projectId}/numbers/{session}/phone/messages",
+    path: "/messaging/testing/{projectId}/numbers/{connection}/phone/messages",
   });
   expect(route("unlinkTestingPhoneDevice")).toMatchObject({
     method: "POST",
-    path: "/messaging/testing/{projectId}/numbers/{session}/phone/devices/{deviceId}/unlink",
+    path: "/messaging/testing/{projectId}/numbers/{connection}/phone/devices/{deviceId}/unlink",
   });
   const fields = (name: string) =>
     Object.keys(contract.schemas[name]!.properties).sort();
   const phone: TestingPhone = {
-    session: "s",
+    connection: "s",
     phone: "+1",
     online: true,
     devices: [],
   };
   expect(fields("TestingPhoneState")).toEqual(Object.keys(phone).sort());
   expect(fields("TestingPhoneMessageRequest")).toEqual(["text", "to"]);
-  expect(fields("TestingPhoneMessage")).toEqual(["messageId", "session", "to"]);
+  expect(fields("TestingPhoneMessage")).toEqual(["messageId", "connection", "to"]);
   expect(fields("TestingPhoneUnlink")).toEqual([
     "deviceId",
-    "session",
+    "connection",
     "unlinked",
   ]);
 });

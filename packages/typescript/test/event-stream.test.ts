@@ -13,7 +13,7 @@ const PROJECT = "018f0000-0000-7000-8000-000000000077";
 function webhookBody(id: string, type = "message.received") {
   return {
     id,
-    session: "support",
+    connection: "support",
     timestamp: "2026-09-18T10:00:00.000Z",
     event: type,
     payload: { text: "hello" },
@@ -151,13 +151,13 @@ describe("events.stream", () => {
     ) as unknown as typeof fetch;
     const items = await collect(
       projectClient(fetcher).events.stream({
-        types: ["message.*", "session.connected"],
+        types: ["message.*", "connection.connected"],
       }),
       2,
     );
     const url = new URL(requests[0]!.url);
     expect(url.pathname).toBe(`/platform/projects/${PROJECT}/events/stream`);
-    expect(url.searchParams.get("types")).toBe("message.*,session.connected");
+    expect(url.searchParams.get("types")).toBe("message.*,connection.connected");
     expect(requests[0]!.headers.get("accept")).toBe("text/event-stream");
     expect(requests[0]!.headers.get("authorization")).toBe(
       `Bearer ${PROJECT_TOKEN}`,

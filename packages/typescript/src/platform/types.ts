@@ -105,7 +105,7 @@ export interface CustomerListEnvelope {
 export interface CustomerNumber {
   readonly id: string;
   readonly customerId: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly name: string | null;
   readonly phoneMasked: string | null;
   readonly status: string;
@@ -122,7 +122,7 @@ export interface CustomerEvent {
   readonly action: string;
   readonly fromStatus: string | null;
   readonly toStatus: string | null;
-  readonly sessionId: string | null;
+  readonly connectionId: string | null;
   readonly pairingLinkId: string | null;
   readonly metadata: CustomerEventMetadata;
   readonly occurredAt: number;
@@ -153,7 +153,7 @@ export interface CustomerPairingLink {
   readonly status: CustomerPairingLinkStatus;
   readonly attemptCount: number;
   readonly maxAttempts: number;
-  readonly pendingSessionId: string | null;
+  readonly pendingConnectionId: string | null;
   readonly createdBy: string | null;
   readonly reservedAt: number | null;
   readonly openedAt: number | null;
@@ -570,7 +570,7 @@ export interface BillingTransaction {
   readonly balanceAfterCents: number;
   readonly type: string;
   readonly description: string;
-  readonly sessionId: string | null;
+  readonly connectionId: string | null;
   readonly projectId: string | null;
   readonly tier: string | null;
   readonly currency: string | null;
@@ -650,16 +650,16 @@ export interface AuditLog {
   readonly createdAt: number;
 }
 
-export type SessionBanStatus = "active" | "lifted";
+export type ConnectionBanStatus = "active" | "lifted";
 
-export interface SessionBan {
+export interface ConnectionBan {
   readonly id: string;
-  readonly sessionName: string;
+  readonly connectionName: string;
   readonly banCode: number | null;
   readonly banReason: string | null;
   readonly banExpiresAt: number | null;
   readonly occurredAt: number;
-  readonly status: SessionBanStatus;
+  readonly status: ConnectionBanStatus;
 }
 
 export interface SecurityIncident {
@@ -726,8 +726,8 @@ export interface ProjectWithStats {
   readonly defaultTier: string;
   readonly isActive: boolean;
   readonly stage: "development" | "production";
-  readonly activeSessions: number;
-  readonly totalSessions: number;
+  readonly activeConnections: number;
+  readonly totalConnections: number;
   readonly totalMessages: number;
   readonly lastActivity: number | null;
   readonly iconUrl: string | null;
@@ -790,19 +790,19 @@ export interface ProductionEnrollmentCommandResult {
   readonly accepted: true;
 }
 
-export type SessionTier = "free" | "standard" | "pro" | "scale";
+export type ConnectionTier = "free" | "standard" | "pro" | "scale";
 
-export interface PlatformSession {
+export interface PlatformConnection {
   readonly _id: string;
   readonly _creationTime: number;
   readonly projectId: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly name: string;
   readonly phone: string | null;
   readonly platform: string | null;
   readonly isBusiness: boolean;
   readonly testMode: boolean;
-  readonly tierOverride: SessionTier | null;
+  readonly tierOverride: ConnectionTier | null;
   readonly status: string;
   readonly messageCount: number;
   readonly lastActiveAt: number | null;
@@ -810,53 +810,53 @@ export interface PlatformSession {
   readonly paidUntil: number | null;
 }
 
-export interface ManagedSession {
+export interface ManagedConnection {
   readonly id: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly status: string;
-  readonly tierOverride: SessionTier | null;
+  readonly tierOverride: ConnectionTier | null;
 }
 
-export interface ListPlatformSessionsParams {
+export interface ListPlatformConnectionsParams {
   readonly projectId?: string;
 }
 
-export interface SessionProjectContext {
+export interface ConnectionProjectContext {
   readonly projectId?: string;
 }
 
-export interface SessionStartResult {
+export interface ConnectionStartResult {
   readonly starting: true;
-  readonly sessionId: string;
+  readonly connectionId: string;
 }
 
-export interface SessionStopResult {
+export interface ConnectionStopResult {
   readonly stopping: true;
-  readonly sessionId: string;
+  readonly connectionId: string;
 }
 
-export interface SessionRemoveResult {
+export interface ConnectionRemoveResult {
   readonly removed: true;
-  readonly sessionId: string;
+  readonly connectionId: string;
 }
 
-/** A source-bounded batch of 1 through 100 session UUIDs or stable slugs. */
-export interface SessionBatchRequest {
+/** A source-bounded batch of 1 through 100 connection UUIDs or stable slugs. */
+export interface ConnectionBatchRequest {
   readonly projectId?: string;
-  readonly sessionIds: readonly string[];
+  readonly connectionIds: readonly string[];
 }
 
-/** Number of matching sessions for which an asynchronous stop was requested. */
-export interface SessionBatchStopResult {
+/** Number of matching connections for which an asynchronous stop was requested. */
+export interface ConnectionBatchStopResult {
   readonly stopping: number;
 }
 
-/** Number of matching sessions permanently removed from management storage. */
-export interface SessionBatchRemoveResult {
+/** Number of matching connections permanently removed from management storage. */
+export interface ConnectionBatchRemoveResult {
   readonly removed: number;
 }
 
-export interface SessionTierOverrideRequest {
+export interface ConnectionTierOverrideRequest {
   readonly projectId?: string;
   readonly quoteId: string;
 }
@@ -1116,8 +1116,8 @@ export interface BanSafeNumberEnforcement {
 }
 
 export interface BanSafeNumber extends BanSafeHealthProjection {
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly phoneNumber: string;
   readonly projectId: string;
   readonly enforcement: BanSafeNumberEnforcement | null;
@@ -1154,8 +1154,8 @@ export interface BanSafeHealthPoint extends Omit<
 }
 
 export interface BanSafeHealthHistory {
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly points: readonly BanSafeHealthPoint[];
 }
 
@@ -1174,8 +1174,8 @@ export interface BanSafeFinding {
   readonly occurrences: number;
   readonly reopenedCount: number;
   readonly evidence: Readonly<Record<string, number>>;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly phoneNumber: string;
   readonly firstSeenAt: string | null;
   readonly lastSeenAt: string | null;
@@ -1189,8 +1189,8 @@ export interface BanSafeFinding {
 }
 
 export interface BanSafeEnforcementSummary extends BanSafeHealthProjection {
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly phoneNumber: string;
   readonly projectId: string;
   readonly rung: BanSafeEnforcementRung;
@@ -1223,8 +1223,8 @@ export type BanSafeIncidentKind =
 
 export interface BanSafeIncident {
   readonly id: string;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly phoneNumber: string;
   readonly projectId: string;
   readonly kind: BanSafeIncidentKind;
@@ -1242,7 +1242,7 @@ export interface BanSafeIncident {
 }
 
 export interface ReportBanSafeIncidentRequest {
-  readonly session: string;
+  readonly connection: string;
   readonly occurredAt?: string;
   readonly note?: string;
 }
@@ -1250,8 +1250,8 @@ export interface ReportBanSafeIncidentRequest {
 export interface BanSafeIncidentReceipt {
   readonly incidentId: string;
   readonly created: boolean;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly occurredAt: string;
 }
 
@@ -1289,8 +1289,8 @@ export interface BanSafeClaimEvidence {
 export interface BanSafeClaim {
   readonly id: string;
   readonly incidentId: string;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly phoneNumber: string;
   readonly projectId: string;
   readonly status: BanSafeClaimStatus;
@@ -1323,7 +1323,7 @@ export interface ListBanSafeHealthHistoryParams {
 }
 
 export interface ListBanSafeFindingsParams extends ListBanSafeHealthParams {
-  readonly session?: string;
+  readonly connection?: string;
   readonly status?: Exclude<BanSafeFindingStatus, "not_measured">;
   readonly severity?: BanSafeFindingSeverity;
 }
@@ -1333,11 +1333,11 @@ export interface ListBanSafeEnforcementParams extends ListBanSafeHealthParams {
 }
 
 export interface ListBanSafeIncidentsParams extends ListBanSafeHealthParams {
-  readonly session?: string;
+  readonly connection?: string;
 }
 
 export interface ListBanSafeClaimsParams extends ListBanSafeHealthParams {
-  readonly session?: string;
+  readonly connection?: string;
   readonly status?: BanSafeClaimStatus;
 }
 
@@ -1386,14 +1386,14 @@ export interface BanSafeTelemetrySnapshot {
   readonly signals: readonly BanSafeSignal[];
 }
 
-export interface BanSafeCollectionSession {
-  readonly sessionId: string;
-  readonly session: string;
+export interface BanSafeCollectionConnection {
+  readonly connectionId: string;
+  readonly connection: string;
   readonly projectId: string;
   readonly collection: BanSafeCollectionStatus;
 }
 
-export interface BanSafeTelemetryDetail extends BanSafeCollectionSession {
+export interface BanSafeTelemetryDetail extends BanSafeCollectionConnection {
   readonly snapshot: BanSafeTelemetrySnapshot | null;
 }
 
@@ -1422,8 +1422,8 @@ export type BanSafeHealthActionOutcome =
 
 export interface BanSafeHealthAction {
   readonly id: string;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly projectId: string;
   readonly mode: BanSafeHealthActionMode;
   readonly action: BanSafeHealthActionKind;
@@ -1441,7 +1441,7 @@ export interface BanSafeHealthAction {
 }
 
 export interface ListBanSafeHealthActionsParams extends ListBanSafeHealthParams {
-  readonly session?: string;
+  readonly connection?: string;
   readonly status?: BanSafeHealthActionStatus;
 }
 
@@ -1454,7 +1454,7 @@ export type BanSafeClaimsEnvelope = CursorEnvelope<BanSafeClaim>;
 export type BanSafeTelemetryHistoryEnvelope =
   CursorEnvelope<BanSafeTelemetrySnapshot>;
 export type BanSafeCollectionEnvelope =
-  CursorEnvelope<BanSafeCollectionSession>;
+  CursorEnvelope<BanSafeCollectionConnection>;
 export type BanSafeHealthActionsEnvelope = CursorEnvelope<BanSafeHealthAction>;
 
 export type SafeModePresence = "dark" | "online_while_sending" | "online_hours";
@@ -1503,62 +1503,62 @@ export interface SafeModeApplied {
 }
 
 /** `feature`: `value` is a boolean. `limit`: `value` is an integer in `unit`. */
-export type SessionCapabilityKind = "feature" | "limit";
-export type SessionCapabilityUnit =
+export type ConnectionCapabilityKind = "feature" | "limit";
+export type ConnectionCapabilityUnit =
   "seconds" | "count" | "characters" | "members";
 /**
  * `server`: WhatsApp sent a setting the value depends on. `client_default`:
  * WhatsApp sent none, so its default applies. `account_type`: the capability
  * does not apply to this account type.
  */
-export type SessionCapabilitySource =
+export type ConnectionCapabilitySource =
   "server" | "client_default" | "account_type";
 
-interface SessionCapabilityBase {
+interface ConnectionCapabilityBase {
   /** Stable key such as `channels` or `messageEdit.windowSeconds`. New keys can be added. */
   readonly key: string;
   /** Null when `value` is null. */
-  readonly source: SessionCapabilitySource | null;
+  readonly source: ConnectionCapabilitySource | null;
 }
 
 /** A WhatsApp feature: enabled (`true`), off (`false`) or unknown (`null`). */
-export interface SessionFeatureCapability extends SessionCapabilityBase {
+export interface ConnectionFeatureCapability extends ConnectionCapabilityBase {
   readonly kind: "feature";
   readonly unit: null;
   readonly value: boolean | null;
 }
 
 /** A WhatsApp limit: an integer in `unit`, or `null` when unknown. */
-export interface SessionLimitCapability extends SessionCapabilityBase {
+export interface ConnectionLimitCapability extends ConnectionCapabilityBase {
   readonly kind: "limit";
-  readonly unit: SessionCapabilityUnit;
+  readonly unit: ConnectionCapabilityUnit;
   readonly value: number | null;
 }
 
 /** Narrow on `kind` to type `value` and `unit`. */
-export type SessionCapability =
-  SessionFeatureCapability | SessionLimitCapability;
+export type ConnectionCapability =
+  ConnectionFeatureCapability | ConnectionLimitCapability;
 
 /** `unknown` before the first sync, after a logout, while waiting to be paired, and after another account is linked; every value is then null. */
-export type SessionCapabilitiesStatus = "synced" | "unknown";
-export type SessionAccountType = "business" | "personal";
+export type ConnectionCapabilitiesStatus = "synced" | "unknown";
+export type ConnectionAccountType = "business" | "personal";
 
 /**
  * WhatsApp features and limits WhatsApp has enabled for one number, as of the
  * number's last configuration sync (`syncedAt`). Beta: teams must enroll.
  */
-export interface SessionCapabilities {
-  readonly session: string;
+export interface ConnectionCapabilities {
+  readonly connection: string;
   readonly projectId: string;
-  readonly status: SessionCapabilitiesStatus;
+  readonly status: ConnectionCapabilitiesStatus;
   readonly syncedAt: string | null;
   readonly checkedAt: string | null;
-  readonly accountType: SessionAccountType | null;
-  readonly capabilities: readonly SessionCapability[];
+  readonly accountType: ConnectionAccountType | null;
+  readonly capabilities: readonly ConnectionCapability[];
 }
 
-export interface SessionSafeMode {
-  readonly session: string;
+export interface ConnectionSafeMode {
+  readonly connection: string;
   readonly projectId: string;
   readonly project: SafeModeSettings;
   readonly override: SafeModeOverride;
@@ -1569,7 +1569,7 @@ export interface SessionSafeMode {
   readonly entitlementReason: string | null;
 }
 
-export interface UpdateSessionSafeModeRequest {
+export interface UpdateConnectionSafeModeRequest {
   readonly presence?: SafeModePresence | "inherit";
   readonly typing?: SafeModeTyping | "inherit";
   readonly reads?: SafeModeReads | "inherit";
@@ -1607,7 +1607,7 @@ export interface UpdateProjectInsuranceEvidenceRequest {
   readonly enabled: boolean;
 }
 
-export type ProjectHealthSessionAction =
+export type ProjectHealthConnectionAction =
   "none" | "stop" | "slow_down" | "log_out";
 
 export interface ProjectHealthPolicyIntegrations {
@@ -1620,7 +1620,7 @@ export interface ProjectHealthPolicy {
   readonly version: number;
   readonly enabled: boolean;
   readonly threshold: number;
-  readonly sessionAction: ProjectHealthSessionAction;
+  readonly connectionAction: ProjectHealthConnectionAction;
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;
@@ -1631,7 +1631,7 @@ export interface UpdateProjectHealthPolicyRequest {
   readonly version: number;
   readonly enabled: boolean;
   readonly threshold: number;
-  readonly sessionAction: ProjectHealthSessionAction;
+  readonly connectionAction: ProjectHealthConnectionAction;
   readonly slowDownMps: number | null;
   readonly emailNotification: boolean;
   readonly webhookNotification: boolean;

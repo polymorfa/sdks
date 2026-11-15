@@ -101,11 +101,11 @@ describe("Hybrid Link tier transitions", () => {
         }),
       }),
     }));
-    await client(server).sessions.quoteTierChange(SURVIVOR, body);
+    await client(server).connections.quoteTierChange(SURVIVOR, body);
     expect(server.requests).toHaveLength(1);
     expect(server.requests[0]?.method).toBe("POST");
     expect(server.requests[0]?.path).toBe(
-      `/platform/sessions/${SURVIVOR}/tier-quotes`,
+      `/platform/connections/${SURVIVOR}/tier-quotes`,
     );
     expect(JSON.parse(server.requests[0]!.body)).toEqual(body);
   });
@@ -114,7 +114,7 @@ describe("Hybrid Link tier transitions", () => {
     const server = await startTestServer(() => ({ body: "{}" }));
     const sdk = client(server);
     expect(() =>
-      sdk.sessions.quoteTierChange(SURVIVOR, {
+      sdk.connections.quoteTierChange(SURVIVOR, {
         tierOverride: "pro",
         hybridResolution: { action: "keep", transport: "linked_devices" },
         hybridMerge: { absorbNumberId: ABSORBED },
@@ -163,7 +163,7 @@ describe("Hybrid Link tier transitions", () => {
     const sdk = client(server);
     const seen: NumberHybridTransition[] = [];
     for (let i = 0; i < 3; i += 1) {
-      const read = await sdk.sessions.retrieveTierChange(
+      const read = await sdk.connections.retrieveTierChange(
         SURVIVOR,
         "01994234-0000-7000-8000-000000000001",
       );
@@ -198,7 +198,7 @@ describe("Hybrid Link tier transitions", () => {
         },
       }),
     }));
-    const read = await client(server).sessions.retrieveTierChange(
+    const read = await client(server).connections.retrieveTierChange(
       SURVIVOR,
       "01994234-0000-7000-8000-000000000001",
     );
@@ -235,7 +235,7 @@ describe("Hybrid Link tier transitions", () => {
       }),
     }));
     const sdk = client(server);
-    const failed = (await sdk.sessions.retrieveTierChange(SURVIVOR, "q")).data
+    const failed = (await sdk.connections.retrieveTierChange(SURVIVOR, "q")).data
       .data.quote.hybridTransition!;
     expect(failed).toMatchObject({
       action: "keep",
@@ -243,7 +243,7 @@ describe("Hybrid Link tier transitions", () => {
       failureReason: "hybrid_transition.runtime_unconfirmed",
     });
     const merge = (
-      await sdk.sessions.quoteTierChange(SURVIVOR, {
+      await sdk.connections.quoteTierChange(SURVIVOR, {
         tierOverride: "pro",
         hybridMerge: { absorbNumberId: ABSORBED },
       })
@@ -285,7 +285,7 @@ describe("Hybrid Link tier transitions", () => {
         }),
       }));
       const error = await client(server)
-        .sessions.quoteTierChange(SURVIVOR, { tierOverride: "standard" })
+        .connections.quoteTierChange(SURVIVOR, { tierOverride: "standard" })
         .then(
           () => undefined,
           (caught: unknown) => caught,

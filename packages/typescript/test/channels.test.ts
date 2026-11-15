@@ -59,13 +59,13 @@ describe("MessagingClient channels", () => {
   it("maps the complete Channels tag with exact query, body, and identifier shapes", async () => {
     const { client, requests } = await channelsServer();
     const channels = client.channels;
-    const session = "support/eu";
+    const connection = "support/eu";
     const channelId = "120363/7@newsletter";
     const mutationOptions = { idempotencyKey: "channel-action-1" };
 
-    const listed = await channels.list(session);
+    const listed = await channels.list(connection);
     const created = await channels.create(
-      session,
+      connection,
       {
         name: "Product updates",
         description: "New releases",
@@ -73,39 +73,39 @@ describe("MessagingClient channels", () => {
       },
       mutationOptions,
     );
-    const retrieved = await channels.retrieve(session, channelId);
-    const deleted = await channels.delete(session, channelId, mutationOptions);
-    const messages = await channels.listMessages(session, channelId, {
+    const retrieved = await channels.retrieve(connection, channelId);
+    const deleted = await channels.delete(connection, channelId, mutationOptions);
+    const messages = await channels.listMessages(connection, channelId, {
       count: 25,
       before: 91,
     });
-    const updates = await channels.listMessageUpdates(session, channelId, {
+    const updates = await channels.listMessageUpdates(connection, channelId, {
       count: 10,
       since: 1_787_212_800,
       after: 92,
     });
     const viewed = await channels.markMessageViewed(
-      session,
+      connection,
       channelId,
       "93",
       mutationOptions,
     );
     const reacted = await channels.reactToMessage(
-      session,
+      connection,
       channelId,
       "94",
       { reaction: "🔥" },
       mutationOptions,
     );
     const liveUpdates = await channels.subscribeToLiveUpdates(
-      session,
+      connection,
       channelId,
       mutationOptions,
     );
-    await channels.follow(session, channelId, mutationOptions);
-    await channels.unfollow(session, channelId, mutationOptions);
-    await channels.mute(session, channelId, mutationOptions);
-    await channels.unmute(session, channelId, mutationOptions);
+    await channels.follow(connection, channelId, mutationOptions);
+    await channels.unfollow(connection, channelId, mutationOptions);
+    await channels.mute(connection, channelId, mutationOptions);
+    await channels.unmute(connection, channelId, mutationOptions);
 
     expectTypeOf<
       MessagingClient["channels"]

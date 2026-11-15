@@ -12,9 +12,9 @@ it("serializes scoped routing revisions and pause guards exactly", async () => {
     fetch,
   });
   await client.hybridLink.getPolicy({
-    scope: "session",
+    scope: "connection",
     projectId: "project/1",
-    session: "number/1",
+    connection: "number/1",
   });
   await client.hybridLink.setPolicy(
     { scope: "team" },
@@ -30,7 +30,7 @@ it("serializes scoped routing revisions and pause guards exactly", async () => {
     paused: true,
   });
   expect(fetch.mock.calls.map((call) => String(call[0]))).toEqual([
-    "https://api.example.test/messaging/routing/hybrid?scope=session&projectId=project%2F1&session=number%2F1",
+    "https://api.example.test/messaging/routing/hybrid?scope=connection&projectId=project%2F1&connection=number%2F1",
     "https://api.example.test/messaging/routing/hybrid?scope=team",
     "https://api.example.test/messaging/number%2F1/hybrid-link",
     "https://api.example.test/messaging/number%2F1/hybrid-link",

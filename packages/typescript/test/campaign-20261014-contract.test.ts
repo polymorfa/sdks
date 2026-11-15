@@ -31,7 +31,7 @@ import { startTestServer, type TestServer } from "./support/http-server.js";
 const projectId = "018f0000-0000-7000-8000-000000000001";
 const campaignId = "018f0000-0000-7000-8000-000000000002";
 const flowId = "018f0000-0000-7000-8000-000000000003";
-const sessionId = "018f0000-0000-7000-8000-000000000004";
+const connectionId = "018f0000-0000-7000-8000-000000000004";
 const customerId = "018f0000-0000-7000-8000-000000000005";
 const jobId = "018f0000-0000-7000-8000-000000000006";
 const phone = "+15551234567";
@@ -61,7 +61,7 @@ const profile = {
   tags: ["interested"],
   attributes: { plan: "pro", count: 1, enabled: false, empty: null },
 };
-const testSend = { sessionId, to: phone, variables: {} };
+const testSend = { connectionId, to: phone, variables: {} };
 const custody: SignalCustodyDefault = {
   signalModeDefault: null,
   effectiveSignalMode: "standard",
@@ -176,7 +176,7 @@ function successFixture(operation: string): unknown {
         id: jobId,
         campaignId,
         status: "sent",
-        from: { sessionId, phone },
+        from: { connectionId, phone },
         to: phone,
         messageId: null,
         variables: {},
@@ -1084,7 +1084,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
           id: jobId,
           campaignId,
           status: "sent",
-          from: { sessionId, phone },
+          from: { connectionId, phone },
           messageId: null,
           createdAt: 1,
         },
@@ -1147,7 +1147,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
           "idempotent-replayed": "true",
         },
         body: JSON.stringify({
-          error: { code, message: "Refused", param: "sessionId" },
+          error: { code, message: "Refused", param: "connectionId" },
         }),
       }));
       servers.push(server);
@@ -1160,7 +1160,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       await expect(result).rejects.toMatchObject({
         code,
         requestId: "failed-request",
-        param: "sessionId",
+        param: "connectionId",
         metadata: {
           headers: {
             "retry-after": "3",

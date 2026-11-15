@@ -29,7 +29,7 @@ export interface StreamedEvent {
 /** The decoded webhook body carried in `payload`, when available. */
 export interface WebhookEnvelope {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly externalId?: string;
   readonly timestamp: string;
   readonly event: string;

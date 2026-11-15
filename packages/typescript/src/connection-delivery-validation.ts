@@ -8,7 +8,7 @@ import { PolymorfaConfigurationError } from "./errors.js";
 const own = (v: object, key: string): boolean => Object.hasOwn(v, key);
 function invalid(field: string): never {
   throw new PolymorfaConfigurationError(
-    "Invalid session configuration field.",
+    "Invalid connection configuration field.",
     field,
   );
 }
@@ -90,7 +90,7 @@ export function quickLinkIntent(input: unknown): boolean {
     [
       "purpose",
       "signalMode",
-      "session",
+      "connection",
       "addConnection",
       "connectionGoal",
       "projectId",
@@ -109,8 +109,8 @@ export function quickLinkIntent(input: unknown): boolean {
     invalid("signalMode");
   if (v.purpose === "add_connection") {
     if (
-      typeof v.session !== "string" ||
-      !v.session ||
+      typeof v.connection !== "string" ||
+      !v.connection ||
       !["linked_devices", "official_api"].includes(v.addConnection as string) ||
       v.connectionGoal === "single" ||
       ["signalMode", "customerId", "externalId", "billingControls"].some(
@@ -120,7 +120,7 @@ export function quickLinkIntent(input: unknown): boolean {
       invalid("purpose");
   } else if (
     (own(v, "purpose") && v.purpose !== "initial") ||
-    own(v, "session") ||
+    own(v, "connection") ||
     own(v, "addConnection")
   )
     invalid("purpose");

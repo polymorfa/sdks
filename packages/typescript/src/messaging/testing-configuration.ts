@@ -30,8 +30,8 @@ export const TEST_EVENT_FIXTURES = [
   "call.received",
   "call.missed",
   "call.ended",
-  "session.status",
-  "session.restriction_updated",
+  "connection.status",
+  "connection.restriction_updated",
   "template.status",
 ] as const;
 
@@ -57,7 +57,7 @@ export interface TestEventOverrides {
   /** message.failed: sanitized failure class. */
   failureReason?:
     | "invalid_recipient"
-    | "session_not_connected"
+    | "connection_not_connected"
     | "ack_timeout"
     | "send_failed"
     | "blocked_by_safety";
@@ -72,11 +72,11 @@ export interface TestEventOverrides {
     | "lost_connection"
     | "rejected"
     | "call_restricted";
-  /** session.restriction_updated: whether the restriction starts (true) or ends (false). */
+  /** connection.restriction_updated: whether the restriction starts (true) or ends (false). */
   restrictionActive?: boolean;
-  /** session.status: status. */
+  /** connection.status: status. */
   status?: "CONNECTING" | "CONNECTED" | "DISCONNECTED";
-  /** session.status: reason. */
+  /** connection.status: reason. */
   statusReason?:
     | "SCAN_QR"
     | "AUTO_RECONNECT"
@@ -95,20 +95,20 @@ export interface TestEventOverrides {
 }
 
 export interface TriggerTestEventRequest {
-  /** Test number session name in the project. */
-  session: string;
+  /** Test number connection name in the project. */
+  connection: string;
   event: TestEventFixture;
   overrides?: TestEventOverrides;
   /**
    * message.received only: deliver a real simulated message from this other
    * Test number in the same project instead of a generated event.
    */
-  fromSession?: string;
+  fromConnection?: string;
 }
 
 export interface TriggerTestEventResponse {
   event: TestEventFixture;
-  session: string;
+  connection: string;
   /** `generated`: a test event was published. `simulated`: a simulated message was sent. */
   delivery: "generated" | "simulated";
   /** Event ID for generated events. Simulated messages produce their event asynchronously. */
@@ -125,7 +125,7 @@ export interface TestEventFixtureInfo {
 
 /** A Test number's simulated phone, which acts as its main device. */
 export interface TestingPhone {
-  session: string;
+  connection: string;
   /** The Test number, in E.164 format. */
   phone: string;
   /** True while the simulated phone is running. */
@@ -142,14 +142,14 @@ export interface SendTestingPhoneMessageRequest {
 }
 
 export interface SendTestingPhoneMessageResponse {
-  session: string;
+  connection: string;
   to: string;
   /** WhatsApp message ID when the phone reports one. */
   messageId: string | null;
 }
 
 export interface UnlinkTestingPhoneDeviceResponse {
-  session: string;
+  connection: string;
   deviceId: number;
   unlinked: true;
 }

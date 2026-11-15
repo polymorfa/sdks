@@ -39,11 +39,11 @@ const summary: UsageSummary = {
   start: "2026-09-01T00:00:00.000Z",
   end: "2026-10-01T00:00:00.000Z",
   projectId: null,
-  session: null,
+  connection: null,
   billingEnabled: false,
   meters: [meterTotal],
   numbers: [
-    { session: "support", projectId: "project-1", meters: [meterTotal] },
+    { connection: "support", projectId: "project-1", meters: [meterTotal] },
   ],
   numbersTruncated: false,
 } as UsageSummary;
@@ -65,7 +65,7 @@ const record: UsageRecord = {
   sourceKind: "call",
   sourceId: "CALL-1",
   projectId: "project-1",
-  session: "support",
+  connection: "support",
   occurredAt: "2026-09-19T10:00:00.000Z",
   recordedAt: "2026-09-19T10:00:01.000Z",
   revision: 1,
@@ -74,7 +74,7 @@ const record: UsageRecord = {
   pricedCredits: null,
 };
 const gates: UsageGateList = {
-  session: "support",
+  connection: "support",
   gates: [
     {
       key: "calls.outbound_monthly",
@@ -145,12 +145,12 @@ describe("Client.usage", () => {
     );
     const response = await client.usage.summary({
       period: "2026-09",
-      session: "support",
+      connection: "support",
     });
     expectTypeOf(response).toEqualTypeOf<ApiResponse<UsageSummary>>();
     expect(response.data).toEqual(summary);
     expect(requests[0]!.path).toBe(
-      "/platform/usage?period=2026-09&session=support",
+      "/platform/usage?period=2026-09&connection=support",
     );
   });
 
@@ -177,12 +177,12 @@ describe("Client.usage", () => {
 
     const seen: number[] = [];
     for await (const item of client.usage.iterateRecords({
-      session: "support",
+      connection: "support",
     }))
       seen.push(item.revision);
     expect(seen).toEqual([1, 2]);
     expect(requests[2]!.path).toBe(
-      "/platform/usage/records?session=support&cursor=cursor-2",
+      "/platform/usage/records?connection=support&cursor=cursor-2",
     );
   });
 
@@ -210,10 +210,10 @@ describe("Client.usage", () => {
     const { client, requests } = await usageServer(() =>
       JSON.stringify({ data: gates }),
     );
-    const response = await client.usage.listGates({ session: "support" });
+    const response = await client.usage.listGates({ connection: "support" });
     expectTypeOf(response).toEqualTypeOf<ApiResponse<UsageGateList>>();
     expect(response.data.gates[0]!.mode).toBe("record");
-    expect(requests[0]!.path).toBe("/platform/gates?session=support");
+    expect(requests[0]!.path).toBe("/platform/gates?connection=support");
   });
 
   it("binds a project client to its own project", async () => {

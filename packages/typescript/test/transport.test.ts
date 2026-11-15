@@ -54,7 +54,7 @@ describe("HttpTransport", () => {
               ...(marker === undefined
                 ? {}
                 : { "Idempotent-Replayed": marker }),
-              "set-cookie": "session=private",
+              "set-cookie": "connection=private",
               "x-internal-debug": "private",
             },
           },
@@ -136,7 +136,7 @@ describe("HttpTransport", () => {
         "polymorfa-version": "2026-08-19",
         "x-ratelimit-remaining": "41",
         "x-ratelimit-reset": "1700000060",
-        "set-cookie": "session=secret",
+        "set-cookie": "connection=secret",
         "x-internal-debug": "database-host",
       },
       body: '{"ok":true}',

@@ -172,12 +172,12 @@ export class OfficialGroupsResource {
   }
 
   list(
-    session: string,
+    connection: string,
     params: ListOfficialGroupsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupList>>> {
     return this.read(
-      groupsPath(session),
+      groupsPath(connection),
       { limit: params.limit, before: params.before, after: params.after },
       options,
     );
@@ -185,56 +185,56 @@ export class OfficialGroupsResource {
 
   /** Asks WhatsApp to create a group; see `CreateOfficialGroupResult`. */
   create(
-    session: string,
+    connection: string,
     body: CreateOfficialGroupRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<CreateOfficialGroupResult>>> {
-    return this.write("POST", groupsPath(session), body, options);
+    return this.write("POST", groupsPath(connection), body, options);
   }
 
   retrieve(
-    session: string,
+    connection: string,
     group: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroup>>> {
-    return this.read(groupPath(session, group), {}, options);
+    return this.read(groupPath(connection, group), {}, options);
   }
 
   update(
-    session: string,
+    connection: string,
     group: string,
     body: UpdateOfficialGroupRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
-    return this.write("PATCH", groupPath(session, group), body, options);
+    return this.write("PATCH", groupPath(connection, group), body, options);
   }
 
   /** Deletes the group and removes every participant, including your business. */
   delete(
-    session: string,
+    connection: string,
     group: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
-    return this.write("DELETE", groupPath(session, group), undefined, options);
+    return this.write("DELETE", groupPath(connection, group), undefined, options);
   }
 
   getInviteLink(
-    session: string,
+    connection: string,
     group: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupInviteLink>>> {
-    return this.read(`${groupPath(session, group)}/invite-link`, {}, options);
+    return this.read(`${groupPath(connection, group)}/invite-link`, {}, options);
   }
 
   /** Creates a new invite link; every earlier link stops working. */
   resetInviteLink(
-    session: string,
+    connection: string,
     group: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupInviteLink>>> {
     return this.write(
       "POST",
-      `${groupPath(session, group)}/invite-link/reset`,
+      `${groupPath(connection, group)}/invite-link/reset`,
       undefined,
       options,
     );
@@ -242,55 +242,55 @@ export class OfficialGroupsResource {
 
   /** Removes up to eight participants (conversation IDs or E.164 numbers). A removed participant cannot rejoin with the link. */
   removeParticipants(
-    session: string,
+    connection: string,
     group: string,
     participants: readonly string[],
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
     return this.write(
       "POST",
-      `${groupPath(session, group)}/participants/remove`,
+      `${groupPath(connection, group)}/participants/remove`,
       { participants },
       options,
     );
   }
 
   listJoinRequests(
-    session: string,
+    connection: string,
     group: string,
     params: OfficialGroupCursorParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupJoinRequestList>>> {
     return this.read(
-      `${groupPath(session, group)}/join-requests`,
+      `${groupPath(connection, group)}/join-requests`,
       { before: params.before, after: params.after },
       options,
     );
   }
 
   approveJoinRequests(
-    session: string,
+    connection: string,
     group: string,
     joinRequestIds: readonly string[],
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupJoinRequestDecision>>> {
     return this.write(
       "POST",
-      `${groupPath(session, group)}/join-requests/approve`,
+      `${groupPath(connection, group)}/join-requests/approve`,
       { joinRequestIds },
       options,
     );
   }
 
   rejectJoinRequests(
-    session: string,
+    connection: string,
     group: string,
     joinRequestIds: readonly string[],
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupJoinRequestDecision>>> {
     return this.write(
       "POST",
-      `${groupPath(session, group)}/join-requests/reject`,
+      `${groupPath(connection, group)}/join-requests/reject`,
       { joinRequestIds },
       options,
     );
@@ -301,7 +301,7 @@ export class OfficialGroupsResource {
    * validates image bytes and dimensions. An event confirms the applied change.
    */
   setPicture(
-    session: string,
+    connection: string,
     group: string,
     file: Blob,
     options: RequestOptions = {},
@@ -320,7 +320,7 @@ export class OfficialGroupsResource {
     body.set("file", file, "picture.jpg");
     return this.transport.request({
       method: "PUT",
-      path: `${groupPath(session, group)}/picture`,
+      path: `${groupPath(connection, group)}/picture`,
       body,
       ...options,
       maxNetworkRetries: 0,
@@ -329,24 +329,24 @@ export class OfficialGroupsResource {
 
   /** Pins a group message for 1 to 30 days, or unpins it. At most three stay pinned. */
   pin(
-    session: string,
+    connection: string,
     group: string,
     body: PinOfficialGroupMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
     return this.write(
       "POST",
-      `${groupPath(session, group)}/pins`,
+      `${groupPath(connection, group)}/pins`,
       body,
       options,
     );
   }
 }
 
-function groupsPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/official-groups`;
+function groupsPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/official-groups`;
 }
 
-function groupPath(session: string, group: string): string {
-  return `${groupsPath(session)}/${encodeURIComponent(group)}`;
+function groupPath(connection: string, group: string): string {
+  return `${groupsPath(connection)}/${encodeURIComponent(group)}`;
 }

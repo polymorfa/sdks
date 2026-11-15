@@ -111,8 +111,8 @@ function isEventEnvelope(value: unknown): value is UnknownWebhookEvent {
   const record = value as Record<string, unknown>;
   return (
     isNonEmptyString(record.id) &&
-    // Project-scoped events (`customer.*`, `voice.*`) carry an empty session.
-    typeof record.session === "string" &&
+    // Project-scoped events (`customer.*`, `voice.*`) carry an empty connection.
+    typeof record.connection === "string" &&
     isNonEmptyString(record.timestamp) &&
     isNonEmptyString(record.event) &&
     Object.hasOwn(record, "payload")

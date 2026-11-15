@@ -2,7 +2,7 @@ import type { IncomingOrderCart } from "../messaging/order-cart.js";
 import type {
   CallPermissionSource,
   CallPermissionStatus,
-  MessagingConnection,
+  ConnectionMethodKind,
   WhatsAppMessageIds,
   PhonePlatform,
   WhatsAppAccountType,
@@ -20,7 +20,7 @@ import type {
   VoiceAudioSource,
 } from "../platform/voice.js";
 
-import type { SessionCapabilities } from "../platform/types.js";
+import type { ConnectionCapabilities } from "../platform/types.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "bansafe.action",
@@ -99,12 +99,12 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "newsletter.update",
   "order.payment_updated",
   "presence.update",
-  "session.capabilities_updated",
-  "session.connected",
-  "session.logged_out",
-  "session.phone_offline",
-  "session.restriction_updated",
-  "session.status",
+  "connection.capabilities_updated",
+  "connection.connected",
+  "connection.logged_out",
+  "connection.phone_offline",
+  "connection.restriction_updated",
+  "connection.status",
   "template.status",
   "usage.recorded",
   "voice.asset_failed",
@@ -293,7 +293,7 @@ export interface PollVotePayload {
   readonly timestamp: number;
 }
 
-export interface RuntimeSessionStatusPayload {
+export interface RuntimeConnectionStatusPayload {
   readonly status: string;
   readonly statusReason?: string;
   readonly banCode?: number;
@@ -312,20 +312,20 @@ export interface CloudAccountStatusPayload {
   readonly value: Readonly<Record<string, unknown>>;
 }
 
-export type SessionStatusPayload =
-  RuntimeSessionStatusPayload | CloudAccountStatusPayload;
+export type ConnectionStatusPayload =
+  RuntimeConnectionStatusPayload | CloudAccountStatusPayload;
 
-export type SessionRestrictionType = "reachout_timelock";
+export type ConnectionRestrictionType = "reachout_timelock";
 
-export interface SessionRestrictionUpdatedPayload {
-  readonly type: SessionRestrictionType;
+export interface ConnectionRestrictionUpdatedPayload {
+  readonly type: ConnectionRestrictionType;
   readonly active: boolean;
   readonly enforcementType: string | null;
   readonly expiresAt: string | null;
   readonly observedAt: string;
 }
 
-export interface SessionConnectedPayload {
+export interface ConnectionConnectedPayload {
   readonly phoneNumber: string;
   readonly id?: string;
   readonly pushName: string;
@@ -335,14 +335,14 @@ export interface SessionConnectedPayload {
 }
 
 /**
- * Why a session was logged out: `banned` (WhatsApp banned the account),
+ * Why a connection was logged out: `banned` (WhatsApp banned the account),
  * `device_removed` (the linked device was removed from the phone or another
  * device) or `unknown`.
  */
-export type SessionLoggedOutReason = "banned" | "device_removed" | "unknown";
+export type ConnectionLoggedOutReason = "banned" | "device_removed" | "unknown";
 
-export interface SessionLoggedOutPayload {
-  readonly reason: SessionLoggedOutReason;
+export interface ConnectionLoggedOutPayload {
+  readonly reason: ConnectionLoggedOutReason;
   /** WhatsApp's logout code (401, 403 or 406), or 0 when none was given. */
   readonly code: number;
 }
@@ -357,7 +357,7 @@ export const PHONE_OFFLINE_START_DAY = {
   default: 10,
 } as const;
 
-export interface SessionPhoneOfflinePayload {
+export interface ConnectionPhoneOfflinePayload {
   readonly daysSinceLastSeen: number;
   readonly daysRemaining: number;
   readonly lastSeen: string;
@@ -442,8 +442,8 @@ export interface ContactOptPayload {
   readonly source: "stop-keyword";
   /** The matched keyword, normalized to upper case. */
   readonly keyword: string;
-  /** Session name of the number that received the reply. */
-  readonly session: string;
+  /** Connection name of the number that received the reply. */
+  readonly connection: string;
   /** Project that owns the receiving number, when known. */
   readonly projectId?: string;
 }
@@ -515,7 +515,7 @@ export interface ChatDeletePayload {
   readonly from: IdentityReference;
 }
 
-/** What a call supports, as reported by the session that carries it. */
+/** What a call supports, as reported by the connection that carries it. */
 export interface WebhookCallCapabilities {
   readonly video: boolean;
   /** Other parties can be invited, turning the call into a group call. */
@@ -526,8 +526,8 @@ export interface CallReceivedPayload {
   readonly from: IdentityReference;
   readonly callId: string;
   readonly hasVideo: boolean;
-  /** How the session is connected to WhatsApp. */
-  readonly sessionConnection?: MessagingConnection;
+  /** How the connection is connected to WhatsApp. */
+  readonly connectionConnection?: ConnectionMethodKind;
   readonly capabilities?: WebhookCallCapabilities;
 }
 
@@ -544,7 +544,7 @@ export interface CallAcceptedPayload {
   readonly answeredBy?: string;
   /** The answer claimed the call: other participants stopped ringing. */
   readonly exclusive?: boolean;
-  readonly sessionConnection?: MessagingConnection;
+  readonly connectionConnection?: ConnectionMethodKind;
   readonly capabilities?: WebhookCallCapabilities;
 }
 
@@ -562,7 +562,7 @@ export interface CallEndedPayload {
   readonly reason: string;
   readonly direction: "inbound" | "outbound";
   readonly hadVideo: boolean;
-  readonly sessionConnection?: MessagingConnection;
+  readonly connectionConnection?: ConnectionMethodKind;
 }
 
 export interface CallTelemetryPayload {
@@ -826,7 +826,7 @@ export type CustomerPairingLinkOpenedPayload = CustomerPairingLinkPayload;
 export type CustomerPairingLinkExpiredPayload = CustomerPairingLinkPayload;
 
 export interface CustomerPairingLinkConnectedPayload extends CustomerPairingLinkPayload {
-  readonly sessionId: string;
+  readonly connectionId: string;
 }
 
 export interface CustomerPairingLinkFailedPayload extends CustomerPairingLinkPayload {
@@ -842,17 +842,17 @@ export interface CustomerPairingLinkRevokedPayload extends CustomerPairingLinkPa
 }
 
 export interface CustomerNumberAttachedPayload extends CustomerEventPayload {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly pairingLinkId?: string;
 }
 
 export interface CustomerNumberTransferredPayload extends CustomerEventPayload {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly sourceCustomerId: string;
 }
 
 export interface CustomerNumberDisconnectedPayload extends CustomerEventPayload {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly reason: string;
 }
 
@@ -869,7 +869,7 @@ export type BanSafeEventRung =
   "none" | "notify" | "throttle" | "block_cold" | "suspend";
 
 export interface BanSafeHealthThresholdPayload {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly projectId: string;
   /** Health from 0 to 100. */
   readonly health: number;
@@ -1021,7 +1021,7 @@ export type OrderPaymentUpdatedPayload =
 
 export type MessageFailedReason =
   | "invalid_recipient"
-  | "session_not_connected"
+  | "connection_not_connected"
   | "ack_timeout"
   | "send_failed"
   | "blocked_by_safety";
@@ -1143,7 +1143,7 @@ export interface CampaignRecipientSentPayload {
   readonly campaignId: string;
   readonly recipientId: string;
   readonly phone: string;
-  readonly sessionKey: string;
+  readonly connectionKey: string;
   readonly externalMessageId: string;
   readonly variantKey: string;
   readonly attempt: number;
@@ -1178,7 +1178,7 @@ export interface CampaignRecipientSkippedPayload {
 
 export interface CampaignThrottledPayload {
   readonly campaignId: string;
-  readonly sessionKey: string;
+  readonly connectionKey: string;
   readonly reason: string;
   readonly deferredCount: number;
   readonly at: number;
@@ -1186,7 +1186,7 @@ export interface CampaignThrottledPayload {
 
 export interface CampaignCapReachedPayload {
   readonly campaignId: string;
-  readonly sessionKey: string;
+  readonly connectionKey: string;
   readonly phone: string;
   readonly capType: string;
   readonly capLimit: number;
@@ -1243,7 +1243,7 @@ export interface UsageRecordedPayload {
   /** The call id for call meters. */
   readonly sourceId: string;
   readonly projectId: string | null;
-  readonly session: string | null;
+  readonly connection: string | null;
   readonly occurredAt: string;
   readonly recordedAt: string;
   readonly revision: number;
@@ -1329,12 +1329,12 @@ export interface WebhookPayloadMap {
   readonly "message.vote": PollVotePayload;
   readonly "newsletter.update": NewsletterUpdatePayload;
   readonly "presence.update": PresenceUpdatePayload;
-  readonly "session.capabilities_updated": SessionCapabilitiesUpdatedPayload;
-  readonly "session.connected": SessionConnectedPayload;
-  readonly "session.logged_out": SessionLoggedOutPayload;
-  readonly "session.phone_offline": SessionPhoneOfflinePayload;
-  readonly "session.restriction_updated": SessionRestrictionUpdatedPayload;
-  readonly "session.status": SessionStatusPayload;
+  readonly "connection.capabilities_updated": ConnectionCapabilitiesUpdatedPayload;
+  readonly "connection.connected": ConnectionConnectedPayload;
+  readonly "connection.logged_out": ConnectionLoggedOutPayload;
+  readonly "connection.phone_offline": ConnectionPhoneOfflinePayload;
+  readonly "connection.restriction_updated": ConnectionRestrictionUpdatedPayload;
+  readonly "connection.status": ConnectionStatusPayload;
   readonly "template.status": TemplateStatusPayload;
   readonly "usage.recorded": UsageRecordedPayload;
   readonly "voice.asset_failed": VoiceAssetFailedPayload;
@@ -1343,8 +1343,8 @@ export interface WebhookPayloadMap {
 
 export interface WebhookEventOf<TEvent extends string, TPayload> {
   readonly id: string;
-  readonly session: string;
-  /** Integrator reference from the QuickLink that created the session, when supplied. */
+  readonly connection: string;
+  /** Integrator reference from the QuickLink that created the connection, when supplied. */
   readonly externalId?: string;
   readonly timestamp: string;
   readonly event: TEvent;
@@ -1373,6 +1373,6 @@ export function isEvent<TEvent extends KnownWebhookEventType>(
 }
 
 /** Canonical capability view after a semantic change, plus the changed keys. */
-export interface SessionCapabilitiesUpdatedPayload extends SessionCapabilities {
+export interface ConnectionCapabilitiesUpdatedPayload extends ConnectionCapabilities {
   readonly changedKeys: readonly string[];
 }

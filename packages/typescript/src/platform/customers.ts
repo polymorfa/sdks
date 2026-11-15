@@ -232,13 +232,13 @@ export class CustomersResource {
 
   transferNumber(
     customerId: string,
-    sessionId: string,
+    connectionId: string,
     body: TransferCustomerNumberRequest,
     options: RequestOptions,
   ): Promise<ApiResponse<DataEnvelope<CustomerNumber>>> {
     return this.transport.request({
       method: "POST",
-      path: `${customerPath(customerId)}/numbers/${encodeURIComponent(sessionId)}/transfer`,
+      path: `${customerPath(customerId)}/numbers/${encodeURIComponent(connectionId)}/transfer`,
       body,
       ...options,
     });

@@ -31,46 +31,46 @@ export class ClientTokensResource {
   }
 
   retrieveRules(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetClientRulesResponse>> {
     this.assertServerCredential();
     return this.transport.request({
       method: "GET",
-      path: rulesPath(session),
+      path: rulesPath(connection),
       ...options,
     });
   }
 
   updateRules(
-    session: string,
+    connection: string,
     body: SetClientRulesRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     this.assertServerCredential();
     return this.transport.request({
       method: "PUT",
-      path: rulesPath(session),
+      path: rulesPath(connection),
       body,
       ...options,
     });
   }
 
   deleteRules(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     this.assertServerCredential();
     return this.transport.request({
       method: "DELETE",
-      path: rulesPath(session),
+      path: rulesPath(connection),
       ...options,
     });
   }
   private assertServerCredential(): void {
     if (this.credentialType === "clientToken") {
       throw new PolymorfaConfigurationError(
-        "Platform session administration requires a server API key.",
+        "Platform connection administration requires a server API key.",
         "credential",
       );
     }
@@ -78,18 +78,18 @@ export class ClientTokensResource {
 }
 
 function assertMintTarget(body: MintClientTokenRequest): void {
-  const hasSession =
-    typeof body.session === "string" && body.session.length > 0;
+  const hasConnection =
+    typeof body.connection === "string" && body.connection.length > 0;
   const hasCustomer =
     typeof body.customer === "string" && body.customer.length > 0;
-  if (hasSession === hasCustomer) {
+  if (hasConnection === hasCustomer) {
     throw new PolymorfaConfigurationError(
-      "Provide exactly one of session or customer to mint a client token.",
-      hasSession ? "customer" : "session",
+      "Provide exactly one of connection or customer to mint a client token.",
+      hasConnection ? "customer" : "connection",
     );
   }
 }
 
-function rulesPath(session: string): string {
-  return `/platform/sessions/${encodeURIComponent(session)}/client-rules`;
+function rulesPath(connection: string): string {
+  return `/platform/connections/${encodeURIComponent(connection)}/client-rules`;
 }

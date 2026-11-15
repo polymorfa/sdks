@@ -24,7 +24,7 @@ export interface RequestLog {
   /** RFC 3339 time the request was recorded. */
   readonly createdAt: string;
   readonly method: string;
-  /** Matched route pattern, for example `/messaging/:session/messages`. */
+  /** Matched route pattern, for example `/messaging/:connection/messages`. */
   readonly route: string;
   readonly status: number | null;
   readonly durationMs: number | null;
@@ -51,7 +51,7 @@ export interface RequestLogFilters {
     number | `${1 | 2 | 3 | 4 | 5}xx` | `${number}`
   )[];
   readonly method?: readonly RequestLogMethod[];
-  /** Exact route pattern, for example `/messaging/:session/messages`. */
+  /** Exact route pattern, for example `/messaging/:connection/messages`. */
   readonly route?: string;
   readonly source?: RequestLogSource;
   /** ID of the team key or project token that made the request. */
