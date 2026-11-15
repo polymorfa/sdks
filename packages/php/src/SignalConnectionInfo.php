@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Polymorfa;
 
-final readonly class SignalSessionInfo implements \JsonSerializable
+final readonly class SignalConnectionInfo implements \JsonSerializable
 {
     public function __construct(public string $id, public int $leaseGeneration, public bool $claimed, public bool $hasDeviceKeys, public string $state, #[\SensitiveParameter] public ?string $pn, #[\SensitiveParameter] public ?string $lid)
     {

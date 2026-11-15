@@ -10,11 +10,11 @@ final class HistorySync extends Resource
 {
     /** @param array{syncType:'INITIAL_BOOTSTRAP'|'INITIAL_STATUS_V3'|'FULL'|'RECENT'|'PUSH_NAME'|'NON_BLOCKING_DATA'|'ON_DEMAND',chunkOrder:int,chunkMessageId?:string,regenerate?:bool} $body
      * @return ApiResponse<array{success:true,data:array{requestId:string,status:'requested'}}> */
-    public function requestChunkRetry(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function requestChunkRetry(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         self::validateRetry($body);
-        $response = \Polymorfa\ExistingContract::request($this->transport, 'POST', '/messaging/'.self::segment($session).'/history/chunks/retry', $body, options:WhatsAppMedia::options($options), model:'historyRetry', messaging:true);
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'POST', '/messaging/'.self::segment($connection).'/history/chunks/retry', $body, options:WhatsAppMedia::options($options), model:'historyRetry', messaging:true);
         /** @var ApiResponse<array{success:true,data:array{requestId:string,status:'requested'}}> */
         return $response;
     }
@@ -28,7 +28,7 @@ final class HistorySync extends Resource
     /** Explicitly delete a chunk only after durable local processing.
      * fileEncSha256 contains 32 binary bytes and is sent as standard base64.
      * @return ApiResponse<array{success:true,data:array{status:'deleted'}}> */
-    public function deleteChunk(string $session, #[\SensitiveParameter] string $directPath, #[\SensitiveParameter] string $fileEncSha256, #[\SensitiveParameter] ?string $encHandle = null, #[\SensitiveParameter] ?string $companionMetaNonce = null, ?RequestOptions $options = null): ApiResponse
+    public function deleteChunk(string $connection, #[\SensitiveParameter] string $directPath, #[\SensitiveParameter] string $fileEncSha256, #[\SensitiveParameter] ?string $encHandle = null, #[\SensitiveParameter] ?string $companionMetaNonce = null, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         if (strlen($directPath) > 1024 || !preg_match('/^\/[A-Za-z0-9._~%\/=&?+-]+$/D', $directPath) || strlen($fileEncSha256) !== 32) {
@@ -46,7 +46,7 @@ final class HistorySync extends Resource
         if ($companionMetaNonce !== null) {
             $body['companionMetaNonce'] = $companionMetaNonce;
         }
-        $response = \Polymorfa\ExistingContract::request($this->transport, 'POST', '/messaging/'.self::segment($session).'/history/media/delete', $body, options:WhatsAppMedia::options($options), model:'historyDelete', messaging:true);
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'POST', '/messaging/'.self::segment($connection).'/history/media/delete', $body, options:WhatsAppMedia::options($options), model:'historyDelete', messaging:true);
         /** @var ApiResponse<array{success:true,data:array{status:'deleted'}}> */
         return $response;
     }

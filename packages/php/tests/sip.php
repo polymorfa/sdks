@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-$trunk = ['id' => 'trunk','projectId' => 'project','name' => 'PBX','enabled' => false,'direction' => 'both','outbound' => ['targetUri' => 'sip:pbx.example.com','transport' => 'tls','authUsername' => null,'hasPassword' => false,'fromUser' => null],'inbound' => ['username' => 'user','realm' => 'polymorfa','session' => null,'allowedAddresses' => [],'allowedDestinations' => []],'codecs' => ['opus'],'maxConcurrentCalls' => 1,'revision' => 2,'createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
+$trunk = ['id' => 'trunk','projectId' => 'project','name' => 'PBX','enabled' => false,'direction' => 'both','outbound' => ['targetUri' => 'sip:pbx.example.com','transport' => 'tls','authUsername' => null,'hasPassword' => false,'fromUser' => null],'inbound' => ['username' => 'user','realm' => 'polymorfa','connection' => null,'allowedAddresses' => [],'allowedDestinations' => []],'codecs' => ['opus'],'maxConcurrentCalls' => 1,'revision' => 2,'createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
 $credentials = ['username' => 'user','password' => 'synthetic_fixture_only','realm' => 'polymorfa'];
 $input = ['name' => 'PBX','direction' => 'outbound','outbound' => ['targetUri' => 'sip:pbx.example.com','transport' => 'tls','authUsername' => null],'enabled' => false];
 $endpoint = ['status' => 'hosted','host' => 'sip.example.com','transports' => [['transport' => 'tls','port' => 5061,'srtp' => 'required']],'rtp' => ['protocol' => 'udp','portMin' => 10000,'portMax' => 20000]];

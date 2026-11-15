@@ -8,6 +8,6 @@ function phpstanStructuralLimits(Polymorfa\Client $team, Polymorfa\MessagingClie
 {
     $m->campaigns->create('slug', ['name' => 'x','variableMapping' => ['0' => ['future' => false]]]);
     $team->campaigns->launch($id, ['projectId' => $p,'extra' => false]);
-    $team->project($p)->sessionConfiguration->update(['configuration' => [],'revision' => 0,'projectId' => 'foreign']);
-    $m->quickLinks->create(['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','signalMode' => 'standard']);
+    $team->project($p)->connectionConfiguration->update(['configuration' => [],'revision' => 0,'projectId' => 'foreign']);
+    $m->quickLinks->create(['purpose' => 'add_method','connection' => 's','addMethod' => 'linked_devices','signalMode' => 'standard']);
 }

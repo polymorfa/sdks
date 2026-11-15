@@ -15,13 +15,13 @@ final class Webhooks
         'campaign.recipient_sent', 'campaign.recipient_skipped', 'campaign.rescheduled', 'campaign.resumed', 'campaign.stopped',
         'campaign.throttled', 'chat.archive', 'chat.clear', 'chat.delete', 'chat.mute', 'chat.read', 'command.result',
         'contact.opted_in', 'contact.opted_out', 'contact.sync', 'contact.update', 'customer.archived', 'customer.archiving',
-        'customer.created', 'customer.enabled', 'customer.number.attached', 'customer.number.disconnected', 'customer.number.transferred',
+        'customer.created', 'customer.enabled', 'customer.connection.attached', 'customer.connection.disconnected', 'customer.connection.transferred',
         'customer.pairing_link.connected', 'customer.pairing_link.created', 'customer.pairing_link.expired', 'customer.pairing_link.failed',
         'customer.pairing_link.opened', 'customer.pairing_link.revoked', 'customer.restored', 'customer.updated', 'group.participant',
         'group.update', 'history.sync', 'labels.update', 'message.ack', 'message.delete', 'message.echo', 'message.edited',
         'message.failed', 'message.reaction', 'message.received', 'message.revoked', 'message.sent', 'message.update', 'message.vote',
-        'newsletter.update', 'order.payment_updated', 'presence.update', 'session.capabilities_updated', 'session.connected',
-        'session.logged_out', 'session.phone_offline', 'session.restriction_updated', 'session.status', 'template.status',
+        'newsletter.update', 'order.payment_updated', 'presence.update', 'connection.capabilities_updated', 'connection.connected',
+        'connection.logged_out', 'connection.phone_offline', 'connection.restriction_updated', 'connection.status', 'template.status',
         'marketing.onboarding_updated', 'contact.marketing_preference_updated', 'usage.recorded', 'voice.asset_failed', 'voice.asset_ready',
     ];
     public static function verifySignature(string $rawBody, string $signature, #[\SensitiveParameter] string $secret): bool
@@ -97,8 +97,8 @@ final class Webhooks
         } catch (\JsonException) {
             throw new ValidationException('Webhook body must be valid UTF-8 JSON.', 'invalid_webhook_json');
         }
-        if (!is_array($value) || !isset($value['id'], $value['session'], $value['timestamp'], $value['event'])
-            || !is_string($value['session']) || !array_key_exists('payload', $value)) {
+        if (!is_array($value) || !isset($value['id'], $value['connection'], $value['timestamp'], $value['event'])
+            || !is_string($value['connection']) || !array_key_exists('payload', $value)) {
             throw new ValidationException('Invalid webhook envelope.', 'invalid_webhook_event');
         }
         foreach (['id', 'timestamp', 'event'] as $key) {
@@ -111,6 +111,6 @@ final class Webhooks
             ProjectedHistory::validate($tree->payload);
         }
         /** @var array<string,mixed> $value */
-        return new WebhookEvent($value['id'], $value['session'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null);
+        return new WebhookEvent($value['id'], $value['connection'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null);
     }
 }

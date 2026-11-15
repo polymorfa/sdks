@@ -8,5 +8,5 @@ namespace Polymorfa;
 interface WhatsAppMediaUploadTransport
 {
     public function name(): string;
-    public function upload(string $session, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation;
+    public function upload(string $connection, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation;
 }

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Polymorfa;
 
 /** @internal Narrow delivery/custody intent validation. Authority stays at the API. */
-final class SessionDeliveryValidation
+final class ConnectionDeliveryValidation
 {
     public const RESETS = ['historySync','historySync.mode','historySync.requestFull','historySync.delivery','hms','observation','observation.presenceMode','observation.typingMode','observation.labelMode','observation.quickReplyMode'];
     private static function history(mixed $value, bool $quickLink = false): bool
@@ -52,20 +52,20 @@ final class SessionDeliveryValidation
     /** @param array<string,mixed> $input */
     public static function quickLink(array $input): bool
     {
-        CampaignContractValidation::fields($input, ['purpose','signalMode','session','addConnection','connectionGoal','projectId','customerId','externalId','billingControls','configuration'], []);
+        CampaignContractValidation::fields($input, ['purpose','signalMode','connection','addMethod','connectionGoal','projectId','customerId','externalId','billingControls','configuration'], []);
         if (array_key_exists('signalMode', $input)) {
             CampaignContractValidation::enum($input['signalMode'], ['standard','zero_knowledge'], 'signalMode');
         }
         if (array_key_exists('connectionGoal', $input)) {
             CampaignContractValidation::enum($input['connectionGoal'], ['single','hybrid'], 'connectionGoal');
         }
-        if (($input['purpose'] ?? null) === 'add_connection') {
-            CampaignContractValidation::text($input['session'] ?? null, 'session');
-            CampaignContractValidation::enum($input['addConnection'] ?? null, ['linked_devices','official_api'], 'addConnection');
+        if (($input['purpose'] ?? null) === 'add_method') {
+            CampaignContractValidation::text($input['connection'] ?? null, 'connection');
+            CampaignContractValidation::enum($input['addMethod'] ?? null, ['linked_devices','official_api'], 'addMethod');
             if (($input['connectionGoal'] ?? null) === 'single' || array_intersect(['signalMode','customerId','externalId','billingControls'], array_keys($input)) !== []) {
                 CampaignContractValidation::invalid('purpose');
             }
-        } elseif ((array_key_exists('purpose', $input) && $input['purpose'] !== 'initial') || array_key_exists('session', $input) || array_key_exists('addConnection', $input)) {
+        } elseif ((array_key_exists('purpose', $input) && $input['purpose'] !== 'initial') || array_key_exists('connection', $input) || array_key_exists('addMethod', $input)) {
             CampaignContractValidation::invalid('purpose');
         }
         $intent = array_key_exists('signalMode', $input);
@@ -82,13 +82,13 @@ final class SessionDeliveryValidation
     {
         $o = static fn (array $v, array $optional = []): array => ['object' => $v,'optional' => $optional];
         $e = static fn (array $v): array => ['enum' => $v];
-        $source = $e(['platform','team','project','session']);
+        $source = $e(['platform','team','project','connection']);
         $history = $o(['mode' => $e(['metadata_only','deliver']),'requestFull' => 'bool','delivery' => $e(['archive','descriptor'])], ['delivery']);
         $historyPatch = $o(['mode' => $e(['metadata_only','deliver']),'requestFull' => 'bool','delivery' => $e(['descriptor'])], ['mode','requestFull','delivery']);
         $observation = $o(['presenceMode' => $e(['off','events','cache']),'typingMode' => $e(['off','events','cache']),'labelMode' => $e(['off','events','cache','project']),'quickReplyMode' => $e(['off','events','cache'])]);
         $obsPatch = $observation;
         $obsPatch['optional'] = array_keys($observation['object']);
         $hms = ['union' => [$o(['enabled' => $e([false])]),$o(['enabled' => $e([true]),'region' => 'string','policy' => $e(['short','standard','extended','compliance','enterprise_archive']),'retentionDays' => 'int','policyVersion' => 'string','legalHold' => 'bool'], ['retentionDays','policyVersion','legalHold'])]];
-        return $o(['effective' => $o(['observation' => $observation,'historySync' => $history,'hms' => $hms]),'overrides' => $o(['observation' => $obsPatch,'historySync' => $historyPatch,'hms' => $hms], ['observation','historySync','hms']),'sources' => $o(['historySync.mode' => $e(['platform','team','project','session','consent']),'historySync.requestFull' => $e(['platform','team','project','session','consent']),'historySync.delivery' => $source,'hms' => $source,'observation.presenceMode' => $source,'observation.typingMode' => $source,'observation.labelMode' => $source,'observation.quickReplyMode' => $source], ['historySync.delivery']),'requestedHistory' => $history,'revisions' => $o(['team' => 'int','project' => 'int','session' => 'int']),'historyConsent' => $e(['pending','accepted','declined']),'application' => $o(['desiredGeneration' => 'int','appliedGeneration' => 'int','status' => $e(['pending','applied'])])], ['historyConsent','application']);
+        return $o(['effective' => $o(['observation' => $observation,'historySync' => $history,'hms' => $hms]),'overrides' => $o(['observation' => $obsPatch,'historySync' => $historyPatch,'hms' => $hms], ['observation','historySync','hms']),'sources' => $o(['historySync.mode' => $e(['platform','team','project','connection','consent']),'historySync.requestFull' => $e(['platform','team','project','connection','consent']),'historySync.delivery' => $source,'hms' => $source,'observation.presenceMode' => $source,'observation.typingMode' => $source,'observation.labelMode' => $source,'observation.quickReplyMode' => $source], ['historySync.delivery']),'requestedHistory' => $history,'revisions' => $o(['team' => 'int','project' => 'int','connection' => 'int']),'historyConsent' => $e(['pending','accepted','declined']),'application' => $o(['desiredGeneration' => 'int','appliedGeneration' => 'int','status' => $e(['pending','applied'])])], ['historyConsent','application']);
     }
 }

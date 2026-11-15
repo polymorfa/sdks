@@ -36,6 +36,14 @@ final class SqlAdapter implements Adapter
         if (!$this->ready) {
             throw new StorageException('storage_not_initialized');
         }
+        try {
+            $rows = $this->driver->run('SELECT '.$this->q('version').' FROM '.$this->table('storage_schema').' WHERE '.$this->q('id').'=?', ['storage'])->rows;
+            if (count($rows) !== 1 || (int)$rows[0]['version'] !== Schema::VERSION) {
+                throw new StorageException('storage_schema_mismatch');
+            }
+        } catch (\Throwable $error) {
+            self::safe($error);
+        }
     }
     private function mysql(bool $tables): void
     {
@@ -60,6 +68,14 @@ final class SqlAdapter implements Adapter
             }
         }
     }
+    private function tableExists(string $entity): bool
+    {
+        return match($this->driver->dialect()) {
+            'postgres' => $this->driver->run('SELECT to_regclass(?) AS name', [$this->table($entity)])->rows[0]['name'] !== null,
+            'mysql' => (int)$this->driver->run('SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?', [$this->tablePrefix.$entity])->rows[0]['n'] > 0,
+            default => (int)$this->driver->run("SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name=?", [$this->tablePrefix.$entity])->rows[0]['n'] > 0,
+        };
+    }
     public function setup(): void
     {
         $this->ready = false;
@@ -67,19 +83,26 @@ final class SqlAdapter implements Adapter
             $this->driver->assertIdle();
             $this->mysql(false);
             $table = $this->table('storage_schema');
-            $exists = match($this->driver->dialect()) {
-                'postgres' => $this->driver->run('SELECT to_regclass(?) AS name', [$table])->rows[0]['name'] !== null,
-                'mysql' => (int)$this->driver->run('SELECT COUNT(*) AS n FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?', [$this->tablePrefix.'storage_schema'])->rows[0]['n'] > 0,
-                default => (int)$this->driver->run("SELECT COUNT(*) AS n FROM sqlite_master WHERE type='table' AND name=?", [$this->tablePrefix.'storage_schema'])->rows[0]['n'] > 0,
-            };
+            $exists = $this->tableExists('storage_schema');
             $rows = $exists ? $this->driver->run('SELECT '.$this->q('version').' FROM '.$table.' WHERE '.$this->q('id').'=?', ['storage'])->rows : [];
-            if ($rows !== [] && (int)$rows[0]['version'] !== Schema::VERSION) {
+            if ($rows !== [] && (count($rows) !== 1 || (int)$rows[0]['version'] !== Schema::VERSION)) {
                 throw new StorageException('storage_schema_mismatch');
             }
             if (!$this->createTables && $rows === []) {
                 throw new StorageException('storage_not_initialized');
             }
-            if ($this->createTables) {
+            if ($rows === []) {
+                foreach ([...SqlSchema::ENTITIES,'sessions'] as $entity) {
+                    if ($this->tableExists($entity)) {
+                        throw new StorageException('storage_schema_mismatch');
+                    }
+                }
+            } else {
+                foreach (SqlSchema::ENTITIES as $entity) {
+                    $this->driver->run('SELECT connection_id FROM '.$this->table($entity).' LIMIT 0');
+                }
+            }
+            if ($rows === []) {
                 foreach (SqlSchema::statements($this->driver->dialect(), $this->tablePrefix, $this->schema) as $statement) {
                     $this->driver->run($statement);
                 }

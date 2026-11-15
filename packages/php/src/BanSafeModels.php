@@ -14,8 +14,8 @@ namespace Polymorfa;
  * @phpstan-type ProjectSafeMode array{projectId:string,ceiling:Settings,entitled:bool,entitlementReason:string|null}
  * @phpstan-type Override array{presence:Presence|'inherit',typing:Typing|'inherit',reads:Reads|'inherit',pacing:Pacing|'inherit'}
  * @phpstan-type Applied array{observedAt:string,presence:string|null,typing:string|null,reads:string|null,pacing:string|null}
- * @phpstan-type SessionSafeMode array{session:string,projectId:string,project:Settings,override:Override,effective:Settings,applied:Applied|null,mismatch:bool,entitled:bool,entitlementReason:string|null}
- * @phpstan-type UpdateSessionSafeMode array{presence?:Presence|'inherit',typing?:Typing|'inherit',reads?:Reads|'inherit',pacing?:Pacing|'inherit'}
+ * @phpstan-type ConnectionSafeMode array{connection:string,projectId:string,project:Settings,override:Override,effective:Settings,applied:Applied|null,mismatch:bool,entitled:bool,entitlementReason:string|null}
+ * @phpstan-type UpdateConnectionSafeMode array{presence?:Presence|'inherit',typing?:Typing|'inherit',reads?:Reads|'inherit',pacing?:Pacing|'inherit'}
  * @phpstan-type WarmupSettings array{enabled:bool,warmupDays:int,dailyStart:int}
  * @phpstan-type CurvePoint array{day:int,allowance:int}
  * @phpstan-type ProjectWarmupPlan array{projectId:string,plan:WarmupSettings,ceiling:int,curve:list<CurvePoint>,entitled:bool,entitlementReason:string|null}
@@ -24,8 +24,8 @@ namespace Polymorfa;
  * @phpstan-type UpdateProjectInsuranceEvidence array{enabled:bool}
  * @phpstan-type HealthAction 'none'|'stop'|'slow_down'|'log_out'
  * @phpstan-type HealthIntegrations array{emailConfigured:bool,webhookConfigured:bool}
- * @phpstan-type UpdateProjectHealthPolicy array{version:int,enabled:bool,threshold:float,sessionAction:HealthAction,slowDownMps:float|null,emailNotification:bool,webhookNotification:bool}
- * @phpstan-type ProjectHealthPolicy array{projectId:string,version:int,enabled:bool,threshold:float,sessionAction:HealthAction,slowDownMps:float|null,emailNotification:bool,webhookNotification:bool,integrations:HealthIntegrations}
+ * @phpstan-type UpdateProjectHealthPolicy array{version:int,enabled:bool,threshold:float,connectionAction:HealthAction,slowDownMps:float|null,emailNotification:bool,webhookNotification:bool}
+ * @phpstan-type ProjectHealthPolicy array{projectId:string,version:int,enabled:bool,threshold:float,connectionAction:HealthAction,slowDownMps:float|null,emailNotification:bool,webhookNotification:bool,integrations:HealthIntegrations}
  */
 final class BanSafeModels
 {

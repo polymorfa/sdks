@@ -2,15 +2,15 @@
 
 declare(strict_types=1);
 $audit = ['id' => 'audit','actorEmail' => 'u@example.com','actorUserId' => null,'actorRole' => null,'action' => 'read','resource' => 'project','projectId' => null,'projectName' => null,'ip' => null,'userAgent' => null,'duration' => null,'source' => null,'description' => null,'result' => 'success','metadata' => ['future' => false],'createdAt' => 1];
-$ban = ['id' => 'ban','sessionName' => 'support','banCode' => null,'banReason' => null,'banExpiresAt' => null,'occurredAt' => 1,'status' => 'active'];
+$ban = ['id' => 'ban','connectionName' => 'support','banCode' => null,'banReason' => null,'banExpiresAt' => null,'occurredAt' => 1,'status' => 'active'];
 $incident = ['id' => 'incident','keyId' => 'key','tokenType' => 'team_api_key','source' => 'api','url' => null,'ref' => null,'resolution' => 'pending','detectedAt' => 1,'acknowledgedAt' => null,'acknowledgedBy' => null,'createdAt' => 1];
 $settings = ['enabled' => false,'optOutKeywords' => ['STOP'],'optInKeywords' => ['START'],'updatedAt' => null];
 $update = $settings;
 unset($update['updatedAt']);
 $cases = [
  ['GET','/platform/audit?action=read&resource=project&limit=2',null,['data' => [$audit]],fn ($c) => $c->auditLogs->list(['action' => 'read','resource' => 'project','limit' => 2])],
- ['GET','/platform/bans',null,['data' => [$ban]],fn ($c) => $c->sessionBans->list()],
- ['GET','/platform/bans/active',null,['data' => [$ban]],fn ($c) => $c->sessionBans->listActive()],
+ ['GET','/platform/bans',null,['data' => [$ban]],fn ($c) => $c->connectionBans->list()],
+ ['GET','/platform/bans/active',null,['data' => [$ban]],fn ($c) => $c->connectionBans->listActive()],
  ['GET','/platform/incidents',null,['data' => [$incident]],fn ($c) => $c->securityIncidents->list()],
  ['POST','/platform/incidents/incident/acknowledge',null,['data' => ['acknowledged' => true]],fn ($c) => $c->securityIncidents->acknowledge('incident')],
  ['GET','/platform/optouts',null,['data' => ['phones' => []]],fn ($c) => $c->optOuts->list()],

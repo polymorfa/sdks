@@ -15,7 +15,7 @@ final class Host
     private Conversation $conversation;
     private string $webhookSecret;
     private string $origin;
-    private string $session;
+    private string $connection;
     private string $username;
     private string $password;
 
@@ -23,7 +23,7 @@ final class Host
     {
         $this->username = self::setting('EXAMPLE_APP_USERNAME');
         $this->password = self::setting('EXAMPLE_APP_PASSWORD');
-        $this->session = self::setting('POLYMORFA_SESSION');
+        $this->connection = self::setting('POLYMORFA_CONNECTION');
         $this->origin = self::setting('EXAMPLE_APP_ORIGIN');
         if (!preg_match('~^http://127\.0\.0\.1:\d+$~D', $this->origin)) {
             throw new \RuntimeException('Configure a loopback application origin.');
@@ -35,7 +35,7 @@ final class Host
         self::directory($this->state.'/sessions');
         $this->webhookSecret = self::setting('POLYMORFA_WEBHOOK_SECRET');
         $this->client = new MessagingClient(Credential::projectToken(self::setting('POLYMORFA_PROJECT_TOKEN')), getenv('POLYMORFA_API_BASE_URL') ?: 'https://api.polymorfa.com');
-        $this->conversation = new Conversation($this->state,$this->session,self::setting('POLYMORFA_RECIPIENT'),$this->client);
+        $this->conversation = new Conversation($this->state,$this->connection,self::setting('POLYMORFA_RECIPIENT'),$this->client);
     }
 
     public static function directory(string $path): void
@@ -48,7 +48,7 @@ final class Host
     {
         $value = getenv($name);
         if ($value === false || $value === '') {
-            throw new \RuntimeException('Configure the application account, number and state.');
+            throw new \RuntimeException('Configure the application account, Connection and state.');
         }
         return $value;
     }
@@ -71,7 +71,7 @@ final class Host
         if ($request->headers->get('HX-Request') !== 'true' && $request->getPathInfo() !== '/') {
             return new RedirectResponse('/');
         }
-        return new Response(($this->render)($authenticated, $request->headers->get('HX-Request') === 'true', getenv('POLYMORFA_EXAMPLE_TRANSPORT') === 'local-test-number'), 200, ['Cache-Control' => 'no-store, private']);
+        return new Response(($this->render)($authenticated, $request->headers->get('HX-Request') === 'true', getenv('POLYMORFA_EXAMPLE_TRANSPORT') === 'local-test-connection'), 200, ['Cache-Control' => 'no-store, private']);
     }
     public function handle(Request $request): Response
     {
@@ -153,15 +153,15 @@ final class Host
         }
         try {
             if ($path === '/api/polymorfa/connect') {
-                return $this->json($this->client->quickLinks->create(['purpose' => 'add_connection','session' => $this->session,'addConnection' => 'linked_devices','connectionGoal' => 'hybrid'])->data);
+                return $this->json($this->client->quickLinks->create(['purpose' => 'add_method','connection' => $this->connection,'addMethod' => 'linked_devices','connectionGoal' => 'hybrid'])->data);
             }
-            $result = $this->client->clientTokens->mint(['ephemeralId' => 'example:local-app-user','session' => $this->session,'ttlSeconds' => 600]);
+            $result = $this->client->clientTokens->mint(['ephemeralId' => 'example:local-app-user','connection' => $this->connection,'ttlSeconds' => 600]);
             $token = $result->data['data'];
             $expires = strtotime($token['expiresAt']);
             if ($expires === false || $expires <= time() || !str_starts_with($token['token'], 'pmfa_ct_')) {
                 return $this->json(['error' => 'invalid_browser_grant'], 502);
             }
-            return $this->json(['value' => $token['token'],'audience' => 'browser','expiresAt' => $expires * 1000,'scopes' => ['read_messages','connect_whatsapp'],'grant' => ['session' => $this->session,'conversations' => [],'allow' => ['read_messages','connect_whatsapp']]]);
+            return $this->json(['value' => $token['token'],'audience' => 'browser','expiresAt' => $expires * 1000,'scopes' => ['read_messages','connect_whatsapp'],'grant' => ['connection' => $this->connection,'conversations' => [],'allow' => ['read_messages','connect_whatsapp']]]);
         } catch (\Throwable) {
             return $this->json(['error' => 'browser_access_unavailable'],502);
         }

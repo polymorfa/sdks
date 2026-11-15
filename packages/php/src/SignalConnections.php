@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Polymorfa;
 
-final readonly class SignalSessions implements \JsonSerializable
+final readonly class SignalConnections implements \JsonSerializable
 {
-    /** @param list<SignalSessionInfo> $sessions */public function __construct(public string $nodeId, public array $sessions)
+    /** @param list<SignalConnectionInfo> $connections */public function __construct(public string $nodeId, public array $connections)
     {
     }
     /** @return array{redacted:true} */public function __debugInfo(): array

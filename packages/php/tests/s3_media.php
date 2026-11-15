@@ -96,10 +96,10 @@ try {
                 $options = new UploadWhatsAppMediaOptions($kind, mediaKey:str_repeat(chr(31), 32), uploadTransport:$client->whatsappMedia->uploadTransport('relay', $options));
             }
             if ($change) {
-                $error = s3Raises(fn () => $store->uploadToWhatsApp($client->whatsappMedia, 'session', 'source-'.$mode, $options), MediaIntegrityException::class);
+                $error = s3Raises(fn () => $store->uploadToWhatsApp($client->whatsappMedia, 'connection', 'source-'.$mode, $options), MediaIntegrityException::class);
                 storageCheck($error->getPrevious() === null && !str_contains($error->getMessage(), $native['secretAccessKey']), '412 source failure redacted');
             } else {
-                $result = $store->uploadToWhatsApp($client->whatsappMedia, 'session', 'source-'.$mode, $options);
+                $result = $store->uploadToWhatsApp($client->whatsappMedia, 'connection', 'source-'.$mode, $options);
                 storageCheck($result->info->fileLength === strlen($plain), 'native S3 upload plaintext length');
             }
             $phase = '';
@@ -131,7 +131,7 @@ try {
     }]);
     $messaging = new MessagingClient(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$noApi);
     $store = new S3MediaStore($s3, $bucket, 'media/');
-    $error = s3Raises(fn () => $store->uploadToWhatsApp($messaging->whatsappMedia, 'session', 'large', new UploadWhatsAppMediaOptions('image', maxBytes:1)), MediaIntegrityException::class);
+    $error = s3Raises(fn () => $store->uploadToWhatsApp($messaging->whatsappMedia, 'connection', 'large', new UploadWhatsAppMediaOptions('image', maxBytes:1)), MediaIntegrityException::class);
     storageCheck($error->errorCode === 'media_too_large' && $heads === 1 && $gets === 0 && $apiCalls === 0, 'HEAD length bound prevents source/API dispatch');
     $phase = '';
     $vectors = json_decode(file_get_contents(dirname(__DIR__, 3).'/contracts/fixtures/whatsapp-media.json'), true, flags:JSON_THROW_ON_ERROR)['fixtures'];

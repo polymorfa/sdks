@@ -14,7 +14,7 @@ use Polymorfa\{ApiResponse,CustomerModels,RequestOptions};
  * @phpstan-import-type CustomerWrite from CustomerModels
  * @phpstan-import-type ListParams from CustomerModels
  * @phpstan-import-type ListEnvelope from CustomerModels
- * @phpstan-import-type CustomerNumber from CustomerModels
+ * @phpstan-import-type CustomerConnection from CustomerModels
  * @phpstan-import-type Event from CustomerModels as CustomerEvent
  * @phpstan-import-type PairingLink from CustomerModels
  * @phpstan-import-type CreatedPairingLink from CustomerModels
@@ -85,9 +85,9 @@ final class Customers extends Resource
     public function restore(string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
     {/** @var ApiResponse<array{data:Customer}> */return $this->request('POST', self::path($id).'/restore', (object)$body, options:$options);
     }
-    /** @return ApiResponse<array{data:list<CustomerNumber>}> */
+    /** @return ApiResponse<array{data:list<CustomerConnection>}> */
     public function listNumbers(string $id, string $projectId, ?RequestOptions $options = null): ApiResponse
-    {/** @var ApiResponse<array{data:list<CustomerNumber>}> */return $this->request('GET', self::path($id).'/numbers', query:['projectId' => $projectId], options:$options);
+    {/** @var ApiResponse<array{data:list<CustomerConnection>}> */return $this->request('GET', self::path($id).'/connections', query:['projectId' => $projectId], options:$options);
     }
     /** @param EventParams $params
      * @return ApiResponse<array{data:list<CustomerEvent>}> */
@@ -108,9 +108,9 @@ final class Customers extends Resource
     {/** @var ApiResponse<array{data:PairingLink}> */return $this->request('DELETE', self::path($id).'/pairing-links/'.self::segment($linkId), query:['projectId' => $projectId], options:$options);
     }
     /** @param Transfer $body
-     * @return ApiResponse<array{data:CustomerNumber}> */
-    public function transferNumber(string $id, string $session, array $body, ?RequestOptions $options = null): ApiResponse
-    {/** @var ApiResponse<array{data:CustomerNumber}> */return $this->request('POST', self::path($id).'/numbers/'.self::segment($session).'/transfer', $body, options:$options);
+     * @return ApiResponse<array{data:CustomerConnection}> */
+    public function transferNumber(string $id, string $connection, array $body, ?RequestOptions $options = null): ApiResponse
+    {/** @var ApiResponse<array{data:CustomerConnection}> */return $this->request('POST', self::path($id).'/connections/'.self::segment($connection).'/transfer', $body, options:$options);
     }
     private static function path(string $id): string
     {

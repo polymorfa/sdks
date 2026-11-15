@@ -45,8 +45,8 @@ composer build
 
 Tests require Node.js to run the shared local HTTP fixture server. `Dockerfile.test` supplies PHP 8.2, cURL, Composer and Node. `POLYMORFA_BUILD_DIR` selects the destination for the standalone source archive.
 
-`$client->clientTokens->mint()` accepts one session or Customer target.
-`retrieveRules()`, `updateRules()` and `deleteRules()` manage session client
+`$client->clientTokens->mint()` accepts one connection or Customer target.
+`retrieveRules()`, `updateRules()` and `deleteRules()` manage connection client
 rules. These methods require server credentials; API eligibility and
 ownership checks govern Customer tokens.
 
@@ -86,20 +86,20 @@ idempotency key. Client tokens cannot select a server participant and are
 refused by server-only link, permission, check and settings operations.
 
 `banSafe` reads and changes project ceilings, warmup plans, insurance
-evidence, health policies and Number overrides with server credentials.
-Platform equivalents are under `Client::$projects` and `Client::$sessions`.
+evidence, health policies and Connection overrides with server credentials.
+Platform equivalents are under `Client::$projects` and `Client::$connections`.
 Responses retain entitlement and applied-state fields; configuring a
 setting does not grant access. Send the version from a recent health-policy
 read when updating it.
 
 Platform account resources expose team details, members, API-key and
 project-token metadata. `projects` creates development projects, lists Hybrid
-Link merge candidates and submits or approves production enrollment. `sessions`
+Link merge candidates and submits or approves production enrollment. `connections`
 provides lifecycle and batch controls, tier quotes, quote confirmation and
 WhatsApp capability observations. Quote requests reject simultaneous merge and
 resolution choices; tier confirmation requires a reviewed quote ID.
 
-`auditLogs`, `sessionBans`, `securityIncidents` and `optOuts` preserve their
+`auditLogs`, `connectionBans`, `securityIncidents` and `optOuts` preserve their
 native Platform envelopes. `billing` reads balances, transactions, pricing,
 limits and priorities, and writes revision-guarded controls. Billing methods
 validate UUIDs, revisions, priorities and six-decimal credit quantities before
@@ -107,7 +107,7 @@ sending a request. Passing validation grants no billing authority or feature
 access. These families have native HTTP socket tests in addition to PHPStan
 shape checks.
 
-`customers` covers Customer lifecycle, masked Number inventory, event records,
+`customers` covers Customer lifecycle, masked Connection inventory, event records,
 pairing links and confirmed transfers. Nullable update fields remain distinct
 from omitted fields, and a replayed pairing-link creation can return a null URL.
 `usage` unwraps measured records and gate observations and follows cursors lazily
@@ -122,7 +122,7 @@ project using a read without the write's idempotency key. An environment without
 SIP hosting returns the `sip_not_hosted` endpoint variant.
 
 `quickLinkSettings` reads nullable saved branding settings and preserves explicit
-null and false updates. `sessionConfiguration` reads and updates saved defaults
+null and false updates. `connectionConfiguration` reads and updates saved defaults
 with their revisions. Both bind project views to the project's identity.
 
 `ProjectClient::$functions` manages Functions, deployments, secret versions and
@@ -144,7 +144,7 @@ honors cancellation and bounds `Retry-After` delays.
 
 `officialGroups` provides typed Official API group reads and writes. Every change
 is sent once, including keyed requests with retry overrides. The API enforces
-Number eligibility and enrollment. `hybridLink`, `observationPolicies`,
+Connection eligibility and enrollment. `hybridLink`, `observationPolicies`,
 `cloudOnboarding` and `testing` follow the existing server contracts.
 `SystemClient` sends credential-free liveness and version probes; `BridgeClient`
 accepts only a project token and resolves regional Bridge routes.
@@ -167,7 +167,7 @@ without resending. QuickLink models preserve connection goals, configuration
 choices and separate Cloud sync request receipts from delivery progress.
 
 `media.downloadStream` returns a PSR body to consume once or close.
-`chats->downloadMessageMediaStream($session, $conversation, $messageId)` streams
+`chats->downloadMessageMediaStream($connection, $conversation, $messageId)` streams
 a stored message copy with the same body, filename and response metadata.
 It requires a server credential and the API's enrolled history access. Cancellation
 interrupts body reads; a body failure preserves the original request metadata.
@@ -185,7 +185,7 @@ testing phone helpers, and additional runtime helper evidence.
 
 `$event->knownEvent()` returns a PHPStan discriminated array union for all 84
 known webhook names. Switch on `event` to narrow its `payload`. Linked and
-Official API messages, session status, template status, history sync, and order
+Official API messages, connection status, template status, history sync, and order
 payment reports retain their distinct payload variants. Unknown events return
 `null` from `knownEvent()` and keep their exact body in `raw` and `payload`.
 `externalId` contains the application's supplied QuickLink reference.
@@ -358,13 +358,13 @@ accepts the optional `CancellationToken`; its reads must honor cancellation
 and bounded timeouts. The SDK closes streams it opens.
 
 ```php
-$result = $client->whatsappMedia->uploadBytes('session', $plaintext,
+$result = $client->whatsappMedia->uploadBytes('connection', $plaintext,
     new \Polymorfa\UploadWhatsAppMediaOptions('image', mimeType: 'image/jpeg'));
 // Keep $result->info->mediaKey and $result->location private.
 ```
 
 Egress defaults to `relay`, which forwards ciphertext plus its MAC through the
-session's connection. Choose `egress: 'direct'` to request a short-lived grant
+connection's connection. Choose `egress: 'direct'` to request a short-lived grant
 and upload from your process. Upload endpoints receive encrypted bytes and
 hashes; they do not receive plaintext or the media key. Results redact keys
 and locations in debug and JSON output.
@@ -392,7 +392,7 @@ pass the descriptor object to the matching message content:
 
 ```php
 $descriptor = \Polymorfa\WhatsAppMediaSendDescriptor::fromUpload($result);
-$client->messages->send('session', ['conversation' => ['id' => 'conversation'],
+$client->messages->send('connection', ['conversation' => ['id' => 'conversation'],
     'content' => ['image' => ['descriptor' => $descriptor, 'caption' => 'Photo']]]);
 ```
 
@@ -431,7 +431,7 @@ storage write, event acknowledgement or CDN deletion.
 `$client->historySync->requestChunkRetry()` asks the phone for a fresh chunk;
 `deleteChunk()` explicitly deletes a processed CDN blob after durable local
 storage. Both require server credentials and default to `2026-10-14` per request.
-The API enforces session authority, consent and availability. Delete takes a
+The API enforces connection authority, consent and availability. Delete takes a
 32-byte binary encrypted hash and sends standard padded base64. Commands do not
 retry automatically. Timeout or cancellation does not undo an accepted effect.
 
@@ -449,11 +449,11 @@ Fresh request nonces bind method/path/exact body; response signatures bind the
 nonce/status/exact body. Wrong authority, prefix, schema, capability, nonce or
 body fails closed. Redirects and automatic retries are disabled. Bounded reads
 and operation deadlines cover response bodies. A delete without an explicit
-revision requires a same-session CAS lease write in the same atomic commit.
+revision requires a same-connection CAS lease write in the same atomic commit.
 Endpoint URLs and secrets stay out of errors, debug output and ordinary JSON.
 
 The producer is pinned to
-`9ae35e671f7f4868a67c1562422c5af9284b95c1`. Administrative D1 REST is not advertised
+`d80b581c9df122411e9149a7e39a33700a51571c`. Administrative D1 REST is not advertised
 as atomic. Native PHP HTTP tests exercised the actual bundled Worker/Miniflare
 D1 binding with all-entity fixtures, 2,000-row paging, rollback, lease-fenced
 deletion and checkpoint CAS. Repeat the opt-in proof using
@@ -466,7 +466,7 @@ and their native proofs are listed below.
 ## Customer-owned Signal service client
 
 The server-side sidecar client consumes the application HTTP contract pinned to
-`8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. The separate application bearer secret
+`61209057729b002a2122b898d744a8813a702fc7`. The separate application bearer secret
 is not a Polymorfa API credential: it needs at least 16 visible ASCII characters,
 and values starting with the reserved `pmfa_` prefix are rejected before any
 request or webhook HMAC check. Device keys remain with the customer-operated
@@ -475,13 +475,13 @@ except on loopback. Redirects, credential cookies and automatic retries are
 refused. Request deadlines and caller cancellation do not undo a send or ACK.
 
 Create `new SignalSidecarClient($serviceUrl, $applicationSecret)`. Use
-`health()`, `sessions()`, `send()` with `SignalSendRequest`, and
-`events($sessionId, $cancellation)`. Iterate the returned stream and close it.
+`health()`, `connections()`, `send()` with `SignalSendRequest`, and
+`events($connectionId, $cancellation)`. Iterate the returned stream and close it.
 `SignalMediaDescriptor::fromUpload($upload)` converts a completed local media
 upload into a secret-bearing send descriptor, including PTT audio.
 
 An SSE connection delivers each record immediately and validates its ID, event
-type and requested session. The SDK retains exact JSON and protobuf bytes,
+type and requested connection. The SDK retains exact JSON and protobuf bytes,
 including unknown fields; history notification enums remain nullable integers.
 There is no cursor, automatic reconnection or automatic ACK. Durably persist
 an event and its effects before calling `acknowledge()`.
@@ -557,7 +557,7 @@ and SQLite. Enable PDO exception mode and install the matching PDO extension.
 Do not pass a connection with an active application transaction. All conditional
 writes execute in one native transaction; MySQL additionally verifies strict SQL
 mode and InnoDB for every storage table. `SqlSchema::statements()` exports the
-same schema2 columns and indexes. Actual PostgreSQL 16, MySQL 8.4 and SQLite
+same schema3 columns and indexes. Actual PostgreSQL 16, MySQL 8.4 and SQLite
 proofs covered the portable fixtures, 2,000 messages, rollback, checkpoint CAS,
 stale-lease refusal and borrowed-transaction preservation on PHP 8.2 and 8.4.
 Customer Supabase/Neon PostgreSQL and compatible PlanetScale MySQL connections
@@ -565,7 +565,7 @@ use these drivers; their hosted services were not exercised by local tests.
 
 `SupabaseSchema::sql()` exports customer-installed PostgreSQL schema and FORCE RLS
 policies. A distinct server writer receives data writes and version reads;
-browser readers receive SELECT only for sessions with live `auth.uid()`
+browser readers receive SELECT only for connections with live `auth.uid()`
 membership. Restricted native PostgreSQL roles verified membership revocation
 and browser write refusal. The SDK never installs this preset automatically or
 gives a browser the writer credential.
@@ -586,7 +586,7 @@ Commit RPC and preserves raw protobuf map values, including numeric object keys.
 The engine reserves one commit slot for its lease. High-level snapshot and
 BulkWriter APIs are not interchangeable with this verified boundary.
 
-MongoDB and Firestore persist raw schema2 rows with exact encoded document IDs.
+MongoDB and Firestore persist raw schema3 rows with exact encoded document IDs.
 DynamoDB stores `{pk: namespace+":"+entity, sk: encodedKey, row}`. These physical
 layouts match the shared storage contract; JSON null, booleans, numbers, empty
 objects and empty lists retain their distinctions. Native replica-set, DynamoDB
@@ -595,7 +595,7 @@ history, replay, rollback, checkpoint CAS, stale lease fencing and client owners
 The accepted PHP matrix excludes Convex, Cosmos DB and IndexedDB.
 
 `EloquentSchema::models()` exports application-owned Eloquent query-model source
-for all schema2 entities. `EloquentSchema::adapter($connection)` borrows the
+for all schema3 entities. `EloquentSchema::adapter($connection)` borrows the
 connection's PDO boundary and rejects an active transaction. Install
 `illuminate/database` separately. Use read-only database credentials for ORM
 queries and write synchronized state through the engine; generated model guards
@@ -627,7 +627,7 @@ emulator checks do not establish cloud permissions, hosting or deployed access.
 
 `new S3MediaStore($s3Client, $bucket, $prefix)` borrows an optional official
 `Aws\S3\S3Client` configured for the customer's AWS, R2 or MinIO bucket.
-`uploadToWhatsApp($client->whatsappMedia, $session, $key, $uploadOptions)` uses the
+`uploadToWhatsApp($client->whatsappMedia, $connection, $key, $uploadOptions)` uses the
 existing encrypted upload options. It requires an ETag and known bounded length,
 then makes two `IfMatch` reads of that object. Changed sources fail before an
 upload POST or multipart finalization. Media encryption and upload retain their
@@ -656,7 +656,7 @@ cloud hosting availability or live WhatsApp delivery.
 
 
 `UploadWhatsAppMediaOptions::uploadTransport` accepts a customer implementation
-of `WhatsAppMediaUploadTransport` with `name()` and `upload($session, $body)`.
+of `WhatsAppMediaUploadTransport` with `name()` and `upload($connection, $body)`.
 The `WhatsAppEncryptedUploadBody` exposes readonly `mediaType`, `fileEncSha256`
 and `encryptedLength`, plus `open(offset: 0, cancellation: $token)`. It exposes
 no plaintext, media key or API credential. Each opening retains the final
@@ -695,7 +695,7 @@ use Polymorfa\{Client, Credential, RequestOptions};
 $platform = new Client(Credential::teamApiKey(getenv('POLYMORFA_API_KEY')));
 $project = $platform->project($projectId);
 $sent = $project->campaigns->testSend($campaignId, [
-    'sessionId' => $sessionId,
+    'connectionId' => $connectionId,
     'to' => '+15555555555',
     'variables' => ['first_name' => 'Ada'],
 ], new RequestOptions(idempotencyKey: $logicalTestSendId));
@@ -728,7 +728,7 @@ assertion never overrides an opt-out or authorizes a send.
 defaults. A Project view provides `signalCustody->{retrieve,update,retrieveCustomer,updateCustomer}`.
 Customer `signalModeDefault:null` restores inheritance; Project updates require
 `standard` or `zero_knowledge`. These settings do not convert an existing
-Number's custody or move Signal keys.
+Connection's custody or move Signal keys.
 
 New request models reject unknown fields, invalid nulls and incompatible
 variants before HTTP. Empty dictionary fields encode as `{}`; lists encode as
@@ -750,7 +750,7 @@ These methods preserve API authentication, membership, enrollment, funding,
 consent and feature gates. They add no QuickLink invitation authority, browser
 tunnel transport or customer Signal-core implementation.
 
-### Changed campaign, session and history contracts
+### Changed campaign, connection and history contracts
 
 Campaigns expose `trackedLinks`, required nullable `experimentOutcome` and
 `followUp`, and optional nullable `variableMapping`. Create accepts a mapping;
@@ -771,8 +771,8 @@ Existing methods keep the default `2026-09-22` API version. A new QuickLink
 selects `2026-10-14` only when `RequestOptions::apiVersion` is absent. An explicit
 version is preserved. A whole `historySync` reset stays on the legacy version.
 Read delivery can be `archive` or `descriptor`; writes accept `descriptor`.
-Session `signalMode` is an optional immutable response fact. Supplementary
-QuickLinks require `session` and `addConnection` and cannot change initial
+Connection `signalMode` is an optional immutable response fact. Supplementary
+QuickLinks require `connection` and `addMethod` and cannot change initial
 Customer, external ID, billing controls or custody. Consent and API admission
 remain separate from requested delivery.
 
@@ -925,7 +925,7 @@ behavior.
 
 ## Official API round-2 betas
 
-Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+Native Connection catalog-cache reads/sync, marketing status, Official group JPEG
 upload, identity changes, incoming carts and signed webhook batches have source
 counterparts. These additions remain unreleased betas and may return
 `feature_unavailable`. They grant no enrollment or provider authority. See
@@ -954,7 +954,7 @@ off-to-on transition. Project tokens may disable it. The SDK forwards values
 without guessing the stored state. Existing `invalid_parameter`,
 `permission_denied` and `state_conflict` errors remain authoritative.
 
-The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+The setting affects linked-device Connections. Cloud API Connections ignore it.
 Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
 when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
@@ -1025,8 +1025,8 @@ does not establish API deployment or package publication.
 
 ## Direct passkey relay (unreleased)
 
-Use server credentials with `sessions:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+Use server credentials with `connections:manage` for every operation, including reads.
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -1051,12 +1051,12 @@ The matching API source is accepted. Package qualification and publication are
 still required before using a released package.
 
 ```php
-$ticket = $client->passkeys->issueChallenge($session);
-$client->passkeys->getChallenge($session, $ticket->data['data']['ticket']);
-$client->passkeys->submitAssertion($session, $suppliedAssertion);
-$state = $client->passkeys->getConfirmation($session);
+$ticket = $client->passkeys->issueChallenge($connection);
+$client->passkeys->getChallenge($connection, $ticket->data['data']['ticket']);
+$client->passkeys->submitAssertion($connection, $suppliedAssertion);
+$state = $client->passkeys->getConfirmation($connection);
 // Invoke only after an explicit caller decision based on the current state.
-$confirmExplicitly = fn () => $client->passkeys->confirm($session, $suppliedConfirmation);
+$confirmExplicitly = fn () => $client->passkeys->confirm($connection, $suppliedConfirmation);
 ```
 
 
@@ -1094,7 +1094,7 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP

@@ -36,7 +36,7 @@ function nativeInbox(inbox) {
     const last = snapshot.messages.at(-1);
     return {
       id: snapshot.peer,
-      session: snapshot.session,
+      connection: snapshot.connection,
       name: "Assigned recipient",
       phoneNumber: snapshot.peer,
       lastActivity: last?.createdAt ?? 0,

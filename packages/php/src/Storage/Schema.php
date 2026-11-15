@@ -6,14 +6,14 @@ namespace Polymorfa\Storage;
 
 final class Schema
 {
-    public const VERSION = 2;
-    public const SOURCE_SDK_COMMIT = '3bacf46f9c4213426314001586f5bae43aaa77de';
+    public const VERSION = 3;
+    public const SOURCE_SDK_COMMIT = 'd80b581c9df122411e9149a7e39a33700a51571c';
     /** @return array{name:string,key:list<string>,fields:array<string,string>,indexes:list<array{name:string,equals:list<string>,sort:string}>} */
     public static function definition(string $entity): array
     {
         static $schema = null;
         if ($schema === null) {
-            $raw = file_get_contents(__DIR__.'/schema2.json');
+            $raw = file_get_contents(__DIR__.'/schema3.json');
             if ($raw === false) {
                 self::invalid();
             }

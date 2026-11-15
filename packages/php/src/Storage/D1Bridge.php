@@ -13,7 +13,7 @@ use Polymorfa\{CancellationToken,CancelledException};
 final class D1Bridge implements Adapter, \JsonSerializable
 {
     public const CONTRACT = 'polymorfa-d1-storage-v1';
-    public const SOURCE_COMMIT = '9ae35e671f7f4868a67c1562422c5af9284b95c1';
+    public const SOURCE_COMMIT = 'd80b581c9df122411e9149a7e39a33700a51571c';
     private const MAX_BODY = 8388608;
     private readonly ClientInterface $http;
     private readonly string $baseUrl;

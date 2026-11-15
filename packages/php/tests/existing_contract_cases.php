@@ -63,38 +63,38 @@ foreach (['templateId','variableMapping','trackedLinks'] as $field) {
 }
 // Read delivery is a fact, distinct from descriptor-only saved writes and consent.
 $ecObs = ['presenceMode' => 'off','typingMode' => 'off','labelMode' => 'off','quickReplyMode' => 'off'];
-$ecConfig = ['effective' => ['observation' => $ecObs,'historySync' => ['mode' => 'metadata_only','requestFull' => false,'delivery' => 'archive'],'hms' => ['enabled' => false]],'overrides' => (object)[],'requestedHistory' => ['mode' => 'deliver','requestFull' => false,'delivery' => 'descriptor'],'sources' => ['historySync.mode' => 'consent','historySync.requestFull' => 'team','historySync.delivery' => 'platform','hms' => 'platform','observation.presenceMode' => 'platform','observation.typingMode' => 'platform','observation.labelMode' => 'platform','observation.quickReplyMode' => 'platform'],'revisions' => ['team' => 0,'project' => 0,'session' => 0],'historyConsent' => 'declined'];
-$ecSession = ['sessionId' => 's','name' => 's','tenantId' => 'team','type' => 'linked_device','testMode' => false,'status' => 'CONNECTED','createdAt' => '2026-10-16T00:00:00Z','updatedAt' => '2026-10-16T00:00:00Z','signalMode' => 'zero_knowledge','configuration' => $ecConfig];
+$ecConfig = ['effective' => ['observation' => $ecObs,'historySync' => ['mode' => 'metadata_only','requestFull' => false,'delivery' => 'archive'],'hms' => ['enabled' => false]],'overrides' => (object)[],'requestedHistory' => ['mode' => 'deliver','requestFull' => false,'delivery' => 'descriptor'],'sources' => ['historySync.mode' => 'consent','historySync.requestFull' => 'team','historySync.delivery' => 'platform','hms' => 'platform','observation.presenceMode' => 'platform','observation.typingMode' => 'platform','observation.labelMode' => 'platform','observation.quickReplyMode' => 'platform'],'revisions' => ['team' => 0,'project' => 0,'connection' => 0],'historyConsent' => 'declined'];
+$ecConnection = ['connectionId' => 's','name' => 's','tenantId' => 'team','type' => 'whatsapp','method' => 'linked_device','testMode' => false,'status' => 'CONNECTED','createdAt' => '2026-10-16T00:00:00Z','updatedAt' => '2026-10-16T00:00:00Z','signalMode' => 'zero_knowledge','configuration' => $ecConfig];
 $ecA = $ecTeam->project($ecProject);
 $ecBProject = '22222222-2222-4222-8222-222222222222';
 $ecB = $ecTeam->project($ecBProject);
 foreach ([$ecA,$ecB,$ecA] as $view) {
     $selected = $view === $ecA ? $ecProject : $ecBProject;
-    $r = $ecRun('GET', '/platform/session-configuration?projectId='.$selected, null, ['data' => $ecConfig], fn () => $view->sessionConfiguration->retrieve(new Polymorfa\RequestOptions(apiVersion:'2026-10-14')), ['version' => '2026-10-14']);
-    ecCheck($r->data['revisions']['session'] === 0 && $r->data['requestedHistory']['delivery'] === 'descriptor' && $r->data['effective']['historySync']['delivery'] === 'archive', 'Owner views and consent divergence retained');
+    $r = $ecRun('GET', '/platform/connection-configuration?projectId='.$selected, null, ['data' => $ecConfig], fn () => $view->connectionConfiguration->retrieve(new Polymorfa\RequestOptions(apiVersion:'2026-10-14')), ['version' => '2026-10-14']);
+    ecCheck($r->data['revisions']['connection'] === 0 && $r->data['requestedHistory']['delivery'] === 'descriptor' && $r->data['effective']['historySync']['delivery'] === 'archive', 'Owner views and consent divergence retained');
 }
 foreach ([['set' => ['historySync' => ['delivery' => 'descriptor','requestFull' => false]]],['reset' => ['historySync.delivery']]] as $patch) {
-    $ecRun('PUT', '/platform/session-configuration', ['configuration' => $patch,'revision' => 0,'projectId' => $ecProject], ['data' => $ecConfig], fn () => $ecA->sessionConfiguration->update(['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
-    $ecRun('PUT', '/platform/sessions/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecSession), fn () => $ecTeam->sessions->update('s', ['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
-    $ecRun('PUT', '/platform/sessions/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecSession), fn () => $ecMessaging->sessions->update('s', ['configuration' => $patch,'revision' => 0], new Polymorfa\RequestOptions(apiVersion:'2026-09-22')));
+    $ecRun('PUT', '/platform/connection-configuration', ['configuration' => $patch,'revision' => 0,'projectId' => $ecProject], ['data' => $ecConfig], fn () => $ecA->connectionConfiguration->update(['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
+    $ecRun('PUT', '/platform/connections/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecConnection), fn () => $ecTeam->connections->update('s', ['configuration' => $patch,'revision' => 0]), ['version' => '2026-10-14']);
+    $ecRun('PUT', '/platform/connections/s', ['configuration' => $patch,'revision' => 0], $ecEnvelope($ecConnection), fn () => $ecMessaging->connections->update('s', ['configuration' => $patch,'revision' => 0], new Polymorfa\RequestOptions(apiVersion:'2026-09-22')));
 }
-$ecRun('PUT', '/platform/session-configuration', ['configuration' => ['reset' => ['historySync']],'revision' => 0], ['data' => $ecConfig], fn () => $ecTeam->sessionConfiguration->update(['configuration' => ['reset' => ['historySync']],'revision' => 0]));
+$ecRun('PUT', '/platform/connection-configuration', ['configuration' => ['reset' => ['historySync']],'revision' => 0], ['data' => $ecConfig], fn () => $ecTeam->connectionConfiguration->update(['configuration' => ['reset' => ['historySync']],'revision' => 0]));
 $ecOldConfig = $ecConfig;
 unset($ecOldConfig['effective']['historySync']['delivery'],$ecOldConfig['requestedHistory']['delivery'],$ecOldConfig['sources']['historySync.delivery']);
-$ecRun('GET', '/platform/session-configuration', null, ['data' => $ecOldConfig], fn () => $ecTeam->sessionConfiguration->retrieve());
+$ecRun('GET', '/platform/connection-configuration', null, ['data' => $ecOldConfig], fn () => $ecTeam->connectionConfiguration->retrieve());
 foreach ([$ecTeam,$ecMessaging] as $client) {
     foreach ([null,'standard','zero_knowledge'] as $mode) {
-        $fact = $ecSession;
+        $fact = $ecConnection;
         if ($mode === null) {
             unset($fact['signalMode']);
         } else {
             $fact['signalMode'] = $mode;
         }
-        $ecRun('GET', '/platform/sessions/s', null, $ecEnvelope($fact), fn () => $client->sessions->retrieve('s'));
+        $ecRun('GET', '/platform/connections/s', null, $ecEnvelope($fact), fn () => $client->connections->retrieve('s'));
     }
 }
-$ecLink = ['purpose' => 'initial','connectionGoal' => 'single','id' => 'link','url' => 'https://link.polymorfa.com/link','session' => 's','expiresAt' => null];
-foreach ([[],['signalMode' => 'standard'],['signalMode' => 'zero_knowledge'],['configuration' => ['historySync' => ['delivery' => 'descriptor','consent' => 'force_off','requestFull' => false],'hms' => ['enabled' => false],'observation' => ['typingMode' => 'off'],'methods' => ['qr'],'defaultMethod' => null,'prefillPhone' => '+15555555555','allowPhoneChange' => false]],['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','connectionGoal' => 'hybrid','configuration' => ['testing' => ['country' => 'US'],'historySync' => ['consent' => 'ask']]]] as $input) {
+$ecLink = ['purpose' => 'initial','connectionGoal' => 'single','id' => 'link','url' => 'https://link.polymorfa.com/link','connection' => 's','expiresAt' => null];
+foreach ([[],['signalMode' => 'standard'],['signalMode' => 'zero_knowledge'],['configuration' => ['historySync' => ['delivery' => 'descriptor','consent' => 'force_off','requestFull' => false],'hms' => ['enabled' => false],'observation' => ['typingMode' => 'off'],'methods' => ['qr'],'defaultMethod' => null,'prefillPhone' => '+15555555555','allowPhoneChange' => false]],['purpose' => 'add_method','connection' => 's','addMethod' => 'linked_devices','connectionGoal' => 'hybrid','configuration' => ['testing' => ['country' => 'US'],'historySync' => ['consent' => 'ask']]]] as $input) {
     $new = isset($input['signalMode']) || isset($input['configuration']['historySync']['delivery']);
     $ecRun('POST', '/messaging/quicklinks', $input === [] ? (object)[] : $input, $ecEnvelope($ecLink), fn () => $ecMessaging->quickLinks->create($input), ['version' => $new ? '2026-10-14' : '2026-09-22']);
     $ecRun('POST', '/messaging/quicklinks', $input === [] ? (object)[] : $input, $ecEnvelope($ecLink), fn () => $ecMessaging->quickLinks->create($input, new Polymorfa\RequestOptions(apiVersion:'2026-09-22')));

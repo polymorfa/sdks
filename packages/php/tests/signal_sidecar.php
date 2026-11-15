@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Polymorfa\{CancelledException,CancellationToken,ConfigurationException,MediaEncryption,SignalEvent,SignalMediaDescriptor,SignalSendRequest,SignalSidecarClient,SignalSidecarException,SignalSseParser,SignalWebhooks,WebhookSignatureException,WhatsAppMediaUploadResult,WhatsAppUploadLocation};
 
-$v = json_decode(file_get_contents(__DIR__.'/fixtures/signal-sidecar.json'), true, flags:JSON_THROW_ON_ERROR);
+$v = json_decode(file_get_contents(__DIR__.'/fixtures/signal-sidecar.connections.json'), true, flags:JSON_THROW_ON_ERROR);
 foreach (['valid','redirect','body','headers','wrong-id','wrong-type','cancel'] as $mode) {
     $process = proc_open([PHP_BINARY,__DIR__.'/signal-server.php',$mode], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes);
     check(is_resource($process), 'Native Signal TCP fixture starts');
@@ -14,7 +14,7 @@ foreach (['valid','redirect','body','headers','wrong-id','wrong-type','cancel'] 
         $client = new SignalSidecarClient($fixture['url'], $v['secret'], $http, timeout:in_array($mode, ['body','headers'], true) ? 0.05 : 3);
         if ($mode === 'valid') {
             $client->health();
-            check($client->sessions()->sessions[0]->leaseGeneration === 7, 'Typed local session lease generation');
+            check($client->connections()->connections[0]->leaseGeneration === 7, 'Typed local connection lease generation');
             check($client->send('session-fixture', new SignalSendRequest('target@lid', 'fixture'))->serverTimestamp === 1720000000, 'Typed text send');
             $encrypted = MediaEncryption::encrypt('fixture', 'ptt', str_repeat(chr(1), 32), mimeType:'audio/ogg');
             $descriptor = SignalMediaDescriptor::fromUpload(new WhatsAppMediaUploadResult($encrypted->info, new WhatsAppUploadLocation('/fixture/path', 'https://cdn.whatsapp.net/fixture/path'), 'relay'));
@@ -48,7 +48,7 @@ foreach (['valid','redirect','body','headers','wrong-id','wrong-type','cancel'] 
             }, SignalSidecarException::class);
             $stream->close();
         } else {
-            $error = raises($mode === 'headers' ? fn () => $client->events('session-fixture') : fn () => $client->sessions(), SignalSidecarException::class);
+            $error = raises($mode === 'headers' ? fn () => $client->events('session-fixture') : fn () => $client->connections(), SignalSidecarException::class);
             check(!str_contains($error->getMessage(), 'capability=') && $error->getPrevious() === null, 'Sidecar failures omit private URL and causes');
             if ($mode !== 'redirect') {
                 check($error->errorCode === 'signal_sidecar_timeout', 'Sidecar body/header deadline');
@@ -76,7 +76,7 @@ foreach ([['to' => ''],['to' => 'target'],['to' => 'target','text' => '']] as $b
 $cancelled = new CancellationToken();
 $cancelled->cancel();
 $client = new SignalSidecarClient('http://127.0.0.1:1', $v['secret']);
-raises(fn () => $client->sessions($cancelled), CancelledException::class);
+raises(fn () => $client->connections($cancelled), CancelledException::class);
 $event = SignalWebhooks::constructEvent($v['rawBody'], $v['signature'], $v['timestamp'], $v['eventId'], $v['secret'], nowUnixSeconds:(int)$v['timestamp']);
 check($event->rawJson === $v['rawBody'], 'Independent exact raw-body HMAC vector');
 $calls = 0;
@@ -128,15 +128,15 @@ if ($directory !== false && $directory !== '') {
     }
     $client = new SignalSidecarClient($metadata['url'], $metadata['applicationSecret'], $http, timeout:10);
     $client->health();
-    $sessions = $client->sessions();
-    check(count($sessions->sessions) === 1 && $sessions->sessions[0]->id === $metadata['sessionId'] && $sessions->sessions[0]->claimed && $sessions->sessions[0]->hasDeviceKeys, 'Actual service is ready with synthetic keys/pairing');
+    $connections = $client->connections();
+    check(count($connections->connections) === 1 && $connections->connections[0]->id === $metadata['connectionId'] && $connections->connections[0]->claimed && $connections->connections[0]->hasDeviceKeys, 'Actual service is ready with synthetic keys/pairing');
     $wrong = new SignalSidecarClient($metadata['url'], 'synthetic_wrong_application_secret', $http);
-    check(raises(fn () => $wrong->sessions(), SignalSidecarException::class)->status === 401, 'Actual service rejects wrong app bearer');
-    $outcome = $client->send($metadata['sessionId'], new SignalSendRequest('111@s.whatsapp.net', 'synthetic PHP native send'));
+    check(raises(fn () => $wrong->connections(), SignalSidecarException::class)->status === 401, 'Actual service rejects wrong app bearer');
+    $outcome = $client->send($metadata['connectionId'], new SignalSendRequest('111@s.whatsapp.net', 'synthetic PHP native send'));
     check($outcome->messageId !== '', 'Actual service synthetic text send encrypts through core/fake WS');
     $encrypted = MediaEncryption::encrypt('synthetic app media', 'ptt', mimeType:'audio/ogg');
     $descriptor = SignalMediaDescriptor::fromUpload(new WhatsAppMediaUploadResult($encrypted->info, new WhatsAppUploadLocation('/synthetic/fixture.enc', 'https://cdn.whatsapp.net/synthetic/fixture.enc'), 'relay'));
-    check($client->send($metadata['sessionId'], new SignalSendRequest('111@s.whatsapp.net', media:$descriptor))->messageId !== '', 'Actual synthetic media send');
+    check($client->send($metadata['connectionId'], new SignalSendRequest('111@s.whatsapp.net', media:$descriptor))->messageId !== '', 'Actual synthetic media send');
     clearstatcache();
     $before = file_exists($directory.'/receipt.json') ? filemtime($directory.'/receipt.json') : 0;
     while (time() <= $before) {
@@ -147,7 +147,7 @@ if ($directory !== false && $directory !== '') {
     $inject = proc_open([PHP_BINARY,__DIR__.'/signal-inject.php',$directory,$message,$text], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $injectPipes);
     $stream = null;
     try {
-        $stream = $client->events($metadata['sessionId']);
+        $stream = $client->events($metadata['connectionId']);
         $persisted = false;
         foreach ($stream as $event) {
             check($event->messageId === $message && $event->text === $text && $event->timestamp === 1720000000 && $event->senderAlt === '123456@lid' && str_contains($event->messageProto, $text), 'Actual encrypted Receive -> native plaintext/protobuf/stanza metadata');

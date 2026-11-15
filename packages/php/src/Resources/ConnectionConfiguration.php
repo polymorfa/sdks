@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Polymorfa\Resources;
 
-use Polymorfa\{ApiResponse,HttpTransport,SessionModels,RequestOptions};
+use Polymorfa\{ApiResponse,HttpTransport,ConnectionModels,RequestOptions};
 
 /**
- * @phpstan-import-type Configuration from SessionModels
- * @phpstan-import-type ConfigurationPatch from SessionModels
+ * @phpstan-import-type Configuration from ConnectionModels
+ * @phpstan-import-type ConfigurationPatch from ConnectionModels
  */
-final class SessionConfiguration extends PlatformResource
+final class ConnectionConfiguration extends PlatformResource
 {
     public function __construct(HttpTransport $transport, private readonly ?string $projectId = null)
     {
@@ -19,7 +19,7 @@ final class SessionConfiguration extends PlatformResource
     /** @return ApiResponse<Configuration> */
     public function retrieve(?RequestOptions $options = null): ApiResponse
     {
-        $response = \Polymorfa\ExistingContract::request($this->transport, 'GET', '/platform/session-configuration', query:$this->projectId === null ? [] : ['projectId' => $this->projectId], options:$options, model:'configuration');
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'GET', '/platform/connection-configuration', query:$this->projectId === null ? [] : ['projectId' => $this->projectId], options:$options, model:'configuration');
         /** @var Configuration $data */ $data = $response->data['data'];
         return new ApiResponse($data, $response->metadata);
     }
@@ -27,11 +27,11 @@ final class SessionConfiguration extends PlatformResource
      * @return ApiResponse<Configuration> */
     public function update(array $input, ?RequestOptions $options = null): ApiResponse
     {
-        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::configuration($input));
+        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\ConnectionDeliveryValidation::configuration($input));
         if ($this->projectId !== null) {
             $input['projectId'] = $this->projectId;
         }
-        $response = \Polymorfa\ExistingContract::request($this->transport, 'PUT', '/platform/session-configuration', $input, options:$options, model:'configuration');
+        $response = \Polymorfa\ExistingContract::request($this->transport, 'PUT', '/platform/connection-configuration', $input, options:$options, model:'configuration');
         /** @var Configuration $data */ $data = $response->data['data'];
         return new ApiResponse($data, $response->metadata);
     }

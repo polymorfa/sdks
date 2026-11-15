@@ -11,7 +11,7 @@ final class SignalEventStream implements \IteratorAggregate, \JsonSerializable
 {
     private bool $started = false;
     private bool $closed = false;
-    public function __construct(private readonly StreamInterface $body, private readonly ?string $sessionId, private readonly ?CancellationToken $cancellation)
+    public function __construct(private readonly StreamInterface $body, private readonly ?string $connectionId, private readonly ?CancellationToken $cancellation)
     {
     }
     public function close(): void
@@ -46,7 +46,7 @@ final class SignalEventStream implements \IteratorAggregate, \JsonSerializable
                 }
                 foreach ($parser->feed($chunk) as $frame) {
                     $event = SignalEvent::fromJson($frame['data']);
-                    if ($event->id !== $frame['id'] || $event->type !== $frame['type'] || ($this->sessionId !== null && $this->sessionId !== '' && $event->sessionId !== $this->sessionId)) {
+                    if ($event->id !== $frame['id'] || $event->type !== $frame['type'] || ($this->connectionId !== null && $this->connectionId !== '' && $event->connectionId !== $this->connectionId)) {
                         SignalCodec::invalid();
                     }yield $event;
                 }

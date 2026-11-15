@@ -43,12 +43,12 @@ foreach ($databases as $mode => $database) {
     $engine->apply(HistoryReducer::reduce('large', $large, chunkId:'large'));
     $count = 0;
     foreach ($large['conversations'] as $conversation) {
-        $count += count($engine->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'large','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
+        $count += count($engine->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'large','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
     } storageCheck($count === 2000, 'official libSQL '.$mode.' 2000 history');
-    $engine->apply(new Batch('cas', [new Upsert('messages', ['sessionId' => 'cas','messageId' => 'one'], ['text' => new FieldWrite('original', 0)])]));
-    $id = Schema::encodeKey('messages', ['sessionId' => 'cas','messageId' => 'one']);
+    $engine->apply(new Batch('cas', [new Upsert('messages', ['connectionId' => 'cas','messageId' => 'one'], ['text' => new FieldWrite('original', 0)])]));
+    $id = Schema::encodeKey('messages', ['connectionId' => 'cas','messageId' => 'one']);
     $before = $adapter->get('messages', [$id])[$id];
-    $two = Rows::empty('messages', ['sessionId' => 'cas','messageId' => 'two']);
+    $two = Rows::empty('messages', ['connectionId' => 'cas','messageId' => 'two']);
     $two['_rev'] = 1;
     $changed = $before;
     $changed['_rev']++;

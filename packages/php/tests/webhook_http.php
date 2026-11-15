@@ -42,7 +42,7 @@ try {
     $ingress = proc_open(['node',__DIR__.'/fixtures/consumer-repairs/webhook-ingress.mjs',$url,'200'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $ingressPipes);
     webhookHttpCheck(is_resource($ingress), 'decoder-capable ingress starts');
     $proxy = json_decode(fgets($ingressPipes[1]), true, flags:JSON_THROW_ON_ERROR)['url'];
-    $raw = '{ "id":"bounded","session":"synthetic","timestamp":"2026-10-17T00:00:00Z","event":"future.event","payload":{"x":1}}';
+    $raw = '{ "id":"bounded","connection":"synthetic","timestamp":"2026-10-17T00:00:00Z","event":"future.event","payload":{"x":1}}';
     $effects = 0;
     foreach (['symfony','laravel'] as $framework) {
         $endpoint = '/'.$framework;

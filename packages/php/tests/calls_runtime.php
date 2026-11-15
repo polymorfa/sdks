@@ -129,7 +129,7 @@ try {
         $refreshRequests[] = $request->refresh;
         return new CallsToken($request->refresh ? $fresh : $old);
     });
-    $client = new CallsClient($tokens, new CallsOptions(session:'support', baseUrl:$httpUrl, heartbeat:0.1, minBackoff:0.01, maxBackoff:0.02, diagnostics:false), connector:static function (string $url, ?string $protocol, float $timeout) use ($httpUrl, $wsUrl): NativeCallSocket {
+    $client = new CallsClient($tokens, new CallsOptions(connection:'support', baseUrl:$httpUrl, heartbeat:0.1, minBackoff:0.01, maxBackoff:0.02, diagnostics:false), connector:static function (string $url, ?string $protocol, float $timeout) use ($httpUrl, $wsUrl): NativeCallSocket {
         return new NativeCallSocket(str_replace('http://', 'ws://', str_replace($httpUrl, $wsUrl, str_replace('ws://', 'http://', $url))), $protocol, $timeout);
     });
     $client->connect();
@@ -295,7 +295,7 @@ callsCheck($claimed->getCall('claimed')?->claimedByOther && $claimed->getCall('c
 $claimed->disconnect();
 $refusedWire = new CallsTestSocket([['type' => 'ready'],Polymorfa\CallsSocketErrors::closed(4400)]);
 $connections = 0;
-$refused = new CallsClient(new CallsTokenSource($old), new CallsOptions(session:'support', heartbeat:0, minBackoff:0.001, maxBackoff:0.001), connector:static function () use (&$connections, $refusedWire): CallsTestSocket {
+$refused = new CallsClient(new CallsTokenSource($old), new CallsOptions(connection:'support', heartbeat:0, minBackoff:0.001, maxBackoff:0.001), connector:static function () use (&$connections, $refusedWire): CallsTestSocket {
     ++$connections;
     return $refusedWire;
 });
@@ -320,7 +320,7 @@ $handler = static function (Psr\Http\Message\RequestInterface $request, array $o
     callsCheck($request->getUri()->getPath() === '/messaging/voip/calls/reported/reports', 'Diagnostic route');
     return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response($reportStatus, ['content-type' => 'application/json'], $reportStatus === 200 ? '{"success":true}' : '{"error":{"code":"forbidden"}}'));
 };
-$reportClient = new CallsClient(new CallsTokenSource($old), new CallsOptions(session:'support'), clientFactory:static fn (Credential $credential): Polymorfa\MessagingClient => new Polymorfa\MessagingClient($credential, http:new GuzzleHttp\Client(['handler' => $handler])));
+$reportClient = new CallsClient(new CallsTokenSource($old), new CallsOptions(connection:'support'), clientFactory:static fn (Credential $credential): Polymorfa\MessagingClient => new Polymorfa\MessagingClient($credential, http:new GuzzleHttp\Client(['handler' => $handler])));
 $reportCall = new Polymorfa\Call($reportClient, 'reported', 'inbound', '15550000001', false);
 $clock = 100.;
 $reporter = new CallReporter($reportClient, $reportCall, static function () use (&$clock): float {
@@ -353,7 +353,7 @@ $firstMedia = new CallsTestSocket([['type' => 'ready','sampleRate' => 16000,'vid
 $secondMedia = new CallsTestSocket([['type' => 'ready','sampleRate' => 16000,'video' => false]]);
 $thirdMedia = new CallsTestSocket([Polymorfa\CallsSocketErrors::closed(4401)]);
 $mediaAttempt = 0;
-$effects = new CallsClient(new CallsTokenSource($old), new CallsOptions(session:'support', heartbeat:0, mediaHeartbeat:0, controlTimeout:0.01, minBackoff:0.001, maxBackoff:0.001, maxMediaReattach:1, diagnostics:false), connector:static function (string $url) use ($effectLifecycle, $firstMedia, $secondMedia, $thirdMedia, &$mediaAttempt): CallsTestSocket {
+$effects = new CallsClient(new CallsTokenSource($old), new CallsOptions(connection:'support', heartbeat:0, mediaHeartbeat:0, controlTimeout:0.01, minBackoff:0.001, maxBackoff:0.001, maxMediaReattach:1, diagnostics:false), connector:static function (string $url) use ($effectLifecycle, $firstMedia, $secondMedia, $thirdMedia, &$mediaAttempt): CallsTestSocket {
     return str_contains($url, '/media') ? (++$mediaAttempt === 1 ? $firstMedia : ($mediaAttempt === 2 ? $secondMedia : $thirdMedia)) : $effectLifecycle;
 }, clientFactory:$effectApi);
 $effects->connect();
@@ -455,7 +455,7 @@ $lateHandler = static function (Psr\Http\Message\RequestInterface $request, arra
     } return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(200, ['content-type' => 'application/json'], $body));
 };
 $lateWire = new CallsTestSocket([['type' => 'ready'],['type' => 'event','event' => 'call.received','callId' => 'late','payload' => ['from' => '15550000001']]]);
-$lateClient = new CallsClient(new CallsTokenSource($old), new CallsOptions(session:'support', heartbeat:0, diagnostics:false), connector:static fn (): CallsTestSocket => $lateWire, clientFactory:static fn (Credential $credential): Polymorfa\MessagingClient => new Polymorfa\MessagingClient($credential, http:new GuzzleHttp\Client(['handler' => $lateHandler])));
+$lateClient = new CallsClient(new CallsTokenSource($old), new CallsOptions(connection:'support', heartbeat:0, diagnostics:false), connector:static fn (): CallsTestSocket => $lateWire, clientFactory:static fn (Credential $credential): Polymorfa\MessagingClient => new Polymorfa\MessagingClient($credential, http:new GuzzleHttp\Client(['handler' => $lateHandler])));
 $lateClient->connect();
 $lateClient->poll();
 $lateCall = $lateClient->getCall('late');
@@ -480,14 +480,14 @@ $latePlaceHandler = static function (Psr\Http\Message\RequestInterface $request,
     if ($request->getMethod() === 'POST') {
         callsCheck($request->getHeaderLine('Idempotency-Key') === 'placement-key' && json_decode((string)$request->getBody(), true)['exclusive'] === true, 'Explicit placement key and claim');
         Fiber::suspend();
-        $body = '{"success":true,"data":{"callId":"late_place","session":"support","video":false}}';
+        $body = '{"success":true,"data":{"callId":"late_place","connection":"support","video":false}}';
     } else {
         $body = '{"success":true}';
     }
     return GuzzleHttp\Promise\Create::promiseFor(new GuzzleHttp\Psr7\Response(200, ['content-type' => 'application/json'], $body));
 };
 $placeWire = new CallsTestSocket([['type' => 'ready']]);
-$latePlacer = new CallsClient(new CallsTokenSource($old), new CallsOptions(session:'support', heartbeat:0, diagnostics:false), connector:static fn (): CallsTestSocket => $placeWire, clientFactory:static fn (Credential $credential): Polymorfa\MessagingClient => new Polymorfa\MessagingClient($credential, http:new GuzzleHttp\Client(['handler' => $latePlaceHandler])));
+$latePlacer = new CallsClient(new CallsTokenSource($old), new CallsOptions(connection:'support', heartbeat:0, diagnostics:false), connector:static fn (): CallsTestSocket => $placeWire, clientFactory:static fn (Credential $credential): Polymorfa\MessagingClient => new Polymorfa\MessagingClient($credential, http:new GuzzleHttp\Client(['handler' => $latePlaceHandler])));
 $latePlacer->connect();
 $placeCancelled = false;
 $placeFiber = new Fiber(function () use ($latePlacer, &$placeCancelled): void {

@@ -7,7 +7,7 @@ namespace Polymorfa;
 final readonly class CallsOptions
 {
     public function __construct(
-        public ?string $session = null,
+        public ?string $connection = null,
         public ?string $participant = null,
         public string $baseUrl = 'https://api.polymorfa.com',
         public float $connectTimeout = 10,
@@ -37,7 +37,7 @@ final readonly class CallsOptions
                 throw new ConfigurationException('callsTimeout');
             }
         }
-        if ($maxBackoff < $minBackoff || $maxMediaReattach < 0 || $maxMediaReattach > 10 || ($session !== null && trim($session) === '')
+        if ($maxBackoff < $minBackoff || $maxMediaReattach < 0 || $maxMediaReattach > 10 || ($connection !== null && trim($connection) === '')
             || ($participant !== null && !preg_match('/^[A-Za-z0-9._:@-]{1,128}$/D', $participant))) {
             throw new ConfigurationException('callsOptions');
         }
