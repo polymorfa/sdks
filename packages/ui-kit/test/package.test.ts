@@ -141,6 +141,7 @@ describe("@polymorfa/ui-kit package", () => {
       'console.log(store.mode, result.accepted, (await store.sessions.get("s")).status);',
       "store.close();",
       'const components = await import("@polymorfa/ui-kit/web-components");',
+      'if (["PolymorfaConnectWhatsAppElement", "PolymorfaSessionStatusElement"].some(name => Object.hasOwn(components, name))) throw new Error("Removed workflow element is public");',
       'const chat = await import("@polymorfa/ui-kit/web-components/chat");',
       'const builder = await import("@polymorfa/ui-kit/web-components/templates");',
       'const calls = await import("@polymorfa/ui-kit/web-components/calls");',
@@ -192,7 +193,9 @@ describe("@polymorfa/ui-kit package", () => {
     ]);
     expect(
       run(withReact, [
-        'const { PolymorfaProvider, Inbox, DialPad } = await import("@polymorfa/ui-kit/react");',
+        'const react = await import("@polymorfa/ui-kit/react");',
+        'if (["TemplateManager", "SessionStatus", "ConnectWhatsAppButton"].some(name => Object.hasOwn(react, name))) throw new Error("Removed workflow component is public");',
+        "const { PolymorfaProvider, Inbox, DialPad } = react;",
         'const { usePolymorfaStoreQuery } = await import("@polymorfa/ui-kit/store/react");',
         "console.log(typeof PolymorfaProvider, typeof Inbox, typeof DialPad, typeof usePolymorfaStoreQuery);",
       ]),
