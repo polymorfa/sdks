@@ -331,6 +331,11 @@ its own token provider, authorized for that Number's session. Selection must
 never replace the token or session on an existing client. The session option
 does not override the session bound to the client token.
 
+The picker includes its own styles and follows the provider's appearance and
+locale. Use `className` for its root or `classNames` and appearance element
+styles for `callNumberPicker`, `callNumberLabel` and `callNumberSelect`.
+An unstyled provider skips the bundled stylesheet.
+
 ## Controlled inbox rows
 
 `ConversationListView` renders host-supplied `InboxConversation` rows with

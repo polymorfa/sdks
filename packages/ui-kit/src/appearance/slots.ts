@@ -71,6 +71,9 @@ export const COMPONENT_SLOTS = [
   "contactPanel",
   "connectButton",
   "callButton",
+  "callNumberPicker",
+  "callNumberLabel",
+  "callNumberSelect",
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

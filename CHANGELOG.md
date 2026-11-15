@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+- UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
+  styling slots. It supports `classNames` and unstyled mode without a host
+  stylesheet.
 - UI Kit: remove `TemplateManager`, `SessionStatus`, `ConnectWhatsAppButton`,
   their props and matching custom elements. Inbox, chat, Calls, TemplateBuilder
   and the underlying client/server APIs remain available. React/Next.js is the

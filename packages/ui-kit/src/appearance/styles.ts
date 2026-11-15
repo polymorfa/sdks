@@ -179,6 +179,12 @@ textarea.pmfa-input { min-height: 72px; resize: vertical; }
 .pmfa-input::placeholder { color: var(--pmfa-c-muted); opacity: 1; }
 .pmfa-error { margin: 0; color: var(--pmfa-c-danger); font-size: 0.875em; }
 
+/* Outgoing Number picker */
+.pmfa-call-number-picker { display: grid; gap: 6px; min-width: 0; max-width: 320px; }
+.pmfa-call-number-label { font-size: 0.8125em; font-weight: 600; }
+.pmfa-call-number-select { min-width: 0; min-height: 44px; padding: 8px 12px; line-height: 1.4; }
+.pmfa-call-number-select:disabled { cursor: not-allowed; opacity: 0.55; }
+
 /* Inline chat window: the host supplies a bounded height. */
 .pmfa-chat-window { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--pmfa-c-chat); color: var(--pmfa-c-fg); container-type: inline-size; }
 .pmfa-drawer { position: relative; }
