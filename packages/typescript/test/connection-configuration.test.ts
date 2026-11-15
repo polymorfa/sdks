@@ -17,7 +17,7 @@ describe("connection configuration", () => {
       configuration: { reset: ["historySync.mode"] },
     });
     expect(String(fetch.mock.calls[0]?.[0])).toContain(
-      "/platform/session-configuration",
+      "/platform/connection-configuration",
     );
     expect(JSON.parse(String(fetch.mock.calls[1]?.[1]?.body))).toEqual({
       projectId: "project-a",

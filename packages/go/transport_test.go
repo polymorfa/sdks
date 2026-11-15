@@ -275,7 +275,7 @@ func TestSharedWireFixtures(t *testing.T) {
 	if ready.URL == "" {
 		ready.URL = strings.TrimSpace(base.String())
 	}
-	data, err := os.ReadFile(filepath.Join(root, "contracts", "fixtures", "behavior.json"))
+	data, err := os.ReadFile(filepath.Join(root, "contracts", "fixtures", "connections", "behavior.json"))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -397,7 +397,7 @@ func TestSharedWireFixtures(t *testing.T) {
 				r, e := c.Connections().List(ctx, opts)
 				gotErr = e
 				response.Metadata = r.Metadata
-				if e == nil && (len(r.Data.Data) != 1 || r.Data.Data[0].ConnectionID != "connection_fixture") {
+				if e == nil && (len(r.Data.Data) != 1 || r.Data.Data[0].ConnectionID != "session_fixture") {
 					t.Fatal("typed connections response", r)
 				}
 			case "message-send":

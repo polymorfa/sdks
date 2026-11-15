@@ -13,6 +13,10 @@ const BASELINE = {
   sourceSdkCommit: "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
   operations: 671,
 };
+const CURRENT_BASELINE = {
+  sourceApiCommit: "b23680d19accfecf2f0b7166bdfa11e433947362",
+  operations: 672,
+};
 const FIELDS = {
   mediaHeader: "/buttonsContent/properties/buttons/properties/media",
   carousel: "/carouselContent/properties/carousel",
@@ -38,9 +42,13 @@ export function checkInteractiveSupplement(root, options = {}) {
     BASELINE,
     "interactive baseline drifted",
   );
-  assert.equal(ledger.sourceCommit, BASELINE.sourceApiCommit);
-  assert.equal(json("contracts/source.json").commit, BASELINE.sourceApiCommit);
-  assert.equal(ledger.operations.length, BASELINE.operations);
+  assert.deepEqual(inventory.currentBaseline, CURRENT_BASELINE);
+  assert.equal(ledger.sourceCommit, CURRENT_BASELINE.sourceApiCommit);
+  assert.equal(
+    json("contracts/source.json").commit,
+    CURRENT_BASELINE.sourceApiCommit,
+  );
+  assert.equal(ledger.operations.length, CURRENT_BASELINE.operations);
 
   const pinBytes = read(resolve(root, PIN));
   const pin = JSON.parse(pinBytes);

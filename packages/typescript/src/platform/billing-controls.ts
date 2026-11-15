@@ -12,7 +12,7 @@ export interface BillingPriorities {
   readonly customers: readonly (BillingPriority & {
     readonly projectId: string;
   })[];
-  readonly numbers: readonly (BillingPriority & {
+  readonly connections: readonly (BillingPriority & {
     readonly projectId: string;
   })[];
 }

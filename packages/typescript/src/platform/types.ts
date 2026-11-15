@@ -984,7 +984,7 @@ export interface HybridMergeCandidateConnection {
 }
 
 /**
- * Two Numbers in one project that are the same WhatsApp Business number.
+ * Two Connections in one project that are the same WhatsApp Business number.
  * `ineligibleReason` explains a pair that cannot merge now.
  */
 export interface HybridMergeCandidate {
@@ -1544,7 +1544,7 @@ export type ConnectionCapabilitiesStatus = "synced" | "unknown";
 export type ConnectionAccountType = "business" | "personal";
 
 /**
- * WhatsApp features and limits WhatsApp has enabled for one number, as of the
+ * WhatsApp features and limits WhatsApp has enabled for one Connection, as of the
  * number's last configuration sync (`syncedAt`). Beta: teams must enroll.
  */
 export interface ConnectionCapabilities {

@@ -38,14 +38,14 @@ func go41Routes() []go41Route {
 		{"getGroupCapabilities", "GET", "/messaging/connection%20%2Fx/groups/group%20%2Fx/capabilities", "", go41Group, 200, false, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
 			return m.Groups().GetCapabilities(c, "connection /x", "group /x", p)
 		}},
-		{"getTestingPhone", "GET", "/messaging/testing/project%20%2Fx/connections/connection%20%2Fx/phone", "", go41Phone, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Testing().GetPhone(c, "project /x", "connection /x", p)
+		{"getTestingPhone", "GET", "/messaging/connection%20%2Fx/phone", "", go41Phone, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Testing().GetPhone(c, "connection /x", p)
 		}},
-		{"sendTestingPhoneMessage", "POST", "/messaging/testing/project%20%2Fx/connections/connection%20%2Fx/phone/messages", `{"to":"+15550000002","text":"hello"}`, go41PhoneSend, 202, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Testing().SendPhoneMessage(c, "project /x", "connection /x", sdk.SendTestingPhoneMessageRequest{To: "+15550000002", Text: "hello"}, p)
+		{"sendTestingPhoneMessage", "POST", "/messaging/connection%20%2Fx/phone/messages", `{"to":"+15550000002","text":"hello"}`, go41PhoneSend, 202, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Testing().SendPhoneMessage(c, "connection /x", sdk.SendTestingPhoneMessageRequest{To: "+15550000002", Text: "hello"}, p)
 		}},
-		{"unlinkTestingPhoneDevice", "POST", "/messaging/testing/project%20%2Fx/connections/connection%20%2Fx/phone/devices/99/unlink", "", go41Unlink, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Testing().UnlinkPhoneDevice(c, "project /x", "connection /x", 99, p)
+		{"unlinkTestingPhoneDevice", "POST", "/messaging/connection%20%2Fx/phone/devices/99/unlink", "", go41Unlink, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Testing().UnlinkPhoneDevice(c, "connection /x", 99, p)
 		}},
 		{"listProjectRequestLogs", "GET", "/platform/projects/project%20%2Fx/request-logs", "", go41Logs, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
 			return o.RequestLogs().List(c, sdk.ListRequestLogsParams{ProjectID: "project /x"}, p)

@@ -59,7 +59,7 @@ type BillingPriorities struct {
 	Revision    int64                     `json:"revision"`
 	Projects    []BillingPriority         `json:"projects"`
 	Customers   []BillingResourcePriority `json:"customers"`
-	Connections []BillingResourcePriority `json:"numbers"`
+	Connections []BillingResourcePriority `json:"connections"`
 }
 type BillingLimit struct {
 	Scope           BillingScope `json:"scope"`

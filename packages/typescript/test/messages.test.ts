@@ -371,7 +371,7 @@ it("preserves explicit transport for send, reaction, edit, deletion and raw Grap
       .map((request) => JSON.parse(request.body).transport),
   ).toEqual(["official_api", "linked_devices", "linked_devices"]);
   expect(server.requests[3]!.path).toBe(
-    "/messaging/connection/chats/chat/messages/message?transport=linked_devices",
+    "/messaging/number/chats/chat/messages/message?transport=linked_devices",
   );
   expect(server.requests[4]!.headers["x-polymorfa-transport"]).toBe(
     "official_api",

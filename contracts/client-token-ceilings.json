@@ -1,24 +1,27 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "02aee1d010c5009401c0b60ab98eafd3dfd69f08",
+  "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
   "family": "platform",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "34ca9e3be9a71bdecf65a2978170f7d53ff488d8a584f759a45969548b27009c",
+  "sourceSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
   "published": false,
   "scope": "Client-token mint ceiling and live rule validation only. Reserved regional actions remain unavailable; reconcile full snapshots and exact API acceptance before publication.",
   "paths": {
     "/platform/client-tokens": {
       "post": {
         "operationId": "mintClientToken",
-        "tags": ["Client Tokens"],
+        "tags": [
+          "Client Tokens"
+        ],
         "summary": "Mint a short-lived browser-safe client token",
+        "description": "**Required scopes (all):** `connections:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`\n\nMinting requires an active, unrevoked issuer with the required scopes and current resource ownership. A human-owned issuer must belong to a current team owner or admin who is not banned. Service-account credentials can delegate only actions allowed by the issuing credential's live scopes. Test-key clients remain restricted to test connections. Issuance eligibility denials return 403; unavailable issuance checks return 503 and no token.",
         "security": [
           {
             "ApiKeyAuth": []
           }
         ],
         "x-required-scopes": [
-          "sessions:manage",
+          "connections:manage",
           "messages:write",
           "contacts:read",
           "presence:read",
@@ -218,25 +221,23 @@
             }
           }
         },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
-        },
-        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
         "x-audience": "public"
       }
     },
-    "/platform/sessions/{session}/client-rules": {
+    "/platform/connections/{connection}/client-rules": {
       "put": {
         "operationId": "setClientRules",
-        "tags": ["Client Tokens"],
-        "summary": "Set client-token rules for a session",
+        "tags": [
+          "Client Tokens"
+        ],
+        "summary": "Set client-token rules for a connection",
         "security": [
           {
             "ApiKeyAuth": []
           }
         ],
         "x-required-scopes": [
-          "sessions:manage",
+          "connections:manage",
           "messages:write",
           "contacts:read",
           "presence:read",
@@ -250,7 +251,7 @@
               "type": "string"
             },
             "required": true,
-            "name": "session",
+            "name": "connection",
             "in": "path"
           }
         ],
@@ -446,10 +447,7 @@
             }
           }
         },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:manage</Badge> <Badge color=\"yellow\" icon=\"key\">messages:write</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:read</Badge> <Badge color=\"yellow\" icon=\"key\">presence:observe</Badge> <Badge color=\"yellow\" icon=\"key\">mcp</Badge>"
-        },
-        "description": "**Required scopes (all):** `sessions:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
+        "description": "**Required scopes (all):** `connections:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`",
         "x-audience": "public"
       }
     }
@@ -466,20 +464,23 @@
           "type": "string"
         }
       },
-      "required": ["token", "expiresAt"]
+      "required": [
+        "token",
+        "expiresAt"
+      ]
     },
     "PlatformAccessMintClientTokenRequest": {
       "type": "object",
       "properties": {
-        "session": {
+        "connection": {
           "type": "string",
           "minLength": 1,
-          "description": "ID of the session this token can access. Provide exactly one of `session` or `customer`."
+          "description": "ID of the connection this token can access. Provide exactly one of `connection` or `customer`."
         },
         "customer": {
           "type": "string",
           "format": "uuid",
-          "description": "Polymorfa Customer ID. The token covers the numbers this Customer owns when it is minted, and only while the Customer still owns each one. Provide exactly one of `session` or `customer`. Requires the `customers:read` scope and enrollment in the Customer-scoped client tokens beta."
+          "description": "Polymorfa Customer ID. The token covers the connections this Customer owns when it is minted, and only while the Customer still owns each one. Provide exactly one of `connection` or `customer`. Requires the `customers:read` scope and enrollment in the Customer-scoped client tokens beta."
         },
         "allow": {
           "type": "array",
@@ -500,12 +501,27 @@
               "chats_read",
               "chats_manage",
               "contact_write",
-              "contact_delete"
+              "contact_delete",
+              "groups_read",
+              "groups_manage",
+              "read_calls",
+              "conversations_read",
+              "conversations_manage",
+              "labels_read",
+              "labels_manage",
+              "contacts_manage",
+              "profile_read",
+              "profile_manage",
+              "channels_read",
+              "channels_manage",
+              "business_read",
+              "presence_write",
+              "stickers_manage"
             ]
           },
           "minItems": 0,
-          "maxItems": 15,
-          "description": "Immutable action ceiling, intersected with live client rules. Session allow requires the action-ceilings beta. With ceiling issuance enabled, session omission snapshots its configured actions. For a Customer, omission uses the original Customer action set. An empty session allow grants no actions; Customer allow must be non-empty. Regional actions are reserved for enrolled beta access."
+          "maxItems": 30,
+          "description": "Immutable action ceiling, intersected with live client rules. Connection allow requires the action-ceilings beta. With ceiling issuance enabled, connection omission snapshots its configured actions. For a Customer, omission uses the original Customer action set. An empty connection allow grants no actions; Customer allow must be non-empty. Regional actions are reserved for enrolled beta access."
         },
         "ephemeralId": {
           "type": "string",
@@ -517,20 +533,27 @@
           "description": "Token lifetime in seconds. Must be at least 1 and within the maximum allowed lifetime. Omit to use that maximum."
         }
       },
-      "required": ["ephemeralId"]
+      "required": [
+        "ephemeralId"
+      ]
     },
     "PlatformAccessMintClientTokenResponse": {
       "type": "object",
       "properties": {
         "success": {
           "type": "boolean",
-          "enum": [true]
+          "enum": [
+            true
+          ]
         },
         "data": {
           "$ref": "#/components/schemas/PlatformAccessClientToken"
         }
       },
-      "required": ["success", "data"]
+      "required": [
+        "success",
+        "data"
+      ]
     },
     "PlatformAccessPublicError": {
       "type": "object",
@@ -544,6 +567,7 @@
                 "invalid_request_error",
                 "authentication_error",
                 "permission_error",
+                "billing_error",
                 "conflict_error",
                 "rate_limit_error",
                 "api_error",
@@ -553,11 +577,16 @@
             "code": {
               "type": "string",
               "enum": [
+                "zero_knowledge_connection",
                 "invalid_parameter",
                 "invalid_credential",
                 "entitlement_required",
                 "cloud_template_authority_restricted",
                 "gate_limit_reached",
+                "billing_credit_required",
+                "addon_required",
+                "safe_mode_not_entitled",
+                "warmup_plan_not_entitled",
                 "method_not_allowed",
                 "permission_denied",
                 "missing_scope",
@@ -579,10 +608,12 @@
                 "hybrid_transport_unavailable",
                 "hybrid_target_reference_unavailable",
                 "send_outcome_unknown",
+                "terms_acceptance_required",
+                "terms_activation_blocked",
                 "idempotency_conflict",
                 "idempotency_in_progress",
-                "idempotency_completed",
                 "idempotency_outcome_unknown",
+                "idempotency_replay_unavailable",
                 "call_claimed",
                 "call_not_ringing",
                 "connection_limit",
@@ -597,7 +628,7 @@
                 "order_status_transition_invalid",
                 "order_cancellation_failed",
                 "call_opt_out_limit",
-                "number_restricted",
+                "connection_restricted",
                 "sip_trunk_in_use",
                 "sip_trunk_revision_conflict",
                 "sip_trunk_limit",
@@ -615,7 +646,7 @@
                 "upstream_failure",
                 "service_unavailable",
                 "credential_verification_unavailable",
-                "session_not_ready",
+                "connection_not_ready",
                 "command_dispatch_failed",
                 "result_unknown",
                 "parent_bsuid_not_supported",
@@ -668,12 +699,20 @@
               "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
             }
           },
-          "required": ["type", "code", "message", "param", "request_id"]
+          "required": [
+            "type",
+            "code",
+            "message",
+            "param",
+            "request_id"
+          ]
         },
         "data": {
           "type": "string",
           "nullable": true,
-          "enum": [null],
+          "enum": [
+            null
+          ],
           "description": "Always null for a failed request."
         },
         "docs": {
@@ -681,7 +720,11 @@
           "format": "uri"
         }
       },
-      "required": ["error", "data", "docs"]
+      "required": [
+        "error",
+        "data",
+        "docs"
+      ]
     },
     "PlatformAccessSetClientRulesRequest": {
       "type": "object",
@@ -715,7 +758,9 @@
         "maxConcurrency": {
           "type": "integer",
           "minimum": 0,
-          "default": 0
+          "default": 0,
+          "description": "Deprecated. Has no effect. Client tokens use the same call limits as every other credential.",
+          "deprecated": true
         },
         "allowedNumber": {
           "type": "string",
@@ -726,7 +771,9 @@
           "type": "integer",
           "minimum": 0,
           "maximum": 600,
-          "default": 0
+          "default": 0,
+          "description": "Deprecated. Has no effect. Client tokens use the same call limits as every other credential.",
+          "deprecated": true
         },
         "conversationTtlSeconds": {
           "type": "integer",
@@ -736,7 +783,10 @@
           "description": "How long, in seconds, a sender remains replyable in `conversation` mode after their latest inbound message. Must be between 300 (5 minutes) and 604800 (7 days). Defaults to 86400 (24 hours)."
         }
       },
-      "required": ["recipientMode", "enabled"]
+      "required": [
+        "recipientMode",
+        "enabled"
+      ]
     },
     "PlatformAccessSuccessResponse": {
       "type": "object",
@@ -748,7 +798,13 @@
           "type": "string"
         }
       },
-      "required": ["success"]
+      "required": [
+        "success"
+      ]
     }
+  },
+  "previousExport": {
+    "path": "contracts/history/pre-connections/client-token-ceilings.json",
+    "sha256": "727cb09a3deef27b24416ef9f52c6fddc5d1af360014b59363b50573df720527"
   }
 }

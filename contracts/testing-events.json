@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "1c1c88f04bac58ba1f006af9d4879fa0648576cb",
+  "commit": "b23680d19accfecf2f0b7166bdfa11e433947362",
   "sourcePath": "apps/api/docs/openapi.json",
   "sourceSha256": "11346736cdb19b4124d34b193a5a563d4f6ad1800d07785b5fb0aae9f0923f43",
   "schemas": {
@@ -36,11 +36,17 @@
                 }
               }
             },
-            "required": ["name", "description", "overrides"]
+            "required": [
+              "name",
+              "description",
+              "overrides"
+            ]
           }
         }
       },
-      "required": ["fixtures"]
+      "required": [
+        "fixtures"
+      ]
     },
     "TriggerTestEventRequest": {
       "type": "object",
@@ -70,7 +76,9 @@
           "description": "message.received only. Send a simulated text message from this other connected Test connection in the same project instead of generating an event."
         }
       },
-      "required": ["event"],
+      "required": [
+        "event"
+      ],
       "additionalProperties": false
     },
     "TriggerTestEventResponse": {
@@ -95,7 +103,10 @@
         },
         "delivery": {
           "type": "string",
-          "enum": ["generated", "simulated"]
+          "enum": [
+            "generated",
+            "simulated"
+          ]
         },
         "eventId": {
           "type": "string",
@@ -104,10 +115,19 @@
         },
         "source": {
           "type": "string",
-          "enum": ["test", "runtime"]
+          "enum": [
+            "test",
+            "runtime"
+          ]
         }
       },
-      "required": ["event", "connection", "delivery", "eventId", "source"]
+      "required": [
+        "event",
+        "connection",
+        "delivery",
+        "eventId",
+        "source"
+      ]
     },
     "TestEventOverrides": {
       "type": "object",
@@ -128,7 +148,13 @@
         },
         "mediaType": {
           "type": "string",
-          "enum": ["image", "video", "audio", "document", "sticker"]
+          "enum": [
+            "image",
+            "video",
+            "audio",
+            "document",
+            "sticker"
+          ]
         },
         "caption": {
           "type": "string",
@@ -137,7 +163,12 @@
         },
         "ackStatus": {
           "type": "string",
-          "enum": ["delivered", "read", "played", "error"]
+          "enum": [
+            "delivered",
+            "read",
+            "played",
+            "error"
+          ]
         },
         "messageId": {
           "type": "string",
@@ -176,7 +207,11 @@
         },
         "status": {
           "type": "string",
-          "enum": ["CONNECTING", "CONNECTED", "DISCONNECTED"]
+          "enum": [
+            "CONNECTING",
+            "CONNECTED",
+            "DISCONNECTED"
+          ]
         },
         "statusReason": {
           "type": "string",
@@ -197,7 +232,10 @@
         },
         "templateStatus": {
           "type": "string",
-          "enum": ["APPROVED", "REJECTED"]
+          "enum": [
+            "APPROVED",
+            "REJECTED"
+          ]
         },
         "reason": {
           "type": "string",

@@ -11,6 +11,7 @@ type TestingConfiguration struct {
 		Status string `json:"status,omitempty"`
 	} `json:"profile,omitempty"`
 	AccountType      string `json:"accountType,omitempty"`
+	PrimaryPlatform  string `json:"primaryPlatform,omitempty"`
 	ReplyBehavior    string `json:"replyBehavior,omitempty"`
 	FailureScenario  string `json:"failureScenario,omitempty"`
 	HistoryFixtureID string `json:"historyFixtureId,omitempty"`
@@ -42,7 +43,6 @@ type TestEventOverrides struct {
 	Reason            string `json:"reason,omitempty"`
 }
 type TriggerTestEventRequest struct {
-	Connection     string              `json:"connection"`
 	Event          string              `json:"event"`
 	Overrides      *TestEventOverrides `json:"overrides,omitempty"`
 	FromConnection string              `json:"fromConnection,omitempty"`
@@ -94,17 +94,17 @@ func (r *Testing) CreateHistoryFixture(ctx context.Context, project string, mess
 	}
 	return request[struct {
 		FixtureID string `json:"fixtureId"`
-	}](ctx, r.t, "POST", "/messaging/testing/"+escaped(project)+"/history-fixtures", nil, struct {
+	}](ctx, r.t, "POST", "/messaging/projects/"+escaped(project)+"/test-history-fixtures", nil, struct {
 		Messages []TestingHistoryMessage `json:"messages"`
 	}{messages}, options(o))
 }
-func (r *Testing) TriggerEvent(ctx context.Context, project string, b TriggerTestEventRequest, o ...RequestOptions) (Response[TriggerTestEventResult], error) {
+func (r *Testing) TriggerEvent(ctx context.Context, connection string, b TriggerTestEventRequest, o ...RequestOptions) (Response[TriggerTestEventResult], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[TriggerTestEventResult]{}, err
 	}
-	return request[TriggerTestEventResult](ctx, r.t, "POST", "/messaging/testing/"+escaped(project)+"/events", nil, b, options(o))
+	return request[TriggerTestEventResult](ctx, r.t, "POST", "/messaging/"+escaped(connection)+"/test-events", nil, b, options(o))
 }
-func (r *Testing) ListEventFixtures(ctx context.Context, project string, o ...RequestOptions) (Response[struct {
+func (r *Testing) ListEventFixtures(ctx context.Context, o ...RequestOptions) (Response[struct {
 	Fixtures []TestEventFixtureInfo `json:"fixtures"`
 }], error) {
 	if err := serverOnly(r.t); err != nil {
@@ -114,31 +114,31 @@ func (r *Testing) ListEventFixtures(ctx context.Context, project string, o ...Re
 	}
 	return request[struct {
 		Fixtures []TestEventFixtureInfo `json:"fixtures"`
-	}](ctx, r.t, "GET", "/messaging/testing/"+escaped(project)+"/events/fixtures", nil, nil, options(o))
+	}](ctx, r.t, "GET", "/messaging/test-events/fixtures", nil, nil, options(o))
 }
-func phonePath(project, connection string) string {
-	return "/messaging/testing/" + escaped(project) + "/connections/" + escaped(connection) + "/phone"
+func phonePath(connection string) string {
+	return "/messaging/" + escaped(connection) + "/phone"
 }
-func (r *Testing) GetPhone(ctx context.Context, project, connection string, o ...RequestOptions) (Response[TestingPhone], error) {
+func (r *Testing) GetPhone(ctx context.Context, connection string, o ...RequestOptions) (Response[TestingPhone], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[TestingPhone]{}, err
 	}
-	return endpointBare[TestingPhone](ctx, r.t, "GET", phonePath(project, connection), nil, nil, options(o), 200)
+	return endpointBare[TestingPhone](ctx, r.t, "GET", phonePath(connection), nil, nil, options(o), 200)
 }
-func (r *Testing) SendPhoneMessage(ctx context.Context, project, connection string, b SendTestingPhoneMessageRequest, o ...RequestOptions) (Response[SendTestingPhoneMessageResult], error) {
+func (r *Testing) SendPhoneMessage(ctx context.Context, connection string, b SendTestingPhoneMessageRequest, o ...RequestOptions) (Response[SendTestingPhoneMessageResult], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[SendTestingPhoneMessageResult]{}, err
 	}
-	return endpointBare[SendTestingPhoneMessageResult](ctx, r.t, "POST", phonePath(project, connection)+"/messages", nil, b, appendOnce(options(o)), 202)
+	return endpointBare[SendTestingPhoneMessageResult](ctx, r.t, "POST", phonePath(connection)+"/messages", nil, b, appendOnce(options(o)), 202)
 }
-func (r *Testing) UnlinkPhoneDevice(ctx context.Context, project, connection string, id int, o ...RequestOptions) (Response[UnlinkTestingPhoneDeviceResult], error) {
+func (r *Testing) UnlinkPhoneDevice(ctx context.Context, connection string, id int, o ...RequestOptions) (Response[UnlinkTestingPhoneDeviceResult], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[UnlinkTestingPhoneDeviceResult]{}, err
 	}
 	if id < 1 || id > 99 {
 		return Response[UnlinkTestingPhoneDeviceResult]{}, validation("deviceId must be between 1 and 99.")
 	}
-	return endpointBare[UnlinkTestingPhoneDeviceResult](ctx, r.t, "POST", phonePath(project, connection)+"/devices/"+strconv.Itoa(id)+"/unlink", nil, nil, options(o), 200)
+	return endpointBare[UnlinkTestingPhoneDeviceResult](ctx, r.t, "POST", phonePath(connection)+"/devices/"+strconv.Itoa(id)+"/unlink", nil, nil, options(o), 200)
 }
 
 type EmbeddedSignupResult struct {

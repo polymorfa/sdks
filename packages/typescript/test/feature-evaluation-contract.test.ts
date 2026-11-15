@@ -208,7 +208,7 @@ describe("feature evaluation contract supplement", () => {
     ).toEqual([{ BearerAuth: [] }]);
     for (const path of Object.keys(platform.paths))
       expect(operation(platform, path).security, path).toEqual([
-        { ConsoleConnection: [] },
+        { ConsoleSession: [] },
       ]);
   });
 

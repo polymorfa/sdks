@@ -764,7 +764,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
     }
   });
 
-  it("accounts for exactly the thirty pinned source operations without advancing the baseline", () => {
+  it("binds the thirty campaign and custody operations to the Connection source", () => {
     const contract = JSON.parse(
       readFileSync(
         new URL(
@@ -786,9 +786,9 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         }
       >;
     };
-    expect(contract.commit).toBe("f97ad78b172e80788c33bdc0fcf28f75db9283ec");
+    expect(contract.commit).toBe("b23680d19accfecf2f0b7166bdfa11e433947362");
     expect(contract.published).toBe(false);
-    expect(contract.apiVersion).toBe("2026-10-14");
+    expect(contract.apiVersion).toBe("2026-09-22");
     const operations = Object.values(contract.sources).flatMap((source) =>
       Object.values(source.paths).flatMap((methods) =>
         Object.values(methods).map((operation) => operation.operationId),
@@ -804,7 +804,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         "utf8",
       ),
     ) as { commit: string };
-    expect(baseline.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
+    expect(baseline.commit).toBe("b23680d19accfecf2f0b7166bdfa11e433947362");
   });
 
   it("preserves every send variant and accepted whitespace labels without rewriting the graph", async () => {

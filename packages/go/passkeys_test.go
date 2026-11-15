@@ -14,7 +14,7 @@ import (
 )
 
 func TestPasskeyFiveWire(t *testing.T) {
-	data, err := os.ReadFile("../../contracts/fixtures/passkeys.candidate.json")
+	data, err := os.ReadFile("../../contracts/fixtures/connections/passkeys.candidate.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestPasskeyFiveWire(t *testing.T) {
 }
 
 func TestPasskeyBoundaries(t *testing.T) {
-	data, _ := os.ReadFile("../../contracts/fixtures/passkeys.candidate.json")
+	data, _ := os.ReadFile("../../contracts/fixtures/connections/passkeys.candidate.json")
 	var f struct {
 		Issue     IssuePasskeyChallengeRequest
 		Assertion SubmitPasskeyAssertionRequest

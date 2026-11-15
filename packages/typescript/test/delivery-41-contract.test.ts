@@ -361,7 +361,7 @@ it("retains old and new configuration reads, requested/effective divergence and 
     };
     return {
       body: JSON.stringify(
-        request.path.includes("session-configuration")
+        request.path.includes("connection-configuration")
           ? { data: configuration }
           : { success: true, data: connection },
       ),

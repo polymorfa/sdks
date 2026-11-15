@@ -123,7 +123,7 @@ export interface WhatsAppDeviceAnalytics {
     messages: number;
     share: number | null;
   }[];
-  /** Inventory belongs to one number. The combined summary has null inventory. */
+  /** Inventory belongs to one Connection. The combined summary has null inventory. */
   inventory: null | {
     listObserved: boolean;
     listCurrent: boolean;
@@ -271,7 +271,7 @@ export interface WhatsAppAnalytics {
         connectedConnections: number;
       })
     | null;
-  numbers: (WhatsAppMetrics & {
+  connections: (WhatsAppMetrics & {
     connectionId: string;
     projectId: string;
     projectName: string;

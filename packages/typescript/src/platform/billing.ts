@@ -175,7 +175,7 @@ export class BillingResource {
       const resources = input.resources.map((row) => {
         if (row.scope !== "customer" && row.scope !== "connection")
           throw new PolymorfaValidationError(
-            "Resource scope must be customer or number.",
+            "Resource scope must be customer or connection.",
           );
         return { scope: row.scope, resourceId: billingId(row.resourceId) };
       });

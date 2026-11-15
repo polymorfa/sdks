@@ -1,7 +1,7 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "1c1c88f04bac58ba1f006af9d4879fa0648576cb",
-  "branch": "rajeh/connection-rename-backend-completion",
+  "commit": "b23680d19accfecf2f0b7166bdfa11e433947362",
+  "branch": "rajeh/connection-rename-backend",
   "published": false,
   "note": "Breaking Connection source candidate at held API date 2026-09-22. Exact committed producer snapshots; no source merge, deployed API acceptance or package publication is inferred. Nightly/stable release gates remain closed until matching staging/production acceptance.",
   "contracts": {
@@ -13,7 +13,7 @@
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "e48b8a83648b2c010f26c522de8c7a9f9e772df5b6b39ed0e43a64ed296d289b"
+      "sha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35"
     }
   }
 }

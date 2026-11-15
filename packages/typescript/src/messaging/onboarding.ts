@@ -67,7 +67,7 @@ export class TestingResource {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "POST",
-      path: `/messaging/testing/${encodeURIComponent(projectId)}/history-fixtures`,
+      path: `/messaging/projects/${encodeURIComponent(projectId)}/test-history-fixtures`,
       body: input,
       ...options,
     });
@@ -83,14 +83,14 @@ export class TestingResource {
    * network and 5xx failures.
    */
   triggerEvent(
-    projectId: string,
+    connection: string,
     input: TriggerTestEventRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TriggerTestEventResponse>> {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "POST",
-      path: `/messaging/testing/${encodeURIComponent(projectId)}/events`,
+      path: `/messaging/${encodeURIComponent(connection)}/test-events`,
       body: input,
       ...options,
     });
@@ -98,13 +98,12 @@ export class TestingResource {
 
   /** List test-event fixtures and the overrides each accepts. */
   listEventFixtures(
-    projectId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<{ fixtures: TestEventFixtureInfo[] }>> {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "GET",
-      path: `/messaging/testing/${encodeURIComponent(projectId)}/events/fixtures`,
+      path: `/messaging/test-events/fixtures`,
       ...options,
     });
   }
@@ -114,7 +113,6 @@ export class TestingResource {
    * companions are linked to it. Real numbers are refused with a 400 error.
    */
   getPhone(
-    projectId: string,
     connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingPhone>> {
@@ -123,7 +121,7 @@ export class TestingResource {
       this.transport,
       {
         method: "GET",
-        path: phonePath(projectId, connection),
+        path: phonePath(connection),
         ...existingOptions(options),
       },
       "phone",
@@ -132,13 +130,12 @@ export class TestingResource {
   }
 
   /**
-   * Send a text message from a Test number's phone to another connected Test
-   * number in the same project. The message travels the simulated WhatsApp
+   * Send a text message from a Test Connection's phone to another connected Test
+   * Connection in the same project. The message travels the simulated WhatsApp
    * network, so its companions receive the sent copy and the recipient gets a
    * normal inbound message. Counts toward the Testing rate limit.
    */
   sendPhoneMessage(
-    projectId: string,
     connection: string,
     input: SendTestingPhoneMessageRequest,
     options: RequestOptions = {},
@@ -148,7 +145,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(projectId, connection)}/messages`,
+        path: `${phonePath(connection)}/messages`,
         body: input,
         ...existingOptions(options),
       },
@@ -158,12 +155,11 @@ export class TestingResource {
   }
 
   /**
-   * Unlink a companion from a Test number's phone, as a person would from
+   * Unlink a companion from a Test Connection's phone, as a person would from
    * Linked devices. The companion is logged out. The phone itself (device 0)
    * cannot be unlinked.
    */
   unlinkPhoneDevice(
-    projectId: string,
     connection: string,
     deviceId: number,
     options: RequestOptions = {},
@@ -177,7 +173,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(projectId, connection)}/devices/${deviceId}/unlink`,
+        path: `${phonePath(connection)}/devices/${deviceId}/unlink`,
         ...existingOptions(options),
       },
       "unlink",
@@ -185,8 +181,8 @@ export class TestingResource {
     );
   }
 }
-function phonePath(projectId: string, connection: string): string {
-  return `/messaging/testing/${encodeURIComponent(projectId)}/connections/${encodeURIComponent(connection)}/phone`;
+function phonePath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/phone`;
 }
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")

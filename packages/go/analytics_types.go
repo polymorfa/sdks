@@ -298,7 +298,7 @@ type WhatsAppAnalytics struct {
 	Period        AnalyticsPeriod               `json:"period"`
 	RequestVitals AnalyticsRequestVitals        `json:"requestVitals"`
 	Summary       *WhatsAppAnalyticsSummary     `json:"summary"`
-	Connections   []WhatsAppAnalyticsConnection `json:"numbers"`
+	Connections   []WhatsAppAnalyticsConnection `json:"connections"`
 	Series        []WhatsAppSeriesPoint         `json:"series"`
 }
 type AnalyticsSettings struct {

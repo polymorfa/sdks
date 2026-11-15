@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"reflect"
 	"strings"
 	"testing"
@@ -62,7 +63,7 @@ var operationFixtures = []operationFixture{
 		v := false
 		return wireData(m.QuickLinks().Create(ctx, CreateQuickLinkRequest{ProjectID: "p", Configuration: &QuickLinkConfiguration{AllowPhoneChange: &v}}))
 	}},
-	{"MessagingClient.QuickLinks.Availability", "GET", "/messaging/quicklinks/availability", "projectId=p&connection=s", "", `{"success":true,"data":{"allowed":true,"addMethod":"official_api","methods":[],"resumeQuickLinkId":null}}`, "data.allowed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.QuickLinks.Availability", "GET", "/messaging/quicklinks/availability", "connection=s&projectId=p", "", `{"success":true,"data":{"allowed":true,"addMethod":"official_api","methods":[],"resumeQuickLinkId":null}}`, "data.allowed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.QuickLinks().Availability(ctx, "p", "s"))
 	}},
 	{"MessagingClient.QuickLinks.Retrieve", "GET", "/messaging/quicklinks/x", "", "", `{"success":true,"data":{"id":"x","status":"connected","connection":"s"}}`, "data.status", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
@@ -141,7 +142,11 @@ func TestOperationWireFixtures(t *testing.T) {
 			count := 0
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				count++
-				if r.Method != f.Method || r.URL.EscapedPath() != f.Path || r.URL.RawQuery != f.Query {
+				expectedQuery, parseError := url.ParseQuery(f.Query)
+				if parseError != nil {
+					t.Fatal("invalid fixture query", parseError)
+				}
+				if r.Method != f.Method || r.URL.EscapedPath() != f.Path || r.URL.RawQuery != expectedQuery.Encode() {
 					t.Errorf("request %s %s?%s", r.Method, r.URL.EscapedPath(), r.URL.RawQuery)
 				}
 				if r.Header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value || r.Header.Get("Polymorfa-Version") != APIVersion {

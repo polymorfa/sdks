@@ -50,16 +50,13 @@ it("triggers a typed test event with overrides", async () => {
   };
   const { client: messaging, fetcher } = client(json(accepted, 202));
   const input: TriggerTestEventRequest = {
-    connection: "test-a",
     event: "message.received",
     overrides: { text: "hi", from: "+15550100001" },
   };
-  const result = await messaging.testing.triggerEvent("project a", input);
+  const result = await messaging.testing.triggerEvent("test-a", input);
   expect(result.data).toEqual(accepted);
   const [url, init] = fetcher.mock.calls[0]!;
-  expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project%20a/events",
-  );
+  expect(String(url)).toBe("https://api.example/messaging/test-a/test-events");
   expect(init?.method).toBe("POST");
   expect(JSON.parse(String(init?.body))).toEqual(input);
 });
@@ -71,12 +68,12 @@ it("lists fixtures", async () => {
     overrides: [],
   }));
   const { client: messaging, fetcher } = client(json({ fixtures }));
-  const result = await messaging.testing.listEventFixtures("project-a");
+  const result = await messaging.testing.listEventFixtures();
   expect(result.data.fixtures.map((f) => f.name)).toEqual([
     ...TEST_EVENT_FIXTURES,
   ]);
   expect(String(fetcher.mock.calls[0]![0])).toBe(
-    "https://api.example/messaging/testing/project-a/events/fixtures",
+    "https://api.example/messaging/test-events/fixtures",
   );
   expect(fetcher.mock.calls[0]![1]?.method).toBe("GET");
 });
@@ -121,12 +118,11 @@ it.each([true, false])(
     };
     const { client: messaging, fetcher } = client(json(accepted, 202));
     const input: TriggerTestEventRequest = {
-      connection: "test-a",
       event: "connection.restriction_updated",
       overrides: { restrictionActive },
     };
     expect(
-      (await messaging.testing.triggerEvent("project-a", input)).data,
+      (await messaging.testing.triggerEvent("test-a", input)).data,
     ).toEqual(accepted);
     expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
   },
@@ -137,11 +133,10 @@ it("sends a call restriction outcome supported by the API fixture", async () => 
     json({ event: "call.ended" }, 202),
   );
   const input: TriggerTestEventRequest = {
-    connection: "test-a",
     event: "call.ended",
     overrides: { callEndReason: "call_restricted" },
   };
-  await messaging.testing.triggerEvent("project-a", input);
+  await messaging.testing.triggerEvent("test-a", input);
   expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
 });
 
@@ -162,8 +157,7 @@ it("surfaces a real-connection refusal as an invalid request", async () => {
     ),
   );
   await expect(
-    messaging.testing.triggerEvent("project-a", {
-      connection: "real",
+    messaging.testing.triggerEvent("real", {
       event: "call.received",
     }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
@@ -177,12 +171,11 @@ it("rejects client tokens before transport", () => {
     fetch: fetcher,
   });
   expect(() =>
-    messaging.testing.triggerEvent("project-a", {
-      connection: "test-a",
+    messaging.testing.triggerEvent("test-a", {
       event: "connection.status",
     }),
   ).toThrow("requires a team key or project token");
-  expect(() => messaging.testing.listEventFixtures("project-a")).toThrow(
+  expect(() => messaging.testing.listEventFixtures()).toThrow(
     "requires a team key or project token",
   );
   expect(fetcher).not.toHaveBeenCalled();
@@ -203,8 +196,8 @@ it("surfaces the per-project rate limit", async () => {
   );
   await expect(
     messaging.testing.triggerEvent(
-      "project-a",
-      { connection: "test-a", event: "call.missed" },
+      "test-a",
+      { event: "call.missed" },
       { maxNetworkRetries: 0 },
     ),
   ).rejects.toBeInstanceOf(PolymorfaRateLimitError);
@@ -231,8 +224,8 @@ it("sends an optional Idempotency-Key and retries safely with it", async () => {
     fetch: fetcher,
   });
   const result = await messaging.testing.triggerEvent(
-    "project-a",
-    { connection: "test-a", event: "message.received" },
+    "test-a",
+    { event: "message.received" },
     { idempotencyKey: "trigger-1", maxNetworkRetries: 1 },
   );
   expect(result.data).toEqual(accepted);
@@ -255,8 +248,7 @@ it("omits Idempotency-Key when none is given", async () => {
       202,
     ),
   );
-  await messaging.testing.triggerEvent("project-a", {
-    connection: "test-a",
+  await messaging.testing.triggerEvent("test-a", {
     event: "connection.status",
   });
   const init = fetcher.mock.calls[0]![1];
@@ -266,12 +258,10 @@ it("omits Idempotency-Key when none is given", async () => {
 it("serializes restriction fixtures and restricted call endings", async () => {
   for (const input of [
     {
-      connection: "test-a",
       event: "connection.restriction_updated",
       overrides: { restrictionActive: true },
     },
     {
-      connection: "test-a",
       event: "call.ended",
       overrides: { callEndReason: "call_restricted" },
     },
@@ -280,7 +270,7 @@ it("serializes restriction fixtures and restricted call endings", async () => {
       json(
         {
           event: input.event,
-          connection: input.connection,
+          connection: "test-a",
           delivery: "generated",
           eventId: null,
           source: "test",
@@ -288,7 +278,7 @@ it("serializes restriction fixtures and restricted call endings", async () => {
         202,
       ),
     );
-    await messaging.testing.triggerEvent("project-a", input);
+    await messaging.testing.triggerEvent("test-a", input);
     expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
   }
 });

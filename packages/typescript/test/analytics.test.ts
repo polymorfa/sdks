@@ -11,7 +11,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
     period: { start: 0, end: 1 },
     requestVitals: { requests: 0, failures: 0, errorRate: null },
     summary: null,
-    numbers: [],
+    connections: [],
     series: [],
     callSeries: [],
   };
@@ -79,7 +79,7 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
   const body = {
     enabled: true,
     summary: { calls, accountActivity },
-    numbers: [{ connectionId: "number", calls }],
+    connections: [{ connectionId: "number", calls }],
     series: [],
     callSeries: [{ connectionId: "number", ts: 1, answered: 1, missed: 1 }],
   };
@@ -95,7 +95,7 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
   const result = (await client.analytics.get()).data;
   expect(result.summary?.accountActivity).toEqual(accountActivity);
   expect(result.summary?.calls.followUp).toEqual(calls.followUp);
-  expect(result.numbers[0]?.calls.mediaQuality.averageRttMs).toBeNull();
+  expect(result.connections[0]?.calls.mediaQuality.averageRttMs).toBeNull();
   expect(result.callSeries).toEqual(body.callSeries);
 });
 
@@ -221,7 +221,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
   const body = {
     enabled: true,
     summary: { deviceAnalytics, conversationBreakdown },
-    numbers: [{ deviceAnalytics, conversationBreakdown }],
+    connections: [{ deviceAnalytics, conversationBreakdown }],
   };
   const server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
@@ -235,7 +235,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
   const result = await client.analytics.get({ start: 0, end: 1 });
   expect(result.data).toEqual(body);
   expect(
-    result.data.numbers[0]?.deviceAnalytics.inventory?.devices[0]?.listed,
+    result.data.connections[0]?.deviceAnalytics.inventory?.devices[0]?.listed,
   ).toBeNull();
 });
 
@@ -268,7 +268,7 @@ it("preserves country/count/device receipt activity without changing nullable co
   const body = {
     enabled: true,
     summary: { recipientActivity },
-    numbers: [{ connectionId: "number", recipientActivity }],
+    connections: [{ connectionId: "number", recipientActivity }],
     series: [],
     callSeries: [],
   };
@@ -284,6 +284,6 @@ it("preserves country/count/device receipt activity without changing nullable co
   const data = (await client.analytics.get()).data;
   expect(data.summary?.recipientActivity).toEqual(recipientActivity);
   expect(
-    data.numbers[0]?.recipientActivity?.rows[0]?.averageQuietGapMs,
+    data.connections[0]?.recipientActivity?.rows[0]?.averageQuietGapMs,
   ).toBeNull();
 });

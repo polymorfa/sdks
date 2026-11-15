@@ -12,9 +12,9 @@ import (
 )
 
 func main() {
-	client, err := polymorfa.NewCallsClient(polymorfa.CallsClientConfig{Config: polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: os.Getenv("POLYMORFA_API_KEY")}}, Session: os.Getenv("POLYMORFA_SESSION"), Participant: "go-example"})
+	client, err := polymorfa.NewCallsClient(polymorfa.CallsClientConfig{Config: polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: os.Getenv("POLYMORFA_API_KEY")}}, Connection: os.Getenv("POLYMORFA_CONNECTION"), Participant: "go-example"})
 	if err != nil {
-		log.Fatal("Set a valid API key and session: ", err)
+		log.Fatal("Set a valid API key and Connection: ", err)
 	}
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer cancel()

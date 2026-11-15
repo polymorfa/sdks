@@ -65,7 +65,7 @@ export interface UsageRecord {
   /** The call id for call meters. */
   readonly sourceId: string;
   readonly projectId: string | null;
-  /** The number (connection name) the usage belongs to. */
+  /** The Connection (name) the usage belongs to. */
   readonly connection: string | null;
   readonly occurredAt: string;
   readonly recordedAt: string;
@@ -101,8 +101,8 @@ export interface UsageSummary {
   /** Always `false` while usage is measured but not charged. */
   readonly billingEnabled: boolean;
   readonly meters: readonly UsageMeterTotal[];
-  /** Totals per number, most call time first (at most 100). */
-  readonly numbers: readonly {
+  /** Totals per Connection, most call time first (at most 100). */
+  readonly connections: readonly {
     readonly connection: string;
     readonly projectId: string | null;
     readonly meters: readonly UsageMeterTotal[];
@@ -143,7 +143,7 @@ export interface UsageGate {
   readonly mode: UsageGateMode;
   /** Whether an action checks this gate today. */
   readonly active: boolean;
-  /** `-1` for no limit; `null` when the limit applies per number and no `connection` was given. */
+  /** `-1` for no limit; `null` when the limit applies per Connection and no `connection` was given. */
   readonly limit: number | null;
   readonly used: number | null;
   readonly unit: UsageUnit | "count" | "minute" | null;
@@ -183,7 +183,7 @@ export interface UsageRecordParams extends UsageSummaryParams {
 
 export interface UsageGateParams {
   readonly projectId?: string;
-  /** Include limits that apply per number. */
+  /** Include limits that apply per Connection. */
   readonly connection?: string;
 }
 
@@ -198,7 +198,7 @@ export class UsageResource {
     private readonly projectId: string | null,
   ) {}
 
-  /** `GET /platform/usage`: totals for one calendar month, by meter and by number. */
+  /** `GET /platform/usage`: totals for one calendar month, by meter and by Connection. */
   async summary(
     params: UsageSummaryParams = {},
     options: RequestOptions = {},

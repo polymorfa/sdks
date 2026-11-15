@@ -5,7 +5,7 @@ import { TEAM_API_KEY } from "./support/credentials.js";
 const f = JSON.parse(
   readFileSync(
     new URL(
-      "../../../contracts/fixtures/passkeys.candidate.json",
+      "../../../contracts/fixtures/connections/passkeys.candidate.json",
       import.meta.url,
     ),
     "utf8",

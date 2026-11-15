@@ -39,11 +39,11 @@ it("reads a Test number's phone", async () => {
     devices: [{ deviceId: 33 }, { deviceId: 74 }],
   };
   const { client: messaging, fetcher } = client(json(phone));
-  const result = await messaging.testing.getPhone("project-a", "test a");
+  const result = await messaging.testing.getPhone("test a");
   expect(result.data).toEqual(phone);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project-a/connections/test%20a/phone",
+    "https://api.example/messaging/test%20a/phone",
   );
   expect(init?.method).toBe("GET");
 });
@@ -53,14 +53,13 @@ it("sends a message from the phone", async () => {
   const { client: messaging, fetcher } = client(json(sent, 202));
   const input = { to: "+15550100002", text: "hello" };
   const result = await messaging.testing.sendPhoneMessage(
-    "project-a",
     "test-a",
     input,
   );
   expect(result.data).toEqual(sent);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project-a/connections/test-a/phone/messages",
+    "https://api.example/messaging/test-a/phone/messages",
   );
   expect(init?.method).toBe("POST");
   expect(JSON.parse(String(init?.body))).toEqual(input);
@@ -70,14 +69,13 @@ it("unlinks a companion", async () => {
   const unlinked = { connection: "test-a", deviceId: 74, unlinked: true };
   const { client: messaging, fetcher } = client(json(unlinked));
   const result = await messaging.testing.unlinkPhoneDevice(
-    "project-a",
     "test-a",
     74,
   );
   expect(result.data).toEqual(unlinked);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project-a/connections/test-a/phone/devices/74/unlink",
+    "https://api.example/messaging/test-a/phone/devices/74/unlink",
   );
   expect(init?.method).toBe("POST");
 });
@@ -85,14 +83,14 @@ it("unlinks a companion", async () => {
 it.each([0, 100, 1.5])("refuses device ID %s before sending", (deviceId) => {
   const { client: messaging, fetcher } = client(json({}));
   expect(() =>
-    messaging.testing.unlinkPhoneDevice("project-a", "test-a", deviceId),
+    messaging.testing.unlinkPhoneDevice("test-a", deviceId),
   ).toThrow(PolymorfaValidationError);
   expect(fetcher).not.toHaveBeenCalled();
 });
 
 it("refuses client tokens", () => {
   const { client: messaging, fetcher } = client(json({}), "clientToken");
-  expect(() => messaging.testing.getPhone("project-a", "test-a")).toThrow(
+  expect(() => messaging.testing.getPhone("test-a")).toThrow(
     PolymorfaConfigurationError,
   );
   expect(fetcher).not.toHaveBeenCalled();
@@ -110,7 +108,7 @@ it("surfaces an offline phone as a validation error", async () => {
     ),
   );
   await expect(
-    messaging.testing.sendPhoneMessage("project-a", "test-a", {
+    messaging.testing.sendPhoneMessage("test-a", {
       to: "+15550100002",
       text: "hi",
     }),
@@ -134,15 +132,15 @@ it("matches the pinned Testing phone contract", () => {
   const route = (operationId: string) => contract.operations[operationId]!;
   expect(route("getTestingPhone")).toMatchObject({
     method: "GET",
-    path: "/messaging/testing/{projectId}/connections/{connection}/phone",
+    path: "/messaging/{connection}/phone",
   });
   expect(route("sendTestingPhoneMessage")).toMatchObject({
     method: "POST",
-    path: "/messaging/testing/{projectId}/connections/{connection}/phone/messages",
+    path: "/messaging/{connection}/phone/messages",
   });
   expect(route("unlinkTestingPhoneDevice")).toMatchObject({
     method: "POST",
-    path: "/messaging/testing/{projectId}/connections/{connection}/phone/devices/{deviceId}/unlink",
+    path: "/messaging/{connection}/phone/devices/{deviceId}/unlink",
   });
   const fields = (name: string) =>
     Object.keys(contract.schemas[name]!.properties).sort();
@@ -154,10 +152,10 @@ it("matches the pinned Testing phone contract", () => {
   };
   expect(fields("TestingPhoneState")).toEqual(Object.keys(phone).sort());
   expect(fields("TestingPhoneMessageRequest")).toEqual(["text", "to"]);
-  expect(fields("TestingPhoneMessage")).toEqual(["messageId", "connection", "to"]);
+  expect(fields("TestingPhoneMessage")).toEqual(["connection", "messageId", "to"]);
   expect(fields("TestingPhoneUnlink")).toEqual([
-    "deviceId",
     "connection",
+    "deviceId",
     "unlinked",
   ]);
 });

@@ -1,18 +1,20 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f97ad78b172e80788c33bdc0fcf28f75db9283ec",
+  "commit": "b23680d19accfecf2f0b7166bdfa11e433947362",
   "published": false,
-  "apiVersion": "2026-10-14",
-  "note": "Thirty campaign, audience profile, STOP confirmation and custody-default operations. TypeScript adoption is in source; five native ports, full 625-operation reconciliation, deployed acceptance and publication remain required. Global snapshots and their coverage ledger remain unchanged.",
+  "apiVersion": "2026-09-22",
+  "note": "Connection source projection at the exact candidate revision in contracts/source.json. This is not deployment or package acceptance.",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "009bf72f1c0bb65c6f2d168e804fdd50f60ab1394a5a06632391b87986a5fcb4",
+      "sourceSha256": "11346736cdb19b4124d34b193a5a563d4f6ad1800d07785b5fb0aae9f0923f43",
       "paths": {
         "/messaging/projects/{projectSlug}/campaigns/{id}/links": {
           "get": {
             "operationId": "getProjectCampaignLinks",
-            "tags": ["Campaigns"],
+            "tags": [
+              "Campaigns"
+            ],
             "summary": "Get tracked link opens",
             "description": "**Required scope:** `campaigns:read`\n\nBeta. Opens of each tracked link, in the campaign's link order. An open is a request to the short link: a person, or an app or security scanner previewing the link. It is not proof of a click. Requires the campaign link tracking beta (`403 feature_unavailable` otherwise).",
             "security": [
@@ -62,7 +64,7 @@
                 }
               },
               "400": {
-                "description": "Bad request — request body or params failed validation",
+                "description": "Bad request \u2014 request body or params failed validation",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -221,24 +223,26 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:read</Badge>"
             }
           }
         },
         "/messaging/projects/{projectSlug}/campaigns/{id}/test-send": {
           "post": {
             "operationId": "testSendCampaign",
-            "tags": ["Campaigns"],
+            "tags": [
+              "Campaigns"
+            ],
             "summary": "Send a test of a draft campaign",
-            "description": "**Required scopes (all):** `campaigns:manage` · `campaigns:read`\n\nRequires campaigns:manage and campaigns:read because the test can use stored recipient samples. Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending, and BanSafe checks as a launched campaign. The seed recipient must be a number connected to your team. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient.",
+            "description": "**Required scopes (all):** `campaigns:manage` \u00b7 `campaigns:read`\n\nRequires campaigns:manage and campaigns:read because the test can use stored recipient samples. Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending, and BanSafe checks as a launched campaign. The seed recipient must be the phone of a Connection connected to your team. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient.",
             "security": [
               {
                 "BearerAuth": []
               }
             ],
-            "x-required-scopes": ["campaigns:manage", "campaigns:read"],
+            "x-required-scopes": [
+              "campaigns:manage",
+              "campaigns:read"
+            ],
             "x-required-scope-mode": "all",
             "parameters": [
               {
@@ -261,7 +265,7 @@
                 "name": "Idempotency-Key",
                 "in": "header",
                 "required": false,
-                "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+                "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
                 "schema": {
                   "type": "string",
                   "minLength": 1,
@@ -290,6 +294,15 @@
                   }
                 },
                 "headers": {
+                  "Idempotent-Replayed": {
+                    "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
+                    "schema": {
+                      "type": "string",
+                      "enum": [
+                        "true"
+                      ]
+                    }
+                  },
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
                   },
@@ -302,7 +315,7 @@
                 }
               },
               "400": {
-                "description": "Bad request — request body or params failed validation",
+                "description": "Bad request \u2014 request body or params failed validation",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -366,7 +379,7 @@
                 }
               },
               "402": {
-                "description": "`campaigns_not_entitled`: the sending number's plan does not include Campaigns.",
+                "description": "`campaigns_not_entitled`: the sending connection's plan does not include Campaigns.",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -374,9 +387,9 @@
                     },
                     "example": {
                       "error": {
-                        "type": "permission_error",
+                        "type": "billing_error",
                         "code": "campaigns_not_entitled",
-                        "message": "This number’s plan does not include Campaigns.",
+                        "message": "This connection\u2019s plan does not include Campaigns.",
                         "param": null,
                         "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                       },
@@ -462,7 +475,7 @@
                 }
               },
               "409": {
-                "description": "`state_conflict`: The campaign is not a draft or has A/B or weighted content alternatives, the sending number is a Hybrid Link number, or the seed recipient opted out. `bansafe_cold_held`: the seed recipient has never written to the sending number and the campaign holds first messages. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+                "description": "`state_conflict`: The campaign is not a draft or has A/B or weighted content alternatives, the sending connection is a Hybrid Link connection, or the seed recipient opted out. `bansafe_cold_held`: the seed recipient has never written to the sending connection and the campaign holds first messages. The Idempotency-Key belongs to a request that is still running (`idempotency_in_progress`, with Retry-After) or whose outcome was not recorded (`idempotency_outcome_unknown`)",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -483,17 +496,16 @@
                 },
                 "headers": {
                   "Retry-After": {
-                    "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                    "description": "Seconds to wait before checking again with the same key. Waiting does not release the execution fence or guarantee that replay data becomes available. Same-key retries are protected only within the one-hour receipt window.",
                     "schema": {
                       "type": "integer",
                       "minimum": 0
                     }
                   },
-                  "Idempotent-Replayed": {
-                    "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                  "Link": {
+                    "description": "Link to the documentation for this Idempotency-Key error (`rel=\"describedby\"`).",
                     "schema": {
-                      "type": "string",
-                      "enum": ["true"]
+                      "type": "string"
                     }
                   },
                   "X-RateLimit-Limit": {
@@ -508,7 +520,7 @@
                 }
               },
               "422": {
-                "description": "`campaign_variables_missing`: the selected sample and explicit values cannot fill a variable in the content.",
+                "description": "`campaign_variables_missing`: the selected sample and explicit values cannot fill a variable in the content. The Idempotency-Key was already used for a different request (`idempotency_conflict`)",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -528,6 +540,12 @@
                   }
                 },
                 "headers": {
+                  "Link": {
+                    "description": "Link to the documentation for this Idempotency-Key error (`rel=\"describedby\"`).",
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
                   },
@@ -540,7 +558,7 @@
                 }
               },
               "429": {
-                "description": "The team or seed recipient reached its test-send limit (`rate_limit_exceeded`), or BanSafe is pacing the sending number. Follow `Retry-After`.",
+                "description": "The team or seed recipient reached its test-send limit (`rate_limit_exceeded`), or BanSafe is pacing the sending connection. Follow `Retry-After`.",
                 "headers": {
                   "Retry-After": {
                     "description": "Seconds to wait before retrying.",
@@ -643,7 +661,7 @@
                 }
               },
               "503": {
-                "description": "The test was not sent: the sending number is not connected (`session_not_ready`), test sends or the send path are unavailable (`service_unavailable`, `command_dispatch_failed`), or the sending number's allowance could not be checked (`bansafe_accounting_unavailable`). Retry later.",
+                "description": "The test was not sent: the sending connection is not connected (`connection_not_ready`), test sends or the send path are unavailable (`service_unavailable`, `command_dispatch_failed`), or the sending connection's allowance could not be checked (`bansafe_accounting_unavailable`). Retry later. For `idempotency_replay_unavailable` only: the exact response for this Idempotency-Key is unavailable (with Retry-After). Opaque responses are not retained by default. The write did not run again. Keep the first response and reconcile events or the resource; waiting does not guarantee that replay data becomes available. Do not switch keys to resend",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -663,6 +681,13 @@
                   }
                 },
                 "headers": {
+                  "Retry-After": {
+                    "description": "Seconds to wait before checking again with the same key. Waiting does not release the execution fence or guarantee that replay data becomes available. Same-key retries are protected only within the one-hour receipt window.",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
                   },
@@ -706,16 +731,15 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge> <Badge color=\"yellow\" icon=\"key\">campaigns:read</Badge>"
             }
           }
         },
         "/messaging/projects/{projectSlug}/campaign-reply-flows": {
           "post": {
             "operationId": "createCampaignReplyFlow",
-            "tags": ["Campaigns"],
+            "tags": [
+              "Campaigns"
+            ],
             "summary": "Create a reply flow revision",
             "description": "**Required scope:** `campaigns:manage`\n\nCreates an immutable reply flow revision: the steps a campaign runs when a recipient replies. Each step can send a text, reply buttons, a list, or a Flow form, and branches on the button or list row chosen, an exact keyword, or a Flow form submission. Beta.",
             "security": [
@@ -767,7 +791,7 @@
                 }
               },
               "400": {
-                "description": "Bad request — request body or params failed validation",
+                "description": "Bad request \u2014 request body or params failed validation",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -958,16 +982,15 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
             }
           }
         },
         "/messaging/projects/{projectSlug}/campaign-reply-flows/{id}": {
           "get": {
             "operationId": "getCampaignReplyFlow",
-            "tags": ["Campaigns"],
+            "tags": [
+              "Campaigns"
+            ],
             "summary": "Get a reply flow revision",
             "security": [
               {
@@ -1017,7 +1040,7 @@
                 }
               },
               "400": {
-                "description": "Bad request — request body or params failed validation",
+                "description": "Bad request \u2014 request body or params failed validation",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -1177,16 +1200,15 @@
                 }
               }
             },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:read</Badge>"
-            },
             "description": "**Required scope:** `campaigns:read`"
           }
         },
         "/messaging/projects/{projectSlug}/campaigns/{id}/reply-flow": {
           "put": {
             "operationId": "setCampaignReplyFlow",
-            "tags": ["Campaigns"],
+            "tags": [
+              "Campaigns"
+            ],
             "summary": "Set a campaign's reply flow",
             "description": "**Required scope:** `campaigns:manage`\n\nAttaches a reply flow revision to a draft or scheduled campaign, or detaches it with `null`. The flow starts for each recipient once their message is sent.",
             "security": [
@@ -1247,7 +1269,7 @@
                 }
               },
               "400": {
-                "description": "Bad request — request body or params failed validation",
+                "description": "Bad request \u2014 request body or params failed validation",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -1438,16 +1460,15 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
             }
           }
         },
         "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export": {
           "get": {
             "operationId": "exportProjectCampaignRecipients",
-            "tags": ["Campaigns"],
+            "tags": [
+              "Campaigns"
+            ],
             "summary": "Export campaign recipients",
             "description": "**Required scope:** `campaigns:read`\n\nReturns recipients as CSV in queue order. Unfiltered exports page up to 1,000 recipients per request. Each page starts with a header row. When more recipients match, the `Polymorfa-Next-Cursor` response header carries the cursor for the next page; it is absent on the last page. Each page is read when it is requested, so a recipient appears once, with the outcome it had when its page was read. A filtered export is one atomic page of up to 1,000 recipients; larger filtered results return 409, so changing statuses cannot silently omit matches between pages. The export contains outcomes and `failureReason` codes only, never message content or template variables.",
             "security": [
@@ -1498,11 +1519,12 @@
                     "cold_held",
                     "campaign_cancelled",
                     "invalid_recipient",
-                    "session_not_connected",
+                    "connection_not_connected",
                     "ack_timeout",
                     "blocked_by_safety",
                     "send_failed",
                     "missing_variable",
+                    "frequency_cap",
                     "other"
                   ],
                   "description": "Only recipients whose `failureReason` is this code."
@@ -1565,7 +1587,7 @@
                 }
               },
               "400": {
-                "description": "Bad request — request body or params failed validation",
+                "description": "Bad request \u2014 request body or params failed validation",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -1756,9 +1778,6 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:read</Badge>"
             }
           }
         }
@@ -1770,7 +1789,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "data": {
                 "type": "array",
@@ -1779,7 +1800,10 @@
                 }
               }
             },
-            "required": ["success", "data"]
+            "required": [
+              "success",
+              "data"
+            ]
           },
           "CampaignTrackedLinkReport": {
             "type": "object",
@@ -1805,7 +1829,12 @@
                 "description": "Every recorded open, including repeat opens."
               }
             },
-            "required": ["key", "url", "uniqueOpens", "totalOpens"]
+            "required": [
+              "key",
+              "url",
+              "uniqueOpens",
+              "totalOpens"
+            ]
           },
           "PublicError": {
             "type": "object",
@@ -1819,6 +1848,7 @@
                       "invalid_request_error",
                       "authentication_error",
                       "permission_error",
+                      "billing_error",
                       "conflict_error",
                       "rate_limit_error",
                       "api_error",
@@ -1828,12 +1858,16 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "zero_knowledge_session",
+                      "zero_knowledge_connection",
                       "invalid_parameter",
                       "invalid_credential",
                       "entitlement_required",
                       "cloud_template_authority_restricted",
                       "gate_limit_reached",
+                      "billing_credit_required",
+                      "addon_required",
+                      "safe_mode_not_entitled",
+                      "warmup_plan_not_entitled",
                       "method_not_allowed",
                       "permission_denied",
                       "missing_scope",
@@ -1846,17 +1880,21 @@
                       "stream_cursor_expired",
                       "stream_connection_limit_reached",
                       "state_conflict",
+                      "team_deletion_scheduled",
                       "hybrid_routing_paused",
                       "hybrid_choice_required",
                       "hybrid_transition_ineligible",
                       "hybrid_automation_unavailable",
+                      "hybrid_group_linked_devices_unavailable",
                       "hybrid_transport_unavailable",
                       "hybrid_target_reference_unavailable",
                       "send_outcome_unknown",
+                      "terms_acceptance_required",
+                      "terms_activation_blocked",
                       "idempotency_conflict",
                       "idempotency_in_progress",
-                      "idempotency_completed",
                       "idempotency_outcome_unknown",
+                      "idempotency_replay_unavailable",
                       "call_claimed",
                       "call_not_ringing",
                       "connection_limit",
@@ -1871,7 +1909,7 @@
                       "order_status_transition_invalid",
                       "order_cancellation_failed",
                       "call_opt_out_limit",
-                      "number_restricted",
+                      "connection_restricted",
                       "sip_trunk_in_use",
                       "sip_trunk_revision_conflict",
                       "sip_trunk_limit",
@@ -1889,16 +1927,21 @@
                       "upstream_failure",
                       "service_unavailable",
                       "credential_verification_unavailable",
-                      "session_not_ready",
+                      "connection_not_ready",
                       "command_dispatch_failed",
                       "result_unknown",
+                      "parent_bsuid_not_supported",
                       "recipient_not_on_whatsapp",
                       "conversation_window_closed",
                       "template_not_approved",
                       "media_too_large",
                       "whatsapp_rate_limited",
                       "new_chat_limit_reached",
+                      "marketing_disabled_on_cloud_api",
                       "whatsapp_account_restricted",
+                      "whatsapp_authorization_required",
+                      "whatsapp_payment_method_required",
+                      "whatsapp_number_not_registered",
                       "whatsapp_groups_ineligible",
                       "whatsapp_group_creation_paused",
                       "whatsapp_group_limit_reached",
@@ -1937,12 +1980,20 @@
                     "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 },
-                "required": ["type", "code", "message", "param", "request_id"]
+                "required": [
+                  "type",
+                  "code",
+                  "message",
+                  "param",
+                  "request_id"
+                ]
               },
               "data": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null],
+                "enum": [
+                  null
+                ],
                 "description": "Always null for a failed request."
               },
               "docs": {
@@ -1950,21 +2001,25 @@
                 "format": "uri"
               }
             },
-            "required": ["error", "data", "docs"]
+            "required": [
+              "error",
+              "data",
+              "docs"
+            ]
           },
           "CampaignTestSendRequest": {
             "type": "object",
             "properties": {
-              "sessionId": {
+              "connectionId": {
                 "type": "string",
                 "format": "uuid",
-                "description": "The number to send the test from. It must be connected, on a plan that includes Campaigns, and, when the campaign selects numbers, one of them."
+                "description": "The connection to send the test from. It must be connected, on a plan that includes Campaigns, and, when the campaign selects connections, one of them."
               },
               "to": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 32,
-                "description": "The seed recipient in international format. It must be the phone of a number connected to your team.",
+                "description": "The seed recipient in international format. It must be the phone of a connection connected to your team.",
                 "example": "+5511999990000"
               },
               "sampleRecipientId": {
@@ -1992,20 +2047,28 @@
                 "maxProperties": 50
               }
             },
-            "required": ["sessionId", "to"]
+            "required": [
+              "connectionId",
+              "to"
+            ]
           },
           "TestSendCampaignResponse": {
             "type": "object",
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "data": {
                 "$ref": "#/components/schemas/CampaignTestSend"
               }
             },
-            "required": ["success", "data"]
+            "required": [
+              "success",
+              "data"
+            ]
           },
           "CampaignTestSend": {
             "type": "object",
@@ -2021,12 +2084,14 @@
               },
               "status": {
                 "type": "string",
-                "enum": ["sent"]
+                "enum": [
+                  "sent"
+                ]
               },
               "from": {
                 "type": "object",
                 "properties": {
-                  "sessionId": {
+                  "connectionId": {
                     "type": "string",
                     "format": "uuid"
                   },
@@ -2034,8 +2099,11 @@
                     "type": "string"
                   }
                 },
-                "required": ["sessionId", "phone"],
-                "description": "The number the test was sent from."
+                "required": [
+                  "connectionId",
+                  "phone"
+                ],
+                "description": "The connection the test was sent from."
               },
               "to": {
                 "type": "string",
@@ -2092,7 +2160,10 @@
                 "$ref": "#/components/schemas/CampaignReplyFlowDefinition"
               }
             },
-            "required": ["name", "definition"],
+            "required": [
+              "name",
+              "definition"
+            ],
             "additionalProperties": false
           },
           "CampaignReplyFlowDefinition": {
@@ -2111,7 +2182,10 @@
                 "maxItems": 12
               }
             },
-            "required": ["entryNodeId", "nodes"],
+            "required": [
+              "entryNodeId",
+              "nodes"
+            ],
             "additionalProperties": false,
             "description": "An acyclic graph of 2 to 12 steps. The entry step waits for the first reply to the campaign message and sends nothing."
           },
@@ -2138,13 +2212,19 @@
                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
                     }
                   },
-                  "required": ["match", "to"],
+                  "required": [
+                    "match",
+                    "to"
+                  ],
                   "additionalProperties": false
                 },
                 "maxItems": 3
               }
             },
-            "required": ["id", "edges"],
+            "required": [
+              "id",
+              "edges"
+            ],
             "additionalProperties": false
           },
           "CampaignReplyFlowSend": {
@@ -2154,7 +2234,9 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["text"]
+                    "enum": [
+                      "text"
+                    ]
                   },
                   "text": {
                     "type": "string",
@@ -2162,7 +2244,10 @@
                     "maxLength": 4096
                   }
                 },
-                "required": ["kind", "text"],
+                "required": [
+                  "kind",
+                  "text"
+                ],
                 "additionalProperties": false
               },
               {
@@ -2170,7 +2255,9 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["buttons"]
+                    "enum": [
+                      "buttons"
+                    ]
                   },
                   "body": {
                     "type": "string",
@@ -2197,14 +2284,21 @@
                           "maxLength": 20
                         }
                       },
-                      "required": ["id", "text"],
+                      "required": [
+                        "id",
+                        "text"
+                      ],
                       "additionalProperties": false
                     },
                     "minItems": 1,
                     "maxItems": 3
                   }
                 },
-                "required": ["kind", "body", "buttons"],
+                "required": [
+                  "kind",
+                  "body",
+                  "buttons"
+                ],
                 "additionalProperties": false
               },
               {
@@ -2212,7 +2306,9 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["list"]
+                    "enum": [
+                      "list"
+                    ]
                   },
                   "body": {
                     "type": "string",
@@ -2248,14 +2344,22 @@
                           "maxLength": 72
                         }
                       },
-                      "required": ["id", "title"],
+                      "required": [
+                        "id",
+                        "title"
+                      ],
                       "additionalProperties": false
                     },
                     "minItems": 1,
                     "maxItems": 10
                   }
                 },
-                "required": ["kind", "body", "buttonText", "rows"],
+                "required": [
+                  "kind",
+                  "body",
+                  "buttonText",
+                  "rows"
+                ],
                 "additionalProperties": false
               },
               {
@@ -2263,7 +2367,9 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["flow_form"]
+                    "enum": [
+                      "flow_form"
+                    ]
                   },
                   "flowId": {
                     "type": "string",
@@ -2288,9 +2394,15 @@
                     "pattern": "^[A-Za-z0-9_]{1,64}$"
                   }
                 },
-                "required": ["kind", "flowId", "body", "buttonText", "screen"],
+                "required": [
+                  "kind",
+                  "flowId",
+                  "body",
+                  "buttonText",
+                  "screen"
+                ],
                 "additionalProperties": false,
-                "description": "A published WhatsApp Flow form. Official numbers only."
+                "description": "A published WhatsApp Flow form. Official connections only."
               }
             ]
           },
@@ -2301,11 +2413,16 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["choice"]
+                    "enum": [
+                      "choice"
+                    ]
                   },
                   "replyKind": {
                     "type": "string",
-                    "enum": ["button", "list"]
+                    "enum": [
+                      "button",
+                      "list"
+                    ]
                   },
                   "id": {
                     "type": "string",
@@ -2313,7 +2430,11 @@
                     "description": "Choice ID, 1 to 64 letters, digits, `.`, `_`, `:` or `-`, starting with a letter or digit."
                   }
                 },
-                "required": ["kind", "replyKind", "id"],
+                "required": [
+                  "kind",
+                  "replyKind",
+                  "id"
+                ],
                 "additionalProperties": false
               },
               {
@@ -2321,7 +2442,9 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["keyword"]
+                    "enum": [
+                      "keyword"
+                    ]
                   },
                   "value": {
                     "type": "string",
@@ -2329,7 +2452,10 @@
                     "maxLength": 64
                   }
                 },
-                "required": ["kind", "value"],
+                "required": [
+                  "kind",
+                  "value"
+                ],
                 "additionalProperties": false
               },
               {
@@ -2337,10 +2463,14 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": ["flow_submission"]
+                    "enum": [
+                      "flow_submission"
+                    ]
                   }
                 },
-                "required": ["kind"],
+                "required": [
+                  "kind"
+                ],
                 "additionalProperties": false
               }
             ]
@@ -2350,13 +2480,18 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "data": {
                 "$ref": "#/components/schemas/CampaignReplyFlow"
               }
             },
-            "required": ["success", "data"]
+            "required": [
+              "success",
+              "data"
+            ]
           },
           "CampaignReplyFlow": {
             "type": "object",
@@ -2397,13 +2532,18 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "data": {
                 "$ref": "#/components/schemas/CampaignReplyFlow"
               }
             },
-            "required": ["success", "data"]
+            "required": [
+              "success",
+              "data"
+            ]
           },
           "SetCampaignReplyFlowRequest": {
             "type": "object",
@@ -2415,7 +2555,9 @@
                 "description": "Reply flow revision to run after replies, or null to detach it."
               }
             },
-            "required": ["replyFlowId"],
+            "required": [
+              "replyFlowId"
+            ],
             "additionalProperties": false
           },
           "SetCampaignReplyFlowResponse": {
@@ -2423,7 +2565,9 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [true]
+                "enum": [
+                  true
+                ]
               },
               "data": {
                 "type": "object",
@@ -2438,10 +2582,16 @@
                     "format": "uuid"
                   }
                 },
-                "required": ["campaignId", "replyFlowId"]
+                "required": [
+                  "campaignId",
+                  "replyFlowId"
+                ]
               }
             },
-            "required": ["success", "data"]
+            "required": [
+              "success",
+              "data"
+            ]
           }
         },
         "headers": {
@@ -2471,18 +2621,20 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "160fbc57b94ae0be9e5b1e9c183361582fe4b179e1b03c5917959d108990a057",
+      "sourceSha256": "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
       "paths": {
         "/platform/projects/{projectId}/signal-custody": {
           "get": {
             "operationId": "getProjectSignalCustody",
-            "tags": ["signal-custody"],
+            "tags": [
+              "signal-custody"
+            ],
             "summary": "Read Project Signal custody default",
-            "description": "Returns the custody default for future Number reservations. Existing Number custody is immutable. Customer null defaults inherit the Project default.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+            "description": "Returns the custody default for future Connection reservations. Existing Connection custody is immutable. Customer null defaults inherit the Project default.\n\nRequires `connections:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
-            "x-required-scope": "sessions:read",
+            "x-required-scope": "connections:read",
             "security": [
               {
                 "ApiKeyAuth": []
@@ -2536,7 +2688,9 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -2557,13 +2711,15 @@
           },
           "put": {
             "operationId": "updateProjectSignalCustody",
-            "tags": ["signal-custody"],
+            "tags": [
+              "signal-custody"
+            ],
             "summary": "Update Project Signal custody default",
-            "description": "Changes the default for future Number reservations with a revision check. Customer-owned custody requires beta admission and runtime availability. Existing Numbers keep their custody. Dashboard writes require a team owner or admin. Setting a Customer default to null restores Project inheritance.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+            "description": "Changes the default for future Connection reservations with a revision check. Customer-owned custody requires beta admission and runtime availability. Existing Connections keep their custody. Dashboard writes require a team owner or admin. Setting a Customer default to null restores Project inheritance.\n\nRequires `connections:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
-            "x-required-scope": "sessions:manage",
+            "x-required-scope": "connections:manage",
             "security": [
               {
                 "ApiKeyAuth": []
@@ -2627,7 +2783,9 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -2653,13 +2811,15 @@
         "/platform/projects/{projectId}/customers/{customerId}/signal-custody": {
           "get": {
             "operationId": "getCustomerSignalCustody",
-            "tags": ["signal-custody"],
+            "tags": [
+              "signal-custody"
+            ],
             "summary": "Read Customer Signal custody default",
-            "description": "Returns the custody default for future Number reservations. Existing Number custody is immutable. Customer null defaults inherit the Project default.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+            "description": "Returns the custody default for future Connection reservations. Existing Connection custody is immutable. Customer null defaults inherit the Project default.\n\nRequires `connections:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
-            "x-required-scope": "sessions:read",
+            "x-required-scope": "connections:read",
             "security": [
               {
                 "ApiKeyAuth": []
@@ -2722,7 +2882,9 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -2743,13 +2905,15 @@
           },
           "put": {
             "operationId": "updateCustomerSignalCustody",
-            "tags": ["signal-custody"],
+            "tags": [
+              "signal-custody"
+            ],
             "summary": "Update Customer Signal custody default",
-            "description": "Changes the default for future Number reservations with a revision check. Customer-owned custody requires beta admission and runtime availability. Existing Numbers keep their custody. Dashboard writes require a team owner or admin. Setting a Customer default to null restores Project inheritance.\n\nRequires `sessions:manage`. Project tokens only access resources in their own project.",
+            "description": "Changes the default for future Connection reservations with a revision check. Customer-owned custody requires beta admission and runtime availability. Existing Connections keep their custody. Dashboard writes require a team owner or admin. Setting a Customer default to null restores Project inheritance.\n\nRequires `connections:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
-            "x-required-scope": "sessions:manage",
+            "x-required-scope": "connections:manage",
             "security": [
               {
                 "ApiKeyAuth": []
@@ -2822,7 +2986,9 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -2848,13 +3014,18 @@
         "/platform/campaigns/{campaignId}/test-send": {
           "post": {
             "operationId": "testSendPlatformCampaign",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "Send a test of a draft campaign",
-            "description": "Requires campaigns:manage and campaigns:read because the test can use stored recipient samples. Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending and BanSafe checks as a launched campaign. The seed recipient must be a number connected to your team. The sending number must be connected, on a plan that includes Campaigns and, when the campaign selects numbers, one of them. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient. `429` means one of these limits was reached or BanSafe is pacing the sending number; follow `Retry-After`. `409 bansafe_cold_held` means the seed recipient has never written to the sending number and the campaign holds first messages. `409 state_conflict` means the campaign is not a draft or has A/B or weighted content alternatives, the sending number is a Hybrid Link number, or the seed recipient opted out. `504 result_unknown` means the outcome was not received in time and the test may still arrive. Send `projectId` in the body when using a team API key. `422 campaign_variables_missing` means the test's sample values, the mapped recipient value and the fallback all leave a variable in the campaign content empty.\n\nRequires `campaigns:manage` and `campaigns:read`. Project tokens only access resources in their own project.",
+            "description": "Requires campaigns:manage and campaigns:read because the test can use stored recipient samples. Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending and BanSafe checks as a launched campaign. The seed recipient must be the phone of a Connection connected to your team. The sending connection must be connected, on a plan that includes Campaigns and, when the campaign selects connections, one of them. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient. `429` means one of these limits was reached or BanSafe is pacing the sending connection; follow `Retry-After`. `409 bansafe_cold_held` means the seed recipient has never written to the sending connection and the campaign holds first messages. `409 state_conflict` means the campaign is not a draft or has A/B or weighted content alternatives, the sending connection is a Hybrid Link connection, or the seed recipient opted out. `504 result_unknown` means the outcome was not received in time and the test may still arrive. Send `projectId` in the body when using a team API key. `422 campaign_variables_missing` means the test's sample values, the mapped recipient value and the fallback all leave a variable in the campaign content empty.\n\nRequires `campaigns:manage` and `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
-            "x-required-scopes": ["campaigns:manage", "campaigns:read"],
+            "x-required-scopes": [
+              "campaigns:manage",
+              "campaigns:read"
+            ],
             "x-required-scope-mode": "all",
             "security": [
               {
@@ -2877,7 +3048,7 @@
                 "name": "Idempotency-Key",
                 "in": "header",
                 "required": false,
-                "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+                "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
                 "schema": {
                   "type": "string",
                   "minLength": 1,
@@ -2917,6 +3088,15 @@
                       "type": "string"
                     },
                     "description": "API version applied to this response."
+                  },
+                  "Idempotent-Replayed": {
+                    "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
+                    "schema": {
+                      "type": "string",
+                      "enum": [
+                        "true"
+                      ]
+                    }
                   }
                 },
                 "content": {
@@ -2929,7 +3109,9 @@
                           "$ref": "#/components/schemas/CampaignTestSend"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -2941,7 +3123,7 @@
                 "$ref": "#/components/responses/Unauthorized"
               },
               "402": {
-                "$ref": "#/components/responses/PaymentRequired"
+                "$ref": "#/components/responses/CampaignsNotEntitled"
               },
               "403": {
                 "$ref": "#/components/responses/Forbidden"
@@ -2953,7 +3135,41 @@
                 "$ref": "#/components/responses/Conflict"
               },
               "422": {
-                "$ref": "#/components/responses/CampaignVariablesMissing"
+                "description": "`campaign_variables_missing`: a recipient or test sample has no value or fallback for a campaign variable; nothing was sent by that request. `idempotency_conflict`: this key belongs to a different request; the earlier request is not run again and this refusal does not establish its outcome.",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  },
+                  "Link": {
+                    "description": "Documentation for an Idempotency-Key error (`rel=\"describedby\"`).",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorEnvelope"
+                    }
+                  }
+                }
               },
               "429": {
                 "$ref": "#/components/responses/RateLimited"
@@ -2962,7 +3178,42 @@
                 "$ref": "#/components/responses/UpstreamFailure"
               },
               "503": {
-                "$ref": "#/components/responses/SendPathUnavailable"
+                "description": "`idempotency_replay_unavailable`: the recorded response cannot be read. The original request is not run again, and its execution fence remains in place. Keep the first response; do not switch keys to resend. The send path can also be unavailable before a send (`connection_not_ready`, `command_dispatch_failed`, `service_unavailable`, or `bansafe_accounting_unavailable`).",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  },
+                  "Retry-After": {
+                    "description": "Seconds to wait before checking again with the same key. Waiting does not release the execution fence or guarantee that replay data becomes available.",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorEnvelope"
+                    }
+                  }
+                }
               },
               "504": {
                 "$ref": "#/components/responses/ResultUnknown"
@@ -2973,9 +3224,11 @@
         "/platform/campaign-reply-flows": {
           "post": {
             "operationId": "createPlatformCampaignReplyFlow",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "Create campaign reply flow",
-            "description": "Creates an immutable reply flow revision: the steps a campaign runs when a recipient replies. Each step can send a text, reply buttons, a list, or a Flow form (Official numbers only), and branches on the button or list row chosen, an exact keyword, or a Flow form submission. Beta: returns `403` unless campaign reply flows are enabled for the team. `409` means this flow key and revision already exist.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+            "description": "Creates an immutable reply flow revision: the steps a campaign runs when a recipient replies. Each step can send a text, reply buttons, a list, or a Flow form (Official connections only), and branches on the button or list row chosen, an exact keyword, or a Flow form submission. Beta: returns `403` unless campaign reply flows are enabled for the team. `409` means this flow key and revision already exist.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
@@ -3032,7 +3285,9 @@
                           "$ref": "#/components/schemas/PlatformCampaignReplyFlow"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3058,7 +3313,9 @@
         "/platform/campaign-reply-flows/{replyFlowId}": {
           "get": {
             "operationId": "getPlatformCampaignReplyFlow",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "Get campaign reply flow",
             "description": "Gets one reply flow revision in a project. Beta: returns `403` unless campaign reply flows are enabled for the team.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3125,7 +3382,9 @@
                           "$ref": "#/components/schemas/PlatformCampaignReplyFlow"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3148,7 +3407,9 @@
         "/platform/campaigns/{campaignId}/reply-flow": {
           "put": {
             "operationId": "setPlatformCampaignReplyFlow",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "Set campaign reply flow",
             "description": "Attaches a reply flow revision to a draft or scheduled campaign, or detaches it with `null`. The flow starts for each recipient once their message is sent. `409` means the campaign has already launched. Beta: returns `403` unless campaign reply flows are enabled for the team.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3216,7 +3477,10 @@
                         "data": {
                           "type": "object",
                           "additionalProperties": false,
-                          "required": ["campaignId", "replyFlowId"],
+                          "required": [
+                            "campaignId",
+                            "replyFlowId"
+                          ],
                           "properties": {
                             "campaignId": {
                               "type": "string",
@@ -3230,7 +3494,9 @@
                           }
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3256,7 +3522,9 @@
         "/platform/campaigns/{campaignId}/recipients/export": {
           "get": {
             "operationId": "exportCampaignRecipients",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "Export campaign recipients",
             "description": "Returns recipients as CSV in queue order. Unfiltered exports page up to 1,000 recipients per request, using the `Polymorfa-Next-Cursor` response header. Each page starts with a header row and reflects outcomes when requested. Filtered exports are one atomic page of up to 1,000 recipients; larger filtered results return 409, so changing statuses cannot silently omit matches between pages. The export contains outcomes and `failureReason` codes only, never message content or template variables.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3401,7 +3669,9 @@
         "/platform/campaigns/{campaignId}/links": {
           "get": {
             "operationId": "getCampaignLinks",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "Get tracked link opens",
             "description": "Beta: requires team enrollment in campaign link tracking. Returns opens of each tracked link in the campaign's link order. An open is a request to the short link from a person, or from an app or security scanner previewing the link; it is not proof of a click. `uniqueOpens` counts recipients who opened the link at least once; `totalOpens` counts every open. A team without the beta answers `403 feature_unavailable`.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3472,7 +3742,9 @@
                           }
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3495,7 +3767,9 @@
         "/platform/campaigns/{campaignId}/approvals": {
           "get": {
             "operationId": "listCampaignLaunchApprovals",
-            "tags": ["campaigns"],
+            "tags": [
+              "campaigns"
+            ],
             "summary": "List campaign launch approvals",
             "description": "Lists a campaign's approval requests, newest first, at most 20. A request is created when a launch is held by the team's approval threshold, or when an AI agent asks through the hosted MCP server to launch, resume or move the start (`reasons` says which). `action` is the requested step. It records the frozen recipient count and the requested start time. `status` is `pending` until a team owner or admin approves or rejects it, `superseded` when a later launch request or a change to the campaign replaced it, and `expired` 72 hours after it was requested.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3566,7 +3840,9 @@
                           }
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3589,9 +3865,11 @@
         "/platform/campaign-settings": {
           "get": {
             "operationId": "getCampaignSettings",
-            "tags": ["campaign-settings"],
+            "tags": [
+              "campaign-settings"
+            ],
             "summary": "Get campaign settings",
-            "description": "Returns the team's campaign settings. `launchApproval.recipientThreshold` is the number of recipients above which a launch needs a team owner or admin; null means no launch needs approval. A team that never saved settings receives `launchApproval.recipientThreshold: null`.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Returns the team's campaign settings. `launchApproval.recipientThreshold` is the number of recipients above which a launch needs a team owner or admin; null means no launch needs approval. A team that never saved settings receives `launchApproval.recipientThreshold: null`.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -3638,7 +3916,9 @@
                           "$ref": "#/components/schemas/CampaignSettings"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3658,9 +3938,11 @@
         "/platform/audiences/from-campaign": {
           "post": {
             "operationId": "createAudienceFromCampaign",
-            "tags": ["audiences"],
+            "tags": [
+              "audiences"
+            ],
             "summary": "Create an audience from a campaign",
-            "description": "Creates an audience from the recipients of a previous campaign that had one `outcome`, to send them a follow-up campaign. The members are a snapshot taken when the request runs: later receipts, reads or replies on the source campaign do not change the audience. Numbers on the team's opt-out list are left out and counted in `optedOutCount`; each member keeps the template variables it had on the source campaign. Outcomes: `delivered` (the device confirmed delivery), `not_delivered` (sent, with no delivery confirmation), `read`, `not_read` (sent and not read, including sends never delivered), `replied`, `not_replied` (sent and no reply was attributed), and `failed` (confirmed failed sends; sends whose outcome is uncertain, such as a timeout waiting for WhatsApp, are excluded). Read outcomes depend on the recipient's read receipts. `404` means the campaign is not in your team (or not in `projectId` when given); `409` means no recipient that is not opted out has the outcome, and nothing is created.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Creates an audience from the recipients of a previous campaign that had one `outcome`, to send them a follow-up campaign. The members are a snapshot taken when the request runs: later receipts, reads or replies on the source campaign do not change the audience. Phone numbers on the team's opt-out list are left out and counted in `optedOutCount`; each member keeps the template variables it had on the source campaign. Outcomes: `delivered` (the device confirmed delivery), `not_delivered` (sent, with no delivery confirmation), `read`, `not_read` (sent and not read, including sends never delivered), `replied`, `not_replied` (sent and no reply was attributed), and `failed` (confirmed failed sends; sends whose outcome is uncertain, such as a timeout waiting for WhatsApp, are excluded). Read outcomes depend on the recipient's read receipts. `404` means the campaign is not in your team (or not in `projectId` when given); `409` means no recipient that is not opted out has the outcome, and nothing is created.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -3709,7 +3991,11 @@
                         ]
                       }
                     },
-                    "required": ["name", "campaignId", "outcome"]
+                    "required": [
+                      "name",
+                      "campaignId",
+                      "outcome"
+                    ]
                   }
                 }
               }
@@ -3748,7 +4034,9 @@
                           "$ref": "#/components/schemas/AudienceFromCampaignResult"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -3774,9 +4062,11 @@
         "/platform/audience-profiles": {
           "get": {
             "operationId": "listAudienceProfiles",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "List audience profiles",
-            "description": "Lists customer-supplied profiles for the team with cursor pagination. Deleted profiles are omitted.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Lists customer-supplied profiles for the team with cursor pagination. Deleted profiles are omitted.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -3795,7 +4085,8 @@
                 "in": "query",
                 "required": false,
                 "schema": {
-                  "type": "string"
+                  "type": "string",
+                  "format": "uuid"
                 }
               },
               {
@@ -3806,7 +4097,31 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 100,
-                  "default": 25
+                  "default": 25,
+                  "description": "Page size as decimal digits without leading zeros. Omit for 25."
+                }
+              },
+              {
+                "name": "tag",
+                "in": "query",
+                "required": false,
+                "description": "Only profiles that carry this exact tag.",
+                "schema": {
+                  "type": "string",
+                  "minLength": 1,
+                  "pattern": "^[^\\u0000-\\u001f\\u007f]+$",
+                  "x-polymorfa-max-utf8-bytes": 48,
+                  "description": "Exact tag, 1-48 UTF-8 bytes, without control characters."
+                }
+              },
+              {
+                "name": "phonePrefix",
+                "in": "query",
+                "required": false,
+                "description": "Only profiles whose E.164 phone number starts with this prefix, such as `+4479`.",
+                "schema": {
+                  "type": "string",
+                  "pattern": "^\\+[0-9]{1,15}$"
                 }
               }
             ],
@@ -3891,14 +4206,21 @@
                                 "properties": {
                                   "source": {
                                     "type": "string",
-                                    "enum": ["api", "csv", "form"]
+                                    "enum": [
+                                      "api",
+                                      "csv",
+                                      "form"
+                                    ]
                                   },
                                   "reference": {
                                     "type": "string",
                                     "maxLength": 128
                                   }
                                 },
-                                "required": ["source", "reference"]
+                                "required": [
+                                  "source",
+                                  "reference"
+                                ]
                               },
                               "createdAt": {
                                 "type": "integer",
@@ -3925,7 +4247,10 @@
                           "$ref": "#/components/schemas/CursorPageMetadata"
                         }
                       },
-                      "required": ["data", "page"]
+                      "required": [
+                        "data",
+                        "page"
+                      ]
                     }
                   }
                 }
@@ -3945,9 +4270,11 @@
         "/platform/audience-profiles/{phone}": {
           "get": {
             "operationId": "getAudienceProfile",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "Get an audience profile",
-            "description": "Gets one customer-supplied profile by its E.164 phone. Deleted profiles return 404.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Gets one customer-supplied profile by its E.164 phone. Deleted profiles return 404.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -4049,14 +4376,21 @@
                               "properties": {
                                 "source": {
                                   "type": "string",
-                                  "enum": ["api", "csv", "form"]
+                                  "enum": [
+                                    "api",
+                                    "csv",
+                                    "form"
+                                  ]
                                 },
                                 "reference": {
                                   "type": "string",
                                   "maxLength": 128
                                 }
                               },
-                              "required": ["source", "reference"]
+                              "required": [
+                                "source",
+                                "reference"
+                              ]
                             },
                             "createdAt": {
                               "type": "integer",
@@ -4079,7 +4413,9 @@
                           ]
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -4100,9 +4436,11 @@
           },
           "put": {
             "operationId": "putAudienceProfile",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "Create or update an audience profile",
-            "description": "Creates a bounded team profile, or replaces tags and attributes at the observed revision. A stale revision returns 409. To recreate a profile deleted in the last 30 days, send the `revision` the delete returned as `expectedRevision`; a put without it returns 409 with a message naming that revision. A consent assertion records the customer's statement; it does not clear an opt-out or authorize a send. This beta requires enrollment and release eligibility.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Creates a bounded team profile, or replaces tags and attributes at the observed revision. A stale revision returns 409. To recreate a profile deleted in the last 30 days, send the `revision` the delete returned as `expectedRevision`; a put without it returns 409 with a message naming that revision. A consent assertion records the customer's statement; it does not clear an opt-out or authorize a send. This beta requires enrollment and release eligibility.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -4170,14 +4508,21 @@
                         "properties": {
                           "source": {
                             "type": "string",
-                            "enum": ["api", "csv", "form"]
+                            "enum": [
+                              "api",
+                              "csv",
+                              "form"
+                            ]
                           },
                           "reference": {
                             "type": "string",
                             "maxLength": 128
                           }
                         },
-                        "required": ["source", "reference"]
+                        "required": [
+                          "source",
+                          "reference"
+                        ]
                       },
                       "consent": {
                         "type": "object",
@@ -4185,11 +4530,17 @@
                         "properties": {
                           "purpose": {
                             "type": "string",
-                            "enum": ["campaigns"]
+                            "enum": [
+                              "campaigns"
+                            ]
                           },
                           "source": {
                             "type": "string",
-                            "enum": ["api", "csv", "form"]
+                            "enum": [
+                              "api",
+                              "csv",
+                              "form"
+                            ]
                           },
                           "reference": {
                             "type": "string",
@@ -4213,7 +4564,10 @@
                         ]
                       }
                     },
-                    "required": ["tags", "attributes"]
+                    "required": [
+                      "tags",
+                      "attributes"
+                    ]
                   }
                 }
               }
@@ -4297,14 +4651,21 @@
                               "properties": {
                                 "source": {
                                   "type": "string",
-                                  "enum": ["api", "csv", "form"]
+                                  "enum": [
+                                    "api",
+                                    "csv",
+                                    "form"
+                                  ]
                                 },
                                 "reference": {
                                   "type": "string",
                                   "maxLength": 128
                                 }
                               },
-                              "required": ["source", "reference"]
+                              "required": [
+                                "source",
+                                "reference"
+                              ]
                             },
                             "createdAt": {
                               "type": "integer",
@@ -4327,7 +4688,9 @@
                           ]
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -4351,9 +4714,11 @@
           },
           "delete": {
             "operationId": "deleteAudienceProfile",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "Delete an audience profile",
-            "description": "Removes profile fields, consent assertions and reusable audience-list memberships at the observed revision, and clears the preview row of each audience the phone belonged to. Recipients already added to campaigns (including drafts), previously uploaded files and opt-outs are not changed. The phone's deletion record is kept for 30 days; `revision` is its revision. During that time, adding the phone to an audience returns 409, and recreating the profile requires `expectedRevision` set to this revision. Deletion remains available after beta withdrawal.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Removes profile fields, consent assertions and reusable audience-list memberships at the observed revision, and clears the preview row of each audience the phone belonged to. Recipients already added to campaigns (including drafts), previously uploaded files and opt-outs are not changed. The phone's deletion record is kept for 30 days; `revision` is its revision. During that time, adding the phone to an audience returns 409, and recreating the profile requires `expectedRevision` set to this revision. Deletion remains available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -4421,7 +4786,9 @@
                           "properties": {
                             "deleted": {
                               "type": "boolean",
-                              "enum": [true]
+                              "enum": [
+                                true
+                              ]
                             },
                             "phone": {
                               "type": "string"
@@ -4431,10 +4798,16 @@
                               "minimum": 2
                             }
                           },
-                          "required": ["deleted", "phone", "revision"]
+                          "required": [
+                            "deleted",
+                            "phone",
+                            "revision"
+                          ]
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -4460,9 +4833,11 @@
         "/platform/audience-profiles/{phone}/consent": {
           "get": {
             "operationId": "listAudienceProfileConsent",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "List audience consent assertions",
-            "description": "Lists the customer's recorded campaign consent assertions for one profile. Assertions do not override opt-outs.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Lists the customer's recorded campaign consent assertions for one profile. Assertions do not override opt-outs.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -4500,7 +4875,8 @@
                   "type": "integer",
                   "minimum": 1,
                   "maximum": 100,
-                  "default": 25
+                  "default": 25,
+                  "description": "Page size as decimal digits without leading zeros. Omit for 25."
                 }
               }
             ],
@@ -4550,11 +4926,17 @@
                               },
                               "purpose": {
                                 "type": "string",
-                                "enum": ["campaigns"]
+                                "enum": [
+                                  "campaigns"
+                                ]
                               },
                               "source": {
                                 "type": "string",
-                                "enum": ["api", "csv", "form"]
+                                "enum": [
+                                  "api",
+                                  "csv",
+                                  "form"
+                                ]
                               },
                               "reference": {
                                 "type": "string"
@@ -4587,7 +4969,10 @@
                           "$ref": "#/components/schemas/CursorPageMetadata"
                         }
                       },
-                      "required": ["data", "page"]
+                      "required": [
+                        "data",
+                        "page"
+                      ]
                     }
                   }
                 }
@@ -4610,9 +4995,11 @@
         "/platform/audience-profile-imports": {
           "post": {
             "operationId": "createAudienceProfileImport",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "Start an audience profile CSV import",
-            "description": "Queues a bounded CSV import of customer-supplied team profiles. Exact CSV header names can be mapped to profile fields. At most one import is active per team. Files contain at most 10 MiB and 10,000 rows; the CSV is removed after completion or cancellation. The same replay key, file and mapping return the existing job. Requires beta enrollment.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Queues a bounded CSV import of customer-supplied team profiles. Exact CSV header names can be mapped to profile fields. At most one import is active per team. Files contain at most 10 MiB and 10,000 rows; the CSV is removed after completion or cancellation. The same replay key, file and mapping return the existing job. Requires beta enrollment.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -4692,10 +5079,17 @@
                             "maxLength": 64
                           }
                         },
-                        "required": ["phone", "tags", "attributes"]
+                        "required": [
+                          "phone",
+                          "tags",
+                          "attributes"
+                        ]
                       }
                     },
-                    "required": ["replayKey", "csvBase64"]
+                    "required": [
+                      "replayKey",
+                      "csvBase64"
+                    ]
                   }
                 }
               }
@@ -4740,7 +5134,11 @@
                             },
                             "state": {
                               "type": "string",
-                              "enum": ["queued", "completed", "cancelled"]
+                              "enum": [
+                                "queued",
+                                "completed",
+                                "cancelled"
+                              ]
                             },
                             "totalValid": {
                               "type": "integer",
@@ -4767,7 +5165,10 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": ["row", "reason"]
+                                "required": [
+                                  "row",
+                                  "reason"
+                                ]
                               }
                             },
                             "conflictSamples": {
@@ -4783,10 +5184,16 @@
                                   },
                                   "reason": {
                                     "type": "string",
-                                    "enum": ["quota", "revision_conflict"]
+                                    "enum": [
+                                      "quota",
+                                      "revision_conflict"
+                                    ]
                                   }
                                 },
-                                "required": ["row", "reason"]
+                                "required": [
+                                  "row",
+                                  "reason"
+                                ]
                               }
                             },
                             "processedValid": {
@@ -4840,7 +5247,9 @@
                           ]
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -4866,9 +5275,11 @@
         "/platform/audience-profile-imports/{jobId}": {
           "get": {
             "operationId": "getAudienceProfileImport",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "Get an audience profile import report",
-            "description": "Returns aggregate counts and up to 20 row-number/reason samples. Raw phone numbers and custom values are not included. Reports expire 30 days after completion or cancellation.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Returns aggregate counts and up to 20 row-number/reason samples. Raw phone numbers and custom values are not included. Reports expire 30 days after completion or cancellation.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -4931,7 +5342,11 @@
                             },
                             "state": {
                               "type": "string",
-                              "enum": ["queued", "completed", "cancelled"]
+                              "enum": [
+                                "queued",
+                                "completed",
+                                "cancelled"
+                              ]
                             },
                             "totalValid": {
                               "type": "integer",
@@ -4958,7 +5373,10 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": ["row", "reason"]
+                                "required": [
+                                  "row",
+                                  "reason"
+                                ]
                               }
                             },
                             "conflictSamples": {
@@ -4974,10 +5392,16 @@
                                   },
                                   "reason": {
                                     "type": "string",
-                                    "enum": ["quota", "revision_conflict"]
+                                    "enum": [
+                                      "quota",
+                                      "revision_conflict"
+                                    ]
                                   }
                                 },
-                                "required": ["row", "reason"]
+                                "required": [
+                                  "row",
+                                  "reason"
+                                ]
                               }
                             },
                             "processedValid": {
@@ -5031,7 +5455,9 @@
                           ]
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -5052,9 +5478,11 @@
           },
           "delete": {
             "operationId": "cancelAudienceProfileImport",
-            "tags": ["audience-profiles"],
+            "tags": [
+              "audience-profiles"
+            ],
             "summary": "Cancel an audience profile import",
-            "description": "Stops the next batch and removes the CSV. Already committed profile edits remain. Cancellation and report reads remain available after beta withdrawal.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Stops the next batch and removes the CSV. Already committed profile edits remain. Cancellation and report reads remain available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -5117,7 +5545,11 @@
                             },
                             "state": {
                               "type": "string",
-                              "enum": ["queued", "completed", "cancelled"]
+                              "enum": [
+                                "queued",
+                                "completed",
+                                "cancelled"
+                              ]
                             },
                             "totalValid": {
                               "type": "integer",
@@ -5144,7 +5576,10 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": ["row", "reason"]
+                                "required": [
+                                  "row",
+                                  "reason"
+                                ]
                               }
                             },
                             "conflictSamples": {
@@ -5160,10 +5595,16 @@
                                   },
                                   "reason": {
                                     "type": "string",
-                                    "enum": ["quota", "revision_conflict"]
+                                    "enum": [
+                                      "quota",
+                                      "revision_conflict"
+                                    ]
                                   }
                                 },
-                                "required": ["row", "reason"]
+                                "required": [
+                                  "row",
+                                  "reason"
+                                ]
                               }
                             },
                             "processedValid": {
@@ -5217,7 +5658,9 @@
                           ]
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -5240,9 +5683,11 @@
         "/platform/optouts/confirmation-settings": {
           "get": {
             "operationId": "getStopConfirmationSettings",
-            "tags": ["optouts"],
+            "tags": [
+              "optouts"
+            ],
             "summary": "Get STOP confirmation settings",
-            "description": "Returns the team's optional acknowledgement preference. Confirmations are disabled by default. A locale is explicitly selected from English, Brazilian Portuguese or Spanish; the response includes the reviewed acknowledgement text. Reads remain available after beta withdrawal.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Returns the team's optional acknowledgement preference. Confirmations are disabled by default. A locale is explicitly selected from English, Brazilian Portuguese or Spanish; the response includes the reviewed acknowledgement text. Reads remain available after beta withdrawal.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -5289,7 +5734,9 @@
                           "$ref": "#/components/schemas/StopConfirmationSettings"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -5307,9 +5754,11 @@
           },
           "put": {
             "operationId": "updateStopConfirmationSettings",
-            "tags": ["optouts"],
+            "tags": [
+              "optouts"
+            ],
             "summary": "Update STOP confirmation settings",
-            "description": "Replaces the team's preference using the observed revision. Enabling requires STOP confirmations beta access and a selected locale. A team owner or admin can also change it in the console. A new STOP opt-out queues at most one plain acknowledgement from the receiving connection; manual opt-outs, repeated STOP while suppressed and START produce none. A confirmation cannot undo suppression. Disabling remains available after beta withdrawal and cancels queued acknowledgements. A changed revision returns 409. Unknown send outcomes are never resent with a new operation identity.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Replaces the team's preference using the observed revision. Enabling requires STOP confirmations beta access and a selected locale. A team owner or admin can also change it in the console. A new STOP opt-out queues at most one plain acknowledgement from the receiving method; manual opt-outs, repeated STOP while suppressed and START produce none. A confirmation cannot undo suppression. Disabling remains available after beta withdrawal and cancels queued acknowledgements. A changed revision returns 409. Unknown send outcomes are never resent with a new operation identity.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -5366,7 +5815,9 @@
                           "$ref": "#/components/schemas/StopConfirmationSettings"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -5389,9 +5840,11 @@
         "/platform/optouts/confirmation-summary": {
           "get": {
             "operationId": "getStopConfirmationSummary",
-            "tags": ["optouts"],
+            "tags": [
+              "optouts"
+            ],
             "summary": "Get STOP confirmation outcome counts",
-            "description": "Returns aggregate acknowledgement outcomes from the last 30 days, without recipient phones or message content. Disabled is the preference state, queued is waiting, admitted may have been submitted, completed means the provider accepted the send rather than delivered it, failed is a proven skip or rejection, and unknown means the send outcome could not be established. All outcomes preserve the opt-out.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
+            "description": "Returns aggregate acknowledgement outcomes from the last 30 days, without recipient phones or message content. Disabled is the preference state, queued is waiting, admitted may have been submitted, completed means the provider accepted the send rather than delivered it, failed is a proven skip or rejection, and unknown means the send outcome could not be established. All outcomes preserve the opt-out.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -5438,7 +5891,9 @@
                           "$ref": "#/components/schemas/StopConfirmationSummary"
                         }
                       },
-                      "required": ["data"]
+                      "required": [
+                        "data"
+                      ]
                     }
                   }
                 }
@@ -5464,27 +5919,48 @@
             "properties": {
               "signalModeDefault": {
                 "type": "string",
-                "enum": ["standard", "zero_knowledge", null],
+                "enum": [
+                  "standard",
+                  "zero_knowledge",
+                  null
+                ],
                 "nullable": true
               },
               "effectiveSignalMode": {
                 "type": "string",
-                "enum": ["standard", "zero_knowledge"]
+                "enum": [
+                  "standard",
+                  "zero_knowledge"
+                ]
               },
               "revision": {
                 "type": "integer",
                 "minimum": 0
               }
             },
-            "required": ["signalModeDefault", "effectiveSignalMode", "revision"]
+            "required": [
+              "signalModeDefault",
+              "effectiveSignalMode",
+              "revision"
+            ]
           },
           "ErrorEnvelope": {
             "type": "object",
-            "required": ["error", "data", "docs"],
+            "required": [
+              "error",
+              "data",
+              "docs"
+            ],
             "properties": {
               "error": {
                 "type": "object",
-                "required": ["type", "code", "message", "param", "request_id"],
+                "required": [
+                  "type",
+                  "code",
+                  "message",
+                  "param",
+                  "request_id"
+                ],
                 "properties": {
                   "type": {
                     "type": "string",
@@ -5492,6 +5968,7 @@
                       "invalid_request_error",
                       "authentication_error",
                       "permission_error",
+                      "billing_error",
                       "conflict_error",
                       "rate_limit_error",
                       "api_error",
@@ -5525,7 +6002,9 @@
               "data": {
                 "type": "string",
                 "nullable": true,
-                "enum": [null],
+                "enum": [
+                  null
+                ],
                 "description": "Always null for a failed request."
               },
               "docs": {
@@ -5546,10 +6025,16 @@
               },
               "signalModeDefault": {
                 "type": "string",
-                "enum": ["standard", "zero_knowledge"]
+                "enum": [
+                  "standard",
+                  "zero_knowledge"
+                ]
               }
             },
-            "required": ["expectedRevision", "signalModeDefault"]
+            "required": [
+              "expectedRevision",
+              "signalModeDefault"
+            ]
           },
           "CustomerSignalCustodyUpdate": {
             "type": "object",
@@ -5562,11 +6047,18 @@
               },
               "signalModeDefault": {
                 "type": "string",
-                "enum": ["standard", "zero_knowledge", null],
+                "enum": [
+                  "standard",
+                  "zero_knowledge",
+                  null
+                ],
                 "nullable": true
               }
             },
-            "required": ["expectedRevision", "signalModeDefault"]
+            "required": [
+              "expectedRevision",
+              "signalModeDefault"
+            ]
           },
           "CampaignTestSendRequest": {
             "type": "object",
@@ -5577,16 +6069,16 @@
                 "format": "uuid",
                 "description": "Required when using a team API key. Project tokens derive the project from the credential."
               },
-              "sessionId": {
+              "connectionId": {
                 "type": "string",
                 "format": "uuid",
-                "description": "The number to send the test from. It must be connected, on a plan that includes Campaigns and, when the campaign selects numbers, one of them."
+                "description": "The connection to send the test from. It must be connected, on a plan that includes Campaigns and, when the campaign selects connections, one of them."
               },
               "to": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 32,
-                "description": "The seed recipient in international format. It must be the phone of a number connected to your team.",
+                "description": "The seed recipient in international format. It must be the phone of a connection connected to your team.",
                 "example": "+5511999990000"
               },
               "sampleRecipientId": {
@@ -5614,7 +6106,10 @@
                 "description": "Variable values for the test. They override the sample recipient's values; without `sampleRecipientId`, only these values are used."
               }
             },
-            "required": ["sessionId", "to"]
+            "required": [
+              "connectionId",
+              "to"
+            ]
           },
           "CampaignTestSend": {
             "type": "object",
@@ -5631,13 +6126,15 @@
               },
               "status": {
                 "type": "string",
-                "enum": ["sent"]
+                "enum": [
+                  "sent"
+                ]
               },
               "from": {
                 "type": "object",
                 "additionalProperties": false,
                 "properties": {
-                  "sessionId": {
+                  "connectionId": {
                     "type": "string",
                     "format": "uuid"
                   },
@@ -5645,8 +6142,11 @@
                     "type": "string"
                   }
                 },
-                "required": ["sessionId", "phone"],
-                "description": "The number the test was sent from."
+                "required": [
+                  "connectionId",
+                  "phone"
+                ],
+                "description": "The connection the test was sent from."
               },
               "to": {
                 "type": "string",
@@ -5683,7 +6183,10 @@
           "CreatePlatformCampaignReplyFlowRequest": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["name", "definition"],
+            "required": [
+              "name",
+              "definition"
+            ],
             "properties": {
               "name": {
                 "type": "string",
@@ -5714,7 +6217,10 @@
           "PlatformCampaignReplyFlowDefinition": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["entryNodeId", "nodes"],
+            "required": [
+              "entryNodeId",
+              "nodes"
+            ],
             "description": "An acyclic graph of 2 to 12 steps. The entry step waits for the first reply and sends nothing. See the reply flows guide for step and branch shapes.",
             "properties": {
               "entryNodeId": {
@@ -5728,7 +6234,10 @@
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": ["id", "edges"],
+                  "required": [
+                    "id",
+                    "edges"
+                  ],
                   "properties": {
                     "id": {
                       "type": "string",
@@ -5736,13 +6245,20 @@
                     },
                     "send": {
                       "type": "object",
-                      "required": ["kind"],
+                      "required": [
+                        "kind"
+                      ],
                       "additionalProperties": true,
-                      "description": "`text` (`text`), `buttons` (`body`, up to 3 `buttons` with `id` and `text`), `list` (`body`, `buttonText`, up to 10 `rows`), or `flow_form` (`flowId`, `body`, `buttonText`, `screen`; Official numbers only).",
+                      "description": "`text` (`text`), `buttons` (`body`, up to 3 `buttons` with `id` and `text`), `list` (`body`, `buttonText`, up to 10 `rows`), or `flow_form` (`flowId`, `body`, `buttonText`, `screen`; Official connections only).",
                       "properties": {
                         "kind": {
                           "type": "string",
-                          "enum": ["text", "buttons", "list", "flow_form"]
+                          "enum": [
+                            "text",
+                            "buttons",
+                            "list",
+                            "flow_form"
+                          ]
                         }
                       }
                     },
@@ -5752,17 +6268,26 @@
                       "items": {
                         "type": "object",
                         "additionalProperties": false,
-                        "required": ["match", "to"],
+                        "required": [
+                          "match",
+                          "to"
+                        ],
                         "properties": {
                           "match": {
                             "type": "object",
-                            "required": ["kind"],
+                            "required": [
+                              "kind"
+                            ],
                             "additionalProperties": true,
                             "description": "`choice` (`replyKind` `button` or `list`, `id`), `keyword` (`value`), or `flow_submission`.",
                             "properties": {
                               "kind": {
                                 "type": "string",
-                                "enum": ["choice", "keyword", "flow_submission"]
+                                "enum": [
+                                  "choice",
+                                  "keyword",
+                                  "flow_submission"
+                                ]
                               }
                             }
                           },
@@ -5816,7 +6341,9 @@
           "SetPlatformCampaignReplyFlowRequest": {
             "type": "object",
             "additionalProperties": false,
-            "required": ["replyFlowId"],
+            "required": [
+              "replyFlowId"
+            ],
             "properties": {
               "replyFlowId": {
                 "type": "string",
@@ -5838,14 +6365,15 @@
               "cold_held",
               "campaign_cancelled",
               "invalid_recipient",
-              "session_not_connected",
+              "connection_not_connected",
               "ack_timeout",
               "blocked_by_safety",
               "send_failed",
               "missing_variable",
+              "frequency_cap",
               "other"
             ],
-            "description": "Why the recipient was not sent, or why its last attempt did not succeed. Null when nothing went wrong. `opted_out`: the number is on the team's opt-out list. `cold_held`: the number never wrote to the sending number and the campaign holds cold sends. `campaign_cancelled`: the campaign was stopped before this recipient was sent. `invalid_recipient`: the number is not a valid WhatsApp address. `session_not_connected`: the sending number was not connected. `ack_timeout`: WhatsApp did not acknowledge the send in time. `blocked_by_safety`: a safety check refused the send before it was attempted; the recipient waits for the campaign to resume. `send_failed`: WhatsApp refused the send, or its outcome could not be confirmed. `missing_variable`: the campaign was launched with `skipMissingVariables` and the recipient had no value and no fallback for a variable. `other`: any other reason. New codes may be added."
+            "description": "Why the recipient was not sent, or why its last attempt did not succeed. Null when nothing went wrong. `opted_out`: the phone number is on the team's opt-out list. `cold_held`: the recipient never wrote to the sending connection and the campaign holds cold sends. `campaign_cancelled`: the campaign was stopped before this recipient was sent. `invalid_recipient`: the recipient is not a valid WhatsApp address. `connection_not_connected`: the sending connection was not connected. `ack_timeout`: WhatsApp did not acknowledge the send in time. `blocked_by_safety`: a safety check refused the send before it was attempted; the recipient waits for the campaign to resume. `send_failed`: WhatsApp refused the send, or its outcome could not be confirmed. `missing_variable`: the campaign was launched with `skipMissingVariables` and the recipient had no value and no fallback for a variable. `frequency_cap`: the recipient reached the team's or campaign's rolling contact frequency cap. `other`: any other reason. New codes may be added."
           },
           "CampaignTrackedLinkReport": {
             "type": "object",
@@ -5871,7 +6399,12 @@
                 "description": "Every recorded open, including repeat opens."
               }
             },
-            "required": ["key", "url", "uniqueOpens", "totalOpens"]
+            "required": [
+              "key",
+              "url",
+              "uniqueOpens",
+              "totalOpens"
+            ]
           },
           "CampaignLaunchApproval": {
             "type": "object",
@@ -5887,7 +6420,11 @@
               },
               "action": {
                 "type": "string",
-                "enum": ["launch", "resume", "reschedule"],
+                "enum": [
+                  "launch",
+                  "resume",
+                  "reschedule"
+                ],
                 "description": "The held command. Approving it runs that command."
               },
               "status": {
@@ -5904,7 +6441,10 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": ["audience_threshold", "agent_request"]
+                  "enum": [
+                    "audience_threshold",
+                    "agent_request"
+                  ]
                 },
                 "description": "Why the command was held. `audience_threshold`: a launch would send to more recipients than the team's threshold. `agent_request`: an AI agent asked through the hosted MCP server."
               },
@@ -5930,7 +6470,10 @@
                     "type": "string"
                   }
                 },
-                "required": ["type", "id"]
+                "required": [
+                  "type",
+                  "id"
+                ]
               },
               "requestedAt": {
                 "type": "integer",
@@ -5989,10 +6532,14 @@
                     "description": "Launches that would send to more recipients than this need a team owner or admin. Null turns approval off."
                   }
                 },
-                "required": ["recipientThreshold"]
+                "required": [
+                  "recipientThreshold"
+                ]
               }
             },
-            "required": ["launchApproval"]
+            "required": [
+              "launchApproval"
+            ]
           },
           "AudienceFromCampaignResult": {
             "type": "object",
@@ -6007,7 +6554,9 @@
               },
               "source": {
                 "type": "string",
-                "enum": ["campaign"]
+                "enum": [
+                  "campaign"
+                ]
               },
               "recipientCount": {
                 "type": "integer",
@@ -6099,7 +6648,10 @@
                 "type": "boolean"
               }
             },
-            "required": ["nextCursor", "hasMore"]
+            "required": [
+              "nextCursor",
+              "hasMore"
+            ]
           },
           "StopConfirmationSettings": {
             "type": "object",
@@ -6114,7 +6666,12 @@
               },
               "locale": {
                 "type": "string",
-                "enum": ["en", "pt-BR", "es", null],
+                "enum": [
+                  "en",
+                  "pt-BR",
+                  "es",
+                  null
+                ],
                 "nullable": true
               },
               "revision": {
@@ -6123,7 +6680,9 @@
               },
               "textRevision": {
                 "type": "integer",
-                "enum": [1]
+                "enum": [
+                  1
+                ]
               },
               "acknowledgement": {
                 "type": "string",
@@ -6159,7 +6718,12 @@
               },
               "locale": {
                 "type": "string",
-                "enum": ["en", "pt-BR", "es", null],
+                "enum": [
+                  "en",
+                  "pt-BR",
+                  "es",
+                  null
+                ],
                 "nullable": true,
                 "description": "Required when enabled. Never inferred from a phone number."
               },
@@ -6169,7 +6733,12 @@
                 "maximum": 2147483646
               }
             },
-            "required": ["teamId", "enabled", "locale", "revision"]
+            "required": [
+              "teamId",
+              "enabled",
+              "locale",
+              "revision"
+            ]
           },
           "StopConfirmationSummary": {
             "type": "object",
@@ -6212,7 +6781,10 @@
                 ]
               }
             },
-            "required": ["enabled", "counts"]
+            "required": [
+              "enabled",
+              "counts"
+            ]
           }
         },
         "responses": {
@@ -6372,7 +6944,7 @@
             }
           },
           "PaymentRequired": {
-            "description": "The number's plan does not include this capability.",
+            "description": "`billing_error`: the team's plan, billing mode, credit or add-ons do not cover this request. `error.code` names the cause.",
             "headers": {
               "X-Request-Id": {
                 "schema": {
@@ -6398,6 +6970,17 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ErrorEnvelope"
+                },
+                "example": {
+                  "error": {
+                    "type": "billing_error",
+                    "code": "entitlement_required",
+                    "message": "Your team\u2019s plan or billing mode does not include this action.",
+                    "param": null,
+                    "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
+                  },
+                  "data": null,
+                  "docs": "https://docs.polymorfa.com/api/errors#entitlement-required"
                 }
               }
             }
@@ -6509,7 +7092,7 @@
             }
           },
           "SendPathUnavailable": {
-            "description": "The send path is unavailable or the sending number is not ready (`session_not_ready`, `command_dispatch_failed`, `service_unavailable`, or `bansafe_accounting_unavailable`). No message was sent.",
+            "description": "The send path is unavailable or the sending connection is not ready (`connection_not_ready`, `command_dispatch_failed`, `service_unavailable`, or `bansafe_accounting_unavailable`). No message was sent.",
             "headers": {
               "X-Request-Id": {
                 "schema": {
@@ -6604,5 +7187,9 @@
         }
       }
     }
+  },
+  "previousExport": {
+    "path": "contracts/history/pre-connections/campaign-custody-20261014.json",
+    "sha256": "e09bd5a076845aea3d049ccff15d19df805ebdf5b4a0576ce347e515d8577c1c"
   }
 }

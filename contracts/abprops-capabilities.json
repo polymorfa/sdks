@@ -1,16 +1,18 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "2f9efad933b3a7a455f73245a566c827ac004608",
+  "sourceCommit": "b23680d19accfecf2f0b7166bdfa11e433947362",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "53b2c76e344052152b3fc627a478adcd79130b7876d528aac8056b13e555b127",
+  "sourceSha256": "11346736cdb19b4124d34b193a5a563d4f6ad1800d07785b5fb0aae9f0923f43",
   "published": false,
   "scope": "Group capability read and canonical session capability webhook only. Other SDK contracts retain their recorded source revisions.",
   "openapi": "3.0.3",
   "paths": {
-    "/messaging/{session}/groups/{id}/capabilities": {
+    "/messaging/{connection}/groups/{id}/capabilities": {
       "get": {
         "operationId": "getGroupCapabilities",
-        "tags": ["Groups"],
+        "tags": [
+          "Groups"
+        ],
         "summary": "Read stored WhatsApp group capabilities",
         "security": [
           {
@@ -24,7 +26,7 @@
               "type": "string"
             },
             "required": true,
-            "name": "session",
+            "name": "connection",
             "in": "path"
           },
           {
@@ -39,7 +41,7 @@
         ],
         "responses": {
           "200": {
-            "description": "Account-bound stored group capabilities. Unknown until successful number and group syncs for the linked account. Requires current group membership and the enrolled number-capabilities beta.",
+            "description": "Account-bound stored group capabilities. Unknown until successful connection and group syncs for the linked account. Requires current group membership and the enrolled connection-capabilities beta.",
             "content": {
               "application/json": {
                 "schema": {
@@ -252,10 +254,9 @@
             }
           }
         },
-        "x-mint": {
-          "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">groups:read</Badge>"
-        },
-        "x-protocols": ["Linked Device API"],
+        "x-protocols": [
+          "Linked Device API"
+        ],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `groups:read`"
       }
     }
@@ -267,20 +268,28 @@
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [true]
+            "enum": [
+              true
+            ]
           },
           "data": {
             "$ref": "#/components/schemas/GroupCapabilities"
           }
         },
-        "required": ["success", "data"]
+        "required": [
+          "success",
+          "data"
+        ]
       },
       "GroupCapabilities": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "enum": ["synced", "unknown"]
+            "enum": [
+              "synced",
+              "unknown"
+            ]
           },
           "syncedAt": {
             "type": "string",
@@ -307,12 +316,16 @@
                 },
                 "kind": {
                   "type": "string",
-                  "enum": ["feature"]
+                  "enum": [
+                    "feature"
+                  ]
                 },
                 "unit": {
                   "nullable": true,
                   "type": "string",
-                  "enum": [null]
+                  "enum": [
+                    null
+                  ]
                 },
                 "value": {
                   "type": "boolean",
@@ -321,15 +334,30 @@
                 "source": {
                   "type": "string",
                   "nullable": true,
-                  "enum": ["server", "client_default", null]
+                  "enum": [
+                    "server",
+                    "client_default",
+                    null
+                  ]
                 }
               },
-              "required": ["key", "kind", "unit", "value", "source"],
+              "required": [
+                "key",
+                "kind",
+                "unit",
+                "value",
+                "source"
+              ],
               "additionalProperties": false
             }
           }
         },
-        "required": ["status", "syncedAt", "checkedAt", "capabilities"],
+        "required": [
+          "status",
+          "syncedAt",
+          "checkedAt",
+          "capabilities"
+        ],
         "additionalProperties": false
       },
       "PublicError": {
@@ -344,6 +372,7 @@
                   "invalid_request_error",
                   "authentication_error",
                   "permission_error",
+                  "billing_error",
                   "conflict_error",
                   "rate_limit_error",
                   "api_error",
@@ -353,11 +382,16 @@
               "code": {
                 "type": "string",
                 "enum": [
+                  "zero_knowledge_connection",
                   "invalid_parameter",
                   "invalid_credential",
                   "entitlement_required",
                   "cloud_template_authority_restricted",
                   "gate_limit_reached",
+                  "billing_credit_required",
+                  "addon_required",
+                  "safe_mode_not_entitled",
+                  "warmup_plan_not_entitled",
                   "method_not_allowed",
                   "permission_denied",
                   "missing_scope",
@@ -370,17 +404,21 @@
                   "stream_cursor_expired",
                   "stream_connection_limit_reached",
                   "state_conflict",
+                  "team_deletion_scheduled",
                   "hybrid_routing_paused",
                   "hybrid_choice_required",
                   "hybrid_transition_ineligible",
                   "hybrid_automation_unavailable",
+                  "hybrid_group_linked_devices_unavailable",
                   "hybrid_transport_unavailable",
                   "hybrid_target_reference_unavailable",
                   "send_outcome_unknown",
+                  "terms_acceptance_required",
+                  "terms_activation_blocked",
                   "idempotency_conflict",
                   "idempotency_in_progress",
-                  "idempotency_completed",
                   "idempotency_outcome_unknown",
+                  "idempotency_replay_unavailable",
                   "call_claimed",
                   "call_not_ringing",
                   "connection_limit",
@@ -395,7 +433,7 @@
                   "order_status_transition_invalid",
                   "order_cancellation_failed",
                   "call_opt_out_limit",
-                  "number_restricted",
+                  "connection_restricted",
                   "sip_trunk_in_use",
                   "sip_trunk_revision_conflict",
                   "sip_trunk_limit",
@@ -413,16 +451,21 @@
                   "upstream_failure",
                   "service_unavailable",
                   "credential_verification_unavailable",
-                  "session_not_ready",
+                  "connection_not_ready",
                   "command_dispatch_failed",
                   "result_unknown",
+                  "parent_bsuid_not_supported",
                   "recipient_not_on_whatsapp",
                   "conversation_window_closed",
                   "template_not_approved",
                   "media_too_large",
                   "whatsapp_rate_limited",
                   "new_chat_limit_reached",
+                  "marketing_disabled_on_cloud_api",
                   "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
                   "whatsapp_groups_ineligible",
                   "whatsapp_group_creation_paused",
                   "whatsapp_group_limit_reached",
@@ -461,12 +504,20 @@
                 "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             },
-            "required": ["type", "code", "message", "param", "request_id"]
+            "required": [
+              "type",
+              "code",
+              "message",
+              "param",
+              "request_id"
+            ]
           },
           "data": {
             "type": "string",
             "nullable": true,
-            "enum": [null],
+            "enum": [
+              null
+            ],
             "description": "Always null for a failed request."
           },
           "docs": {
@@ -474,42 +525,57 @@
             "format": "uri"
           }
         },
-        "required": ["error", "data", "docs"]
+        "required": [
+          "error",
+          "data",
+          "docs"
+        ]
       },
-      "SessionCapabilitiesUpdatedEvent": {
+      "ConnectionCapabilitiesUpdatedEvent": {
         "type": "object",
         "properties": {
           "id": {
             "type": "string",
-            "description": "Unique event identifier"
+            "description": "Unique event identifier",
+            "example": "0190f2a4-6c1e-7b9d-9f3a-2e8c4d5b6a71"
           },
-          "session": {
+          "connection": {
             "type": "string",
-            "description": "Session that produced this event"
+            "description": "Connection that produced this event",
+            "example": "739182640518203"
           },
           "externalId": {
             "type": "string",
-            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+            "description": "Integrator reference from the QuickLink that created this connection. Included on connection lifecycle events when supplied."
           },
           "timestamp": {
             "type": "string",
-            "description": "ISO 8601 timestamp"
+            "description": "ISO 8601 timestamp",
+            "example": "2026-10-19T14:03:22.000Z"
           },
           "event": {
             "type": "string",
-            "enum": ["session.capabilities_updated"],
+            "enum": [
+              "connection.capabilities_updated"
+            ],
             "description": "Event type"
           },
           "payload": {
-            "$ref": "#/components/schemas/SessionCapabilitiesUpdatedPayload"
+            "$ref": "#/components/schemas/ConnectionCapabilitiesUpdatedPayload"
           }
         },
-        "required": ["id", "session", "timestamp", "event", "payload"]
+        "required": [
+          "id",
+          "connection",
+          "timestamp",
+          "event",
+          "payload"
+        ]
       },
-      "SessionCapabilitiesUpdatedPayload": {
+      "ConnectionCapabilitiesUpdatedPayload": {
         "type": "object",
         "properties": {
-          "session": {
+          "connection": {
             "type": "string",
             "maxLength": 256
           },
@@ -519,7 +585,10 @@
           },
           "status": {
             "type": "string",
-            "enum": ["synced", "unknown"]
+            "enum": [
+              "synced",
+              "unknown"
+            ]
           },
           "syncedAt": {
             "type": "string",
@@ -534,7 +603,11 @@
           "accountType": {
             "type": "string",
             "nullable": true,
-            "enum": ["business", "personal", null]
+            "enum": [
+              "business",
+              "personal",
+              null
+            ]
           },
           "capabilities": {
             "type": "array",
@@ -547,12 +620,21 @@
                 },
                 "kind": {
                   "type": "string",
-                  "enum": ["feature", "limit"]
+                  "enum": [
+                    "feature",
+                    "limit"
+                  ]
                 },
                 "unit": {
                   "type": "string",
                   "nullable": true,
-                  "enum": ["seconds", "count", "characters", "members", null]
+                  "enum": [
+                    "seconds",
+                    "count",
+                    "characters",
+                    "members",
+                    null
+                  ]
                 },
                 "value": {
                   "anyOf": [
@@ -570,10 +652,21 @@
                 "source": {
                   "type": "string",
                   "nullable": true,
-                  "enum": ["server", "client_default", "account_type", null]
+                  "enum": [
+                    "server",
+                    "client_default",
+                    "account_type",
+                    null
+                  ]
                 }
               },
-              "required": ["key", "kind", "unit", "value", "source"],
+              "required": [
+                "key",
+                "kind",
+                "unit",
+                "value",
+                "source"
+              ],
               "additionalProperties": false
             },
             "maxItems": 100
@@ -588,7 +681,7 @@
           }
         },
         "required": [
-          "session",
+          "connection",
           "projectId",
           "status",
           "syncedAt",
@@ -601,5 +694,9 @@
       }
     }
   },
-  "family": "messaging"
+  "family": "messaging",
+  "previousExport": {
+    "path": "contracts/history/pre-connections/abprops-capabilities.json",
+    "sha256": "4eae2c0370fe97e4a6302191e54b18ecc984e9e23ff8ba778cefa8dc9a6c349d"
+  }
 }

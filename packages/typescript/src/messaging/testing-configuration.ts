@@ -1,7 +1,9 @@
 /** Initial identity of an isolated simulated account. No real credentials or message content. */
 export interface TestingConfiguration {
   profile?: { name?: string; status?: string };
-  accountType?: "personal" | "business";
+  accountType?:
+    "whatsapp_app" | "business_app" | "meta_cloud" | "meta_coexistence";
+  primaryPlatform?: "android" | "ios";
   replyBehavior?: "off" | "echo";
   failureScenario?: "none" | "reject-send";
   historyFixtureId?: string;
@@ -10,6 +12,7 @@ export type TestingConfigurationField =
   | "profile.name"
   | "profile.status"
   | "accountType"
+  | "primaryPlatform"
   | "replyBehavior"
   | "failureScenario"
   | "historyFixtureId";
@@ -95,8 +98,6 @@ export interface TestEventOverrides {
 }
 
 export interface TriggerTestEventRequest {
-  /** Test number connection name in the project. */
-  connection: string;
   event: TestEventFixture;
   overrides?: TestEventOverrides;
   /**

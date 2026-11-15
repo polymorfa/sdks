@@ -78,7 +78,7 @@ type HybridMergeCandidateConnection struct {
 	CanBeAbsorbed bool   `json:"canBeAbsorbed"`
 }
 type HybridMergeCandidate struct {
-	Connections      [2]HybridMergeCandidateConnection `json:"numbers"`
+	Connections      [2]HybridMergeCandidateConnection `json:"connections"`
 	Eligible         bool                              `json:"eligible"`
 	IneligibleReason string                            `json:"ineligibleReason,omitempty"`
 }

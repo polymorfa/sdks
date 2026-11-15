@@ -173,9 +173,9 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
-      total: 671,
-      covered: 451,
+      sourceCommit: "b23680d19accfecf2f0b7166bdfa11e433947362",
+      total: 672,
+      covered: 452,
       partial: 2,
       missing: 58,
       excluded: 160,
@@ -209,13 +209,15 @@ describe("coverage checker", () => {
       enableCustomers: "Client.customers.enable",
       getCustomer: "Client.customers.retrieve",
       getCustomersStatus: "Client.customers.status",
+      getCustomerSignalCustody: undefined,
+      updateCustomerSignalCustody: undefined,
       listCustomerEvents: "Client.customers.listEvents",
-      listCustomerNumbers: "Client.customers.listConnections",
+      listCustomerConnections: "Client.customers.listConnections",
       listCustomerPairingLinks: "Client.customers.listPairingLinks",
       listCustomers: "Client.customers.list",
       restoreCustomer: "Client.customers.restore",
       revokeCustomerPairingLink: "Client.customers.revokePairingLink",
-      transferCustomerNumber: "Client.customers.transferConnection",
+      transferCustomerConnection: "Client.customers.transferConnection",
       updateCustomer: "Client.customers.update",
     });
   });

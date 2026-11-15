@@ -14,7 +14,7 @@ import type {
 const fixture = JSON.parse(
   readFileSync(
     new URL(
-      "../../../contracts/fixtures/campaign-webhook-metadata.json",
+      "../../../contracts/fixtures/connections/campaign-webhook-metadata.json",
       import.meta.url,
     ),
     "utf8",

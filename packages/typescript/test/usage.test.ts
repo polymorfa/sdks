@@ -42,7 +42,7 @@ const summary: UsageSummary = {
   connection: null,
   billingEnabled: false,
   meters: [meterTotal],
-  numbers: [
+  connections: [
     { connection: "support", projectId: "project-1", meters: [meterTotal] },
   ],
   connectionsTruncated: false,

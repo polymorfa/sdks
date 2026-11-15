@@ -77263,7 +77263,7 @@
           },
           "allowedNumber": {
             "type": "string",
-            "description": "Comma-separated E.164 connections client tokens may call. Empty allows any connection."
+            "description": "Comma-separated E.164 phone numbers client tokens may call. Empty allows any destination number."
           },
           "maxSetupsPerMinute": {
             "type": "integer",

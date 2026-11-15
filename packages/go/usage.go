@@ -90,7 +90,7 @@ type UsageSummary struct {
 	Connection           *string                `json:"connection"`
 	BillingEnabled       bool                   `json:"billingEnabled"`
 	Meters               []UsageMeterTotal      `json:"meters"`
-	Connections          []UsageConnectionTotal `json:"numbers"`
+	Connections          []UsageConnectionTotal `json:"connections"`
 	ConnectionsTruncated bool                   `json:"connectionsTruncated"`
 }
 type UsageGateDecisions struct {

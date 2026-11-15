@@ -22,7 +22,7 @@ import (
 
 func signalGolden(t *testing.T) map[string]string {
 	t.Helper()
-	data, err := os.ReadFile("testdata/signal-sidecar.json")
+	data, err := os.ReadFile("../../contracts/fixtures/connections/signal-sidecar.json")
 	if err != nil {
 		t.Fatal(err)
 	}

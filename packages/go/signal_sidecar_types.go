@@ -8,7 +8,7 @@ import (
 	"unicode/utf8"
 )
 
-const SignalSidecarSourceCommit = "8aa191ef0d4c318229c91bcdf474bf2d79dac47c"
+const SignalSidecarSourceCommit = "61209057729b002a2122b898d744a8813a702fc7"
 
 type SignalConnection struct {
 	ID              string  `json:"id"`

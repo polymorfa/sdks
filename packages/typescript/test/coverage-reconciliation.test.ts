@@ -197,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
+    expect(source.commit).toBe("b23680d19accfecf2f0b7166bdfa11e433947362");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -221,7 +221,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.supplements).toBeUndefined();
     expect(source.contracts.platform.sha256).toBe(
-      "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485",
+      "a7c3a514316a72f24dd1bb3ec1072a6090aa0bab981a6564ebea934086500c35",
     );
     for (const id of [
       "getWhatsAppAnalytics",
@@ -392,11 +392,11 @@ describe("reconciled coverage evidence", () => {
   });
 
   it("excludes the bounded number selector based on its dashboard identity contract", () => {
-    const operation = entry("listConsoleNumberOptions");
+    const operation = entry("listConsoleConnectionOptions");
     expect(operation).toMatchObject({
       family: "platform",
       method: "GET",
-      path: "/console/insights/number-options",
+      path: "/console/insights/connection-options",
       typescript: { status: "excluded" },
     });
     expect(operation.typescript.reason).toContain("dashboard identity");
@@ -407,7 +407,7 @@ describe("reconciled coverage evidence", () => {
       paths: Record<string, Record<string, { security: unknown }>>;
     };
     expect(platform.paths[operation.path]!.get!.security).toEqual([
-      { ConsoleConnection: [] },
+      { ConsoleSession: [] },
     ]);
   });
 
@@ -431,7 +431,7 @@ describe("reconciled coverage evidence", () => {
       expect(
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
-      ).toEqual([{ ConsoleConnection: [] }]);
+      ).toEqual([{ ConsoleSession: [] }]);
     }
   });
 
@@ -459,7 +459,7 @@ describe("reconciled coverage evidence", () => {
         platform.paths[operation.path]![operation.method.toLowerCase()]!
           .security,
         operationId,
-      ).toEqual([{ ConsoleConnection: [] }]);
+      ).toEqual([{ ConsoleSession: [] }]);
     }
   });
 });

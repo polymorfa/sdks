@@ -27,12 +27,12 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 					}
 					var body map[string]any
 					_ = json.NewDecoder(r.Body).Decode(&body)
-					if len(body) != 4 || body["purpose"] != "add_connection" || body["session"] != "authorized-support" || body["addConnection"] != "linked_devices" || body["connectionGoal"] != "hybrid" {
+					if len(body) != 4 || body["purpose"] != "add_method" || body["connection"] != "authorized-support" || body["addMethod"] != "linked_devices" || body["connectionGoal"] != "hybrid" {
 						t.Error("QuickLink server assignment", body)
 					}
 					connected.Add(1)
 					w.Header().Set("Content-Type", "application/json")
-					w.Write([]byte(`{"success":true,"data":{"purpose":"add_connection","connectionGoal":"hybrid","addConnection":"linked_devices","id":"link","url":"https://quick.example.test/link","session":"authorized-support","expiresAt":null}}`))
+					w.Write([]byte(`{"success":true,"data":{"purpose":"add_method","connectionGoal":"hybrid","addMethod":"linked_devices","id":"link","url":"https://quick.example.test/link","connection":"authorized-support","expiresAt":null}}`))
 					return
 				}
 
@@ -44,7 +44,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 				}
 				var body map[string]any
 				_ = json.NewDecoder(r.Body).Decode(&body)
-				if len(body) != 3 || body["ephemeralId"] != "example:app-user" || body["session"] != "authorized-support" || body["ttlSeconds"] != float64(600) {
+				if len(body) != 3 || body["ephemeralId"] != "example:app-user" || body["connection"] != "authorized-support" || body["ttlSeconds"] != float64(600) {
 					t.Error("server assignment", body)
 				}
 				minted.Add(1)
@@ -56,7 +56,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			a := &app{client: sdk, username: sha256.Sum256([]byte("user")), password: sha256.Sum256([]byte("test-password")), userID: "app-user", session: "authorized-support", sessions: map[string]appSession{}}
+			a := &app{client: sdk, username: sha256.Sum256([]byte("user")), password: sha256.Sum256([]byte("test-password")), userID: "app-user", connection: "authorized-support", sessions: map[string]appSession{}}
 			handler := a.routes()
 			if framework == "gin" {
 				handler = ginHandler(handler)
@@ -107,14 +107,14 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 			if len(cookies) != 1 || !cookies[0].HttpOnly || cookies[0].SameSite != http.SameSiteStrictMode || strings.Contains(cookies[0].Value, "app-user") {
 				t.Fatal("opaque application session")
 			}
-			response = send("POST", "/api/polymorfa/token", server.URL, "session=attacker&ephemeralId=attacker")
+			response = send("POST", "/api/polymorfa/token", server.URL, "connection=attacker&ephemeralId=attacker")
 			var token map[string]any
 			_ = json.NewDecoder(response.Body).Decode(&token)
 			response.Body.Close()
 			if response.StatusCode != 200 || token["audience"] != "browser" || token["value"] != "pmfa_ct_YnJvd3Nlcl9maXh0dXJl" || response.Header.Get("Cache-Control") != "no-store" || minted.Load() != 1 {
 				t.Fatal("token result", token, response.Status)
 			}
-			response = send("POST", "/api/polymorfa/connect", server.URL, "session=attacker&purpose=initial")
+			response = send("POST", "/api/polymorfa/connect", server.URL, "connection=attacker&purpose=initial")
 			var link map[string]any
 			_ = json.NewDecoder(response.Body).Decode(&link)
 			response.Body.Close()
