@@ -54,29 +54,29 @@ class CloudCatalogProductPage(TypedDict):
 
 
 class Catalogs(Resource):
-    def _path(self, session: str, catalog_id: str | None = None) -> str:
+    def _path(self, connection: str, catalog_id: str | None = None) -> str:
         self._server()
-        if not session.strip():
+        if not connection.strip():
             raise ValidationError("Provide a Number ID.")
         if catalog_id is not None and re.fullmatch(r"[0-9]{1,32}", catalog_id) is None:
             raise ValidationError("catalogId must contain 1 to 32 digits.")
-        return f"/messaging/{segment(session)}/catalogs" + (
+        return f"/messaging/{segment(connection)}/catalogs" + (
             "" if catalog_id is None else "/" + segment(catalog_id)
         )
 
     async def list(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CloudCatalogList]]:
-        return await self._request("GET", self._path(session), options=options)
+        return await self._request("GET", self._path(connection), options=options)
 
     async def retrieve(
-        self, session: str, catalog_id: str, *, options: RequestOptions = O
+        self, connection: str, catalog_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CloudCatalogSync]]:
-        return await self._request("GET", self._path(session, catalog_id), options=options)
+        return await self._request("GET", self._path(connection, catalog_id), options=options)
 
     async def list_products(
         self,
-        session: str,
+        connection: str,
         catalog_id: str,
         *,
         limit: int | None = None,
@@ -92,18 +92,18 @@ class Catalogs(Resource):
             raise ValidationError("Invalid catalog pagination.")
         return await self._request(
             "GET",
-            self._path(session, catalog_id) + "/products",
+            self._path(connection, catalog_id) + "/products",
             query={"limit": limit, "cursor": cursor},
             options=options,
         )
 
     async def sync(
-        self, session: str, catalog_id: str, *, options: RequestOptions = O
+        self, connection: str, catalog_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CloudCatalogSync]]:
         """Submit once; preserve cooldown errors and never poll automatically."""
         return await self._request(
             "POST",
-            self._path(session, catalog_id) + "/sync",
+            self._path(connection, catalog_id) + "/sync",
             options=replace(options, max_network_retries=0, timeout=options.timeout or 60),
         )
 

@@ -10,10 +10,10 @@ import pytest
 from polymorfa import AsyncClient
 from polymorfa.bansafe_observations import (
     Claim,
+    ConnectionDetail,
     HealthAction,
     HealthPoint,
     HealthProjection,
-    NumberDetail,
     Signal,
 )
 from polymorfa.transport import Credential, RequestOptions
@@ -71,8 +71,8 @@ ENFORCEMENT = {
 }
 NUMBER = {
     **HEALTH,
-    "sessionId": "sid",
-    "session": "support",
+    "connectionId": "sid",
+    "connection": "support",
     "phoneNumber": "+1555",
     "projectId": "project",
     "enforcement": ENFORCEMENT,
@@ -88,8 +88,8 @@ FINDING = {
     "occurrences": 2,
     "reopenedCount": 1,
     "evidence": {"failed": 0.1},
-    "sessionId": "sid",
-    "session": "support",
+    "connectionId": "sid",
+    "connection": "support",
     "phoneNumber": "+1555",
     "firstSeenAt": "then",
     "lastSeenAt": "now",
@@ -117,8 +117,8 @@ DETAIL = {
 }
 INCIDENT = {
     "id": "incident",
-    "sessionId": "sid",
-    "session": "support",
+    "connectionId": "sid",
+    "connection": "support",
     "phoneNumber": "+1555",
     "projectId": "project",
     "kind": "customer_report",
@@ -137,8 +137,8 @@ INCIDENT = {
 CLAIM = {
     "id": "claim",
     "incidentId": "incident",
-    "sessionId": "sid",
-    "session": "support",
+    "connectionId": "sid",
+    "connection": "support",
     "phoneNumber": "+1555",
     "projectId": "project",
     "status": "under_review",
@@ -186,8 +186,8 @@ SNAPSHOT = {
     "signals": [SIGNAL],
 }
 COLLECTION = {
-    "sessionId": "sid",
-    "session": "support",
+    "connectionId": "sid",
+    "connection": "support",
     "projectId": "project",
     "collection": {
         "state": "fresh",
@@ -202,8 +202,8 @@ COLLECTION = {
 }
 ACTION = {
     "id": "action",
-    "sessionId": "sid",
-    "session": "support",
+    "connectionId": "sid",
+    "connection": "support",
     "projectId": "project",
     "mode": "apply",
     "action": "slow_down",
@@ -253,7 +253,13 @@ CASES = [
         BASE + "/health/support/history",
         None,
         {"since": "then", "limit": "5"},
-        {"data": {"sessionId": "sid", "session": "support", "points": [{**HEALTH, "band": None}]}},
+        {
+            "data": {
+                "connectionId": "sid",
+                "connection": "support",
+                "points": [{**HEALTH, "band": None}],
+            }
+        },
         lambda r, o: r.list_health_history("support", {"since": "then", "limit": 5}, options=o),
     ),
     (
@@ -307,10 +313,10 @@ CASES = [
         "GET",
         BASE + "/health-actions",
         None,
-        {"session": "support", "status": "succeeded"},
+        {"connection": "support", "status": "succeeded"},
         page(ACTION),
         lambda r, o: r.list_health_actions(
-            {"session": "support", "status": "succeeded"}, options=o
+            {"connection": "support", "status": "succeeded"}, options=o
         ),
     ),
     (
@@ -342,27 +348,27 @@ CASES = [
         "GET",
         BASE + "/incidents",
         None,
-        {"session": "support"},
+        {"connection": "support"},
         page(INCIDENT),
-        lambda r, o: r.list_incidents({"session": "support"}, options=o),
+        lambda r, o: r.list_incidents({"connection": "support"}, options=o),
     ),
     (
         "create_incident",
         "POST",
         BASE + "/incidents",
-        {"session": "support", "occurredAt": "now", "note": "reported"},
+        {"connection": "support", "occurredAt": "now", "note": "reported"},
         {},
         {
             "data": {
                 "incidentId": "incident",
                 "created": True,
-                "sessionId": "sid",
-                "session": "support",
+                "connectionId": "sid",
+                "connection": "support",
                 "occurredAt": "now",
             }
         },
         lambda r, o: r.create_incident(
-            {"session": "support", "occurredAt": "now", "note": "reported"}, options=o
+            {"connection": "support", "occurredAt": "now", "note": "reported"}, options=o
         ),
     ),
     (
@@ -452,7 +458,7 @@ async def test_bansafe_observation_native_wire(name, method, path, body, query, 
 
 
 def test_named_dtos_expose_nested_models_nullable_values_and_fractional_credit_quantities():
-    assert set(get_type_hints(NumberDetail)) == set(DETAIL)
+    assert set(get_type_hints(ConnectionDetail)) == set(DETAIL)
     assert set(get_type_hints(Claim)) == set(CLAIM)
     assert get_type_hints(Claim)["amountCents"] is float
     assert get_type_hints(HealthProjection)["band"] != get_type_hints(HealthPoint)["band"]

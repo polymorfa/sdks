@@ -71,9 +71,9 @@ KNOWN_EVENT_TYPES = frozenset(
         "customer.archiving",
         "customer.created",
         "customer.enabled",
-        "customer.number.attached",
-        "customer.number.disconnected",
-        "customer.number.transferred",
+        "customer.connection.attached",
+        "customer.connection.disconnected",
+        "customer.connection.transferred",
         "customer.pairing_link.connected",
         "customer.pairing_link.created",
         "customer.pairing_link.expired",
@@ -100,12 +100,12 @@ KNOWN_EVENT_TYPES = frozenset(
         "newsletter.update",
         "order.payment_updated",
         "presence.update",
-        "session.capabilities_updated",
-        "session.connected",
-        "session.logged_out",
-        "session.phone_offline",
-        "session.restriction_updated",
-        "session.status",
+        "connection.capabilities_updated",
+        "connection.connected",
+        "connection.logged_out",
+        "connection.phone_offline",
+        "connection.restriction_updated",
+        "connection.status",
         "template.status",
         "usage.recorded",
         "voice.asset_failed",
@@ -147,13 +147,13 @@ def parse_verified_webhook_event(raw_body: bytes) -> WebhookEvent:
         or not all(
             isinstance(value.get(key), str) and value[key] for key in ("id", "timestamp", "event")
         )
-        or not isinstance(value.get("session"), str)
+        or not isinstance(value.get("connection"), str)
         or "payload" not in value
     ):
         raise ValidationError("Invalid webhook envelope.", code="invalid_webhook_event")
     return WebhookEvent(
         value["id"],
-        value["session"],
+        value["connection"],
         value["timestamp"],
         value["event"],
         cast(Json, value["payload"]),

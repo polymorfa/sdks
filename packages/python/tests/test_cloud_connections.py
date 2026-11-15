@@ -37,7 +37,7 @@ PRICING = {
 REAUTH = {
     "quicklinkId": "link_1",
     "url": "https://link.polymorfa.com/fixture",
-    "session": "support",
+    "connection": "support",
 }
 CASES = [
     (
@@ -61,7 +61,7 @@ CASES = [
 
 
 @pytest.mark.parametrize("method,suffix,query,data,invoke", CASES)
-async def test_typed_cloud_session_observations(method, suffix, query, data, invoke):
+async def test_typed_cloud_connection_observations(method, suffix, query, data, invoke):
     fixture = {"success": True, "data": data}
 
     def handler(request):
@@ -76,11 +76,11 @@ async def test_typed_cloud_session_observations(method, suffix, query, data, inv
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
-        response = await invoke(client.sessions)
+        response = await invoke(client.connections)
         assert response.data == fixture and response.metadata.request_id == "req_cloud"
     async with AsyncMessagingClient(Credential("client_token", "pmfa_ct_Zml4dHVyZQ")) as browser:
         with pytest.raises(ConfigurationError):
-            await invoke(browser.sessions)
+            await invoke(browser.connections)
 
 
 async def test_reauthorization_never_retries_even_with_idempotency_key():
@@ -98,7 +98,7 @@ async def test_reauthorization_never_retries_even_with_idempotency_key():
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ServerError):
-            await client.sessions.reauthorize_cloud_credentials(
+            await client.connections.reauthorize_cloud_credentials(
                 "support", options=RequestOptions(idempotency_key="reauth_1", max_network_retries=3)
             )
     assert len(attempts) == 1

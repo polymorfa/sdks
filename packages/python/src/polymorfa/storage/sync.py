@@ -63,7 +63,7 @@ async def apply_event(
     payload = record(event.payload)
     if event.event == "history.sync" and "delivery" in payload:
         descriptor = validate_descriptor(event.payload)
-        if await storage.has_event(event.session, event.id):
+        if await storage.has_event(event.connection, event.id):
             return ApplyResult(False, 0)
         batch = reduce_event(event)
         if history_descriptor_mode == "metadata-only":
@@ -73,12 +73,12 @@ async def apply_event(
         try:
             descriptor_chunk = await decode_history_descriptor(descriptor, event)
             validate_chunk(descriptor_chunk)
-            history = reduce_history_chunk(event.session, descriptor_chunk)
+            history = reduce_history_chunk(event.connection, descriptor_chunk)
         except Exception:  # noqa: BLE001 - caller errors may contain descriptor secrets.
             raise ValueError("Failed to decode history descriptor") from None
         return await storage.apply(
             OperationBatch(
-                batch.session_id,
+                batch.connection_id,
                 [*history.operations, *batch.operations],
                 batch.event_id,
                 batch.event_type,
@@ -90,15 +90,15 @@ async def apply_event(
         and payload.get("kind") != "history"
         and decode_history is not None
     ):
-        if await storage.has_event(event.session, event.id):
+        if await storage.has_event(event.connection, event.id):
             return ApplyResult(False, 0)
         chunk = await decode_history(event)
         if chunk is not None:
             history = reduce_history_chunk(
-                event.session, chunk, identities=history_identity_index(payload)
+                event.connection, chunk, identities=history_identity_index(payload)
             )
             batch = OperationBatch(
-                batch.session_id,
+                batch.connection_id,
                 [*history.operations, *batch.operations],
                 batch.event_id,
                 batch.event_type,
@@ -169,7 +169,7 @@ def sync_to_storage(
     target: Storage | StorageAdapter,
     *,
     project_id: str | None = None,
-    checkpoint_session_id: str = "*",
+    checkpoint_connection_id: str = "*",
     checkpoint_stream: str = "events",
     event_types: Sequence[str] | None = None,
     require_payload: bool = True,
@@ -202,7 +202,7 @@ def sync_to_storage(
         try:
             if stopped.is_set():
                 return
-            saved = await storage.get_checkpoint(checkpoint_session_id, checkpoint_stream)
+            saved = await storage.get_checkpoint(checkpoint_connection_id, checkpoint_stream)
             expected = saved.cursor if saved is not None else None
             if stopped.is_set():
                 return
@@ -248,10 +248,10 @@ def sync_to_storage(
                 )
                 await storage.apply(
                     OperationBatch(
-                        checkpoint_session_id,
+                        checkpoint_connection_id,
                         [
                             Checkpoint(
-                                checkpoint_session_id,
+                                checkpoint_connection_id,
                                 checkpoint_stream,
                                 item.cursor,
                                 expected_cursor=expected,

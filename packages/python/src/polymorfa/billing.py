@@ -14,7 +14,7 @@ from .messaging import O, Resource, segment
 from .models import DataEnvelope
 from .transport import ApiResponse, RequestOptions
 
-Scope = Literal["project", "customer", "number"]
+Scope = Literal["project", "customer", "connection"]
 
 
 class Balance(TypedDict):
@@ -23,7 +23,7 @@ class Balance(TypedDict):
 
 
 class Usage(TypedDict):
-    activeNumbers: int
+    activeConnections: int
     totalChargedCents: float
 
 
@@ -33,7 +33,7 @@ class Transaction(TypedDict):
     balanceAfterCents: float
     type: str
     description: str
-    sessionId: str | None
+    connectionId: str | None
     projectId: str | None
     tier: str | None
     currency: str | None
@@ -64,7 +64,7 @@ class Priorities(TypedDict):
     revision: int
     projects: list[Priority]
     customers: list[ProjectPriority]
-    numbers: list[ProjectPriority]
+    connections: list[ProjectPriority]
 
 
 class Budget(TypedDict):
@@ -121,7 +121,7 @@ class Saved(TypedDict):
 
 
 class ResourceOrder(TypedDict):
-    scope: Literal["customer", "number"]
+    scope: Literal["customer", "connection"]
     resourceId: str
 
 
@@ -139,7 +139,7 @@ class ReorderProjects(TypedDict):
 
 
 class ReorderChildren(TypedDict):
-    scope: Literal["customer", "number"]
+    scope: Literal["customer", "connection"]
     projectId: str
     resourceIds: list[str]
     expectedRevision: int
@@ -168,8 +168,8 @@ def _revision(value: int) -> None:
 
 
 def _scope(value: Scope) -> None:
-    if value not in ("project", "customer", "number"):
-        _invalid("scope must be project, customer or number")
+    if value not in ("project", "customer", "connection"):
+        _invalid("scope must be project, customer or connection")
 
 
 def _priority(value: int) -> None:
@@ -313,7 +313,7 @@ class Billing(Resource):
         if body["scope"] == "resource":
             resources = body["resources"]
             if len(resources) > 1000000 or any(
-                row["scope"] not in ("customer", "number") for row in resources
+                row["scope"] not in ("customer", "connection") for row in resources
             ):
                 raise ValidationError("resources must be a unique complete list.")
             normalized = [

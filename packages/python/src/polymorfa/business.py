@@ -129,144 +129,161 @@ class BusinessEligibility(TypedDict):
 
 class Business(Resource):
     async def get_profile(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[BusinessProfile]]:
-        return await self._request("GET", self._path(session) + "/profile", options=options)
+        return await self._request("GET", self._path(connection) + "/profile", options=options)
 
     async def update_profile(
-        self, session: str, body: ProfileUpdate, *, options: RequestOptions = O
+        self, connection: str, body: ProfileUpdate, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ProfileStatus] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "PATCH", self._path(session) + "/profile", body=body, options=options
+            "PATCH", self._path(connection) + "/profile", body=body, options=options
         )
 
     async def set_cover_photo(
-        self, session: str, body: PictureSource, *, options: RequestOptions = O
+        self, connection: str, body: PictureSource, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CoverPhotoResult] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "PUT", self._path(session) + "/profile/cover-photo", body=body, options=options
+            "PUT", self._path(connection) + "/profile/cover-photo", body=body, options=options
         )
 
     async def delete_cover_photo(
-        self, session: str, cover_photo_id: str, *, options: RequestOptions = O
+        self, connection: str, cover_photo_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ProfileStatus] | Envelope[AsyncAccepted]]:
         return await self._request(
             "DELETE",
-            self._path(session) + "/profile/cover-photo/" + segment(cover_photo_id),
+            self._path(connection) + "/profile/cover-photo/" + segment(cover_photo_id),
             options=options,
         )
 
     async def get_merchant_compliance(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MerchantCompliance]]:
-        return await self._request("GET", self._path(session) + "/compliance", options=options)
+        return await self._request("GET", self._path(connection) + "/compliance", options=options)
 
     async def set_merchant_compliance(
-        self, session: str, body: MerchantCompliance, *, options: RequestOptions = O
+        self, connection: str, body: MerchantCompliance, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MerchantCompliance] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "PUT", self._path(session) + "/compliance", body=body, options=options
+            "PUT", self._path(connection) + "/compliance", body=body, options=options
         )
 
     async def get_linked_accounts(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[LinkedAccounts]]:
-        return await self._request("GET", self._path(session) + "/linked-accounts", options=options)
+        return await self._request(
+            "GET", self._path(connection) + "/linked-accounts", options=options
+        )
 
     async def get_eligibility(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[BusinessEligibility]]:
-        return await self._request("GET", self._path(session) + "/eligibility", options=options)
+        return await self._request("GET", self._path(connection) + "/eligibility", options=options)
 
     async def get_catalog(
-        self, session: str, params: CatalogParams, *, options: RequestOptions = O
+        self, connection: str, params: CatalogParams, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CatalogPage]]:
         return await self._request(
             "GET",
-            self._path(session) + "/catalog",
+            self._path(connection) + "/catalog",
             query=cast(Mapping[str, QueryValue], params),
             options=options,
         )
 
     async def create_catalog(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
-        return await self._request("POST", self._path(session) + "/catalog", options=options)
+        return await self._request("POST", self._path(connection) + "/catalog", options=options)
 
     async def set_cart_enabled(
-        self, session: str, body: CartSetting, *, options: RequestOptions = O
+        self, connection: str, body: CartSetting, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "PATCH", self._path(session) + "/catalog/cart", body=body, options=options
+            "PATCH", self._path(connection) + "/catalog/cart", body=body, options=options
         )
 
     async def get_product(
-        self, session: str, product_id: str, params: ProductParams, *, options: RequestOptions = O
+        self,
+        connection: str,
+        product_id: str,
+        params: ProductParams,
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[Envelope[Product]]:
         return await self._request(
             "GET",
-            self._path(session) + "/products/" + segment(product_id),
+            self._path(connection) + "/products/" + segment(product_id),
             query=cast(Mapping[str, QueryValue], params),
             options=options,
         )
 
     async def create_product(
-        self, session: str, body: ProductMutation, *, options: RequestOptions = O
+        self, connection: str, body: ProductMutation, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Product] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "POST", self._path(session) + "/products", body=body, options=options
+            "POST", self._path(connection) + "/products", body=body, options=options
         )
 
     async def update_product(
-        self, session: str, product_id: str, body: ProductMutation, *, options: RequestOptions = O
+        self,
+        connection: str,
+        product_id: str,
+        body: ProductMutation,
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[Envelope[Product] | Envelope[AsyncAccepted]]:
         return await self._request(
             "PUT",
-            self._path(session) + "/products/" + segment(product_id),
+            self._path(connection) + "/products/" + segment(product_id),
             body=body,
             options=options,
         )
 
     async def delete_product(
-        self, session: str, product_id: str, *, options: RequestOptions = O
+        self, connection: str, product_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[DeleteProductResult] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "DELETE", self._path(session) + "/products/" + segment(product_id), options=options
+            "DELETE", self._path(connection) + "/products/" + segment(product_id), options=options
         )
 
     async def set_product_visibility(
-        self, session: str, product_id: str, body: ProductVisibility, *, options: RequestOptions = O
+        self,
+        connection: str,
+        product_id: str,
+        body: ProductVisibility,
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
         return await self._request(
             "PATCH",
-            self._path(session) + "/products/" + segment(product_id) + "/visibility",
+            self._path(connection) + "/products/" + segment(product_id) + "/visibility",
             body=body,
             options=options,
         )
 
     async def appeal_product(
-        self, session: str, product_id: str, body: Appeal, *, options: RequestOptions = O
+        self, connection: str, product_id: str, body: Appeal, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            self._path(session) + "/products/" + segment(product_id) + "/appeal",
+            self._path(connection) + "/products/" + segment(product_id) + "/appeal",
             body=body,
             options=options,
         )
 
     async def list_collections(
-        self, session: str, params: CollectionsParams, *, options: RequestOptions = O
+        self, connection: str, params: CollectionsParams, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CollectionPage]]:
         return await self._request(
             "GET",
-            self._path(session) + "/collections",
+            self._path(connection) + "/collections",
             query=cast(Mapping[str, QueryValue], params),
             options=options,
         )
 
     async def get_collection(
         self,
-        session: str,
+        connection: str,
         collection_id: str,
         params: CatalogParams,
         *,
@@ -274,21 +291,21 @@ class Business(Resource):
     ) -> ApiResponse[Envelope[Collection]]:
         return await self._request(
             "GET",
-            self._path(session) + "/collections/" + segment(collection_id),
+            self._path(connection) + "/collections/" + segment(collection_id),
             query=cast(Mapping[str, QueryValue], params),
             options=options,
         )
 
     async def create_collection(
-        self, session: str, body: CollectionCreate, *, options: RequestOptions = O
+        self, connection: str, body: CollectionCreate, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CollectionResult] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "POST", self._path(session) + "/collections", body=body, options=options
+            "POST", self._path(connection) + "/collections", body=body, options=options
         )
 
     async def update_collection(
         self,
-        session: str,
+        connection: str,
         collection_id: str,
         body: CollectionUpdate,
         *,
@@ -296,50 +313,50 @@ class Business(Resource):
     ) -> ApiResponse[Envelope[CollectionResult] | Envelope[AsyncAccepted]]:
         return await self._request(
             "PATCH",
-            self._path(session) + "/collections/" + segment(collection_id),
+            self._path(connection) + "/collections/" + segment(collection_id),
             body=body,
             options=options,
         )
 
     async def delete_collection(
-        self, session: str, collection_id: str, *, options: RequestOptions = O
+        self, connection: str, collection_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
         return await self._request(
             "DELETE",
-            self._path(session) + "/collections/" + segment(collection_id),
+            self._path(connection) + "/collections/" + segment(collection_id),
             options=options,
         )
 
     async def reorder_collections(
-        self, session: str, body: CollectionReorder, *, options: RequestOptions = O
+        self, connection: str, body: CollectionReorder, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "POST", self._path(session) + "/collections/reorder", body=body, options=options
+            "POST", self._path(connection) + "/collections/reorder", body=body, options=options
         )
 
     async def appeal_collection(
-        self, session: str, collection_id: str, body: Appeal, *, options: RequestOptions = O
+        self, connection: str, collection_id: str, body: Appeal, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionSuccess] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            self._path(session) + "/collections/" + segment(collection_id) + "/appeal",
+            self._path(connection) + "/collections/" + segment(collection_id) + "/appeal",
             body=body,
             options=options,
         )
 
     async def get_order(
-        self, session: str, order_id: str, body: OrderLookup, *, options: RequestOptions = O
+        self, connection: str, order_id: str, body: OrderLookup, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Order] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            self._path(session) + "/orders/" + segment(order_id) + "/lookup",
+            self._path(connection) + "/orders/" + segment(order_id) + "/lookup",
             body=body,
             options=options,
         )
 
     @staticmethod
-    def _path(session: str) -> str:
-        return f"/messaging/{segment(session)}/business"
+    def _path(connection: str) -> str:
+        return f"/messaging/{segment(connection)}/business"
 
 
 class CatalogParams(TypedDict):

@@ -39,10 +39,10 @@ RECEIPT = {
         "type": "text",
     },
 }
-SESSION = {
+CONNECTION = {
     "success": True,
     "data": {
-        "sessionId": "support",
+        "connectionId": "support",
         "name": "support",
         "tenantId": "team_1",
         "type": "linked_device",
@@ -57,7 +57,7 @@ LINK = {
     "data": {
         "id": "link_1",
         "url": "https://link.polymorfa.com/link_1",
-        "session": "support",
+        "connection": "support",
         "purpose": "initial",
         "connectionGoal": "single",
         "expiresAt": None,
@@ -68,7 +68,7 @@ LINK_STATUS = {
     "data": {
         "id": "link_1",
         "status": "pending",
-        "session": "support",
+        "connection": "support",
         "purpose": "initial",
         "connectionGoal": "single",
         "hybridPhase": None,
@@ -131,24 +131,24 @@ async def test_typed_resource_routes() -> None:
     cases = [
         (
             "GET",
-            "/platform/sessions/support",
+            "/platform/connections/support",
             None,
-            SESSION,
-            lambda c: c.sessions.retrieve("support"),
+            CONNECTION,
+            lambda c: c.connections.retrieve("support"),
         ),
         (
             "GET",
             "/messaging/support/pair/qr?format=json",
             None,
             {"success": True, "data": {"qr": "qr_1"}},
-            lambda c: c.sessions.qr("support"),
+            lambda c: c.connections.qr("support"),
         ),
         (
             "POST",
             "/messaging/support/pair/code",
             {"phone": "+15551234567"},
             {"success": True, "data": {"code": "123"}},
-            lambda c: c.sessions.request_pairing_code("support", {"phone": "+15551234567"}),
+            lambda c: c.connections.request_pairing_code("support", {"phone": "+15551234567"}),
         ),
         (
             "POST",
@@ -274,9 +274,9 @@ async def test_retry_safety_replay_and_immutable_overrides() -> None:
         return httpx.Response(200, json={"data": []})
 
     async with AsyncMessagingClient(KEY, http_transport=transport(handler)) as client:
-        result = await client.sessions.list(options=RequestOptions(api_version="2026-10-01"))
+        result = await client.connections.list(options=RequestOptions(api_version="2026-10-01"))
         assert result.metadata.attempts == 2
-        await client.sessions.list()
+        await client.connections.list()
         assert seen[-1].headers["polymorfa-version"] == "2026-09-22"
     seen.clear()
 
@@ -328,7 +328,7 @@ async def test_error_metadata_and_html() -> None:
         ),
     ) as client:
         with pytest.raises(AuthenticationError) as caught:
-            await client.sessions.list()
+            await client.connections.list()
         assert caught.value.request_id == "body_req"
         assert caught.value.doc_url == "https://docs.polymorfa.com/api/errors"
     async with AsyncMessagingClient(
@@ -339,7 +339,7 @@ async def test_error_metadata_and_html() -> None:
         ),
     ) as client:
         with pytest.raises(ServerError) as html:
-            await client.sessions.list()
+            await client.connections.list()
         assert "private" not in str(html.value)
 
 
@@ -430,7 +430,7 @@ async def test_cancellation_and_pagination() -> None:
         return httpx.Response(200, json={"data": []})
 
     async with AsyncClient(KEY, http_transport=httpx.MockTransport(blocking)) as client:
-        task = asyncio.create_task(client.sessions.list())
+        task = asyncio.create_task(client.connections.list())
         await started.wait()
         task.cancel()
         with pytest.raises(asyncio.CancelledError):
@@ -477,7 +477,7 @@ async def test_media_redirect_credential_isolation() -> None:
 
 
 def test_webhooks_exact_bytes_and_unknown_events() -> None:
-    raw = b'{"id":"evt_1","session":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
+    raw = b'{"id":"evt_1","connection":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
     signature = hmac.new(b"secret", raw, hashlib.sha256).hexdigest()
     event = construct_webhook_event(raw, "sha256=" + signature, "secret")
     assert not event.known

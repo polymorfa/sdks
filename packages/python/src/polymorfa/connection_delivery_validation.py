@@ -1,4 +1,4 @@
-"""Descriptor delivery intent is separate from immutable session custody."""
+"""Descriptor delivery intent is separate from immutable connection custody."""
 
 from __future__ import annotations
 
@@ -73,8 +73,8 @@ def quicklink_intent(value: object) -> bool:
         [
             "purpose",
             "signalMode",
-            "session",
-            "addConnection",
+            "connection",
+            "addMethod",
             "connectionGoal",
             "projectId",
             "customerId",
@@ -86,14 +86,14 @@ def quicklink_intent(value: object) -> bool:
     )
     if "signalMode" in v:
         V.choice(v["signalMode"], ("standard", "zero_knowledge"), "signalMode")
-    if v.get("purpose") == "add_connection":
-        V.text(v.get("session"), "session")
-        V.choice(v.get("addConnection"), ("linked_devices", "official_api"), "addConnection")
+    if v.get("purpose") == "add_method":
+        V.text(v.get("connection"), "connection")
+        V.choice(v.get("addMethod"), ("linked_devices", "official_api"), "addMethod")
         if v.get("connectionGoal") == "single" or any(
             key in v for key in ("signalMode", "customerId", "externalId", "billingControls")
         ):
             V.invalid("purpose")
-    elif ("purpose" in v and v["purpose"] != "initial") or "session" in v or "addConnection" in v:
+    elif ("purpose" in v and v["purpose"] != "initial") or "connection" in v or "addMethod" in v:
         V.invalid("purpose")
     intent = "signalMode" in v
     if "configuration" in v:

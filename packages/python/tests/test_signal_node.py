@@ -35,7 +35,7 @@ WEBHOOK_SECRET = "synthetic-webhook-secret"
 EVENT = {
     "id": "event-synthetic",
     "type": "message",
-    "session_id": "session-one",
+    "connection_id": "session-one",
     "chat": "1@s.whatsapp.net",
     "sender": "2:3@lid",
     "sender_alt": "2:3@s.whatsapp.net",
@@ -71,7 +71,7 @@ def event_wire(event=EVENT):
     ).encode()
 
 
-async def test_health_sessions_and_send_exact_local_wire_no_cookie_or_upstream_credential():
+async def test_health_connections_and_send_exact_local_wire_no_cookie_or_upstream_credential():
     calls = []
 
     def handler(request):
@@ -82,12 +82,12 @@ async def test_health_sessions_and_send_exact_local_wire_no_cookie_or_upstream_c
             assert "Authorization" not in request.headers
             return httpx.Response(200, json={"status": "ok"}, headers={"Set-Cookie": "leak=secret"})
         assert request.headers["Authorization"] == "Bearer " + SECRET
-        if request.url.path == "/v1/sessions":
+        if request.url.path == "/v1/connections":
             return httpx.Response(
                 200,
                 json={
                     "node_id": "node",
-                    "sessions": [
+                    "connections": [
                         {
                             "id": "s",
                             "lease_generation": 2**63 + 7,
@@ -106,11 +106,12 @@ async def test_health_sessions_and_send_exact_local_wire_no_cookie_or_upstream_c
 
     async with SignalNodeClient(SECRET, http_transport=httpx.MockTransport(handler)) as client:
         assert await client.health() == "ok"
-        sessions = await client.list_sessions()
+        connections = await client.list_connections()
         assert (
-            sessions.sessions[0].lease_generation == 2**63 + 7 and sessions.sessions[0].pn is None
+            connections.connections[0].lease_generation == 2**63 + 7
+            and connections.connections[0].pn is None
         )
-        assert (await client.send_text("session/space λ", "1@s.whatsapp.net", "hello")).resent
+        assert (await client.send_text("connection/space λ", "1@s.whatsapp.net", "hello")).resent
         assert json.loads(calls[-1].content) == {"to": "1@s.whatsapp.net", "text": "hello"}
         assert "%2F" in str(calls[-1].url) and "%CE%BB" in str(calls[-1].url)
         await client.send_message("s", SignalMediaMessage("1@g.us", media()))
@@ -284,12 +285,12 @@ async def test_sse_split_utf8_and_explicit_ack_only():
         calls.append(request)
         if request.url.path.endswith("/ack"):
             return httpx.Response(204)
-        assert dict(request.url.params) == {"session_id": "session-one"}
+        assert dict(request.url.params) == {"connection_id": "session-one"}
         assert "Last-Event-ID" not in request.headers
         return httpx.Response(200, stream=stream, headers={"content-type": "text/event-stream"})
 
     async with SignalNodeClient(SECRET, http_transport=httpx.MockTransport(handler)) as client:
-        async with client.events(session_id="session-one", reconnect=False) as events:
+        async with client.events(connection_id="session-one", reconnect=False) as events:
             seen = [event async for event in events]
         assert (
             len(seen) == 1
@@ -303,12 +304,12 @@ async def test_sse_split_utf8_and_explicit_ack_only():
 
 
 @pytest.mark.parametrize(
-    "changed", ["foreign_session", "frame_id", "frame_type", "oversized", "partial"]
+    "changed", ["foreign_connection", "frame_id", "frame_type", "oversized", "partial"]
 )
 async def test_sse_fails_closed_on_invalid_scope_or_records(changed):
     event = copy.deepcopy(EVENT)
-    if changed == "foreign_session":
-        event["session_id"] = "foreign"
+    if changed == "foreign_connection":
+        event["connection_id"] = "foreign"
     raw = event_wire(event)
     if changed == "frame_id":
         raw = raw.replace(b"id: event-synthetic", b"id: foreign")
@@ -329,7 +330,7 @@ async def test_sse_fails_closed_on_invalid_scope_or_records(changed):
         max_event_bytes=1024,
     ) as client:
         with pytest.raises((ServerError, ConnectionError)):
-            async with client.events(session_id="session-one", reconnect=False) as events:
+            async with client.events(connection_id="session-one", reconnect=False) as events:
                 _ = [event async for event in events]
         assert stream.closed
 
@@ -505,7 +506,7 @@ async def test_redirects_never_forward_local_secret():
 
     async with SignalNodeClient(SECRET, http_transport=httpx.MockTransport(handler)) as client:
         with pytest.raises(ServerError):
-            await client.list_sessions()
+            await client.list_connections()
     assert len(requests) == 1
 
 
@@ -519,7 +520,7 @@ async def test_wrong_local_authentication_is_typed_and_does_not_expose_body():
         ),
     ) as client:
         with pytest.raises(AuthenticationError) as failure:
-            await client.list_sessions()
+            await client.list_connections()
         assert failure.value.code == "unauthorized" and "SENSITIVE" not in str(failure.value)
 
 

@@ -101,7 +101,7 @@ CAMPAIGN = {
     "composerBlueprint": None,
     "messages": [],
     "audienceRef": None,
-    "senderConfig": {"sessionIds": ["session_1"]},
+    "senderConfig": {"connectionIds": ["session_1"]},
     "complianceConfig": None,
     "variants": [VARIANT],
     "variantStrategy": STRATEGY,

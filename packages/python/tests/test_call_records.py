@@ -16,7 +16,7 @@ NOW = "2026-10-11T00:00:00Z"
 RECORD = {
     "callId": "call_1",
     "projectId": "project_1",
-    "sessionId": "support",
+    "connectionId": "support",
     "direction": "outbound",
     "upstream": "linked_device",
     "outcome": "answered",
@@ -31,7 +31,7 @@ RECORD = {
 }
 CALL = {
     "callId": "call_1",
-    "sessionId": "support",
+    "connectionId": "support",
     "projectId": "project_1",
     "direction": "outbound",
     "state": "ended",
@@ -107,7 +107,7 @@ DETAIL = {
         "events": [{"eventId": "event_1", "type": "call.ended", "occurredAt": NOW}],
         "truncated": False,
     },
-    "correlation": {"callId": "call_1", "sessionId": "support"},
+    "correlation": {"callId": "call_1", "connectionId": "support"},
 }
 METRICS = {
     "calls": 2,
@@ -124,7 +124,7 @@ STATS = {
     "since": NOW,
     "until": "2026-10-12T00:00:00Z",
     "timezone": "UTC",
-    "groupBy": "session",
+    "groupBy": "connection",
     "totals": METRICS,
     "groups": [{**METRICS, "key": "support", "start": None}],
     "groupsTruncated": False,
@@ -132,7 +132,7 @@ STATS = {
 }
 FILTER = {
     "projectId": "project_1",
-    "sessionId": "support",
+    "connectionId": "support",
     "direction": "outbound",
     "upstream": "linked_device",
     "outcome": "answered",
@@ -150,9 +150,11 @@ CASES = [
     (
         "stats",
         "/platform/calls/stats",
-        {**FILTER, "groupBy": "session", "timezone": "UTC"},
+        {**FILTER, "groupBy": "connection", "timezone": "UTC"},
         STATS,
-        lambda c, o: c.calls.stats({**FILTER, "groupBy": "session", "timezone": "UTC"}, options=o),
+        lambda c, o: c.calls.stats(
+            {**FILTER, "groupBy": "connection", "timezone": "UTC"}, options=o
+        ),
     ),
     (
         "list",
@@ -255,14 +257,16 @@ async def test_export_all_suppresses_csv_headers_and_keeps_ndjson(format):
     ) as client:
         chunks = [
             chunk
-            async for chunk in client.calls.export_all({"format": format, "sessionId": "support"})
+            async for chunk in client.calls.export_all(
+                {"format": format, "connectionId": "support"}
+            )
         ]
     assert "".join(chunks) == (
         "id\r\nfirst\r\nsecond\r\n" if format == "csv" else '{"id":"first"}\n{"id":"second"}\n'
     )
     assert queries == [
-        {"sessionId": "support", "format": format},
-        {"sessionId": "support", "format": format, "cursor": "next"},
+        {"connectionId": "support", "format": format},
+        {"connectionId": "support", "format": format, "cursor": "next"},
     ]
 
 
@@ -319,7 +323,7 @@ async def test_call_record_validation_and_datetime_serialization():
             {"until": "2026-10-11"},
             {"since": "2026-10-11T25:00:00Z"},
             {"since": datetime(2026, 10, 11)},
-            {"sessionId": " "},
+            {"connectionId": " "},
             {"projectId": "x" * 65},
         ]:
             with pytest.raises(ConfigurationError):

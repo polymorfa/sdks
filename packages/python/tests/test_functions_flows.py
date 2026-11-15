@@ -232,8 +232,8 @@ FUNCTIONS = [
     ),
 ]
 LINK = {
-    "session": "support",
-    "sessionId": "number_1",
+    "connection": "support",
+    "connectionId": "number_1",
     "wabaId": "waba_1",
     "metaFlowId": "meta_1",
     "status": "DRAFT",
@@ -274,8 +274,8 @@ PROVIDER = {
     "requestId": "request_1",
     "flowId": FLOW,
     "flowName": "Survey",
-    "sessionId": "number_1",
-    "session": "support",
+    "connectionId": "number_1",
+    "connection": "support",
     "action": "upload",
     "state": "uncertain",
     "resolution": None,
@@ -306,7 +306,7 @@ ENDPOINT = {
     "teamId": "team_1",
     "projectId": PROJECT,
     "flowId": FLOW,
-    "sessionId": "number_1",
+    "connectionId": "number_1",
     "mode": "forward",
     "url": "https://example.com/flow",
     "functionId": None,
@@ -321,7 +321,7 @@ RECEIPT = {
     "id": "receipt_1",
     "flowId": FLOW,
     "endpointId": "endpoint_1",
-    "sessionId": "number_1",
+    "connectionId": "number_1",
     "mode": "forward",
     "action": "data_exchange",
     "outcome": "succeeded",
@@ -335,7 +335,7 @@ RECEIPT = {
 }
 FB = "/platform/flows"
 FLOWID = "/" + FLOW
-NUM = {"sessionId": "number_1"}
+NUM = {"connectionId": "number_1"}
 PINPUT = {**NUM, "categories": ["OTHER"], "requestId": "request_1"}
 FLOWS = [
     (
@@ -640,7 +640,7 @@ async def test_function_validation_and_flow_endpoint_boundaries():
             {**NUM, "mode": "function", "functionId": ""},
             {**NUM, "mode": "unknown"},
             {**NUM, "mode": "direct", "url": "https://example.com", "expectedRevision": True},
-            {"sessionId": " ", "mode": "direct", "url": "https://example.com"},
+            {"connectionId": " ", "mode": "direct", "url": "https://example.com"},
         ]:
             with pytest.raises(ValidationError):
                 await p.flows.set_endpoint(FLOW, bad)

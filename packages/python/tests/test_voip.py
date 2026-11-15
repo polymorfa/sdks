@@ -90,11 +90,11 @@ CASES = [
     (
         "POST",
         "/messaging/voip/calls",
-        {"session": "support", "to": "+15551234567", "participant": "agent_1", "video": True},
-        {"success": True, "data": {"callId": "call_1", "session": "support", "video": True}},
+        {"connection": "support", "to": "+15551234567", "participant": "agent_1", "video": True},
+        {"success": True, "data": {"callId": "call_1", "connection": "support", "video": True}},
         False,
         lambda r: r.place(
-            {"session": "support", "to": "+15551234567", "participant": "agent_1", "video": True}
+            {"connection": "support", "to": "+15551234567", "participant": "agent_1", "video": True}
         ),
     ),
     (
@@ -168,7 +168,7 @@ CASES = [
     ),
     (
         "GET",
-        "/platform/sessions/support/call-settings",
+        "/platform/connections/support/call-settings",
         None,
         {"success": True, "data": SETTINGS},
         True,
@@ -176,7 +176,7 @@ CASES = [
     ),
     (
         "PUT",
-        "/platform/sessions/support/call-settings",
+        "/platform/connections/support/call-settings",
         {"conferenceMode": False, "expectedRevision": 1},
         {"success": True, "data": {**SETTINGS, "conferenceMode": False, "revision": 2}},
         True,
@@ -187,27 +187,27 @@ CASES = [
     (
         "POST",
         "/messaging/voip/call-links",
-        {"session": "support", "video": True},
+        {"connection": "support", "video": True},
         {
             "success": True,
             "data": {
-                "session": "support",
+                "connection": "support",
                 "video": True,
                 "token": "link_fixture",
                 "url": "https://call.whatsapp.com/fixture",
             },
         },
         True,
-        lambda r: r.create_call_link({"session": "support", "video": True}),
+        lambda r: r.create_call_link({"connection": "support", "video": True}),
     ),
     (
         "POST",
         "/messaging/voip/call-links/preview",
-        {"session": "support", "video": True, "token": "link_fixture"},
+        {"connection": "support", "video": True, "token": "link_fixture"},
         {
             "success": True,
             "data": {
-                "session": "support",
+                "connection": "support",
                 "video": True,
                 "creator": {"id": "user_1"},
                 "approvalRequired": True,
@@ -216,19 +216,19 @@ CASES = [
         },
         True,
         lambda r: r.preview_call_link(
-            {"session": "support", "video": True, "token": "link_fixture"}
+            {"connection": "support", "video": True, "token": "link_fixture"}
         ),
     ),
     (
         "POST",
         "/messaging/voip/calls/check",
-        {"session": "support", "to": "+15551234567"},
+        {"connection": "support", "to": "+15551234567"},
         {
             "success": True,
             "data": {"allowed": True, "refusal": None, "permission": PERMISSION_STATE},
         },
         True,
-        lambda r: r.check({"session": "support", "to": "+15551234567"}),
+        lambda r: r.check({"connection": "support", "to": "+15551234567"}),
     ),
     (
         "POST",
@@ -310,9 +310,9 @@ async def test_call_control_guards_and_no_retry_boundaries():
     ) as client:
         for invoke in (
             lambda: client.voip.create_call_link(
-                {"session": "support"}, options=RequestOptions(idempotency_key="bad")
+                {"connection": "support"}, options=RequestOptions(idempotency_key="bad")
             ),
-            lambda: client.voip.preview_call_link({"session": "support", "token": "?bad"}),
+            lambda: client.voip.preview_call_link({"connection": "support", "token": "?bad"}),
             lambda: client.voip.update_call_settings("support", {"expectedRevision": 1}),
             lambda: client.voip.report(
                 "call_1", {"kind": "quality", "connectionId": "connection_1", "quality": {}}
@@ -329,7 +329,7 @@ async def test_call_control_guards_and_no_retry_boundaries():
                 await invoke()
         assert not attempts
         for invoke in (
-            lambda: client.voip.create_call_link({"session": "support"}),
+            lambda: client.voip.create_call_link({"connection": "support"}),
             lambda: client.voip.moderate_waiting_room(
                 "call_1",
                 {
@@ -375,7 +375,7 @@ async def test_call_control_guards_and_no_retry_boundaries():
 async def test_simultaneous_calls_presence(body):
     def handler(request):
         assert request.method == "PUT"
-        assert request.url.path == "/platform/sessions/support/call-settings"
+        assert request.url.path == "/platform/connections/support/call-settings"
         assert json.loads(request.content) == body
         return httpx.Response(
             200, json={"success": True, "data": {**SETTINGS, "simultaneousCalls": True}}

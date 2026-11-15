@@ -27,7 +27,7 @@ async def _coverage_end():
 
             def handler(request, method=method, settings=settings):
                 assert request.method == method
-                assert request.url.path == "/platform/sessions/support/call-settings"
+                assert request.url.path == "/platform/connections/support/call-settings"
                 if method == "PUT":
                     assert json.loads(request.content) == {"callsEnabled": False}
                 return httpx.Response(200, json={"success": True, "data": settings})

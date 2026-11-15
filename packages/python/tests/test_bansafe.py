@@ -38,7 +38,7 @@ HEALTH_BODY = {
     "version": 1,
     "enabled": True,
     "threshold": 25.0,
-    "sessionAction": "slow_down",
+    "connectionAction": "slow_down",
     "slowDownMps": 0.25,
     "emailNotification": True,
     "webhookNotification": False,
@@ -48,8 +48,8 @@ HEALTH = {
     "projectId": "project_1",
     "integrations": {"emailConfigured": True, "webhookConfigured": False},
 }
-SESSION = {
-    "session": "support",
+CONNECTION = {
+    "connection": "support",
     "projectId": "project_1",
     "project": SETTINGS,
     "override": {
@@ -178,14 +178,14 @@ async def test_typed_project_bansafe(method, setting, body, data, messaging, pla
 
 
 @pytest.mark.parametrize("method", ["GET", "PUT"])
-async def test_typed_session_bansafe(method):
+async def test_typed_connection_bansafe(method):
     body = {"pacing": "inherit"} if method == "PUT" else None
 
     def handler(request):
         assert request.method == method and request.url.path == "/messaging/support/safe-mode"
         assert (json.loads(request.content) if request.content else None) == body
         return httpx.Response(
-            200, json={"success": True, "data": SESSION}, headers={"x-request-id": "req_safe"}
+            200, json={"success": True, "data": CONNECTION}, headers={"x-request-id": "req_safe"}
         )
 
     async with AsyncMessagingClient(
@@ -196,11 +196,11 @@ async def test_typed_session_bansafe(method):
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = (
-            await client.ban_safe.get_session_safe_mode("support")
+            await client.ban_safe.get_connection_safe_mode("support")
             if method == "GET"
-            else await client.ban_safe.update_session_safe_mode("support", body)
+            else await client.ban_safe.update_connection_safe_mode("support", body)
         )
-        assert response.data["data"] == SESSION and response.metadata.request_id == "req_safe"
+        assert response.data["data"] == CONNECTION and response.metadata.request_id == "req_safe"
 
 
 async def test_health_policy_stale_version_preserves_conflict_metadata():
@@ -231,13 +231,14 @@ async def test_health_policy_stale_version_preserves_conflict_metadata():
 
 
 @pytest.mark.parametrize("method", ["GET", "PUT"])
-async def test_platform_session_bansafe(method):
+async def test_platform_connection_bansafe(method):
     body = {"pacing": "inherit"} if method == "PUT" else None
-    fixture = {"data": SESSION}
+    fixture = {"data": CONNECTION}
 
     def handler(request):
         assert (
-            request.method == method and request.url.path == "/platform/sessions/support/safe-mode"
+            request.method == method
+            and request.url.path == "/platform/connections/support/safe-mode"
         )
         assert (json.loads(request.content) if request.content else None) == body
         return httpx.Response(200, json=fixture, headers={"x-request-id": "req_platform_safe"})
@@ -250,8 +251,8 @@ async def test_platform_session_bansafe(method):
         http_transport=httpx.MockTransport(handler),
     ) as client:
         response = (
-            await client.sessions.get_safe_mode("support")
+            await client.connections.get_safe_mode("support")
             if method == "GET"
-            else await client.sessions.update_safe_mode("support", body)
+            else await client.connections.update_safe_mode("support", body)
         )
         assert response.data == fixture and response.metadata.request_id == "req_platform_safe"

@@ -44,16 +44,15 @@ CASES = [
     ),
     (
         "POST",
-        "/messaging/testing/project_1/history-fixtures",
+        "/messaging/projects/project_1/test-history-fixtures",
         HISTORY,
         {"fixtureId": "fixture_1"},
         lambda c: c.testing.create_history_fixture("project_1", HISTORY),
     ),
     (
         "POST",
-        "/messaging/testing/project_1/events",
+        "/messaging/support/test-events",
         {
-            "session": "support",
             "event": "message.received",
             "overrides": {
                 "text": "Hello",
@@ -65,15 +64,14 @@ CASES = [
         },
         {
             "event": "message.received",
-            "session": "support",
+            "connection": "support",
             "delivery": "generated",
             "eventId": "event_1",
             "source": "test",
         },
         lambda c: c.testing.trigger_event(
-            "project_1",
+            "support",
             {
-                "session": "support",
                 "event": "message.received",
                 "overrides": {
                     "text": "Hello",
@@ -87,22 +85,22 @@ CASES = [
     ),
     (
         "POST",
-        "/messaging/testing/project_1/events",
-        {"session": "support", "event": "message.received", "fromSession": "sales"},
+        "/messaging/support/test-events",
+        {"event": "message.received", "fromConnection": "sales"},
         {
             "event": "message.received",
-            "session": "support",
+            "connection": "support",
             "delivery": "simulated",
             "eventId": None,
             "source": "runtime",
         },
         lambda c: c.testing.trigger_event(
-            "project_1", {"session": "support", "event": "message.received", "fromSession": "sales"}
+            "support", {"event": "message.received", "fromConnection": "sales"}
         ),
     ),
     (
         "GET",
-        "/messaging/testing/project_1/events/fixtures",
+        "/messaging/test-events/fixtures",
         None,
         {
             "fixtures": [
@@ -114,35 +112,33 @@ CASES = [
                 for name in TEST_EVENT_FIXTURES
             ]
         },
-        lambda c: c.testing.list_event_fixtures("project_1"),
+        lambda c: c.testing.list_event_fixtures(),
     ),
     (
         "GET",
-        "/messaging/testing/project_1/numbers/support/phone",
+        "/messaging/support/phone",
         None,
         {
-            "session": "support",
+            "connection": "support",
             "phone": "+15551234567",
             "online": True,
             "devices": [{"deviceId": 1}, {"deviceId": 2}],
         },
-        lambda c: c.testing.get_phone("project_1", "support"),
+        lambda c: c.testing.get_phone("support"),
     ),
     (
         "POST",
-        "/messaging/testing/project_1/numbers/support/phone/messages",
+        "/messaging/support/phone/messages",
         {"to": "+15551234568", "text": "Hello"},
-        {"session": "support", "to": "+15551234568", "messageId": None},
-        lambda c: c.testing.send_phone_message(
-            "project_1", "support", {"to": "+15551234568", "text": "Hello"}
-        ),
+        {"connection": "support", "to": "+15551234568", "messageId": None},
+        lambda c: c.testing.send_phone_message("support", {"to": "+15551234568", "text": "Hello"}),
     ),
     (
         "POST",
-        "/messaging/testing/project_1/numbers/support/phone/devices/2/unlink",
+        "/messaging/support/phone/devices/2/unlink",
         None,
-        {"session": "support", "deviceId": 2, "unlinked": True},
-        lambda c: c.testing.unlink_phone_device("project_1", "support", 2),
+        {"connection": "support", "deviceId": 2, "unlinked": True},
+        lambda c: c.testing.unlink_phone_device("support", 2),
     ),
 ]
 
@@ -183,7 +179,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
     ) as client:
         for device_id in [0, 100, True, 1.5]:
             with pytest.raises(ValidationError):
-                await client.testing.unlink_phone_device("project_1", "support", device_id)
+                await client.testing.unlink_phone_device("support", device_id)
     requests = []
 
     def handler(request):
@@ -199,7 +195,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
             200,
             json={
                 "event": "call.missed",
-                "session": "support",
+                "connection": "support",
                 "delivery": "generated",
                 "eventId": "event_2",
                 "source": "test",
@@ -214,8 +210,8 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
         http_transport=httpx.MockTransport(handler),
     ) as client:
         result = await client.testing.trigger_event(
-            "project_1",
-            {"session": "support", "event": "call.missed"},
+            "support",
+            {"event": "call.missed"},
             options=RequestOptions(idempotency_key="event-retry", max_network_retries=1),
         )
         assert result.data["eventId"] == "event_2" and result.metadata.attempts == 2

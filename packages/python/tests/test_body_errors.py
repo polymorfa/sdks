@@ -45,7 +45,7 @@ async def test_admitted_operation_body_failure_preserves_metadata_without_retry(
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(error_type) as caught:
-            await client.sessions.list()
+            await client.connections.list()
         assert len(requests) == 1
         assert caught.value.code == code
         assert caught.value.metadata.operation_id == "op_admitted"
@@ -75,5 +75,5 @@ async def test_read_body_failure_without_admission_retries_safe_get():
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
-        result = await client.sessions.list()
+        result = await client.connections.list()
         assert len(requests) == 2 and result.metadata.attempts == 2

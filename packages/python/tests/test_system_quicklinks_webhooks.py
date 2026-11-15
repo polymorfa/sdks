@@ -127,20 +127,20 @@ QINPUT = {
 QLINK = {
     "id": "link_1",
     "url": "https://example.invalid/quicklink",
-    "session": "support",
+    "connection": "support",
     "purpose": "initial",
     "connectionGoal": "hybrid",
-    "addConnection": "official_api",
+    "addMethod": "official_api",
     "expiresAt": None,
 }
 STATUS = {
     "id": "link_1",
     "purpose": "initial",
     "connectionGoal": "hybrid",
-    "addConnection": "official_api",
+    "addMethod": "official_api",
     "hybridPhase": "cloud_setup",
     "status": "pending",
-    "session": "support",
+    "connection": "support",
     "expiresAt": None,
     "openedAt": None,
     "connectedAt": None,
@@ -162,15 +162,15 @@ STATUS = {
 }
 AVAILABILITY = {
     "allowed": True,
-    "addConnection": "linked_devices",
-    "connections": [{"kind": "official_api", "status": "CONNECTED", "enabled": True}],
+    "addMethod": "linked_devices",
+    "methods": [{"kind": "official_api", "status": "CONNECTED", "enabled": True}],
     "resumeQuickLinkId": None,
 }
 RETRIES = {"attempts": 3, "delaySeconds": 1.5, "policy": "exponential"}
 HOOK = {
     "id": "hook_1",
     "tenantId": "team_1",
-    "session": "support",
+    "connection": "support",
     "url": "https://example.invalid/webhook",
     "events": ["message.received"],
     "retries": RETRIES,
@@ -180,7 +180,7 @@ HOOK = {
     "createdAt": "2026-10-11T00:00:00Z",
 }
 HINPUT = {
-    key: HOOK[key] for key in ["session", "url", "events", "retries", "headers", "format"]
+    key: HOOK[key] for key in ["connection", "url", "events", "retries", "headers", "format"]
 } | {"hmacKey": "fixture_only_secret"}
 CASES = [
     (
@@ -197,7 +197,7 @@ CASES = [
         "GET",
         "/messaging/quicklinks/availability",
         None,
-        {"projectId": "project_1", "session": "support"},
+        {"projectId": "project_1", "connection": "support"},
         {"success": True, "data": AVAILABILITY},
         lambda c, o: c.quick_links.availability("project_1", "support", options=o),
     ),
@@ -279,7 +279,7 @@ CASES = [
 
 
 @pytest.mark.parametrize("case", CASES)
-async def test_full_quicklink_webhook_and_session_call_public_contract(case):
+async def test_full_quicklink_webhook_and_connection_call_public_contract(case):
     _, method, path, body, query, data, invoke = case
 
     def handler(request):
@@ -312,7 +312,7 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
         {"success": True, "data": {"requestId": "req_async"}},
     ],
 )
-async def test_reject_session_call_documented_response_variants(value):
+async def test_reject_connection_call_documented_response_variants(value):
     async with AsyncMessagingClient(
         Credential(
             "team_api_key",

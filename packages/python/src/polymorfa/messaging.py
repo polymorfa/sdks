@@ -13,7 +13,7 @@ from urllib.parse import quote
 import httpx
 
 from . import campaign_contract_validation as V
-from . import session_delivery_validation as D
+from . import connection_delivery_validation as D
 from .cloud import (
     CloudCredentialHealth,
     CloudReauthorization,
@@ -37,6 +37,12 @@ from .models import (
     CallPlacement,
     CallPlacementResult,
     ChatPresenceData,
+    Connection,
+    ConnectionAccount,
+    ConnectionRemoved,
+    ConnectionStarting,
+    ConnectionStopping,
+    ConnectionUpdate,
     Contact,
     ContactBlocklist,
     ContactCheck,
@@ -59,7 +65,7 @@ from .models import (
     PairCode,
     PairCodeResult,
     PictureSource,
-    PlatformSession,
+    PlatformConnection,
     PresenceData,
     PresenceSetResult,
     PresenceSubscription,
@@ -69,16 +75,10 @@ from .models import (
     QuickLinkInput,
     QuickLinkStatus,
     Reaction,
-    RejectedSessionCall,
-    RejectSessionCall,
+    RejectConnectionCall,
+    RejectedConnectionCall,
     Seen,
     SendMessage,
-    Session,
-    SessionAccount,
-    SessionRemoved,
-    SessionStarting,
-    SessionStopping,
-    SessionUpdate,
     Star,
     StarResult,
     StatusResult,
@@ -99,11 +99,11 @@ from .voip_models import (
     CallPermission,
     CallReaction,
     CallReport,
+    ConnectionCallSettings,
     CreatedCallLink,
     HandRaised,
     PreviewCallLinkRequest,
     PreviewedCallLink,
-    SessionCallSettings,
     WaitingRoomControlRequest,
     WaitingRoomControlResult,
 )
@@ -157,7 +157,7 @@ class Resource:
 
 class Messages(Resource):
     async def send(
-        self, session: str, body: SendMessage, *, options: RequestOptions = O
+        self, connection: str, body: SendMessage, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageResponse]]:
         """Validate interactive content before an idempotent send, retaining descriptor options."""
         content = body.get("content")
@@ -177,145 +177,147 @@ class Messages(Resource):
             body = V.capture(body)
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/messages/send",
+            f"/messaging/{segment(connection)}/messages/send",
             body=body,
             options=options.with_idempotency_key(),
         )
 
     async def react(
-        self, session: str, body: Reaction, *, options: RequestOptions = O
+        self, connection: str, body: Reaction, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageReceipt]]:
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/messages/react",
+            f"/messaging/{segment(connection)}/messages/react",
             body=body,
             options=options.with_idempotency_key(),
         )
 
     async def mark_seen(
-        self, session: str, body: Seen, *, options: RequestOptions = O
+        self, connection: str, body: Seen, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[StatusResult]]:
         return await self._request(
-            "POST", f"/messaging/{segment(session)}/messages/seen", body=body, options=options
+            "POST", f"/messaging/{segment(connection)}/messages/seen", body=body, options=options
         )
 
     async def set_typing(
-        self, session: str, body: Typing, *, options: RequestOptions = O
+        self, connection: str, body: Typing, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[StatusResult]]:
         return await self._request(
-            "POST", f"/messaging/{segment(session)}/messages/typing", body=body, options=options
+            "POST", f"/messaging/{segment(connection)}/messages/typing", body=body, options=options
         )
 
     async def star(
-        self, session: str, body: Star, *, options: RequestOptions = O
+        self, connection: str, body: Star, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[StarResult]]:
         return await self._request(
-            "POST", f"/messaging/{segment(session)}/messages/star", body=body, options=options
+            "POST", f"/messaging/{segment(connection)}/messages/star", body=body, options=options
         )
 
     async def operation_status(
-        self, session: str, operation_id: str, *, options: RequestOptions = O
+        self, connection: str, operation_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MessageOperation]]:
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/operations/{segment(operation_id)}",
+            f"/messaging/{segment(connection)}/operations/{segment(operation_id)}",
             options=options,
         )
 
 
-class Sessions(Resource):
+class Connections(Resource):
     async def list(
         self, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[builtins.list[PlatformSession]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[PlatformConnection]]]:
         self._server()
-        return await self._request("GET", "/platform/sessions", options=options)
+        return await self._request("GET", "/platform/connections", options=options)
 
     async def retrieve(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[Session]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[Connection]]:
         self._server()
-        return await self._request("GET", f"/platform/sessions/{segment(session)}", options=options)
+        return await self._request(
+            "GET", f"/platform/connections/{segment(connection)}", options=options
+        )
 
     async def update(
-        self, session: str, body: SessionUpdate, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[Session]]:
+        self, connection: str, body: ConnectionUpdate, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[Connection]]:
         self._server()
         return await self._request(
             "PUT",
-            f"/platform/sessions/{segment(session)}",
+            f"/platform/connections/{segment(connection)}",
             body=V.capture(body),
             options=D.options(options, D.configuration_intent(body)),
         )
 
     async def delete(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionRemoved]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionRemoved]]:
         self._server()
         return await self._request(
-            "DELETE", f"/platform/sessions/{segment(session)}", options=options
+            "DELETE", f"/platform/connections/{segment(connection)}", options=options
         )
 
     async def start(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionStarting]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionStarting]]:
         self._server()
         return await self._request(
-            "POST", f"/platform/sessions/{segment(session)}/start", options=options
+            "POST", f"/platform/connections/{segment(connection)}/start", options=options
         )
 
     async def stop(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionStopping]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionStopping]]:
         self._server()
         return await self._request(
-            "POST", f"/platform/sessions/{segment(session)}/stop", options=options
+            "POST", f"/platform/connections/{segment(connection)}/stop", options=options
         )
 
     async def restart(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[OperationAccepted]:
         self._server()
         return await self._request(
-            "POST", f"/platform/sessions/{segment(session)}/restart", options=options
+            "POST", f"/platform/connections/{segment(connection)}/restart", options=options
         )
 
     async def logout(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[OperationAccepted]:
         self._server()
         return await self._request(
-            "POST", f"/platform/sessions/{segment(session)}/logout", options=options
+            "POST", f"/platform/connections/{segment(connection)}/logout", options=options
         )
 
     async def account(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[SessionAccount]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[ConnectionAccount]]:
         self._server()
         return await self._request(
-            "GET", f"/platform/sessions/{segment(session)}/me", options=options
+            "GET", f"/platform/connections/{segment(connection)}/me", options=options
         )
 
     async def qr(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[QrCode]]:
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/pair/qr",
+            f"/messaging/{segment(connection)}/pair/qr",
             query={"format": "json"},
             options=options,
         )
 
     async def request_pairing_code(
-        self, session: str, body: PairCode, *, options: RequestOptions = O
+        self, connection: str, body: PairCode, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PairCodeResult]]:
         return await self._request(
-            "POST", f"/messaging/{segment(session)}/pair/code", body=body, options=options
+            "POST", f"/messaging/{segment(connection)}/pair/code", body=body, options=options
         )
 
     async def get_meta_pricing(
         self,
-        session: str,
+        connection: str,
         *,
         query: MetaPricingParams | None = None,
         options: RequestOptions = O,
@@ -323,26 +325,26 @@ class Sessions(Resource):
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/meta-pricing",
+            f"/messaging/{segment(connection)}/meta-pricing",
             query=cast(Mapping[str, QueryValue], query or {}),
             options=options,
         )
 
     async def get_cloud_credential_health(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CloudCredentialHealth]]:
         self._server()
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/cloud-credentials", options=options
+            "GET", f"/messaging/{segment(connection)}/cloud-credentials", options=options
         )
 
     async def reauthorize_cloud_credentials(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CloudReauthorization]]:
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/cloud-credentials/reauthorize",
+            f"/messaging/{segment(connection)}/cloud-credentials/reauthorize",
             options=replace(options, max_network_retries=0),
         )
 
@@ -354,14 +356,14 @@ class QuickLinks(Resource):
         self._server()
         value = {} if body is None else body
         options = D.options(options, D.quicklink_intent(value))
-        if value.get("purpose") == "add_connection" and not value.get("session"):
-            raise ValidationError("An add_connection QuickLink requires session.")
+        if value.get("purpose") == "add_method" and not value.get("connection"):
+            raise ValidationError("An add_method QuickLink requires connection.")
         billing = value.get("billingControls")
         if billing is not None:
             limit, priority = billing.get("limitCredits"), billing.get("priority")
             config = value.get("configuration", {})
             if (
-                value.get("purpose") == "add_connection"
+                value.get("purpose") == "add_method"
                 or config.get("testing") is not None
                 or (
                     limit is not None
@@ -383,13 +385,13 @@ class QuickLinks(Resource):
         )
 
     async def availability(
-        self, project_id: str, session: str, *, options: RequestOptions = O
+        self, project_id: str, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Availability]]:
         self._server()
         return await self._request(
             "GET",
             "/messaging/quicklinks/availability",
-            query={"projectId": project_id, "session": session},
+            query={"projectId": project_id, "connection": connection},
             options=options,
         )
 
@@ -440,29 +442,33 @@ class Webhooks(Resource):
 
 
 class Chats(Resource):
-    def _path(self, session: str, conversation: str) -> str:
-        return f"/messaging/{segment(session)}/chats/{segment(conversation)}"
+    def _path(self, connection: str, conversation: str) -> str:
+        return f"/messaging/{segment(connection)}/chats/{segment(conversation)}"
 
     async def list(
-        self, session: str, params: HistoryChatsParams | None = None, *, options: RequestOptions = O
+        self,
+        connection: str,
+        params: HistoryChatsParams | None = None,
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[HistoryPage[HistoryChat]]:
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/chats",
+            f"/messaging/{segment(connection)}/chats",
             query=cast(Mapping[str, QueryValue], params or {}),
             options=options,
         )
 
     async def retrieve(
-        self, session: str, conversation: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[HistoryChat]]:
         self._server()
-        return await self._request("GET", self._path(session, conversation), options=options)
+        return await self._request("GET", self._path(connection, conversation), options=options)
 
     async def list_messages(
         self,
-        session: str,
+        connection: str,
         conversation: str,
         params: HistoryMessagesParams | None = None,
         *,
@@ -471,36 +477,36 @@ class Chats(Resource):
         self._server()
         return await self._request(
             "GET",
-            self._path(session, conversation) + "/messages",
+            self._path(connection, conversation) + "/messages",
             query=cast(Mapping[str, QueryValue], params or {}),
             options=options,
         )
 
     async def retrieve_message(
-        self, session: str, conversation: str, message_id: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, message_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[HistoryMessage]]:
         self._server()
         return await self._request(
             "GET",
-            self._path(session, conversation) + "/messages/" + segment(message_id),
+            self._path(connection, conversation) + "/messages/" + segment(message_id),
             options=options,
         )
 
     async def download_message_media(
-        self, session: str, conversation: str, message_id: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, message_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[bytes]:
         self._server()
         return await self._transport.binary(
-            self._path(session, conversation) + "/messages/" + segment(message_id) + "/media",
+            self._path(connection, conversation) + "/messages/" + segment(message_id) + "/media",
             options=options,
         )
 
     async def download_message_media_stream(
-        self, session: str, conversation: str, message_id: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, message_id: str, *, options: RequestOptions = O
     ) -> DownloadStream:
         self._server()
         result = await self._transport.download_stream(
-            self._path(session, conversation) + "/messages/" + segment(message_id) + "/media",
+            self._path(connection, conversation) + "/messages/" + segment(message_id) + "/media",
             options=options,
         )
         assert isinstance(result, DownloadStream)
@@ -508,7 +514,7 @@ class Chats(Resource):
 
     async def edit_message(
         self,
-        session: str,
+        connection: str,
         conversation: str,
         message_id: str,
         body: EditMessage,
@@ -517,14 +523,14 @@ class Chats(Resource):
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
-            self._path(session, conversation) + "/messages/" + segment(message_id),
+            self._path(connection, conversation) + "/messages/" + segment(message_id),
             body=body,
             options=options.with_idempotency_key(),
         )
 
     async def delete_message(
         self,
-        session: str,
+        connection: str,
         conversation: str,
         message_id: str,
         *,
@@ -533,28 +539,28 @@ class Chats(Resource):
     ) -> ApiResponse[Success]:
         return await self._request(
             "DELETE",
-            self._path(session, conversation) + "/messages/" + segment(message_id),
+            self._path(connection, conversation) + "/messages/" + segment(message_id),
             query={"transport": transport},
             options=options.with_idempotency_key(),
         )
 
     async def archive(
-        self, session: str, conversation: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "POST", self._path(session, conversation) + "/archive", options=options
+            "POST", self._path(connection, conversation) + "/archive", options=options
         )
 
     async def unarchive(
-        self, session: str, conversation: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "POST", self._path(session, conversation) + "/unarchive", options=options
+            "POST", self._path(connection, conversation) + "/unarchive", options=options
         )
 
     async def set_disappearing_timer(
         self,
-        session: str,
+        connection: str,
         conversation: str,
         duration_seconds: Literal[0, 86400, 604800, 7776000],
         *,
@@ -562,17 +568,17 @@ class Chats(Resource):
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
-            self._path(session, conversation) + "/disappearing",
+            self._path(connection, conversation) + "/disappearing",
             body={"durationSeconds": duration_seconds},
             options=options,
         )
 
     async def get_service_window(
-        self, session: str, conversation: str, *, options: RequestOptions = O
+        self, connection: str, conversation: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CustomerServiceWindow]]:
         self._server()
         return await self._request(
-            "GET", self._path(session, conversation) + "/service-window", options=options
+            "GET", self._path(connection, conversation) + "/service-window", options=options
         )
 
 
@@ -638,166 +644,173 @@ class Media(Resource):
 
 
 class Contacts(Resource):
-    def _path(self, session: str, contact_id: str | None = None) -> str:
-        return f"/messaging/{segment(session)}/contacts" + (
+    def _path(self, connection: str, contact_id: str | None = None) -> str:
+        return f"/messaging/{segment(connection)}/contacts" + (
             "/" + segment(contact_id) if contact_id else ""
         )
 
     async def list(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[builtins.list[Contact]]]:
-        return await self._request("GET", self._path(session), options=options)
+        return await self._request("GET", self._path(connection), options=options)
 
     async def retrieve(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Contact]]:
-        return await self._request("GET", self._path(session, contact_id), options=options)
+        return await self._request("GET", self._path(connection, contact_id), options=options)
 
     async def check(
-        self, session: str, phone: str | builtins.list[str], *, options: RequestOptions = O
+        self, connection: str, phone: str | builtins.list[str], *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[builtins.list[ContactCheck]]]:
         return await self._request(
             "GET",
-            self._path(session) + "/check",
+            self._path(connection) + "/check",
             query={"phone": phone if isinstance(phone, str) else ",".join(phone)},
             options=options,
         )
 
     async def blocklist(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ContactBlocklist]]:
-        return await self._request("GET", self._path(session) + "/blocked", options=options)
+        return await self._request("GET", self._path(connection) + "/blocked", options=options)
 
     async def picture(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ContactPicture]]:
         return await self._request(
-            "GET", self._path(session, contact_id) + "/picture", options=options
+            "GET", self._path(connection, contact_id) + "/picture", options=options
         )
 
     async def info(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ContactInfo]]:
         return await self._request(
-            "GET", self._path(session, contact_id) + "/info", options=options
+            "GET", self._path(connection, contact_id) + "/info", options=options
         )
 
     async def devices(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[builtins.list[str]]]:
         return await self._request(
-            "GET", self._path(session, contact_id) + "/devices", options=options
+            "GET", self._path(connection, contact_id) + "/devices", options=options
         )
 
     async def business_profile(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[BusinessProfile]]:
         return await self._request(
-            "GET", self._path(session, contact_id) + "/business-profile", options=options
+            "GET", self._path(connection, contact_id) + "/business-profile", options=options
         )
 
     async def block(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "POST", self._path(session, contact_id) + "/block", options=options
+            "POST", self._path(connection, contact_id) + "/block", options=options
         )
 
     async def unblock(
-        self, session: str, contact_id: str, *, options: RequestOptions = O
+        self, connection: str, contact_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "POST", self._path(session, contact_id) + "/unblock", options=options
+            "POST", self._path(connection, contact_id) + "/unblock", options=options
         )
 
 
 class Profiles(Resource):
     async def get(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Profile]]:
-        return await self._request("GET", f"/messaging/{segment(session)}/profile", options=options)
+        return await self._request(
+            "GET", f"/messaging/{segment(connection)}/profile", options=options
+        )
 
     async def set_name(
-        self, session: str, name: str, *, options: RequestOptions = O
+        self, connection: str, name: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
-            f"/messaging/{segment(session)}/profile/name",
+            f"/messaging/{segment(connection)}/profile/name",
             body={"name": name},
             options=options,
         )
 
     async def set_status(
-        self, session: str, status: str, *, options: RequestOptions = O
+        self, connection: str, status: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
-            f"/messaging/{segment(session)}/profile/status",
+            f"/messaging/{segment(connection)}/profile/status",
             body={"status": status},
             options=options,
         )
 
     async def set_picture(
-        self, session: str, body: PictureSource, *, options: RequestOptions = O
+        self, connection: str, body: PictureSource, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "PUT", f"/messaging/{segment(session)}/profile/picture", body=body, options=options
+            "PUT", f"/messaging/{segment(connection)}/profile/picture", body=body, options=options
         )
 
     async def delete_picture(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "DELETE", f"/messaging/{segment(session)}/profile/picture", options=options
+            "DELETE", f"/messaging/{segment(connection)}/profile/picture", options=options
         )
 
 
 class Presence(Resource):
     async def set(
         self,
-        session: str,
+        connection: str,
         presence: Literal["available", "unavailable"],
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Success | Envelope[PresenceSetResult] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/presence",
+            f"/messaging/{segment(connection)}/presence",
             body={"presence": presence},
             options=options,
         )
 
     async def get(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PresenceData]]:
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/presence", options=options
+            "GET", f"/messaging/{segment(connection)}/presence", options=options
         )
 
     async def get_for_chat(
-        self, session: str, chat_id: str, *, options: RequestOptions = O
+        self, connection: str, chat_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ChatPresenceData]]:
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/presence/{segment(chat_id)}", options=options
+            "GET", f"/messaging/{segment(connection)}/presence/{segment(chat_id)}", options=options
         )
 
     async def subscribe(
-        self, session: str, chat_id: str, *, options: RequestOptions = O
+        self, connection: str, chat_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PresenceSubscription] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/presence/{segment(chat_id)}/subscribe",
+            f"/messaging/{segment(connection)}/presence/{segment(chat_id)}/subscribe",
             options=options,
         )
 
 
-class SessionCalls(Resource):
+class ConnectionCalls(Resource):
     async def reject(
-        self, session: str, call_id: str, body: RejectSessionCall, *, options: RequestOptions = O
-    ) -> ApiResponse[Success | Envelope[RejectedSessionCall] | Envelope[AsyncAccepted]]:
+        self,
+        connection: str,
+        call_id: str,
+        body: RejectConnectionCall,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[Success | Envelope[RejectedConnectionCall] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/calls/{segment(call_id)}/reject",
+            f"/messaging/{segment(connection)}/calls/{segment(call_id)}/reject",
             body={"from": body["from_"]},
             options=options,
         )
@@ -818,8 +831,8 @@ class Voip(Resource):
     ) -> ApiResponse[Envelope[CallPlacementResult]]:
         import re
 
-        if self._kind != "client_token" and not body.get("session", "").strip():
-            raise ValidationError("A server call requires session.")
+        if self._kind != "client_token" and not body.get("connection", "").strip():
+            raise ValidationError("A server call requires connection.")
         self._participant(body.get("participant"))
         to, participants, group = body.get("to"), body.get("participants"), body.get("groupId")
 
@@ -915,28 +928,30 @@ class Voip(Resource):
         )
 
     async def retrieve_call_permission(
-        self, session: str, to: str, *, options: RequestOptions = O
+        self, connection: str, to: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CallPermission]]:
         self._server()
-        if not session.strip():
-            raise ConfigurationError("session")
+        if not connection.strip():
+            raise ConfigurationError("connection")
         if not to.strip():
             raise ConfigurationError("to")
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/call-permissions/{segment(to)}", options=options
+            "GET",
+            f"/messaging/{segment(connection)}/call-permissions/{segment(to)}",
+            options=options,
         )
 
     async def retrieve_call_settings(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[SessionCallSettings]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[ConnectionCallSettings]]:
         self._server()
         return await self._request(
-            "GET", f"/platform/sessions/{segment(session)}/call-settings", options=options
+            "GET", f"/platform/connections/{segment(connection)}/call-settings", options=options
         )
 
     async def update_call_settings(
-        self, session: str, body: UpdateCallSettings, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[SessionCallSettings]]:
+        self, connection: str, body: UpdateCallSettings, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[ConnectionCallSettings]]:
         self._server()
         if (
             not any(
@@ -978,7 +993,7 @@ class Voip(Resource):
             raise ValidationError("Invalid expected call-settings revision.")
         return await self._request(
             "PUT",
-            f"/platform/sessions/{segment(session)}/call-settings",
+            f"/platform/connections/{segment(connection)}/call-settings",
             body=body,
             options=options,
         )
@@ -986,12 +1001,12 @@ class Voip(Resource):
     def _call_link(self, body: CallLinkRequest, options: RequestOptions) -> None:
         self._server()
         if (
-            not isinstance(body.get("session"), str)
-            or not body["session"].strip()
-            or len(body["session"]) > 128
+            not isinstance(body.get("connection"), str)
+            or not body["connection"].strip()
+            or len(body["connection"]) > 128
             or ("video" in body and not isinstance(body["video"], bool))
         ):
-            raise ValidationError("Call links require a session and optional video flag.")
+            raise ValidationError("Call links require a connection and optional video flag.")
         if options.idempotency_key is not None or any(
             name.lower() == "idempotency-key" for name in options.headers
         ):
@@ -1027,8 +1042,8 @@ class Voip(Resource):
         self, body: CallCheckRequest, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CallCheck]]:
         self._server()
-        if not body.get("session", "").strip() or not body.get("to", "").strip():
-            raise ValidationError("Call checks require session and destination.")
+        if not body.get("connection", "").strip() or not body.get("to", "").strip():
+            raise ValidationError("Call checks require connection and destination.")
         return await self._request(
             "POST", "/messaging/voip/calls/check", body=body, options=options
         )

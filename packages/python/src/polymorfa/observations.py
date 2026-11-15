@@ -23,7 +23,7 @@ from .transport import ApiResponse, RequestOptions
 
 class Identities(Resource):
     async def resolve(
-        self, session: str, params: ResolveIdentity, *, options: RequestOptions = O
+        self, connection: str, params: ResolveIdentity, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[IdentityResult]]:
         if sum(bool(params.get(k)) for k in ("phoneNumber", "id", "username")) != 1 or (
             "usernameKey" in params and "username" not in params
@@ -31,7 +31,7 @@ class Identities(Resource):
             raise ValidationError("Choose one identity selector.", code="invalid_request")
         return await self._request(
             "GET",
-            "/messaging/" + segment(session) + "/identities/resolve",
+            "/messaging/" + segment(connection) + "/identities/resolve",
             query={
                 "phoneNumber": params.get("phoneNumber"),
                 "id": params.get("id"),
@@ -43,43 +43,47 @@ class Identities(Resource):
 
 
 class Labels(Resource):
-    def _path(self, session: str) -> str:
-        return "/messaging/" + segment(session) + "/labels"
+    def _path(self, connection: str) -> str:
+        return "/messaging/" + segment(connection) + "/labels"
 
     async def list(
-        self, session: str, *, include_observation: bool | None = None, options: RequestOptions = O
+        self,
+        connection: str,
+        *,
+        include_observation: bool | None = None,
+        options: RequestOptions = O,
     ) -> ApiResponse[Envelope[builtins.list[Label] | LabelCollection]]:
         return await self._request(
             "GET",
-            self._path(session),
+            self._path(connection),
             query={"includeObservation": include_observation},
             options=options,
         )
 
     async def create(
-        self, session: str, body: LabelCreate, *, options: RequestOptions = O
+        self, connection: str, body: LabelCreate, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Label]]:
-        return await self._request("POST", self._path(session), body=body, options=options)
+        return await self._request("POST", self._path(connection), body=body, options=options)
 
     async def update(
-        self, session: str, label_id: str, body: LabelUpdate, *, options: RequestOptions = O
+        self, connection: str, label_id: str, body: LabelUpdate, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         if not body:
             raise ValidationError("A label update requires name or color.", code="invalid_request")
         return await self._request(
-            "PUT", self._path(session) + "/" + segment(label_id), body=body, options=options
+            "PUT", self._path(connection) + "/" + segment(label_id), body=body, options=options
         )
 
     async def delete(
-        self, session: str, label_id: str, *, options: RequestOptions = O
+        self, connection: str, label_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
-            "DELETE", self._path(session) + "/" + segment(label_id), options=options
+            "DELETE", self._path(connection) + "/" + segment(label_id), options=options
         )
 
     async def list_for_chat(
         self,
-        session: str,
+        connection: str,
         chat_id: str,
         *,
         include_observation: bool | None = None,
@@ -87,17 +91,22 @@ class Labels(Resource):
     ) -> ApiResponse[Envelope[builtins.list[Label] | LabelCollection]]:
         return await self._request(
             "GET",
-            self._path(session) + "/chats/" + segment(chat_id),
+            self._path(connection) + "/chats/" + segment(chat_id),
             query={"includeObservation": include_observation},
             options=options,
         )
 
     async def replace_for_chat(
-        self, session: str, chat_id: str, labels: builtins.list[str], *, options: RequestOptions = O
+        self,
+        connection: str,
+        chat_id: str,
+        labels: builtins.list[str],
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
-            self._path(session) + "/chats/" + segment(chat_id),
+            self._path(connection) + "/chats/" + segment(chat_id),
             body={"labels": labels},
             options=options,
         )
@@ -105,15 +114,15 @@ class Labels(Resource):
 
 class Privacy(Resource):
     async def get(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PrivacySettings]]:
         return await self._request(
-            "GET", "/messaging/" + segment(session) + "/privacy", options=options
+            "GET", "/messaging/" + segment(connection) + "/privacy", options=options
         )
 
     async def set(
         self,
-        session: str,
+        connection: str,
         setting: Literal[
             "groupadd",
             "last",
@@ -156,17 +165,17 @@ class Privacy(Resource):
             raise ValidationError("Invalid privacy value for setting.", code="invalid_request")
         return await self._request(
             "PUT",
-            "/messaging/" + segment(session) + "/privacy/" + segment(setting),
+            "/messaging/" + segment(connection) + "/privacy/" + segment(setting),
             body={"value": value},
             options=options,
         )
 
     async def set_default_disappearing_timer(
-        self, session: str, duration_seconds: int, *, options: RequestOptions = O
+        self, connection: str, duration_seconds: int, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         return await self._request(
             "PUT",
-            "/messaging/" + segment(session) + "/privacy/disappearing/default",
+            "/messaging/" + segment(connection) + "/privacy/disappearing/default",
             body={"durationSeconds": duration_seconds},
             options=options,
         )

@@ -23,9 +23,10 @@ from polymorfa.storage import (
 )
 from polymorfa.storage.core import empty_row
 
-# Producer JSON numbers are binary64, including integral tokens above 2**53.
+# Producer JSON connections are binary64, including integral tokens above 2**53.
 FIXTURE = json.loads(
-    (Path(__file__).parent / "fixtures/numeric-storage/fixture.json").read_text(), parse_int=float
+    (Path(__file__).parent / "fixtures/numeric-storage/fixture.v3.json").read_text(),
+    parse_int=float,
 )
 
 
@@ -53,7 +54,7 @@ def wire(op):
     }
     if op.guard:
         result["guard"] = {
-            "sessionId": op.guard.session_id,
+            "connectionId": op.guard.connection_id,
             "chatId": op.guard.chat_id,
             "timestamp": op.guard.timestamp,
         }
@@ -90,7 +91,7 @@ async def test_public_numeric_storage_rows_replay_and_watermarks(kind, history):
             operations = []
             for op in cleanup["operations"]:
                 if op["kind"] == "clearChat":
-                    operations.append(ClearChat(op["sessionId"], op["chatId"], op["upTo"]))
+                    operations.append(ClearChat(op["connectionId"], op["chatId"], op["upTo"]))
                 else:
                     operations.append(
                         Upsert(
@@ -121,13 +122,13 @@ async def test_numeric_strings_do_not_relax_generic_rows_or_revisions():
                 [
                     Upsert(
                         "messages",
-                        {"sessionId": "numeric", "messageId": "strict"},
+                        {"connectionId": "numeric", "messageId": "strict"},
                         {"timestamp": FieldWrite("16", 1)},
                     )
                 ],
             )
         )
-    row = empty_row("messages", {"sessionId": "numeric", "messageId": "strict"})
+    row = empty_row("messages", {"connectionId": "numeric", "messageId": "strict"})
     for revision in ["16", True, 0, -1, 1.5, 2**53, float("inf")]:
         with pytest.raises((ValueError, TypeError)):
             await adapter.commit([RowPut("messages", replace(row, revision=revision), None)])
