@@ -51,7 +51,7 @@ export const POLYMORFA_PERMISSIONS: readonly PolymorfaPermission[] =
  * The browser reads it only to decide what to render.
  */
 export interface PolymorfaGrant {
-  readonly session?: string;
+  readonly connection?: string;
   readonly customer?: string;
   /** Conversation IDs the user may read, or `"all"`. */
   readonly conversations: "all" | readonly string[];
@@ -104,7 +104,7 @@ export function isPolymorfaGrant(value: unknown): value is PolymorfaGrant {
     conversationsValid &&
     Array.isArray(grant.allow) &&
     grant.allow.every((permission) => typeof permission === "string") &&
-    (grant.session === undefined || typeof grant.session === "string") &&
+    (grant.connection === undefined || typeof grant.connection === "string") &&
     (grant.customer === undefined || typeof grant.customer === "string")
   );
 }

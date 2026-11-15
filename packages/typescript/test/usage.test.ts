@@ -45,7 +45,7 @@ const summary: UsageSummary = {
   numbers: [
     { connection: "support", projectId: "project-1", meters: [meterTotal] },
   ],
-  numbersTruncated: false,
+  connectionsTruncated: false,
 } as UsageSummary;
 const record: UsageRecord = {
   id: "11111111-1111-4111-8111-111111111111",
@@ -79,7 +79,7 @@ const gates: UsageGateList = {
     {
       key: "calls.outbound_monthly",
       kind: "quota",
-      subject: "number",
+      subject: "connection",
       mode: "record",
       active: true,
       limit: 50,

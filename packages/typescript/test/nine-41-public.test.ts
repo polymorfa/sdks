@@ -58,15 +58,15 @@ it("checks bare testing-phone results and actual202 through native HTTP", async 
     (await m.testing.unlinkPhoneDevice(projectId, "s/a", 99)).data,
   ).toEqual(fixtures[2]);
   expect(server.requests.map((r) => [r.method, r.path, r.body])).toEqual([
-    ["GET", `/messaging/testing/${projectId}/numbers/s%2Fa/phone`, ""],
+    ["GET", `/messaging/testing/${projectId}/connections/s%2Fa/phone`, ""],
     [
       "POST",
-      `/messaging/testing/${projectId}/numbers/s%2Fa/phone/messages`,
+      `/messaging/testing/${projectId}/connections/s%2Fa/phone/messages`,
       '{"to":"+15551234568","text":"x"}',
     ],
     [
       "POST",
-      `/messaging/testing/${projectId}/numbers/s%2Fa/phone/devices/99/unlink`,
+      `/messaging/testing/${projectId}/connections/s%2Fa/phone/devices/99/unlink`,
       "",
     ],
   ]);

@@ -12,7 +12,7 @@ const rules = {
 };
 
 function fakeMessaging({
-  sessionError,
+  connectionError,
   rulesError,
   updateError,
   configuredRules = rules,
@@ -20,10 +20,10 @@ function fakeMessaging({
   const calls = [];
   return {
     calls,
-    sessions: {
+    connections: {
       retrieve: async () => {
-        calls.push("retrieve-session");
-        if (sessionError) throw sessionError;
+        calls.push("retrieve-connection");
+        if (connectionError) throw connectionError;
       },
     },
     clientTokens: {
@@ -36,7 +36,7 @@ function fakeMessaging({
         calls.push(["mint", input]);
         return { data: { data: { token: "pmfa_ct_ZXhhbXBsZQ" } } };
       },
-      updateRules: async (_session, input) => {
+      updateRules: async (_connection, input) => {
         calls.push(["update-rules", input]);
         if (updateError) throw updateError;
       },
@@ -50,19 +50,19 @@ test("mint helper identifies missing rules after a visible Number and never mint
     mintCallsExampleToken(messaging, "support", "local-1"),
     /No client rules are configured/,
   );
-  assert.deepEqual(messaging.calls, ["retrieve-rules", "retrieve-session"]);
+  assert.deepEqual(messaging.calls, ["retrieve-rules", "retrieve-connection"]);
 });
 
-test("mint helper reports a generic rules 404 when sessions:read is unavailable", async () => {
+test("mint helper reports a generic rules 404 when connections:read is unavailable", async () => {
   const messaging = fakeMessaging({
-    sessionError: forbidden,
+    connectionError: forbidden,
     rulesError: missing,
   });
   await assert.rejects(
     mintCallsExampleToken(messaging, "support", "local-1"),
     /Check the Number ID, project-token project, and whether client rules are configured/,
   );
-  assert.deepEqual(messaging.calls, ["retrieve-rules", "retrieve-session"]);
+  assert.deepEqual(messaging.calls, ["retrieve-rules", "retrieve-connection"]);
 });
 
 test("mint helper rejects missing Calls actions before minting", async () => {
@@ -76,13 +76,13 @@ test("mint helper rejects missing Calls actions before minting", async () => {
   assert.deepEqual(messaging.calls, ["retrieve-rules"]);
 });
 
-test("mint helper uses existing rules without requiring sessions:read", async () => {
-  const messaging = fakeMessaging({ sessionError: forbidden });
+test("mint helper uses existing rules without requiring connections:read", async () => {
+  const messaging = fakeMessaging({ connectionError: forbidden });
   const token = await mintCallsExampleToken(messaging, "support", "local-1");
   assert.equal(token, "pmfa_ct_ZXhhbXBsZQ");
   assert.deepEqual(messaging.calls, [
     "retrieve-rules",
-    ["mint", { session: "support", ephemeralId: "local-1", ttlSeconds: 900 }],
+    ["mint", { connection: "support", ephemeralId: "local-1", ttlSeconds: 900 }],
   ]);
 });
 
@@ -98,12 +98,12 @@ test("configure helper refuses to replace existing rules", async () => {
 test("configure helper uses bounded Calls-only rules when GET returns 404", async () => {
   const messaging = fakeMessaging({
     rulesError: missing,
-    sessionError: forbidden,
+    connectionError: forbidden,
   });
   await configureCallsExampleRules(messaging, "support", "+12025550123");
   assert.deepEqual(messaging.calls.slice(0, 2), [
     "retrieve-rules",
-    "retrieve-session",
+    "retrieve-connection",
   ]);
   const write = messaging.calls[2];
   assert.equal(write[0], "update-rules");
@@ -129,12 +129,12 @@ test("configure helper validates the callee and project before writing", async (
   );
   assert.deepEqual(invalid.calls, []);
 
-  const hidden = fakeMessaging({ rulesError: missing, sessionError: missing });
+  const hidden = fakeMessaging({ rulesError: missing, connectionError: missing });
   await assert.rejects(
     configureCallsExampleRules(hidden, "support", "+12025550123"),
     /Number unavailable/,
   );
-  assert.deepEqual(hidden.calls, ["retrieve-rules", "retrieve-session"]);
+  assert.deepEqual(hidden.calls, ["retrieve-rules", "retrieve-connection"]);
 });
 
 test("configure helper accepts a seven-digit E.164 test callee", async () => {

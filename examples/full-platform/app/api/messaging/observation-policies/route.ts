@@ -2,14 +2,14 @@ import { messaging } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import { route } from "../../../../lib/route.js";
 
-// Effective presence, typing and label observation for the project and session.
+// Effective presence, typing and label observation for the project and connection.
 export const GET = route("admin", async ({ url }) => {
   const policies = messaging().observationPolicies;
-  const [projectPolicy, sessionPolicy] = await Promise.all([
+  const [projectPolicy, connectionPolicy] = await Promise.all([
     policies.retrieveForProject(env.projectId()),
-    policies.retrieveForSession(
-      url.searchParams.get("session") ?? env.session(),
+    policies.retrieveForConnection(
+      url.searchParams.get("connection") ?? env.connection(),
     ),
   ]);
-  return { project: projectPolicy.data.data, session: sessionPolicy.data.data };
+  return { project: projectPolicy.data.data, connection: connectionPolicy.data.data };
 });

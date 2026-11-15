@@ -80,7 +80,7 @@ export const POLYMORFA_ERROR_CODES = [
   "whatsapp_group_has_no_participants",
   "order_status_transition_invalid",
   "order_cancellation_failed",
-  "number_restricted",
+  "connection_restricted",
   "bansafe_suspended",
   "bansafe_team_suspended",
   "bansafe_cold_blocked",

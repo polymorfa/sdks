@@ -15,7 +15,7 @@ import type {
   Customer,
   CustomerEvent,
   CustomerListEnvelope,
-  CustomerNumber,
+  CustomerConnection,
   CustomerPairingLink,
   CustomerProjectRequest,
   CustomersEnablement,
@@ -23,7 +23,7 @@ import type {
   DataEnvelope,
   ListCustomerEventsParams,
   ListCustomersParams,
-  TransferCustomerNumberRequest,
+  TransferCustomerConnectionRequest,
   UpdateCustomerRequest,
 } from "./types.js";
 
@@ -96,9 +96,9 @@ export class CustomersResource {
         ...(params.isDefault === undefined
           ? {}
           : { isDefault: params.isDefault }),
-        ...(params.hasNumbers === undefined
+        ...(params.hasConnections === undefined
           ? {}
-          : { hasNumbers: params.hasNumbers }),
+          : { hasConnections: params.hasConnections }),
         ...(params.needsAttention === undefined
           ? {}
           : { needsAttention: params.needsAttention }),
@@ -161,14 +161,14 @@ export class CustomersResource {
     return this.lifecycle(customerId, "restore", body, options);
   }
 
-  listNumbers(
+  listConnections(
     customerId: string,
     projectId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<readonly CustomerNumber[]>>> {
+  ): Promise<ApiResponse<DataEnvelope<readonly CustomerConnection[]>>> {
     return this.transport.request({
       method: "GET",
-      path: `${customerPath(customerId)}/numbers`,
+      path: `${customerPath(customerId)}/connections`,
       query: { projectId },
       ...options,
     });
@@ -230,15 +230,15 @@ export class CustomersResource {
     });
   }
 
-  transferNumber(
+  transferConnection(
     customerId: string,
     connectionId: string,
-    body: TransferCustomerNumberRequest,
+    body: TransferCustomerConnectionRequest,
     options: RequestOptions,
-  ): Promise<ApiResponse<DataEnvelope<CustomerNumber>>> {
+  ): Promise<ApiResponse<DataEnvelope<CustomerConnection>>> {
     return this.transport.request({
       method: "POST",
-      path: `${customerPath(customerId)}/numbers/${encodeURIComponent(connectionId)}/transfer`,
+      path: `${customerPath(customerId)}/connections/${encodeURIComponent(connectionId)}/transfer`,
       body,
       ...options,
     });

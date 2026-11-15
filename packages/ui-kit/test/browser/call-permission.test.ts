@@ -62,7 +62,7 @@ describe("browser call permission messages", () => {
     }));
     servers.push(server);
     const client = new BrowserMessagingClient({
-      session: "support",
+      connection: "support",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -109,7 +109,7 @@ describe("browser call permission messages", () => {
       }));
       servers.push(server);
       const client = new BrowserMessagingClient({
-        session: "support",
+        connection: "support",
         getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
         baseUrl: server.url,
         maxNetworkRetries: 0,

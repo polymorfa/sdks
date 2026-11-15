@@ -14,9 +14,9 @@ import type {
   MessageSentPayload,
   NewsletterUpdatePayload,
   PollVotePayload,
-  RuntimeSessionStatusPayload,
-  SessionConnectedPayload,
-  SessionLoggedOutPayload,
+  RuntimeConnectionStatusPayload,
+  ConnectionConnectedPayload,
+  ConnectionLoggedOutPayload,
   WebhookEvent,
 } from "@polymorfa/sdk";
 
@@ -71,9 +71,9 @@ export const STORED_EVENT_TYPES = [
   "message.update",
   "message.vote",
   "newsletter.update",
-  "session.connected",
-  "session.logged_out",
-  "session.status",
+  "connection.connected",
+  "connection.logged_out",
+  "connection.status",
 ] as const;
 
 type Payload = Record<string, unknown>;
@@ -89,11 +89,11 @@ type ConversationReference = IdentityReference & {
  * carries the event ID, so applying it twice is a no-op.
  */
 export function reduceEvent(event: WebhookEvent): OperationBatch {
-  const sessionId = event.session;
+  const connectionId = event.connection;
   const at = isoMillis(event.timestamp);
-  const operations = eventOperations(event, sessionId, at);
+  const operations = eventOperations(event, connectionId, at);
   return {
-    sessionId,
+    connectionId,
     eventId: event.id,
     eventType: event.event,
     operations,
@@ -102,42 +102,42 @@ export function reduceEvent(event: WebhookEvent): OperationBatch {
 
 function eventOperations(
   event: WebhookEvent,
-  sessionId: string,
+  connectionId: string,
   at: number,
 ): StorageOperation[] {
   const payload = (event.payload ?? {}) as Payload;
   switch (event.event) {
     case "message.received":
     case "message.update":
-      return messageOperations(sessionId, payload, at, {
+      return messageOperations(connectionId, payload, at, {
         edit: payload.edited === true,
       });
     case "message.edited":
-      return messageOperations(sessionId, payload, at, { edit: true });
+      return messageOperations(connectionId, payload, at, { edit: true });
     case "message.sent":
       return sentOperations(
-        sessionId,
+        connectionId,
         payload as unknown as MessageSentPayload,
       );
     case "message.reaction":
-      return reactionOperations(sessionId, payload, at);
+      return reactionOperations(connectionId, payload, at);
     case "message.revoked":
-      return revokeOperations(sessionId, payload, at);
+      return revokeOperations(connectionId, payload, at);
     case "message.delete":
       return deleteForMeOperations(
-        sessionId,
+        connectionId,
         payload as unknown as MessageDeletePayload,
         at,
       );
     case "message.ack":
       return ackOperations(
-        sessionId,
+        connectionId,
         payload as unknown as MessageAckPayload,
         at,
       );
     case "message.vote":
       return voteOperations(
-        sessionId,
+        connectionId,
         payload as unknown as PollVotePayload,
         at,
       );
@@ -146,7 +146,7 @@ function eventOperations(
       const fields: Fields = {};
       put(fields, "archived", p.archive, at);
       put(fields, "pinned", p.pinned, at);
-      return chatPatch(sessionId, p.from, fields, at);
+      return chatPatch(connectionId, p.from, fields, at);
     }
     case "chat.mute": {
       const p = payload as unknown as ChatMutePayload;
@@ -158,14 +158,14 @@ function eventOperations(
         p.muted ? (toMillis(p.muteEndTimestamp) ?? null) : null,
         at,
       );
-      return chatPatch(sessionId, p.from, fields, at);
+      return chatPatch(connectionId, p.from, fields, at);
     }
     case "chat.read": {
       const p = payload as unknown as ChatReadPayload;
       const fields: Fields = {};
       put(fields, "markedUnread", !p.read, at);
       if (p.read) put(fields, "unreadCount", 0, at);
-      return chatPatch(sessionId, p.from, fields, at);
+      return chatPatch(connectionId, p.from, fields, at);
     }
     case "chat.clear":
     case "chat.delete": {
@@ -180,37 +180,37 @@ function eventOperations(
         at,
       );
       return [
-        upsert("chats", { sessionId, chatId }, fields),
-        { kind: "clearChat", sessionId, chatId, upTo: at },
+        upsert("chats", { connectionId, chatId }, fields),
+        { kind: "clearChat", connectionId, chatId, upTo: at },
       ];
     }
     case "contact.update":
       return contactOperations(
-        sessionId,
+        connectionId,
         payload as unknown as ContactUpdatePayload,
         at,
       );
     case "blocklist.update":
       return blocklistOperations(
-        sessionId,
+        connectionId,
         payload as unknown as BlocklistUpdatePayload,
         at,
       );
     case "group.update":
       return groupUpdateOperations(
-        sessionId,
+        connectionId,
         payload as unknown as GroupUpdatePayload,
         at,
       );
     case "group.participant":
       return participantOperations(
-        sessionId,
+        connectionId,
         payload as unknown as GroupParticipantPayload,
         at,
       );
     case "labels.update":
       return labelOperations(
-        sessionId,
+        connectionId,
         payload as unknown as LabelsUpdatePayload,
         at,
       );
@@ -221,10 +221,10 @@ function eventOperations(
       const fields: Fields = {};
       put(fields, "kind", "channel", 0);
       put(fields, "muted", p.muted, at);
-      return [upsert("chats", { sessionId, chatId }, fields)];
+      return [upsert("chats", { connectionId, chatId }, fields)];
     }
-    case "session.connected": {
-      const p = payload as unknown as SessionConnectedPayload;
+    case "connection.connected": {
+      const p = payload as unknown as ConnectionConnectedPayload;
       const fields: Fields = {};
       put(fields, "connected", true, at);
       put(fields, "phoneNumber", nonEmpty(p.phoneNumber), at);
@@ -233,28 +233,28 @@ function eventOperations(
       put(fields, "phonePlatform", nonEmpty(p.phonePlatform), at);
       put(fields, "accountType", nonEmpty(p.accountType), at);
       put(fields, "businessName", nonEmpty(p.businessName), at);
-      return [upsert("sessions", { sessionId }, fields)];
+      return [upsert("connections", { connectionId }, fields)];
     }
-    case "session.status": {
-      const p = payload as unknown as RuntimeSessionStatusPayload;
+    case "connection.status": {
+      const p = payload as unknown as RuntimeConnectionStatusPayload;
       if (typeof p.status !== "string") return [];
       const fields: Fields = {};
       put(fields, "status", p.status, at);
       put(fields, "statusReason", p.statusReason ?? null, at);
-      return [upsert("sessions", { sessionId }, fields)];
+      return [upsert("connections", { connectionId }, fields)];
     }
-    case "session.logged_out": {
-      const p = payload as unknown as SessionLoggedOutPayload;
+    case "connection.logged_out": {
+      const p = payload as unknown as ConnectionLoggedOutPayload;
       const fields: Fields = {};
       put(fields, "connected", false, at);
       put(fields, "loggedOutReason", nonEmpty(p.reason), at);
       put(fields, "loggedOutCode", finite(p.code), at);
-      return [upsert("sessions", { sessionId }, fields)];
+      return [upsert("connections", { connectionId }, fields)];
     }
     case "history.sync": {
       if ((payload as { kind?: unknown }).kind === "history") return [];
       const p = payload as unknown as LinkedHistorySyncPayload;
-      return historyProgressOperations(sessionId, {
+      return historyProgressOperations(connectionId, {
         syncType: historySyncTypeName(p.syncType),
         chunkOrder: finite(p.chunkOrder),
         progress: finite(p.progress),
@@ -299,12 +299,12 @@ function isGroupPayload(payload: Payload): boolean {
 }
 
 function guardFor(
-  sessionId: string,
+  connectionId: string,
   identity: MessageIdentity,
 ): ChatWatermarkGuard | undefined {
   return identity.timestamp === undefined
     ? undefined
-    : { sessionId, chatId: identity.chatId, timestamp: identity.timestamp };
+    : { connectionId, chatId: identity.chatId, timestamp: identity.timestamp };
 }
 
 function whatsappIds(payload: Payload): {
@@ -362,7 +362,7 @@ function contentFields(payload: Payload, version: number): Fields {
 }
 
 function chatFromConversation(
-  sessionId: string,
+  connectionId: string,
   conversation: ConversationReference | undefined,
   isGroup: boolean | undefined,
   timestamp: number | undefined,
@@ -379,11 +379,11 @@ function chatFromConversation(
   }
   if (timestamp !== undefined)
     put(fields, "lastMessageAt", timestamp, timestamp);
-  return [upsert("chats", { sessionId, chatId }, fields)];
+  return [upsert("chats", { connectionId, chatId }, fields)];
 }
 
 function messageOperations(
-  sessionId: string,
+  connectionId: string,
   payload: Payload,
   at: number,
   options: { readonly edit: boolean },
@@ -394,9 +394,9 @@ function messageOperations(
   const isGroup =
     typeof payload.isGroup === "boolean" ? payload.isGroup : undefined;
   const type = nonEmpty(payload.type);
-  if (type === "reaction") return reactionOperations(sessionId, payload, at);
-  if (type === "revoke") return revokeOperations(sessionId, payload, at);
-  const guard = guardFor(sessionId, identity);
+  if (type === "reaction") return reactionOperations(connectionId, payload, at);
+  if (type === "revoke") return revokeOperations(connectionId, payload, at);
+  const guard = guardFor(connectionId, identity);
   const editVersion = identity.timestamp ?? at;
   const fields: Fields = {};
   put(fields, "chatId", identity.chatId, 0);
@@ -428,14 +428,14 @@ function messageOperations(
   }
   const operations: StorageOperation[] = [
     ...chatFromConversation(
-      sessionId,
+      connectionId,
       conversation,
       isGroup,
       options.edit ? undefined : identity.timestamp,
     ),
     upsert(
       "messages",
-      { sessionId, messageId: identity.messageId },
+      { connectionId, messageId: identity.messageId },
       fields,
       guard,
     ),
@@ -449,7 +449,7 @@ function messageOperations(
     operations.push(
       upsert(
         "media",
-        { sessionId, messageId: identity.messageId },
+        { connectionId, messageId: identity.messageId },
         media,
         guard,
       ),
@@ -466,7 +466,7 @@ function messageOperations(
       nonEmpty(reference?.phoneNumber),
       identity.timestamp,
     );
-    operations.push(upsert("contacts", { sessionId, contactId }, contact));
+    operations.push(upsert("contacts", { connectionId, contactId }, contact));
   }
   return operations;
 }
@@ -495,7 +495,7 @@ function mediaFields(
 }
 
 function sentOperations(
-  sessionId: string,
+  connectionId: string,
   payload: MessageSentPayload,
 ): StorageOperation[] {
   const identity = messageIdentity({
@@ -515,22 +515,22 @@ function sentOperations(
   statusWrites(fields, "sent", identity.timestamp);
   return [
     ...chatFromConversation(
-      sessionId,
+      connectionId,
       payload.conversation,
       undefined,
       identity.timestamp,
     ),
     upsert(
       "messages",
-      { sessionId, messageId: identity.messageId },
+      { connectionId, messageId: identity.messageId },
       fields,
-      guardFor(sessionId, identity),
+      guardFor(connectionId, identity),
     ),
   ];
 }
 
 function reactionOperations(
-  sessionId: string,
+  connectionId: string,
   payload: Payload,
   at: number,
 ): StorageOperation[] {
@@ -550,14 +550,14 @@ function reactionOperations(
   return [
     upsert(
       "reactions",
-      { sessionId, messageId: target, senderId: identity.senderId },
+      { connectionId, messageId: target, senderId: identity.senderId },
       fields,
     ),
   ];
 }
 
 function revokeOperations(
-  sessionId: string,
+  connectionId: string,
   payload: Payload,
   at: number,
 ): StorageOperation[] {
@@ -569,13 +569,13 @@ function revokeOperations(
   put(fields, "chatId", identity.chatId, 0);
   put(fields, "revokedAt", revokedAt, FINAL_VERSION);
   return [
-    upsert("messages", { sessionId, messageId: target }, fields),
-    upsert("media", { sessionId, messageId: target }, clearedMedia()),
+    upsert("messages", { connectionId, messageId: target }, fields),
+    upsert("media", { connectionId, messageId: target }, clearedMedia()),
   ];
 }
 
 function deleteForMeOperations(
-  sessionId: string,
+  connectionId: string,
   payload: MessageDeletePayload,
   at: number,
 ): StorageOperation[] {
@@ -586,8 +586,8 @@ function deleteForMeOperations(
   put(fields, "chatId", chatId, 0);
   put(fields, "deletedAt", at, FINAL_VERSION);
   return [
-    upsert("messages", { sessionId, messageId }, fields),
-    upsert("media", { sessionId, messageId }, clearedMedia()),
+    upsert("messages", { connectionId, messageId }, fields),
+    upsert("media", { connectionId, messageId }, clearedMedia()),
   ];
 }
 
@@ -614,7 +614,7 @@ export function ackStatus(type: string | undefined): MessageStatus | undefined {
 }
 
 function ackOperations(
-  sessionId: string,
+  connectionId: string,
   payload: MessageAckPayload,
   at: number,
 ): StorageOperation[] {
@@ -631,21 +631,21 @@ function ackOperations(
     const fields: Fields = {};
     put(fields, "chatId", chatId, 0);
     statusWrites(fields, status, timestamp);
-    operations.push(upsert("messages", { sessionId, messageId }, fields));
+    operations.push(upsert("messages", { connectionId, messageId }, fields));
     const receipt: Fields = {};
     put(receipt, "chatId", chatId, 0);
     statusWrites(receipt, status, timestamp);
     receipt.timestamp = receipt.statusAt!;
     delete receipt.statusAt;
     operations.push(
-      upsert("receipts", { sessionId, messageId, recipientId }, receipt),
+      upsert("receipts", { connectionId, messageId, recipientId }, receipt),
     );
   }
   return operations;
 }
 
 function voteOperations(
-  sessionId: string,
+  connectionId: string,
   payload: PollVotePayload,
   at: number,
 ): StorageOperation[] {
@@ -658,22 +658,22 @@ function voteOperations(
   put(fields, "chatId", chatId, 0);
   put(fields, "selectedHashes", [...(payload.selectedHashes ?? [])], version);
   put(fields, "timestamp", version, version);
-  return [upsert("poll_votes", { sessionId, messageId, voterId }, fields)];
+  return [upsert("poll_votes", { connectionId, messageId, voterId }, fields)];
 }
 
 function chatPatch(
-  sessionId: string,
+  connectionId: string,
   from: IdentityReference | undefined,
   fields: Fields,
   at: number,
 ): StorageOperation[] {
   const chatId = nonEmpty(from?.id);
   if (!chatId || Object.keys(fields).length === 0 || at === 0) return [];
-  return [upsert("chats", { sessionId, chatId }, fields)];
+  return [upsert("chats", { connectionId, chatId }, fields)];
 }
 
 function contactOperations(
-  sessionId: string,
+  connectionId: string,
   payload: ContactUpdatePayload,
   at: number,
 ): StorageOperation[] {
@@ -690,11 +690,11 @@ function contactOperations(
   if (payload.pictureRemoved === true) put(fields, "pictureId", null, at);
   else put(fields, "pictureId", nonEmpty(payload.pictureId), at);
   if (Object.keys(fields).length === 0) return [];
-  return [upsert("contacts", { sessionId, contactId }, fields)];
+  return [upsert("contacts", { connectionId, contactId }, fields)];
 }
 
 function blocklistOperations(
-  sessionId: string,
+  connectionId: string,
   payload: BlocklistUpdatePayload,
   at: number,
 ): StorageOperation[] {
@@ -706,13 +706,13 @@ function blocklistOperations(
     const fields: Fields = {};
     put(fields, "blocked", action === "block", at);
     put(fields, "phoneNumber", nonEmpty(change.phoneNumber), at);
-    operations.push(upsert("contacts", { sessionId, contactId }, fields));
+    operations.push(upsert("contacts", { connectionId, contactId }, fields));
   }
   return operations;
 }
 
 function groupUpdateOperations(
-  sessionId: string,
+  connectionId: string,
   payload: GroupUpdatePayload,
   at: number,
 ): StorageOperation[] {
@@ -728,20 +728,20 @@ function groupUpdateOperations(
   put(chat, "kind", "group", 0);
   put(chat, "name", nonEmpty(payload.newSubject), at);
   return [
-    upsert("groups", { sessionId, groupId }, fields),
-    upsert("chats", { sessionId, chatId: groupId }, chat),
+    upsert("groups", { connectionId, groupId }, fields),
+    upsert("chats", { connectionId, chatId: groupId }, chat),
   ];
 }
 
 function participantOperations(
-  sessionId: string,
+  connectionId: string,
   payload: GroupParticipantPayload,
   at: number,
 ): StorageOperation[] {
   const groupId = nonEmpty(payload.id);
   if (!groupId) return [];
   const operations: StorageOperation[] = [
-    upsert("groups", { sessionId, groupId }, {}),
+    upsert("groups", { connectionId, groupId }, {}),
   ];
   const change = (
     list: readonly IdentityReference[] | undefined,
@@ -757,7 +757,7 @@ function participantOperations(
       operations.push(
         upsert(
           "group_participants",
-          { sessionId, groupId, participantId },
+          { connectionId, groupId, participantId },
           fields,
         ),
       );
@@ -778,7 +778,7 @@ function participantOperations(
 }
 
 function labelOperations(
-  sessionId: string,
+  connectionId: string,
   payload: LabelsUpdatePayload,
   at: number,
 ): StorageOperation[] {
@@ -797,7 +797,7 @@ function labelOperations(
       put(fields, "color", finite(payload.color), version);
       put(fields, "orderIndex", finite(payload.orderIndex), version);
       put(fields, "deleted", payload.deleted ?? false, version);
-      return [upsert("labels", { sessionId, labelId }, fields)];
+      return [upsert("labels", { connectionId, labelId }, fields)];
     }
     case "label_association_chat":
     case "label_association_message": {
@@ -814,7 +814,7 @@ function labelOperations(
         upsert(
           "label_associations",
           {
-            sessionId,
+            connectionId,
             labelId,
             targetKind:
               payload.action === "label_association_chat" ? "chat" : "message",
@@ -831,7 +831,7 @@ function labelOperations(
       const fields: Fields = {};
       put(fields, "starred", payload.starred, version);
       put(fields, "chatId", chatId, 0);
-      return [upsert("messages", { sessionId, messageId }, fields)];
+      return [upsert("messages", { connectionId, messageId }, fields)];
     }
     default:
       return [];

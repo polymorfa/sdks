@@ -1457,7 +1457,7 @@ export function CallControls({
   const showCamera = snapshot.capabilities.video && disableVideo !== true;
   // The affordance stays visible on an audio call (the settled design) and is
   // disabled until it can act: connected, and either already a video call or
-  // an upgrade the media session can actually perform. A session that cannot
+  // an upgrade the media connection can actually perform. A connection that cannot
   // renegotiate therefore shows the same disabled button as a call that has
   // not connected yet, instead of a live one that does nothing.
   const cameraReady =

@@ -28,8 +28,8 @@ export const POST = route("admin", async ({ body, request }) => {
         },
         { idempotencyKey: idempotencyKey(request) },
       );
-      const { id, url, session, expiresAt } = response.data.data;
-      return { id, url, session, expiresAt };
+      const { id, url, connection, expiresAt } = response.data.data;
+      return { id, url, connection, expiresAt };
     }
     case "retrieve":
       return quickLinks.retrieve(text(body, "id"));

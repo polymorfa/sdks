@@ -10,7 +10,7 @@ import (
 
 func portable(t *testing.T) ([]polymorfa.WebhookEvent, map[string][]Row, map[string]any, map[string][]Row) {
 	t.Helper()
-	raw, err := os.ReadFile("testdata/conformance-fixtures.json")
+	raw, err := os.ReadFile("testdata/conformance-fixtures.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func TestSharedEventReducerConformance(t *testing.T) {
 func TestSharedHistoryReducerConformanceAndReplay(t *testing.T) {
 	_, _, chunk, expected := portable(t)
 	e := engineFor(t, memoryFor(t, 50), EngineOptions{})
-	batch, err := ReduceHistoryChunk(HistoryInput{SessionID: "history-portable", Chunk: chunk, ChunkID: str("golden")})
+	batch, err := ReduceHistoryChunk(HistoryInput{ConnectionID: "history-portable", Chunk: chunk, ChunkID: str("golden")})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,11 +88,11 @@ func TestSharedHistoryReducerConformanceAndReplay(t *testing.T) {
 	}
 	for _, rows := range expected {
 		for _, row := range rows {
-			row["sessionId"] = "history-portable"
+			row["connectionId"] = "history-portable"
 		}
 	}
 	assertFixtureRows(t, e, expected)
-	if _, err := ReduceHistoryData("session", &polymorfa.HistorySyncData{}, nil, nil); err == nil {
+	if _, err := ReduceHistoryData("connection", &polymorfa.HistorySyncData{}, nil, nil); err == nil {
 		t.Fatal("minimal codec view accepted as complete")
 	}
 }
@@ -117,7 +117,7 @@ func TestHistoryIdentityScopesDirectionAndTargets(t *testing.T) {
 	}
 	target := map[string]any{"id": "same", "remoteJid": "111@s.whatsapp.net", "fromMe": false}
 	info := map[string]any{"key": map[string]any{"id": "envelope", "remoteJid": "111@s.whatsapp.net"}, "messageTimestamp": "1720000000", "message": map[string]any{"protocolMessage": map[string]any{"type": "REVOKE", "key": target}}}
-	ops := ReduceWebMessageInfo(info, "session", keys, "")
+	ops := ReduceWebMessageInfo(info, "connection", keys, "")
 	if len(ops) != 2 || ops[0].Key["messageId"] != "opaque-a" || ops[0].Fields["text"].Version != FinalVersion || ops[0].Fields["text"].Value != nil {
 		t.Fatal("revoke target/finality", ops)
 	}
@@ -126,17 +126,17 @@ func boolValue(v bool) *bool { return &v }
 func TestHistoryStringsWrappersAndReceiptRank(t *testing.T) {
 	keys := NewHistoryKeys(nil, nil)
 	info := map[string]any{"key": map[string]any{"id": "m", "remoteJid": "111@s.whatsapp.net", "fromMe": true}, "messageTimestamp": "1720000000", "status": "READ", "message": map[string]any{"viewOnceMessageV2": map[string]any{"message": map[string]any{"ephemeralMessage": map[string]any{"message": map[string]any{"conversation": "inner"}}}}}, "userReceipt": []any{map[string]any{"userJid": "222:1@lid", "readTimestamp": "1720000002"}}}
-	ops := ReduceWebMessageInfo(info, "session", keys, "")
+	ops := ReduceWebMessageInfo(info, "connection", keys, "")
 	e := engineFor(t, memoryFor(t, 50), EngineOptions{})
-	if _, err := e.Apply(context.Background(), Batch{SessionID: "session", Operations: ops}); err != nil {
+	if _, err := e.Apply(context.Background(), Batch{ConnectionID: "connection", Operations: ops}); err != nil {
 		t.Fatal(err)
 	}
 	id := keys.MessageID(object(info["key"]), "")
-	row, err := e.Get(context.Background(), "messages", map[string]any{"sessionId": "session", "messageId": id})
+	row, err := e.Get(context.Background(), "messages", map[string]any{"connectionId": "connection", "messageId": id})
 	if err != nil || row["text"] != "inner" || row["timestamp"] != float64(1720000000000) || row["status"] != "read" {
 		t.Fatal("wrapper/int64/status", row, err)
 	}
-	receipt, err := e.Get(context.Background(), "receipts", map[string]any{"sessionId": "session", "messageId": id, "recipientId": "wa:222@lid"})
+	receipt, err := e.Get(context.Background(), "receipts", map[string]any{"connectionId": "connection", "messageId": id, "recipientId": "wa:222@lid"})
 	if err != nil || receipt["status"] != "read" {
 		t.Fatal("receipt", receipt, err)
 	}

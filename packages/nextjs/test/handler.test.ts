@@ -47,7 +47,7 @@ function sdk() {
               data: {
                 id: "ql_1",
                 url: "https://link.polymorfa.com/ql_1",
-                session: "support",
+                connection: "support",
                 expiresAt: "2026-09-20T00:00:00Z",
               },
             },
@@ -59,7 +59,7 @@ function sdk() {
 }
 
 const grant: PolymorfaGrantInput = {
-  session: "support",
+  connection: "support",
   conversations: ["chat_1"],
   allow: ["read_messages", "send_message", "subscribe_events"],
 };
@@ -91,7 +91,7 @@ describe("createPolymorfaHandler options", () => {
         authenticate: () => null,
         mint: () => grant,
         connect: () => ({}),
-        templates: { projectSlug: () => "p", submissionSession: () => "s" },
+        templates: { projectSlug: () => "p", submissionConnection: () => "s" },
         media: { mode: "proxy", authorize: () => null },
       }).POST,
     ).toBeTypeOf("function");
@@ -147,7 +147,7 @@ describe("POST /token", () => {
     expect(mint).toHaveBeenCalledWith({ id: "user_1" }, expect.any(Request));
     expect(polymorfa.clientTokens.mint).toHaveBeenCalledWith(
       {
-        session: "support",
+        connection: "support",
         allow: ["send_message"],
         ephemeralId: "user_1",
         ttlSeconds: 600,
@@ -160,7 +160,7 @@ describe("POST /token", () => {
       audience: "browser",
       scopes: grant.allow,
       grant: {
-        session: "support",
+        connection: "support",
         conversations: ["chat_1"],
         allow: grant.allow,
       },
@@ -172,19 +172,19 @@ describe("POST /token", () => {
     const { route, polymorfa } = handler();
     await route.POST(
       post("token?allow=manage_templates", {
-        body: JSON.stringify({ allow: ["manage_templates"], session: "x" }),
+        body: JSON.stringify({ allow: ["manage_templates"], connection: "x" }),
         headers: { "content-type": "application/json" },
       }),
     );
     expect(polymorfa.clientTokens.mint.mock.calls[0]?.[0]).toEqual({
-      session: "support",
+      connection: "support",
       allow: ["send_message"],
       ephemeralId: "user_1",
       ttlSeconds: 600,
     });
   });
 
-  it("preserves a session grant's exact API ceiling and excludes wrapper permissions", async () => {
+  it("preserves a connection grant's exact API ceiling and excludes wrapper permissions", async () => {
     const { route, polymorfa } = handler({
       mint: () => ({
         ...grant,
@@ -197,7 +197,7 @@ describe("POST /token", () => {
       "voip_signal",
     ]);
   });
-  it("mints an explicit zero API ceiling for a wrapper-only session grant", async () => {
+  it("mints an explicit zero API ceiling for a wrapper-only connection grant", async () => {
     const { route, polymorfa } = handler({
       mint: () => ({ ...grant, allow: ["read_messages"] }),
     });
@@ -242,8 +242,8 @@ describe("POST /token", () => {
   it.each([
     ["an empty allow list", { ...grant, allow: [] }],
     ["an unknown permission", { ...grant, allow: ["everything"] }],
-    ["no conversations", { session: "support", allow: ["send_message"] }],
-    ["session and customer", { ...grant, customer: "c" }],
+    ["no conversations", { connection: "support", allow: ["send_message"] }],
+    ["connection and customer", { ...grant, customer: "c" }],
     ["a tiny ttl", { ...grant, ttlSeconds: 5 }],
   ])("fails closed for %s without leaking details", async (_name, bad) => {
     const { route, polymorfa } = handler({
@@ -347,33 +347,33 @@ describe("history routes", () => {
 });
 
 describe("GET /events", () => {
-  it("streams only events for the grant's session and conversations", async () => {
+  it("streams only events for the grant's connection and conversations", async () => {
     const events: RelayEvent[] = [
       {
         id: "e1",
-        session: "support",
+        connection: "support",
         event: "message.received",
         timestamp: "2026-09-19T10:00:00Z",
         payload: { id: "m1", conversation: { id: "chat_1" }, text: "hi" },
       },
       {
         id: "e2",
-        session: "support",
+        connection: "support",
         event: "message.received",
         timestamp: "2026-09-19T10:00:01Z",
         payload: { id: "m2", conversation: { id: "chat_9" }, text: "secret" },
       },
       {
         id: "e3",
-        session: "sales",
-        event: "session.status",
+        connection: "sales",
+        event: "connection.status",
         timestamp: "2026-09-19T10:00:02Z",
         payload: { status: "connected" },
       },
       {
         id: "e4",
-        session: "support",
-        event: "session.status",
+        connection: "support",
+        event: "connection.status",
         timestamp: "2026-09-19T10:00:03Z",
         payload: { status: "connected" },
       },
@@ -515,7 +515,7 @@ describe("POST /templates", () => {
       authenticate: () => ({ id: "user_1" }),
       templates: {
         projectSlug: () => "acme",
-        submissionSession: () => "cloud",
+        submissionConnection: () => "cloud",
       },
     };
     const allowed = createPolymorfaHandler<User>({
@@ -562,7 +562,7 @@ describe("adapters", () => {
         onEvent,
       },
       authenticate: (request) =>
-        request.headers.get("cookie") === "session=1" ? { id: "user_1" } : null,
+        request.headers.get("cookie") === "connection=1" ? { id: "user_1" } : null,
     });
     const middleware = toExpress(route);
     server = createServer(
@@ -578,11 +578,11 @@ describe("adapters", () => {
     expect(anonymous.status).toBe(401);
     const signedIn = await fetch(`${origin}/token`, {
       method: "POST",
-      headers: { cookie: "session=1" },
+      headers: { cookie: "connection=1" },
     });
     expect(signedIn.status).toBe(200);
     expect(signedIn.headers.get("cache-control")).toContain("no-store");
-    expect((await signedIn.json()).grant.session).toBe("support");
+    expect((await signedIn.json()).grant.connection).toBe("support");
     const webhook = await fetch(`${origin}/webhooks`, {
       method: "POST",
       headers: { "x-webhook-signature": "good" },
@@ -635,7 +635,7 @@ describe("createDevelopmentInboxStore", () => {
     });
     const message = (id: string, text: string, fromMe = false) => ({
       id: `evt_${id}`,
-      session: "support",
+      connection: "support",
       event: fromMe ? "message.sent" : "message.received",
       timestamp: "2026-09-19T10:00:00Z",
       payload: {
@@ -654,7 +654,7 @@ describe("createDevelopmentInboxStore", () => {
     expect(list.data).toEqual([
       {
         id: "chat_1",
-        session: "support",
+        connection: "support",
         name: "Ada",
         phoneNumber: "+15550001",
         lastMessage: {

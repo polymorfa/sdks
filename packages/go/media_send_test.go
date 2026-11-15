@@ -84,7 +84,7 @@ func TestNativeDescriptorMessageWireAndLegacyVersion(t *testing.T) {
 			case UploadSticker:
 				content.Sticker = &StickerContent{Descriptor: &descriptor}
 			}
-			response, err := sdk.Messages().Send(context.Background(), "session", SendMessageRequest{Conversation: ConversationReference{ID: "conversation"}, Content: content})
+			response, err := sdk.Messages().Send(context.Background(), "connection", SendMessageRequest{Conversation: ConversationReference{ID: "conversation"}, Content: content})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -106,7 +106,7 @@ func TestNativeDescriptorMessageWireAndLegacyVersion(t *testing.T) {
 				t.Fatal("response descriptor was lost or misidentified")
 			}
 			text := "legacy"
-			_, err = sdk.Messages().Send(context.Background(), "session", SendMessageRequest{Conversation: ConversationReference{ID: "conversation"}, Content: MessageContent{Text: &text}})
+			_, err = sdk.Messages().Send(context.Background(), "connection", SendMessageRequest{Conversation: ConversationReference{ID: "conversation"}, Content: MessageContent{Text: &text}})
 			if err != nil || count != 2 {
 				t.Fatal("ordinary send", err)
 			}
@@ -140,7 +140,7 @@ func TestDescriptorBoundsKindsAndExclusiveSources(t *testing.T) {
 	}
 	sdk := mustMessaging(t, "http://127.0.0.1:1")
 	for _, content := range []MessageContent{{Image: &MediaContent{Descriptor: &descriptor, URL: "https://fixture.invalid"}}, {Image: &MediaContent{Descriptor: &descriptor, MimeType: "image/jpeg"}}, {Voice: &MediaContent{Descriptor: &descriptor}}, {Sticker: &StickerContent{Descriptor: &descriptor}}} {
-		_, err := sdk.Messages().Send(context.Background(), "session", SendMessageRequest{Conversation: ConversationReference{ID: "conversation"}, Content: content})
+		_, err := sdk.Messages().Send(context.Background(), "connection", SendMessageRequest{Conversation: ConversationReference{ID: "conversation"}, Content: content})
 		var typed *Error
 		if !errors.As(err, &typed) || typed.Kind != ValidationError {
 			t.Fatal("invalid media source reached transport", err)

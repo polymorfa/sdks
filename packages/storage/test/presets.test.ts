@@ -25,12 +25,12 @@ const pgOptions = {
   database: "storage_fixture",
 };
 const batch = {
-  sessionId: "orm",
+  connectionId: "orm",
   operations: [
     {
       kind: "upsert",
       entity: "contacts",
-      key: { sessionId: "orm", contactId: "reader" },
+      key: { connectionId: "orm", contactId: "reader" },
       fields: { fullName: { value: "stored by engine", version: 1 } },
     },
   ],
@@ -82,7 +82,7 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       await pool.end();
     }
   });
-  it("FORCE RLS denies foreign sessions, content writes and membership writes; live revocation takes effect", async () => {
+  it("FORCE RLS denies foreign connections, content writes and membership writes; live revocation takes effect", async () => {
     const pool = new Pool(pgOptions);
     const client = await pool.connect();
     const schema = `zkrls_${Date.now()}`;
@@ -111,11 +111,11 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       await storage.apply(batch);
       await storage.apply({
         ...batch,
-        sessionId: "foreign",
+        connectionId: "foreign",
         operations: [
           {
             ...batch.operations[0],
-            key: { sessionId: "foreign", contactId: "secret" },
+            key: { connectionId: "foreign", contactId: "secret" },
           },
         ],
       });
@@ -131,9 +131,9 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       );
       await client.query("SET ROLE zk_storage_reader");
       expect(
-        (await client.query(`SELECT session_id FROM "${schema}".s_contacts`))
+        (await client.query(`SELECT connection_id FROM "${schema}".s_contacts`))
           .rows,
-      ).toEqual([{ session_id: "orm" }]);
+      ).toEqual([{ connection_id: "orm" }]);
       await expect(
         client.query(`DELETE FROM "${schema}".s_contacts`),
       ).rejects.toThrow();

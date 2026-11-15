@@ -205,7 +205,7 @@ type PollVotePayload struct {
 	SelectedHashes []string            `json:"selectedHashes"`
 	Timestamp      int64               `json:"timestamp"`
 }
-type RuntimeSessionStatusPayload struct {
+type RuntimeConnectionStatusPayload struct {
 	webhookPayloadBase
 	Status       string `json:"status"`
 	StatusReason string `json:"statusReason,omitempty"`
@@ -221,7 +221,7 @@ type CloudAccountStatusPayload struct {
 	WABAID string          `json:"wabaId,omitempty"`
 	Value  PlatformPayload `json:"value"`
 }
-type SessionRestrictionUpdatedPayload struct {
+type ConnectionRestrictionUpdatedPayload struct {
 	webhookPayloadBase
 	Type            string  `json:"type"`
 	Active          bool    `json:"active"`
@@ -229,7 +229,7 @@ type SessionRestrictionUpdatedPayload struct {
 	ExpiresAt       *string `json:"expiresAt"`
 	ObservedAt      string  `json:"observedAt"`
 }
-type SessionConnectedPayload struct {
+type ConnectionConnectedPayload struct {
 	webhookPayloadBase
 	PhoneNumber   string `json:"phoneNumber"`
 	ID            string `json:"id,omitempty"`
@@ -238,12 +238,12 @@ type SessionConnectedPayload struct {
 	AccountType   string `json:"accountType"`
 	BusinessName  string `json:"businessName,omitempty"`
 }
-type SessionLoggedOutPayload struct {
+type ConnectionLoggedOutPayload struct {
 	webhookPayloadBase
 	Reason string `json:"reason"`
 	Code   int    `json:"code"`
 }
-type SessionPhoneOfflinePayload struct {
+type ConnectionPhoneOfflinePayload struct {
 	webhookPayloadBase
 	DaysSinceLastSeen int    `json:"daysSinceLastSeen"`
 	DaysRemaining     int    `json:"daysRemaining"`
@@ -302,11 +302,11 @@ type PresenceUpdatePayload struct {
 }
 type ContactOptPayload struct {
 	webhookPayloadBase
-	Phone     string `json:"phone"`
-	Source    string `json:"source"`
-	Keyword   string `json:"keyword"`
-	Session   string `json:"session"`
-	ProjectID string `json:"projectId,omitempty"`
+	Phone      string `json:"phone"`
+	Source     string `json:"source"`
+	Keyword    string `json:"keyword"`
+	Connection string `json:"connection"`
+	ProjectID  string `json:"projectId,omitempty"`
 }
 type ContactUpdatePayload struct {
 	IdentityChange *ContactIdentityChange `json:"identityChange,omitempty"`
@@ -356,11 +356,11 @@ type WebhookCallCapabilities struct {
 }
 type CallReceivedPayload struct {
 	webhookPayloadBase
-	From              WebhookIdentity          `json:"from"`
-	CallID            string                   `json:"callId"`
-	HasVideo          bool                     `json:"hasVideo"`
-	SessionConnection string                   `json:"sessionConnection,omitempty"`
-	Capabilities      *WebhookCallCapabilities `json:"capabilities,omitempty"`
+	From                 WebhookIdentity          `json:"from"`
+	CallID               string                   `json:"callId"`
+	HasVideo             bool                     `json:"hasVideo"`
+	ConnectionConnection string                   `json:"connectionConnection,omitempty"`
+	Capabilities         *WebhookCallCapabilities `json:"capabilities,omitempty"`
 }
 type CallMissedPayload struct {
 	webhookPayloadBase
@@ -370,12 +370,12 @@ type CallMissedPayload struct {
 }
 type CallAcceptedPayload struct {
 	webhookPayloadBase
-	From              WebhookIdentity          `json:"from"`
-	CallID            string                   `json:"callId"`
-	AnsweredBy        string                   `json:"answeredBy,omitempty"`
-	Exclusive         *bool                    `json:"exclusive,omitempty"`
-	SessionConnection string                   `json:"sessionConnection,omitempty"`
-	Capabilities      *WebhookCallCapabilities `json:"capabilities,omitempty"`
+	From                 WebhookIdentity          `json:"from"`
+	CallID               string                   `json:"callId"`
+	AnsweredBy           string                   `json:"answeredBy,omitempty"`
+	Exclusive            *bool                    `json:"exclusive,omitempty"`
+	ConnectionConnection string                   `json:"connectionConnection,omitempty"`
+	Capabilities         *WebhookCallCapabilities `json:"capabilities,omitempty"`
 }
 type CallRejectedPayload struct {
 	webhookPayloadBase
@@ -384,13 +384,13 @@ type CallRejectedPayload struct {
 }
 type CallEndedPayload struct {
 	webhookPayloadBase
-	From              *WebhookIdentity `json:"from"`
-	CallID            string           `json:"callId"`
-	DurationSeconds   float64          `json:"durationSeconds"`
-	Reason            string           `json:"reason"`
-	Direction         string           `json:"direction"`
-	HadVideo          bool             `json:"hadVideo"`
-	SessionConnection string           `json:"sessionConnection,omitempty"`
+	From                 *WebhookIdentity `json:"from"`
+	CallID               string           `json:"callId"`
+	DurationSeconds      float64          `json:"durationSeconds"`
+	Reason               string           `json:"reason"`
+	Direction            string           `json:"direction"`
+	HadVideo             bool             `json:"hadVideo"`
+	ConnectionConnection string           `json:"connectionConnection,omitempty"`
 }
 type CallTelemetryPayload struct {
 	webhookPayloadBase
@@ -557,11 +557,11 @@ type CustomerUpdatedPayload struct {
 }
 type CustomerEnabledPayload struct {
 	CustomerEventPayload
-	MigratedNumberCount int `json:"migratedNumberCount"`
+	MigratedConnectionCount int `json:"migratedConnectionCount"`
 }
 type CustomerArchivingPayload struct {
 	CustomerEventPayload
-	BlockingNumberCount     int `json:"blockingNumberCount"`
+	BlockingConnectionCount int `json:"blockingConnectionCount"`
 	RevokedPairingLinkCount int `json:"revokedPairingLinkCount"`
 }
 type CustomerPairingLinkPayload struct {
@@ -573,7 +573,7 @@ type CustomerPairingLinkOpenedPayload = CustomerPairingLinkPayload
 type CustomerPairingLinkExpiredPayload = CustomerPairingLinkPayload
 type CustomerPairingLinkConnectedPayload struct {
 	CustomerPairingLinkPayload
-	SessionID string `json:"sessionId"`
+	ConnectionID string `json:"connectionId"`
 }
 type CustomerPairingLinkFailedPayload struct {
 	CustomerPairingLinkPayload
@@ -583,24 +583,24 @@ type CustomerPairingLinkRevokedPayload struct {
 	CustomerPairingLinkPayload
 	Reason string `json:"reason,omitempty"`
 }
-type CustomerNumberAttachedPayload struct {
+type CustomerConnectionAttachedPayload struct {
 	CustomerEventPayload
-	SessionID     string `json:"sessionId"`
+	ConnectionID  string `json:"connectionId"`
 	PairingLinkID string `json:"pairingLinkId,omitempty"`
 }
-type CustomerNumberTransferredPayload struct {
+type CustomerConnectionTransferredPayload struct {
 	CustomerEventPayload
-	SessionID        string `json:"sessionId"`
+	ConnectionID     string `json:"connectionId"`
 	SourceCustomerID string `json:"sourceCustomerId"`
 }
-type CustomerNumberDisconnectedPayload struct {
+type CustomerConnectionDisconnectedPayload struct {
 	CustomerEventPayload
-	SessionID string `json:"sessionId"`
-	Reason    string `json:"reason"`
+	ConnectionID string `json:"connectionId"`
+	Reason       string `json:"reason"`
 }
 type BanSafeHealthThresholdPayload struct {
 	webhookPayloadBase
-	SessionID        string  `json:"sessionId"`
+	ConnectionID     string  `json:"connectionId"`
 	ProjectID        string  `json:"projectId"`
 	Health           float64 `json:"health"`
 	Threshold        float64 `json:"threshold"`
@@ -806,7 +806,7 @@ type CampaignRecipientSentPayload struct {
 	CampaignID        string `json:"campaignId"`
 	RecipientID       string `json:"recipientId"`
 	Phone             string `json:"phone"`
-	SessionKey        string `json:"sessionKey"`
+	ConnectionKey     string `json:"connectionKey"`
 	ExternalMessageID string `json:"externalMessageId"`
 	VariantKey        string `json:"variantKey"`
 	Attempt           int    `json:"attempt"`
@@ -833,7 +833,7 @@ type CampaignRecipientSkippedPayload struct {
 type CampaignThrottledPayload struct {
 	webhookPayloadBase
 	CampaignID    string `json:"campaignId"`
-	SessionKey    string `json:"sessionKey"`
+	ConnectionKey string `json:"connectionKey"`
 	Reason        string `json:"reason"`
 	DeferredCount int    `json:"deferredCount"`
 	At            int64  `json:"at"`
@@ -841,7 +841,7 @@ type CampaignThrottledPayload struct {
 type CampaignCapReachedPayload struct {
 	webhookPayloadBase
 	CampaignID     string `json:"campaignId"`
-	SessionKey     string `json:"sessionKey"`
+	ConnectionKey  string `json:"connectionKey"`
 	Phone          string `json:"phone"`
 	CapType        string `json:"capType"`
 	CapLimit       int    `json:"capLimit"`
@@ -888,7 +888,7 @@ type UsageRecordedPayload struct {
 	SourceKind    string                    `json:"sourceKind"`
 	SourceID      string                    `json:"sourceId"`
 	ProjectID     *string                   `json:"projectId"`
-	Session       *string                   `json:"session"`
+	Connection    *string                   `json:"connection"`
 	OccurredAt    string                    `json:"occurredAt"`
 	RecordedAt    string                    `json:"recordedAt"`
 	Revision      int                       `json:"revision"`
@@ -896,9 +896,9 @@ type UsageRecordedPayload struct {
 	RateCard      *UsageRateCard            `json:"rateCard"`
 	PricedCredits *float64                  `json:"pricedCredits"`
 }
-type SessionCapabilitiesUpdatedPayload struct {
+type ConnectionCapabilitiesUpdatedPayload struct {
 	webhookPayloadBase
-	SessionCapabilities
+	ConnectionCapabilities
 	ChangedKeys []string `json:"changedKeys"`
 }
 
@@ -933,7 +933,7 @@ func (e WebhookEvent) TypedPayload() (KnownWebhookPayload, bool, error) {
 		v = &MessageFailedPayload{}
 	case "message.echo":
 		v = &MessageEchoPayload{}
-	case "session.status":
+	case "connection.status":
 		var s struct {
 			Source string `json:"source"`
 		}
@@ -943,18 +943,18 @@ func (e WebhookEvent) TypedPayload() (KnownWebhookPayload, bool, error) {
 		if s.Source == "meta" {
 			v = &CloudAccountStatusPayload{}
 		} else {
-			v = &RuntimeSessionStatusPayload{}
+			v = &RuntimeConnectionStatusPayload{}
 		}
-	case "session.connected":
-		v = &SessionConnectedPayload{}
-	case "session.logged_out":
-		v = &SessionLoggedOutPayload{}
-	case "session.phone_offline":
-		v = &SessionPhoneOfflinePayload{}
-	case "session.restriction_updated":
-		v = &SessionRestrictionUpdatedPayload{}
-	case "session.capabilities_updated":
-		v = &SessionCapabilitiesUpdatedPayload{}
+	case "connection.connected":
+		v = &ConnectionConnectedPayload{}
+	case "connection.logged_out":
+		v = &ConnectionLoggedOutPayload{}
+	case "connection.phone_offline":
+		v = &ConnectionPhoneOfflinePayload{}
+	case "connection.restriction_updated":
+		v = &ConnectionRestrictionUpdatedPayload{}
+	case "connection.capabilities_updated":
+		v = &ConnectionCapabilitiesUpdatedPayload{}
 	case "template.status":
 		var s struct {
 			Kind string `json:"kind"`
@@ -1058,12 +1058,12 @@ func (e WebhookEvent) TypedPayload() (KnownWebhookPayload, bool, error) {
 		v = &CustomerPairingLinkFailedPayload{}
 	case "customer.pairing_link.revoked":
 		v = &CustomerPairingLinkRevokedPayload{}
-	case "customer.number.attached":
-		v = &CustomerNumberAttachedPayload{}
-	case "customer.number.transferred":
-		v = &CustomerNumberTransferredPayload{}
-	case "customer.number.disconnected":
-		v = &CustomerNumberDisconnectedPayload{}
+	case "customer.connection.attached":
+		v = &CustomerConnectionAttachedPayload{}
+	case "customer.connection.transferred":
+		v = &CustomerConnectionTransferredPayload{}
+	case "customer.connection.disconnected":
+		v = &CustomerConnectionDisconnectedPayload{}
 	case "bansafe.health_threshold":
 		v = &BanSafeHealthThresholdPayload{}
 	case "bansafe.action":

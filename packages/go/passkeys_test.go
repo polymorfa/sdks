@@ -228,7 +228,7 @@ func TestPasskeyMaximumWire(t *testing.T) {
 			t.Error("maximum wire fields changed")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"success":true,"data":{"ok":true,"ticket":"t","session":"s"}}`))
+		_, _ = w.Write([]byte(`{"success":true,"data":{"ok":true,"ticket":"t","connection":"s"}}`))
 	}))
 	defer server.Close()
 	if _, e := mustMessaging(t, server.URL).Passkeys().SubmitAssertion(context.Background(), "s", body); e != nil {
@@ -252,7 +252,7 @@ func TestPasskeyWritesOfferNoBodyRewind(t *testing.T) {
 		}
 		data := `{"success":true,"data":{"status":"none"}}`
 		if strings.HasSuffix(req.URL.Path, "/assertion") {
-			data = `{"success":true,"data":{"ok":true,"ticket":"t","session":"s"}}`
+			data = `{"success":true,"data":{"ok":true,"ticket":"t","connection":"s"}}`
 		}
 		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(data)), Request: req}, nil
 	})}

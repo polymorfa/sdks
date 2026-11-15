@@ -257,7 +257,7 @@ export type CampaignFollowUpStatus =
 export interface CampaignFollowUpSummary {
   readonly id: string;
   /** The number that sent the first message and sends the follow-up. */
-  readonly numberId: string;
+  readonly connectionId: string;
   readonly status: CampaignFollowUpStatus;
   /** Which receipt timed the follow-up; null before the first receipt. */
   readonly anchorKind: "delivered" | "read" | null;
@@ -2271,7 +2271,8 @@ export interface UpdateConnectionCallSettingsRequest {
   readonly expectedRevision?: number;
 }
 
-export type ConnectionCallSettingsResponse = SuccessEnvelope<ConnectionCallSettings>;
+export type ConnectionCallSettingsResponse =
+  SuccessEnvelope<ConnectionCallSettings>;
 
 /** A person's call permission on a Cloud API number. */
 export type CallPermissionStatus =

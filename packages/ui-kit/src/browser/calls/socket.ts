@@ -35,8 +35,8 @@ export type CallsSocketClientMessage =
 export interface CallsSocketOptions {
   /** Signaling client that supplies the client token and the socket URL. */
   readonly signaling: Pick<CallsSignaling, "token" | "socketUrl">;
-  /** Session to follow when the credential is a server key (sent as `?session=`). */
-  readonly session?: string;
+  /** Connection to follow when the credential is a server key (sent as `?connection=`). */
+  readonly connection?: string;
   /** Participant name for a server key (sent as `?participant=`). */
   readonly participant?: string;
   /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
@@ -63,7 +63,7 @@ export interface CallsSocketOptions {
 /**
  * The calls WebSocket: one socket per client at `/voip/ws`. The client token
  * travels in the first frame, never in the URL, and is replaced before it
- * expires. It pushes the session's `call.*` lifecycle events, delivers the
+ * expires. It pushes the connection's `call.*` lifecycle events, delivers the
  * pod's ICE candidates, and carries the browser's candidates. It reconnects
  * with capped exponential backoff until {@link close}. Pass it as a
  * backend's `incoming` source and as the media factory's candidate transport.
@@ -91,7 +91,7 @@ export class CallsSocket {
         socketUrl: (path) =>
           unsupported(signaling.socketUrl).call(signaling, path),
       },
-      ...(options.session === undefined ? {} : { session: options.session }),
+      ...(options.connection === undefined ? {} : { connection: options.connection }),
       ...(options.participant === undefined
         ? {}
         : { participant: options.participant }),

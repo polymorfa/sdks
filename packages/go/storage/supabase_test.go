@@ -94,13 +94,13 @@ func TestSupabaseNativeForceRLSServerWriterAndLiveReader(t *testing.T) {
 		t.Fatal("restricted writer schema verification/metadata SELECT", err)
 	}
 	e := engineFor(t, adapter, EngineOptions{})
-	for _, session := range []string{"session_a", "session_b"} {
-		if _, err = e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{upsert("messages", session, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "text": "synthetic private fixture", "timestamp": 100}, 0)}}); err != nil {
+	for _, connection := range []string{"connection_a", "connection_b"} {
+		if _, err = e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{upsert("messages", connection, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "text": "synthetic private fixture", "timestamp": 100}, 0)}}); err != nil {
 			t.Fatal("restricted writer transaction", err)
 		}
 	}
 	uid := "00000000-0000-0000-0000-000000000001"
-	if _, err = owner.ExecContext(ctx, `INSERT INTO customer.customer_storage_memberships(session_id,subject) VALUES ('session_a',$1::uuid)`, uid); err != nil {
+	if _, err = owner.ExecContext(ctx, `INSERT INTO customer.customer_storage_memberships(connection_id,subject) VALUES ('connection_a',$1::uuid)`, uid); err != nil {
 		t.Fatal(err)
 	}
 	readerURL := *base
@@ -125,7 +125,7 @@ func TestSupabaseNativeForceRLSServerWriterAndLiveReader(t *testing.T) {
 	if _, err = connection.ExecContext(ctx, "DELETE FROM customer.customer_messages"); err == nil {
 		t.Fatal("browser write granted")
 	}
-	if _, err = connection.ExecContext(ctx, `INSERT INTO customer.customer_storage_memberships(session_id,subject) VALUES('session_b',$1::uuid)`, uid); err == nil {
+	if _, err = connection.ExecContext(ctx, `INSERT INTO customer.customer_storage_memberships(connection_id,subject) VALUES('connection_b',$1::uuid)`, uid); err == nil {
 		t.Fatal("browser membership management granted")
 	}
 	if _, err = owner.ExecContext(ctx, "DELETE FROM customer.customer_storage_memberships WHERE subject=$1::uuid", uid); err != nil {

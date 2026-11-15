@@ -50,7 +50,7 @@ func TestGORMNativePostgresMetadataInterop(t *testing.T) {
 		t.Fatal("GORM/SQL schema interop", err)
 	}
 	e := engineFor(t, adapter, EngineOptions{})
-	if _, err = e.Apply(context.Background(), Batch{SessionID: "orm", Operations: []Operation{upsert("messages", "orm", map[string]any{"messageId": "message"}, map[string]any{"chatId": "chat", "text": "typed fixture", "extra": map[string]any{"unknown": false}}, 0)}}); err != nil {
+	if _, err = e.Apply(context.Background(), Batch{ConnectionID: "orm", Operations: []Operation{upsert("messages", "orm", map[string]any{"messageId": "message"}, map[string]any{"chatId": "chat", "text": "typed fixture", "extra": map[string]any{"unknown": false}}, 0)}}); err != nil {
 		t.Fatal(err)
 	}
 	var rows []map[string]any

@@ -16,12 +16,12 @@ import (
 
 // Independent fixtures follow API f97ad78 / TS 52f10de; none echo requests.
 const go41Group = `{"success":true,"data":{"status":"unknown","syncedAt":null,"checkedAt":null,"capabilities":[{"key":"future.flag","kind":"feature","unit":null,"value":null,"source":null},{"key":"enabled","kind":"feature","unit":null,"value":false,"source":"client_default"}]}}`
-const go41Phone = `{"session":"session /x","phone":"+15550000001","online":false,"devices":[{"deviceId":1},{"deviceId":99}]}`
-const go41PhoneSend = `{"session":"session /x","to":"+15550000002","messageId":null}`
-const go41Unlink = `{"session":"session /x","deviceId":99,"unlinked":true}`
+const go41Phone = `{"connection":"connection /x","phone":"+15550000001","online":false,"devices":[{"deviceId":1},{"deviceId":99}]}`
+const go41PhoneSend = `{"connection":"connection /x","to":"+15550000002","messageId":null}`
+const go41Unlink = `{"connection":"connection /x","deviceId":99,"unlinked":true}`
 const go41Retry = `{"success":true,"data":{"requestId":"req-19","status":"requested"}}`
 const go41Delete = `{"success":true,"data":{"status":"deleted"}}`
-const go41LogRow = `{"id":"18446744073709551615","projectId":"project /x","createdAt":"2026-10-16T00:00:00Z","method":"GET","route":"/messaging/:session/groups/:id/capabilities","status":null,"durationMs":0,"result":"failure","source":"api","requestId":"req-distinct","traceId":"trace-distinct","errorCode":null,"mcpTool":null,"credential":{"type":"client_token","id":null,"last4":null}}`
+const go41LogRow = `{"id":"18446744073709551615","projectId":"project /x","createdAt":"2026-10-16T00:00:00Z","method":"GET","route":"/messaging/:connection/groups/:id/capabilities","status":null,"durationMs":0,"result":"failure","source":"api","requestId":"req-distinct","traceId":"trace-distinct","errorCode":null,"mcpTool":null,"credential":{"type":"client_token","id":null,"last4":null}}`
 const go41Logs = `{"data":[` + go41LogRow + `],"page":{"nextCursor":null,"hasMore":false,"followCursor":"after-0"}}`
 const go41Grant = `{"success":true,"data":{"host":"mmg.whatsapp.net","uploadUrl":"https://mmg.whatsapp.net/mms/image/token?auth=secret-grant","expiresAt":1792108800}}`
 const go41Relay = `{"success":true,"data":{"directPath":"/mms/image/uploaded","url":"https://mmg.whatsapp.net/mms/image/uploaded","handle":"handle"}}`
@@ -35,35 +35,35 @@ type go41Route struct {
 
 func go41Routes() []go41Route {
 	return []go41Route{
-		{"getGroupCapabilities", "GET", "/messaging/session%20%2Fx/groups/group%20%2Fx/capabilities", "", go41Group, 200, false, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Groups().GetCapabilities(c, "session /x", "group /x", p)
+		{"getGroupCapabilities", "GET", "/messaging/connection%20%2Fx/groups/group%20%2Fx/capabilities", "", go41Group, 200, false, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Groups().GetCapabilities(c, "connection /x", "group /x", p)
 		}},
-		{"getTestingPhone", "GET", "/messaging/testing/project%20%2Fx/numbers/session%20%2Fx/phone", "", go41Phone, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Testing().GetPhone(c, "project /x", "session /x", p)
+		{"getTestingPhone", "GET", "/messaging/testing/project%20%2Fx/connections/connection%20%2Fx/phone", "", go41Phone, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Testing().GetPhone(c, "project /x", "connection /x", p)
 		}},
-		{"sendTestingPhoneMessage", "POST", "/messaging/testing/project%20%2Fx/numbers/session%20%2Fx/phone/messages", `{"to":"+15550000002","text":"hello"}`, go41PhoneSend, 202, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Testing().SendPhoneMessage(c, "project /x", "session /x", sdk.SendTestingPhoneMessageRequest{To: "+15550000002", Text: "hello"}, p)
+		{"sendTestingPhoneMessage", "POST", "/messaging/testing/project%20%2Fx/connections/connection%20%2Fx/phone/messages", `{"to":"+15550000002","text":"hello"}`, go41PhoneSend, 202, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Testing().SendPhoneMessage(c, "project /x", "connection /x", sdk.SendTestingPhoneMessageRequest{To: "+15550000002", Text: "hello"}, p)
 		}},
-		{"unlinkTestingPhoneDevice", "POST", "/messaging/testing/project%20%2Fx/numbers/session%20%2Fx/phone/devices/99/unlink", "", go41Unlink, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.Testing().UnlinkPhoneDevice(c, "project /x", "session /x", 99, p)
+		{"unlinkTestingPhoneDevice", "POST", "/messaging/testing/project%20%2Fx/connections/connection%20%2Fx/phone/devices/99/unlink", "", go41Unlink, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.Testing().UnlinkPhoneDevice(c, "project /x", "connection /x", 99, p)
 		}},
 		{"listProjectRequestLogs", "GET", "/platform/projects/project%20%2Fx/request-logs", "", go41Logs, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
 			return o.RequestLogs().List(c, sdk.ListRequestLogsParams{ProjectID: "project /x"}, p)
 		}},
-		{"createMediaUploadGrant", "POST", "/messaging/session%20%2Fx/media/upload-grants", `{"type":"image","fileEncSha256":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}`, go41Grant, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.WhatsAppMedia().CreateUploadGrant(c, "session /x", sdk.UploadImage, make([]byte, 32), p)
+		{"createMediaUploadGrant", "POST", "/messaging/connection%20%2Fx/media/upload-grants", `{"type":"image","fileEncSha256":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"}`, go41Grant, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.WhatsAppMedia().CreateUploadGrant(c, "connection /x", sdk.UploadImage, make([]byte, 32), p)
 		}},
-		{"uploadEncryptedMedia", "POST", "/messaging/session%20%2Fx/media/uploads", strings.Repeat("c", 26), go41Relay, 200, false, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.WhatsAppMedia().RelayUpload(c, "session /x", sdk.EncryptedMediaInfo{MediaType: sdk.UploadImage, FileEncSHA256: make([]byte, 32), EncryptedLength: 26}, func(context.Context) (io.ReadCloser, error) {
+		{"uploadEncryptedMedia", "POST", "/messaging/connection%20%2Fx/media/uploads", strings.Repeat("c", 26), go41Relay, 200, false, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.WhatsAppMedia().RelayUpload(c, "connection /x", sdk.EncryptedMediaInfo{MediaType: sdk.UploadImage, FileEncSHA256: make([]byte, 32), EncryptedLength: 26}, func(context.Context) (io.ReadCloser, error) {
 				return io.NopCloser(strings.NewReader(strings.Repeat("c", 26))), nil
 			}, p)
 		}},
-		{"retryHistoryChunk", "POST", "/messaging/session%20%2Fx/history/chunks/retry", `{"syncType":"RECENT","chunkOrder":0,"regenerate":false}`, go41Retry, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+		{"retryHistoryChunk", "POST", "/messaging/connection%20%2Fx/history/chunks/retry", `{"syncType":"RECENT","chunkOrder":0,"regenerate":false}`, go41Retry, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
 			b := false
-			return m.HistorySync().RequestChunkRetry(c, "session /x", sdk.HistorySyncChunkRetryRequest{SyncType: sdk.HistoryRecent, Regenerate: &b}, p)
+			return m.HistorySync().RequestChunkRetry(c, "connection /x", sdk.HistorySyncChunkRetryRequest{SyncType: sdk.HistoryRecent, Regenerate: &b}, p)
 		}},
-		{"deleteHistoryMedia", "POST", "/messaging/session%20%2Fx/history/media/delete", `{"directPath":"/blob","fileEncSha256":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}`, go41Delete, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
-			return m.HistorySync().DeleteChunk(c, "session /x", sdk.HistorySyncChunkDeleteRequest{DirectPath: "/blob", FileEncSHA256: make([]byte, 32)}, p)
+		{"deleteHistoryMedia", "POST", "/messaging/connection%20%2Fx/history/media/delete", `{"directPath":"/blob","fileEncSha256":"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA="}`, go41Delete, 200, true, func(c context.Context, m *sdk.MessagingClient, o *sdk.TeamClient, p sdk.RequestOptions) (any, error) {
+			return m.HistorySync().DeleteChunk(c, "connection /x", sdk.HistorySyncChunkDeleteRequest{DirectPath: "/blob", FileEncSHA256: make([]byte, 32)}, p)
 		}},
 	}
 }
@@ -123,7 +123,7 @@ func TestGo41NinePublicRoutes(t *testing.T) {
 }
 func TestGo41NineErrorsAndCancellation(t *testing.T) {
 	for _, r := range go41Routes() {
-		for _, code := range []string{sdk.ErrorCampaignApprovalRequired, sdk.ErrorCampaignApprovalStale, sdk.ErrorCampaignVariablesMissing, sdk.ErrorZeroKnowledgeSession, "future_code"} {
+		for _, code := range []string{sdk.ErrorCampaignApprovalRequired, sdk.ErrorCampaignApprovalStale, sdk.ErrorCampaignVariablesMissing, sdk.ErrorZeroKnowledgeConnection, "future_code"} {
 			t.Run(r.name+"/"+code, func(t *testing.T) {
 				calls := 0
 				m, o := go41Client(t, func(w http.ResponseWriter, q *http.Request) {

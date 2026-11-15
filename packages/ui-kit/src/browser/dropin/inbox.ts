@@ -14,8 +14,8 @@ import type { PolymorfaClient } from "./client.js";
 /** One row of the conversation list. */
 export interface InboxConversation {
   readonly id: string;
-  /** Session that owns the conversation; defaults to the grant's session. */
-  readonly session?: string;
+  /** Connection that owns the conversation; defaults to the grant's connection. */
+  readonly connection?: string;
   readonly name?: string;
   readonly phoneNumber?: string;
   readonly avatarUrl?: string;
@@ -64,7 +64,7 @@ export type InboxChange =
   | {
       readonly type: "activity";
       readonly conversationId: string;
-      readonly session?: string;
+      readonly connection?: string;
       readonly name?: string;
       readonly phoneNumber?: string;
       readonly lastMessage: NonNullable<InboxConversation["lastMessage"]>;
@@ -250,8 +250,8 @@ export class InboxController extends ObservableController<InboxSnapshot> {
       );
       incoming = {
         ...(existing ?? { id: change.conversationId, unreadCount: 0 }),
-        ...(existing?.session === undefined && change.session !== undefined
-          ? { session: change.session }
+        ...(existing?.connection === undefined && change.connection !== undefined
+          ? { connection: change.connection }
           : {}),
         ...(existing?.name === undefined && change.name !== undefined
           ? { name: change.name }
@@ -316,7 +316,7 @@ interface HistoryPage<T> {
 /** A webhook event envelope as the handler's events route relays it. */
 export interface RelayedEvent {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly event: string;
   readonly timestamp: string;
   readonly payload: unknown;
@@ -421,7 +421,7 @@ export function createHandlerInboxSource(
           });
         },
         async send(outgoing, signal) {
-          const messaging = client.messaging(conversation.session);
+          const messaging = client.messaging(conversation.connection);
           const body = {
             conversation: { id: conversation.id },
             content: { text: outgoing.text },
@@ -499,7 +499,7 @@ function isRelayedEvent(value: unknown): value is RelayedEvent {
   return (
     typeof event.id === "string" &&
     typeof event.event === "string" &&
-    typeof event.session === "string"
+    typeof event.connection === "string"
   );
 }
 
@@ -585,7 +585,7 @@ function inboxChange(event: RelayedEvent): InboxChange | undefined {
   return {
     type: "activity",
     conversationId: message.conversationId,
-    session: event.session,
+    connection: event.connection,
     ...(name === undefined ? {} : { name }),
     ...(phone === undefined ? {} : { phoneNumber: phone }),
     lastMessage: {

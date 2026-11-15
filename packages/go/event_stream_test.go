@@ -31,7 +31,7 @@ func TestEventStreamWire(t *testing.T) {
 		t.Run(f.SDKMethod, func(t *testing.T) {
 			requests := 0
 			gaps := 0
-			payload := base64.StdEncoding.EncodeToString([]byte(`{"id":"w","session":"s","timestamp":"today","event":"future.event","payload":{"a":42}}`))
+			payload := base64.StdEncoding.EncodeToString([]byte(`{"id":"w","connection":"s","timestamp":"today","event":"future.event","payload":{"a":42}}`))
 			s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				requests++
 				if r.Method != f.Method || r.URL.Path != f.Path || r.URL.RawQuery != "ack=manual&types=message.%2A" || r.Header.Get("Accept") != "text/event-stream" || r.Header.Get("Authorization") == "" {

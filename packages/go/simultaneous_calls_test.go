@@ -22,7 +22,7 @@ func TestSimultaneousCallsServerDecisions(t *testing.T) {
 				if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
 					t.Error(err)
 				}
-				if r.Method != "PUT" || r.URL.Path != "/platform/sessions/s/call-settings" || body["simultaneousCalls"] != true {
+				if r.Method != "PUT" || r.URL.Path != "/platform/connections/s/call-settings" || body["simultaneousCalls"] != true {
 					t.Error(r.URL, body)
 				}
 				w.Header().Set("Content-Type", "application/json")

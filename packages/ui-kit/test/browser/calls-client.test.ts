@@ -22,7 +22,7 @@ function fixture(
   } = {},
 ) {
   let callbacks: CallMediaCallbacks | undefined;
-  const session: CallMediaSession = {
+  const connection: CallMediaSession = {
     localStream: {} as MediaStream,
     remoteStream: {} as MediaStream,
     setMuted: vi.fn(),
@@ -34,7 +34,7 @@ function fixture(
   const media = {
     open: vi.fn(async (_id, _video, c: CallMediaCallbacks) => {
       callbacks = c;
-      return session;
+      return connection;
     }),
   };
   const fetch = vi.fn<typeof globalThis.fetch>(async (input, init) => {
@@ -57,7 +57,7 @@ function fixture(
     });
   });
   const calls = createBrowserCalls({
-    session: "support",
+    connection: "support",
     getClientToken: async () => "pmfa_ct_test",
     baseUrl: "https://api.polymorfa.test",
     fetch,
@@ -71,7 +71,7 @@ function fixture(
     calls,
     fetch,
     media,
-    session,
+    connection,
     callbacks: () => callbacks!,
     async connect() {
       const pending = calls.connect();
@@ -621,7 +621,7 @@ describe("browser widget and shared calls client", () => {
     const socket = await f.connect();
     event(socket, "call.received", "CALL-IN", { from: "+15550100" });
     await f.calls.controller.answer();
-    vi.mocked(f.session.close).mockRejectedValueOnce(
+    vi.mocked(f.connection.close).mockRejectedValueOnce(
       new Error("media cleanup failed"),
     );
     await f.calls.controller.hangup();
@@ -712,7 +712,7 @@ describe("browser widget and shared calls client", () => {
     expect(f.calls.controller.call?.state).toBe("connected");
     expect(f.calls.controller.getSnapshot().status).toBe("connected");
     f.calls.controller.setMuted({ audio: true });
-    expect(f.session.setMuted).toHaveBeenCalledWith({ audio: true });
+    expect(f.connection.setMuted).toHaveBeenCalledWith({ audio: true });
     expect(socket.url).toBe("wss://api.polymorfa.test/voip/ws");
     expect(socket.texts[0]).toEqual({ type: "auth", token: "pmfa_ct_test" });
     expect(
@@ -751,7 +751,7 @@ describe("browser widget and shared calls client", () => {
     await expect(f.calls.controller.place("+15550101")).rejects.toThrow(
       "Finish the active call",
     );
-    expect(f.session.close).not.toHaveBeenCalled();
+    expect(f.connection.close).not.toHaveBeenCalled();
     const placed = f.fetch.mock.calls.find(([url]) =>
       String(url).endsWith("/messaging/voip/calls"),
     )!;
@@ -765,7 +765,7 @@ describe("browser widget and shared calls client", () => {
   it("ends pending media setup without reviving the call or retaining its tracks", async () => {
     const f = fixture();
     const socket = await f.connect();
-    let finish!: (session: CallMediaSession) => void;
+    let finish!: (connection: CallMediaSession) => void;
     f.media.open.mockImplementationOnce(
       async () =>
         new Promise((resolve) => {
@@ -776,14 +776,14 @@ describe("browser widget and shared calls client", () => {
     const answering = f.calls.controller.answer();
     await vi.waitFor(() => expect(finish).toBeTypeOf("function"));
     event(socket, "call.ended", "CALL-IN", { reason: "remote_hangup" });
-    finish(f.session);
+    finish(f.connection);
     await answering;
     expect(f.calls.controller.getSnapshot()).toMatchObject({
       status: "ended",
       endReason: "remote_hangup",
     });
     expect(f.calls.controller.call?.state).toBe("ended");
-    expect(f.session.close).toHaveBeenCalledOnce();
+    expect(f.connection.close).toHaveBeenCalledOnce();
     expect(f.calls.controller.localStream).toBeUndefined();
   });
 
@@ -856,8 +856,8 @@ describe("browser widget and shared calls client", () => {
       ],
       ["POST", "/messaging/voip/calls/CALL-IN/leave", { connectionId }],
     ]);
-    // The session does not send a second leave.
-    expect(f.session.close).toHaveBeenCalledWith({ leave: false });
+    // The connection does not send a second leave.
+    expect(f.connection.close).toHaveBeenCalledWith({ leave: false });
     expect(f.calls.controller.getSnapshot()).toMatchObject({
       status: "ended",
       endReason: "left",
@@ -869,7 +869,7 @@ describe("browser widget and shared calls client", () => {
     const f = fixture();
     const socket = await f.connect();
     const calls = createBrowserCalls({
-      session: "support",
+      connection: "support",
       getClientToken: async () => "pmfa_ct_test",
       baseUrl: "https://api.polymorfa.test",
       fetch: f.fetch,
@@ -943,7 +943,7 @@ describe("BrowserCallsApi", () => {
       }),
     );
     await api.place({
-      session: "ignored",
+      connection: "ignored",
       participant: "ignored",
       to: "+15550100",
       participants: ["+15550100", "+15550101"],
@@ -1034,7 +1034,7 @@ describe("BrowserCallsApi", () => {
       }),
     );
     const input = {
-      session: "support",
+      connection: "support",
       to: "+15550100",
       video: false,
       idempotencyKey: "test",
@@ -1057,7 +1057,7 @@ describe("BrowserCallsApi", () => {
     );
     await expect(
       api.place({
-        session: "support",
+        connection: "support",
         to: "+15550100",
         video: false,
         idempotencyKey: "test",

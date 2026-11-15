@@ -11,12 +11,12 @@ import (
 	"testing"
 )
 
-const go41Config = `{"effective":{"historySync":{"mode":"deliver","requestFull":false,"delivery":"archive"},"hms":{"enabled":false}},"overrides":{},"requestedHistory":{"mode":"deliver","requestFull":false,"delivery":"descriptor"},"sources":{"historySync.mode":"consent","historySync.requestFull":"team","historySync.delivery":"platform"},"revisions":{"team":0,"project":0,"session":0}}`
+const go41Config = `{"effective":{"historySync":{"mode":"deliver","requestFull":false,"delivery":"archive"},"hms":{"enabled":false}},"overrides":{},"requestedHistory":{"mode":"deliver","requestFull":false,"delivery":"descriptor"},"sources":{"historySync.mode":"consent","historySync.requestFull":"team","historySync.delivery":"platform"},"revisions":{"team":0,"project":0,"connection":0}}`
 
 func TestGo41ConfigurationIntentAndReadFacts(t *testing.T) {
-	for _, reset := range []string{"", sdk.SessionResetHistoryDelivery, sdk.SessionResetHistorySync} {
+	for _, reset := range []string{"", sdk.ConnectionResetHistoryDelivery, sdk.ConnectionResetHistorySync} {
 		for _, version := range []string{"", sdk.APIVersion, sdk.CustomerOwnedAPIVersion} {
-			for _, surface := range []string{"team", "project", "session", "messaging"} {
+			for _, surface := range []string{"team", "project", "connection", "messaging"} {
 				t.Run(surface+"/"+reset+"/"+version, func(t *testing.T) {
 					calls := 0
 					m, o := go41Client(t, func(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +24,7 @@ func TestGo41ConfigurationIntentAndReadFacts(t *testing.T) {
 						want := version
 						if want == "" {
 							want = sdk.APIVersion
-							if reset != sdk.SessionResetHistorySync {
+							if reset != sdk.ConnectionResetHistorySync {
 								want = sdk.CustomerOwnedAPIVersion
 							}
 						}
@@ -40,16 +40,16 @@ func TestGo41ConfigurationIntentAndReadFacts(t *testing.T) {
 							t.Error("project owner")
 						}
 						w.Header().Set("Content-Type", "application/json")
-						if strings.Contains(r.URL.Path, "/sessions/") {
+						if strings.Contains(r.URL.Path, "/connections/") {
 							io.WriteString(w, `{"data":{"signalMode":"zero_knowledge","configuration":`+go41Config+`}}`)
 						} else {
 							io.WriteString(w, `{"data":`+go41Config+`}`)
 						}
 					})
 					delivery := sdk.HistoryDeliverySetDescriptor
-					b := sdk.UpdateSessionRequest{}
+					b := sdk.UpdateConnectionRequest{}
 					if reset == "" {
-						b.Configuration.Set = &sdk.SessionConfigurationOverrides{HistorySync: &sdk.HistorySyncPolicyPatch{Delivery: &delivery}}
+						b.Configuration.Set = &sdk.ConnectionConfigurationOverrides{HistorySync: &sdk.HistorySyncPolicyPatch{Delivery: &delivery}}
 					} else {
 						b.Configuration.Reset = []string{reset}
 					}
@@ -57,14 +57,14 @@ func TestGo41ConfigurationIntentAndReadFacts(t *testing.T) {
 					var e error
 					switch surface {
 					case "team":
-						_, e = o.SessionConfiguration().Update(context.Background(), b, p)
+						_, e = o.ConnectionConfiguration().Update(context.Background(), b, p)
 					case "project":
 						project, _ := o.Project(go41Project)
-						_, e = project.SessionConfiguration().Update(context.Background(), b, p)
-					case "session":
-						_, e = o.Sessions().Update(context.Background(), "session /x", b, p)
+						_, e = project.ConnectionConfiguration().Update(context.Background(), b, p)
+					case "connection":
+						_, e = o.Connections().Update(context.Background(), "connection /x", b, p)
 					default:
-						_, e = m.Sessions().Update(context.Background(), "session /x", b, p)
+						_, e = m.Connections().Update(context.Background(), "connection /x", b, p)
 					}
 					if e != nil || calls != 1 {
 						t.Fatalf("update %v", e)
@@ -78,18 +78,18 @@ func TestGo41ConfigurationIntentAndReadFacts(t *testing.T) {
 			t.Error("GET version changed")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		if strings.Contains(r.URL.Path, "/sessions/") {
+		if strings.Contains(r.URL.Path, "/connections/") {
 			io.WriteString(w, `{"data":{"signalMode":"zero_knowledge","configuration":`+go41Config+`}}`)
 		} else {
 			io.WriteString(w, `{"data":`+go41Config+`}`)
 		}
 	})
-	view, e := o.SessionConfiguration().Retrieve(context.Background())
+	view, e := o.ConnectionConfiguration().Retrieve(context.Background())
 	if e != nil || *view.Data.Effective.HistorySync.Delivery != sdk.HistoryDeliveryArchive || *view.Data.RequestedHistory.Delivery != sdk.HistoryDeliveryDescriptor || *view.Data.Sources.HistorySyncDelivery != sdk.ConfigurationPlatform {
 		t.Fatalf("read/write split %v", e)
 	}
-	session, e := m.Sessions().Retrieve(context.Background(), "s")
-	if e != nil || *session.Data.Data.SignalMode != sdk.SignalCustodyZeroKnowledge {
+	connection, e := m.Connections().Retrieve(context.Background(), "s")
+	if e != nil || *connection.Data.Data.SignalMode != sdk.SignalCustodyZeroKnowledge {
 		t.Fatal(e)
 	}
 }
@@ -117,7 +117,7 @@ func TestGo41QuickLinkIntentAndPreDecodeGuards(t *testing.T) {
 						}
 					}
 					w.Header().Set("Content-Type", "application/json")
-					io.WriteString(w, `{"success":true,"data":{"id":"invite","purpose":"initial","url":"https://example.com/invite","session":"s","expiresAt":null}}`)
+					io.WriteString(w, `{"success":true,"data":{"id":"invite","purpose":"initial","url":"https://example.com/invite","connection":"s","expiresAt":null}}`)
 				})
 				b := sdk.CreateQuickLinkRequest{ProjectID: go41Project}
 				if intent == "standard" || intent == "zero_knowledge" {
@@ -134,7 +134,7 @@ func TestGo41QuickLinkIntentAndPreDecodeGuards(t *testing.T) {
 			})
 		}
 	}
-	for _, bad := range []string{`{"configuration":{"signalMode":"zero_knowledge"}}`, `{"configuration":{"zeroKnowledge":true}}`, `{"configuration":{"signal_mode":"zero_knowledge"}}`, `{"configuration":{"signalModeDefault":"standard"}}`, `{"configuration":{"signalRelay":{}}}`, `{"configuration":{"historySync":{"delivery":"archive"}}}`, `{"configuration":{"historySync":{"delivery":null}}}`, `{"signalMode":null}`, `{"purpose":"add_connection","session":"s","addConnection":"linked_devices","signalMode":"standard"}`, `{"purpose":"initial","session":"s"}`, `{"purpose":"add_connection","session":"s"}`, `{"purpose":"add_connection","session":"s","addConnection":"linked_devices","customerId":"x"}`} {
+	for _, bad := range []string{`{"configuration":{"signalMode":"zero_knowledge"}}`, `{"configuration":{"zeroKnowledge":true}}`, `{"configuration":{"signal_mode":"zero_knowledge"}}`, `{"configuration":{"signalModeDefault":"standard"}}`, `{"configuration":{"signalRelay":{}}}`, `{"configuration":{"historySync":{"delivery":"archive"}}}`, `{"configuration":{"historySync":{"delivery":null}}}`, `{"signalMode":null}`, `{"purpose":"add_method","connection":"s","addMethod":"linked_devices","signalMode":"standard"}`, `{"purpose":"initial","connection":"s"}`, `{"purpose":"add_method","connection":"s"}`, `{"purpose":"add_method","connection":"s","addMethod":"linked_devices","customerId":"x"}`} {
 		var v sdk.CreateQuickLinkRequest
 		if e := json.Unmarshal([]byte(bad), &v); e == nil {
 			t.Fatalf("lost invalid request data %s", bad)
@@ -148,7 +148,7 @@ func TestGo41QuickLinkIntentAndPreDecodeGuards(t *testing.T) {
 		t.Fatal("archive request reached I/O")
 	}
 	for _, bad := range []string{`{"revision":0,"configuration":{"set":{"signalMode":"zero_knowledge"}}}`, `{"revision":0,"configuration":{"reset":["signalMode"]}}`, `{"revision":0,"configuration":{"set":{"historySync":{"delivery":null}}}}`} {
-		var v sdk.UpdateSessionRequest
+		var v sdk.UpdateConnectionRequest
 		if json.Unmarshal([]byte(bad), &v) == nil {
 			t.Fatal("invalid configuration decoded")
 		}

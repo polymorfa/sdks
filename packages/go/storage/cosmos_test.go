@@ -117,7 +117,7 @@ func TestCosmosNativeConformance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, _ := EncodeKey("messages", map[string]any{"sessionId": "rollback", "messageId": "a"})
+	id, _ := EncodeKey("messages", map[string]any{"connectionId": "rollback", "messageId": "a"})
 	rows, err := foreign.Get(ctx, "messages", []string{id})
 	if err != nil || len(rows) != 0 {
 		t.Fatal("Cosmos namespace leaked", err)

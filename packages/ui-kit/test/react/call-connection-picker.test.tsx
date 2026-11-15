@@ -3,7 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CallsController, CallsSnapshot } from "@polymorfa/ui-kit";
-import { CallNumberPicker } from "../../src/react/call-number-picker.js";
+import { CallConnectionPicker } from "../../src/react/call-connection-picker.js";
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -37,15 +37,15 @@ function number(id: string) {
     listeners,
   };
 }
-function mount(numbers: ReturnType<typeof number>[], onChange = vi.fn()) {
+function mount(connections: ReturnType<typeof number>[], onChange = vi.fn()) {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
   roots.push(root);
   act(() =>
     root.render(
-      <CallNumberPicker
-        numbers={numbers}
+      <CallConnectionPicker
+        connections={connections}
         value="support"
         onChange={onChange}
       />,

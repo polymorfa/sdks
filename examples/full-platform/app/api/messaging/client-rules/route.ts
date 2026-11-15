@@ -2,18 +2,18 @@ import { messaging } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import { action, route, unknownAction } from "../../../../lib/route.js";
 
-export const GET = route("admin", ({ body, sessionOf }) =>
-  messaging().clientTokens.retrieveRules(sessionOf(body)),
+export const GET = route("admin", ({ body, connectionOf }) =>
+  messaging().clientTokens.retrieveRules(connectionOf(body)),
 );
 
-export const POST = route("admin", async ({ body, sessionOf }) => {
+export const POST = route("admin", async ({ body, connectionOf }) => {
   const clientTokens = messaging().clientTokens;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   switch (action(body)) {
     case "apply":
-      // What browser tokens for this session may do: chat in existing
+      // What browser tokens for this connection may do: chat in existing
       // conversations and handle calls from this origin only.
-      return clientTokens.updateRules(session, {
+      return clientTokens.updateRules(connection, {
         enabled: true,
         recipientMode: "conversation",
         allowedActions: [
@@ -32,7 +32,7 @@ export const POST = route("admin", async ({ body, sessionOf }) => {
         maxConcurrency: 1,
       });
     case "delete":
-      return clientTokens.deleteRules(session);
+      return clientTokens.deleteRules(connection);
     default:
       return unknownAction(action(body));
   }

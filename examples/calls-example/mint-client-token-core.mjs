@@ -2,31 +2,31 @@
 export class CallsExampleSetupError extends Error {}
 
 /** Check the Number and its client rules before minting the browser token. */
-export async function mintCallsExampleToken(messaging, session, ephemeralId) {
+export async function mintCallsExampleToken(messaging, connection, ephemeralId) {
   let rules;
   try {
-    rules = (await messaging.clientTokens.retrieveRules(session)).data.data;
+    rules = (await messaging.clientTokens.retrieveRules(connection)).data.data;
   } catch (cause) {
     if (cause?.status !== 404) throw cause;
     // Public 404s conceal whether rules are absent or the Number is outside
     // this credential's project. Check Number visibility only on that path.
     try {
-      await messaging.sessions.retrieve(session);
+      await messaging.connections.retrieve(connection);
       throw new CallsExampleSetupError(
         "No client rules are configured for this Number. Configure the Calls actions before minting.",
       );
-    } catch (sessionCause) {
-      if (sessionCause instanceof CallsExampleSetupError) throw sessionCause;
-      if (sessionCause?.status === 404)
+    } catch (connectionCause) {
+      if (connectionCause instanceof CallsExampleSetupError) throw connectionCause;
+      if (connectionCause?.status === 404)
         throw new CallsExampleSetupError(
           "Number unavailable to this credential. Check the Number ID and project-token project.",
         );
-      // Reading a Number needs sessions:read; minting only needs sessions:manage.
-      if (sessionCause?.status === 403)
+      // Reading a Number needs connections:read; minting only needs connections:manage.
+      if (connectionCause?.status === 403)
         throw new CallsExampleSetupError(
           "Client rules are unavailable. Check the Number ID, project-token project, and whether client rules are configured.",
         );
-      throw sessionCause;
+      throw connectionCause;
     }
   }
 
@@ -50,7 +50,7 @@ export async function mintCallsExampleToken(messaging, session, ephemeralId) {
     );
 
   const result = await messaging.clientTokens.mint({
-    session,
+    connection,
     ephemeralId,
     ttlSeconds: 900,
   });

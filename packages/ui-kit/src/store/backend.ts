@@ -31,7 +31,7 @@ export const SCHEMA: Readonly<Record<InternalStoreName, readonly IndexSpec[]>> =
     presence: [timeIndex],
     calls: [timeIndex, { name: "by_started", keyPath: "startedAt" }],
     labels: [timeIndex],
-    sessions: [timeIndex],
+    connections: [timeIndex],
     templates: [timeIndex],
     events: [timeIndex, typeIndex],
     custom: [timeIndex, typeIndex],

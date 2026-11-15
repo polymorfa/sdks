@@ -23,7 +23,7 @@ describe("@polymorfa/sdk/calls public entry point", () => {
   it("reports video sources and frames without transport details", () => {
     const call = new Call({
       id: "C",
-      session: "s",
+      connection: "s",
       direction: "inbound",
       peer: "",
       video: true,
@@ -88,7 +88,7 @@ describe("@polymorfa/sdk/calls public entry point", () => {
     (metadata, label) => {
       const call = new Call({
         id: "C",
-        session: "s",
+        connection: "s",
         direction: "inbound",
         peer: "",
         video: true,

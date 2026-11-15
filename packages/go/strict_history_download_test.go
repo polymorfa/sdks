@@ -155,7 +155,7 @@ func TestStrictHistorySignedArchiveStorage(t *testing.T) {
 		if bad {
 			b = append(b, 0)
 		}
-		raw := []byte(fmt.Sprintf(`{"id":"signed-archive","session":"fixture-session","timestamp":"2026-10-17T00:00:00Z","event":"history.sync","payload":{"mode":"deliver","whatsapp_ids":{"linked_devices":"fixture-archive"},"messages":[],"syncType":"RECENT","chunkOrder":7,"progress":92,"fileLength":%d,"conversationCount":1,"messageCount":0,"pushNameCount":0,"statusMessageCount":0,"whatsapp":{"encoding":"gzip-base64-protobuf","data":%q}}}`, len(b), base64.StdEncoding.EncodeToString(b)))
+		raw := []byte(fmt.Sprintf(`{"id":"signed-archive","connection":"fixture-session","timestamp":"2026-10-17T00:00:00Z","event":"history.sync","payload":{"mode":"deliver","whatsapp_ids":{"linked_devices":"fixture-archive"},"messages":[],"syncType":"RECENT","chunkOrder":7,"progress":92,"fileLength":%d,"conversationCount":1,"messageCount":0,"pushNameCount":0,"statusMessageCount":0,"whatsapp":{"encoding":"gzip-base64-protobuf","data":%q}}}`, len(b), base64.StdEncoding.EncodeToString(b)))
 		mac := hmac.New(sha256.New, []byte("synthetic-archive-secret"))
 		mac.Write(raw)
 		event, e := sdk.ConstructWebhookEvent(raw, hex.EncodeToString(mac.Sum(nil)), "synthetic-archive-secret")
@@ -184,7 +184,7 @@ func TestStrictHistorySignedArchiveStorage(t *testing.T) {
 			}
 			return map[string]any{"conversations": conversations, "chunkOrder": float64(*decoded.ChunkOrder), "progress": float64(*decoded.Progress)}, nil
 		}}})
-		has, _ := engine.HasEvent(context.Background(), event.Session, event.ID)
+		has, _ := engine.HasEvent(context.Background(), event.Connection, event.ID)
 		checkpoint, _ := engine.GetCheckpoint(context.Background(), "*", "events")
 		if bad {
 			if strictCode(e) != "media_invalid_ciphertext" || has || checkpoint != nil || source.acked != 0 || len(adapter.entities) != 0 {

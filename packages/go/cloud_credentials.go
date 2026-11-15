@@ -36,10 +36,10 @@ type CloudCredentialHealth struct {
 type CloudReauthorization struct {
 	QuickLinkID string `json:"quicklinkId"`
 	URL         string `json:"url"`
-	Session     string `json:"session"`
+	Connection  string `json:"connection"`
 }
 
-func (r *MessagingSessions) GetMetaPricing(ctx context.Context, s string, p MetaPricingParams, o ...RequestOptions) (Response[Envelope[MetaPricingSummary]], error) {
+func (r *MessagingConnections) GetMetaPricing(ctx context.Context, s string, p MetaPricingParams, o ...RequestOptions) (Response[Envelope[MetaPricingSummary]], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[MetaPricingSummary]]{}, err
 	}
@@ -48,13 +48,13 @@ func (r *MessagingSessions) GetMetaPricing(ctx context.Context, s string, p Meta
 	setString(q, "until", p.Until)
 	return request[Envelope[MetaPricingSummary]](ctx, r.t, "GET", messagingPath(s)+"/meta-pricing", q, nil, options(o))
 }
-func (r *MessagingSessions) GetCloudCredentialHealth(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[CloudCredentialHealth]], error) {
+func (r *MessagingConnections) GetCloudCredentialHealth(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[CloudCredentialHealth]], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[CloudCredentialHealth]]{}, err
 	}
 	return request[Envelope[CloudCredentialHealth]](ctx, r.t, "GET", messagingPath(s)+"/cloud-credentials", nil, nil, options(o))
 }
-func (r *MessagingSessions) ReauthorizeCloudCredentials(ctx context.Context, s string, opts ...RequestOptions) (Response[Envelope[CloudReauthorization]], error) {
+func (r *MessagingConnections) ReauthorizeCloudCredentials(ctx context.Context, s string, opts ...RequestOptions) (Response[Envelope[CloudReauthorization]], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[CloudReauthorization]]{}, err
 	}

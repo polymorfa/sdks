@@ -121,7 +121,7 @@ type PreviewProjectTemplateRequest struct {
 	Surface string            `json:"surface,omitempty"`
 }
 type SubmitProjectTemplateRequest struct {
-	Session string `json:"session"`
+	Connection string `json:"connection"`
 }
 type Templates struct{ t *transport }
 

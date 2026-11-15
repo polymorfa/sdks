@@ -38,7 +38,7 @@ const message = (
 
 const snapshot = {
   peer: "15550001",
-  session: "support",
+  connection: "support",
   receivedEvents: 3,
   lastEvent: "message.ack",
   localTest: true,

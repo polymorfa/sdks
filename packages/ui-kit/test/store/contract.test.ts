@@ -47,7 +47,7 @@ describe("webhook contract", () => {
       expect.arrayContaining([
         "group.update",
         "blocklist.update",
-        "session.phone_offline",
+        "connection.phone_offline",
       ]),
     );
   });
@@ -56,9 +56,9 @@ describe("webhook contract", () => {
     const store = await openStore({ indexedDB: null });
     const webhook: KnownWebhookEvent = {
       id: "evt_1",
-      session: "support",
+      connection: "support",
       timestamp: "2026-09-01T10:00:00Z",
-      event: "session.status",
+      event: "connection.status",
       payload: { status: "ready" },
     };
     expect((await store.ingest(webhook)).accepted).toBe(1);

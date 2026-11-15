@@ -22,7 +22,7 @@ export {
   type StoredMessageStatus,
   type StoredPresence,
   type StoredRow,
-  type StoredSession,
+  type StoredConnection,
   type StoredTemplate,
 } from "./types.js";
 export {

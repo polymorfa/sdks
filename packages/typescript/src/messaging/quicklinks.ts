@@ -33,9 +33,9 @@ export interface QuickLinkConfiguration extends ConnectionConfigurationOverrides
   };
 }
 
-export type QuickLinkPurpose = "initial" | "add_connection" | "reauthorization";
+export type QuickLinkPurpose = "initial" | "add_method" | "reauthorization";
 export type QuickLinkConnectionGoal = "single" | "hybrid";
-export type QuickLinkConnectionKind = "linked_devices" | "official_api";
+export type QuickLinkConnectionMethodKind = "linked_devices" | "official_api";
 export type QuickLinkHybridPhase =
   "cloud_setup" | "linked_pairing" | "repair_linked" | "ready";
 
@@ -49,7 +49,7 @@ export type CreateQuickLinkRequest = CreateQuickLinkBase &
         readonly purpose?: "initial";
         readonly signalMode?: SignalCustodyMode;
         readonly connection?: never;
-        readonly addConnection?: never;
+        readonly addMethod?: never;
         readonly connectionGoal?: QuickLinkConnectionGoal;
         readonly customerId?: string;
         readonly externalId?: string;
@@ -59,9 +59,9 @@ export type CreateQuickLinkRequest = CreateQuickLinkBase &
         };
       }
     | {
-        readonly purpose: "add_connection";
+        readonly purpose: "add_method";
         readonly connection: string;
-        readonly addConnection: QuickLinkConnectionKind;
+        readonly addMethod: QuickLinkConnectionMethodKind;
         readonly signalMode?: never;
         readonly connectionGoal?: "hybrid";
         readonly customerId?: never;
@@ -73,7 +73,7 @@ export type CreateQuickLinkRequest = CreateQuickLinkBase &
 export interface QuickLink {
   readonly purpose: QuickLinkPurpose;
   readonly connectionGoal: QuickLinkConnectionGoal;
-  readonly addConnection?: QuickLinkConnectionKind;
+  readonly addMethod?: QuickLinkConnectionMethodKind;
   readonly id: string;
   readonly url: string;
   readonly connection: string;
@@ -116,7 +116,7 @@ export interface CloudSyncStatus {
 export interface QuickLinkStatus {
   readonly purpose: QuickLinkPurpose;
   readonly connectionGoal: QuickLinkConnectionGoal;
-  readonly addConnection?: QuickLinkConnectionKind;
+  readonly addMethod?: QuickLinkConnectionMethodKind;
   readonly hybridPhase: QuickLinkHybridPhase | null;
   readonly onboarding?: {
     readonly stage: string;
@@ -160,9 +160,9 @@ export interface HybridQuickLinkAvailabilityRequest {
 
 export interface HybridQuickLinkAvailability {
   readonly allowed: boolean;
-  readonly addConnection: QuickLinkConnectionKind | null;
-  readonly connections: readonly {
-    readonly kind: QuickLinkConnectionKind;
+  readonly addMethod: QuickLinkConnectionMethodKind | null;
+  readonly methods: readonly {
+    readonly kind: QuickLinkConnectionMethodKind;
     readonly status: string;
     readonly enabled: boolean;
   }[];
@@ -192,7 +192,7 @@ export class QuickLinksResource {
       billingPriority(input.billingControls.priority);
       if (input.configuration?.testing)
         throw new PolymorfaConfigurationError(
-          "Initial billing controls require a real new number",
+          "Initial billing controls require a real new Connection",
           "billingControls",
         );
     }
@@ -229,7 +229,7 @@ export class QuickLinksResource {
     });
   }
 
-  /** An initial real Number may return HTTP 202 while cleanup is pending. */
+  /** An initial real Connection may return HTTP 202 while cleanup is pending. */
   cancel(
     id: string,
     options: RequestOptions = {},

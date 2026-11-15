@@ -298,21 +298,31 @@ type StarRequest struct {
 type StatusResult struct {
 	Status string `json:"status"`
 }
-type Session struct {
-	SignalMode     *SignalCustodyMode        `json:"signalMode,omitempty"`
-	SessionID      string                    `json:"sessionId"`
-	Name           string                    `json:"name"`
-	ExternalID     string                    `json:"externalId,omitempty"`
-	TenantID       string                    `json:"tenantId"`
-	Type           string                    `json:"type"`
-	TestMode       bool                      `json:"testMode"`
-	Status         string                    `json:"status"`
-	StatusReason   string                    `json:"statusReason,omitempty"`
-	Configuration  *SessionConfigurationView `json:"configuration,omitempty"`
-	NewChatCapping *NewChatCapping           `json:"newChatCapping,omitempty"`
-	CreatedAt      string                    `json:"createdAt"`
-	UpdatedAt      string                    `json:"updatedAt"`
-	OperationID    string                    `json:"operationId,omitempty"`
+type ConnectionMethod string
+
+const (
+	ConnectionMethodLinkedDevice ConnectionMethod = "linked_device"
+	ConnectionMethodCloudAPI     ConnectionMethod = "cloud_api"
+	ConnectionMethodHybrid       ConnectionMethod = "hybrid"
+)
+
+type Connection struct {
+	SignalMode     *SignalCustodyMode           `json:"signalMode,omitempty"`
+	ConnectionID   string                       `json:"connectionId"`
+	Name           string                       `json:"name"`
+	ExternalID     string                       `json:"externalId,omitempty"`
+	TenantID       string                       `json:"tenantId"`
+	Type           string                       `json:"type"`
+	Method         ConnectionMethod             `json:"method"`
+	PhoneNumberID  string                       `json:"phoneNumberId,omitempty"`
+	TestMode       bool                         `json:"testMode"`
+	Status         string                       `json:"status"`
+	StatusReason   string                       `json:"statusReason,omitempty"`
+	Configuration  *ConnectionConfigurationView `json:"configuration,omitempty"`
+	NewChatCapping *NewChatCapping              `json:"newChatCapping,omitempty"`
+	CreatedAt      string                       `json:"createdAt"`
+	UpdatedAt      string                       `json:"updatedAt"`
+	OperationID    string                       `json:"operationId,omitempty"`
 }
 type NewChatCapping struct {
 	Enabled       *bool   `json:"enabled"`
@@ -361,25 +371,25 @@ type ObservationConfiguration struct {
 	LabelMode      string `json:"labelMode,omitempty"`
 	QuickReplyMode string `json:"quickReplyMode,omitempty"`
 }
-type SessionConfigurationOverrides struct {
+type ConnectionConfigurationOverrides struct {
 	Observation *ObservationConfiguration `json:"observation,omitempty"`
 	HistorySync *HistorySyncPolicyPatch   `json:"historySync,omitempty"`
 	HMS         *HMSConfiguration         `json:"hms,omitempty"`
 }
-type SessionConfigurationPatch struct {
-	Set   *SessionConfigurationOverrides `json:"set,omitempty"`
-	Reset []string                       `json:"reset,omitempty"`
+type ConnectionConfigurationPatch struct {
+	Set   *ConnectionConfigurationOverrides `json:"set,omitempty"`
+	Reset []string                          `json:"reset,omitempty"`
 }
-type SessionConfigurationView struct {
-	Effective        EffectiveSessionConfiguration `json:"effective"`
-	Overrides        SessionConfigurationOverrides `json:"overrides"`
-	Sources          SessionConfigurationSources   `json:"sources"`
-	RequestedHistory HistorySyncPolicy             `json:"requestedHistory"`
-	HistoryConsent   string                        `json:"historyConsent,omitempty"`
+type ConnectionConfigurationView struct {
+	Effective        EffectiveConnectionConfiguration `json:"effective"`
+	Overrides        ConnectionConfigurationOverrides `json:"overrides"`
+	Sources          ConnectionConfigurationSources   `json:"sources"`
+	RequestedHistory HistorySyncPolicy                `json:"requestedHistory"`
+	HistoryConsent   string                           `json:"historyConsent,omitempty"`
 	Revisions        struct {
-		Team    int `json:"team"`
-		Project int `json:"project"`
-		Session int `json:"session"`
+		Team       int `json:"team"`
+		Project    int `json:"project"`
+		Connection int `json:"connection"`
 	} `json:"revisions"`
 	Application *struct {
 		DesiredGeneration int    `json:"desiredGeneration"`
@@ -387,9 +397,9 @@ type SessionConfigurationView struct {
 		Status            string `json:"status"`
 	} `json:"application,omitempty"`
 }
-type UpdateSessionRequest struct {
-	Configuration SessionConfigurationPatch `json:"configuration"`
-	Revision      int64                     `json:"revision"`
+type UpdateConnectionRequest struct {
+	Configuration ConnectionConfigurationPatch `json:"configuration"`
+	Revision      int64                        `json:"revision"`
 }
 type QRCode struct {
 	QR    string `json:"qr,omitempty"`
@@ -401,9 +411,9 @@ type PairingCodeRequest struct {
 type PairingCode struct {
 	Code string `json:"code"`
 }
-type SessionLifecycleResult struct {
-	Starting  bool   `json:"starting,omitempty"`
-	Stopping  bool   `json:"stopping,omitempty"`
-	Removed   bool   `json:"removed,omitempty"`
-	SessionID string `json:"sessionId"`
+type ConnectionLifecycleResult struct {
+	Starting     bool   `json:"starting,omitempty"`
+	Stopping     bool   `json:"stopping,omitempty"`
+	Removed      bool   `json:"removed,omitempty"`
+	ConnectionID string `json:"connectionId"`
 }

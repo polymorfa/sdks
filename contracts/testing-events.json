@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "6839976e7ad54e044c4d789fd296edc44772a907",
+  "commit": "1c1c88f04bac58ba1f006af9d4879fa0648576cb",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "79543bf719017598c3e2497004d761056e919b3200abdaae1560893542816cc7",
+  "sourceSha256": "11346736cdb19b4124d34b193a5a563d4f6ad1800d07785b5fb0aae9f0923f43",
   "schemas": {
     "TestEventFixtureList": {
       "type": "object",
@@ -21,8 +21,8 @@
                   "call.received",
                   "call.missed",
                   "call.ended",
-                  "session.status",
-                  "session.restriction_updated",
+                  "connection.status",
+                  "connection.restriction_updated",
                   "template.status"
                 ]
               },
@@ -45,12 +45,6 @@
     "TriggerTestEventRequest": {
       "type": "object",
       "properties": {
-        "session": {
-          "type": "string",
-          "minLength": 1,
-          "maxLength": 128,
-          "description": "Test number session name in the project."
-        },
         "event": {
           "type": "string",
           "enum": [
@@ -60,8 +54,8 @@
             "call.received",
             "call.missed",
             "call.ended",
-            "session.status",
-            "session.restriction_updated",
+            "connection.status",
+            "connection.restriction_updated",
             "template.status"
           ],
           "description": "Fixture name. Each name is the event type it produces."
@@ -69,14 +63,14 @@
         "overrides": {
           "$ref": "#/schemas/TestEventOverrides"
         },
-        "fromSession": {
+        "fromConnection": {
           "type": "string",
           "minLength": 1,
           "maxLength": 128,
-          "description": "message.received only. Send a simulated text message from this other connected Test number in the same project instead of generating an event."
+          "description": "message.received only. Send a simulated text message from this other connected Test connection in the same project instead of generating an event."
         }
       },
-      "required": ["session", "event"],
+      "required": ["event"],
       "additionalProperties": false
     },
     "TriggerTestEventResponse": {
@@ -91,12 +85,12 @@
             "call.received",
             "call.missed",
             "call.ended",
-            "session.status",
-            "session.restriction_updated",
+            "connection.status",
+            "connection.restriction_updated",
             "template.status"
           ]
         },
-        "session": {
+        "connection": {
           "type": "string"
         },
         "delivery": {
@@ -113,7 +107,7 @@
           "enum": ["test", "runtime"]
         }
       },
-      "required": ["event", "session", "delivery", "eventId", "source"]
+      "required": ["event", "connection", "delivery", "eventId", "source"]
     },
     "TestEventOverrides": {
       "type": "object",
@@ -153,7 +147,7 @@
           "type": "string",
           "enum": [
             "invalid_recipient",
-            "session_not_connected",
+            "connection_not_connected",
             "ack_timeout",
             "send_failed",
             "blocked_by_safety"
@@ -213,5 +207,6 @@
       },
       "additionalProperties": false
     }
-  }
+  },
+  "published": false
 }

@@ -91,7 +91,7 @@ export function quickLinkIntent(input: unknown): boolean {
       "purpose",
       "signalMode",
       "connection",
-      "addConnection",
+      "addMethod",
       "connectionGoal",
       "projectId",
       "customerId",
@@ -107,11 +107,11 @@ export function quickLinkIntent(input: unknown): boolean {
     !["standard", "zero_knowledge"].includes(v.signalMode as string)
   )
     invalid("signalMode");
-  if (v.purpose === "add_connection") {
+  if (v.purpose === "add_method") {
     if (
       typeof v.connection !== "string" ||
       !v.connection ||
-      !["linked_devices", "official_api"].includes(v.addConnection as string) ||
+      !["linked_devices", "official_api"].includes(v.addMethod as string) ||
       v.connectionGoal === "single" ||
       ["signalMode", "customerId", "externalId", "billingControls"].some(
         (key) => own(v, key),
@@ -121,7 +121,7 @@ export function quickLinkIntent(input: unknown): boolean {
   } else if (
     (own(v, "purpose") && v.purpose !== "initial") ||
     own(v, "connection") ||
-    own(v, "addConnection")
+    own(v, "addMethod")
   )
     invalid("purpose");
   let intent = own(v, "signalMode");

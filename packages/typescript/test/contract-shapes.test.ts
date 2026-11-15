@@ -155,8 +155,8 @@ describe("SDK types match the pinned contract snapshots", () => {
         status: true,
         isDefault: true,
         archivedAt: true,
-        numberCount: true,
-        connectedNumberCount: true,
+        connectionCount: true,
+        connectedConnectionCount: true,
         activePairingLinkState: true,
         lastActivityAt: true,
         needsAttention: true,
@@ -197,7 +197,7 @@ describe("SDK types match the pinned contract snapshots", () => {
         purpose: true,
         connectionGoal: true,
         connection: true,
-        addConnection: true,
+        addMethod: true,
         projectId: true,
         customerId: true,
         externalId: true,
@@ -227,7 +227,7 @@ describe("SDK types match the pinned contract snapshots", () => {
       keys<QuickLink>({
         purpose: true,
         connectionGoal: true,
-        addConnection: true,
+        addMethod: true,
         id: true,
         url: true,
         connection: true,
@@ -238,7 +238,7 @@ describe("SDK types match the pinned contract snapshots", () => {
       keys<QuickLinkStatus>({
         purpose: true,
         connectionGoal: true,
-        addConnection: true,
+        addMethod: true,
         hybridPhase: true,
         onboarding: true,
         id: true,
@@ -285,8 +285,8 @@ describe("SDK types match the pinned contract snapshots", () => {
     expect(
       keys<HybridQuickLinkAvailability>({
         allowed: true,
-        addConnection: true,
-        connections: true,
+        addMethod: true,
+        methods: true,
         resumeQuickLinkId: true,
       }),
     ).toEqual(

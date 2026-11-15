@@ -36,7 +36,7 @@ export interface FlowValidationIssue extends Omit<
   readonly message?: string;
   readonly pointers?: readonly FlowValidationPointer[];
 }
-export interface FlowNumberLink {
+export interface FlowConnectionLink {
   readonly connection: string;
   /** Number connection UUID, when the API reports it. */
   readonly connectionId?: string;
@@ -59,7 +59,7 @@ export interface FlowSummary {
   readonly status: FlowDraftStatus;
   readonly version: string;
   readonly screenCount: number;
-  readonly metaLinks: readonly FlowNumberLink[];
+  readonly metaLinks: readonly FlowConnectionLink[];
   readonly createdAt: number;
   readonly updatedAt: number;
 }
@@ -193,7 +193,7 @@ export type SetFlowEndpointRequest =
   | ForwardFlowEndpointRequest
   | FunctionFlowEndpointRequest
   | DirectFlowEndpointRequest;
-export interface FlowNumberRequest {
+export interface FlowConnectionRequest {
   /** Number (connection) name or id in the Flow's project. */
   readonly connectionId: string;
 }
@@ -326,13 +326,13 @@ export class FlowsResource {
   /** The Flow's data endpoint on one Number and the Number's encryption custody. */
   endpoint(
     flowId: string,
-    params: FlowNumberRequest,
+    params: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEndpointState>> {
     return this.request(
       "GET",
       `${flowPath(flowId)}/endpoint`,
-      numberInput(params),
+      connectionInput(params),
       options,
     );
   }
@@ -350,13 +350,13 @@ export class FlowsResource {
   }
   deleteEndpoint(
     flowId: string,
-    params: FlowNumberRequest,
+    params: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<{ readonly ok: true }>> {
     return this.request(
       "DELETE",
       `${flowPath(flowId)}/endpoint`,
-      numberInput(params),
+      connectionInput(params),
       options,
     );
   }
@@ -384,13 +384,13 @@ export class FlowsResource {
   }
   /** The Number's Flow encryption custody and recent managed keys. */
   encryptionKey(
-    params: FlowNumberRequest,
+    params: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEncryptionCustody>> {
     return this.request(
       "GET",
       "",
-      numberInput(params),
+      connectionInput(params),
       options,
       "/platform/flow-encryption-keys",
     );
@@ -400,13 +400,13 @@ export class FlowsResource {
    * previous managed key keeps decrypting for 24 hours.
    */
   rotateEncryptionKey(
-    body: FlowNumberRequest,
+    body: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEncryptionKeyRotation>> {
     return this.request(
       "POST",
       "",
-      numberInput(body),
+      connectionInput(body),
       options,
       "/platform/flow-encryption-keys/rotate",
     );
@@ -446,7 +446,7 @@ function flowPath(id: string): string {
   return `/${encodeURIComponent(id)}`;
 }
 
-function numberInput(params: FlowNumberRequest): FlowNumberRequest {
+function connectionInput(params: FlowConnectionRequest): FlowConnectionRequest {
   if (typeof params?.connectionId !== "string" || !params.connectionId.trim())
     throw new PolymorfaValidationError("connectionId is required.");
   return { connectionId: params.connectionId };

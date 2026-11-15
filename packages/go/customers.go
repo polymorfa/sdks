@@ -19,11 +19,11 @@ type Customer struct {
 }
 type CustomerSummary struct {
 	Customer
-	NumberCount            int     `json:"numberCount"`
-	ConnectedNumberCount   int     `json:"connectedNumberCount"`
-	ActivePairingLinkState *string `json:"activePairingLinkState"`
-	LastActivityAt         *int64  `json:"lastActivityAt"`
-	NeedsAttention         bool    `json:"needsAttention"`
+	ConnectionCount          int     `json:"connectionCount"`
+	ConnectedConnectionCount int     `json:"connectedConnectionCount"`
+	ActivePairingLinkState   *string `json:"activePairingLinkState"`
+	LastActivityAt           *int64  `json:"lastActivityAt"`
+	NeedsAttention           bool    `json:"needsAttention"`
 }
 type CustomersStatus struct {
 	Enabled         bool      `json:"enabled"`
@@ -33,7 +33,7 @@ type CustomersStatus struct {
 }
 type CustomersEnablement struct {
 	CustomersStatus
-	MigratedNumberCount int `json:"migratedNumberCount"`
+	MigratedConnectionCount int `json:"migratedConnectionCount"`
 }
 type CustomerProjectRequest struct {
 	ProjectID string `json:"projectId,omitempty"`
@@ -47,18 +47,18 @@ type UpdateCustomerRequest = CreateCustomerRequest
 type ListCustomersParams struct {
 	ProjectID string
 	ListParams
-	Search, Status                        string
-	IsDefault, HasNumbers, NeedsAttention *bool
+	Search, Status                            string
+	IsDefault, HasConnections, NeedsAttention *bool
 }
-type CustomerNumber struct {
-	ID          string  `json:"id"`
-	CustomerID  string  `json:"customerId"`
-	SessionID   string  `json:"sessionId"`
-	Name        *string `json:"name"`
-	PhoneMasked *string `json:"phoneMasked"`
-	Status      string  `json:"status"`
-	Backend     *string `json:"backend"`
-	CreatedAt   int64   `json:"createdAt"`
+type CustomerConnection struct {
+	ID           string  `json:"id"`
+	CustomerID   string  `json:"customerId"`
+	ConnectionID string  `json:"connectionId"`
+	Name         *string `json:"name"`
+	PhoneMasked  *string `json:"phoneMasked"`
+	Status       string  `json:"status"`
+	Backend      *string `json:"backend"`
+	CreatedAt    int64   `json:"createdAt"`
 }
 type CustomerEventMetadata struct {
 	Fields []string `json:"fields,omitempty"`
@@ -68,7 +68,7 @@ type CustomerEvent struct {
 	Action        string                `json:"action"`
 	FromStatus    *string               `json:"fromStatus"`
 	ToStatus      *string               `json:"toStatus"`
-	SessionID     *string               `json:"sessionId"`
+	ConnectionID  *string               `json:"connectionId"`
 	PairingLinkID *string               `json:"pairingLinkId"`
 	Metadata      CustomerEventMetadata `json:"metadata"`
 	OccurredAt    int64                 `json:"occurredAt"`
@@ -86,7 +86,7 @@ type CustomerPairingLink struct {
 	Status              string   `json:"status"`
 	AttemptCount        int      `json:"attemptCount"`
 	MaxAttempts         int      `json:"maxAttempts"`
-	PendingSessionID    *string  `json:"pendingSessionId"`
+	PendingConnectionID *string  `json:"pendingConnectionId"`
 	CreatedBy           *string  `json:"createdBy"`
 	ReservedAt          *int64   `json:"reservedAt"`
 	OpenedAt            *int64   `json:"openedAt"`
@@ -115,7 +115,7 @@ type ListCustomerEventsParams struct {
 	ProjectID string
 	Limit     int
 }
-type TransferCustomerNumberRequest struct {
+type TransferCustomerConnectionRequest struct {
 	ProjectID        string `json:"projectId"`
 	SourceCustomerID string `json:"sourceCustomerId"`
 	Confirm          bool   `json:"confirm"`
@@ -139,7 +139,7 @@ func (r *Customers) List(ctx context.Context, p ListCustomersParams, o ...Reques
 	setString(q, "search", p.Search)
 	setString(q, "status", p.Status)
 	setBool(q, "isDefault", p.IsDefault)
-	setBool(q, "hasNumbers", p.HasNumbers)
+	setBool(q, "hasConnections", p.HasConnections)
 	setBool(q, "needsAttention", p.NeedsAttention)
 	return request[CursorEnvelope[CustomerSummary]](ctx, r.t, "GET", "/platform/customers", q, nil, options(o))
 }
@@ -158,8 +158,8 @@ func (r *Customers) Archive(ctx context.Context, id string, b CustomerProjectReq
 func (r *Customers) Restore(ctx context.Context, id string, b CustomerProjectRequest, o ...RequestOptions) (Response[Envelope[Customer]], error) {
 	return request[Envelope[Customer]](ctx, r.t, "POST", customerPath(id)+"/restore", nil, b, options(o))
 }
-func (r *Customers) ListNumbers(ctx context.Context, id, project string, o ...RequestOptions) (Response[Envelope[[]CustomerNumber]], error) {
-	return request[Envelope[[]CustomerNumber]](ctx, r.t, "GET", customerPath(id)+"/numbers", url.Values{"projectId": {project}}, nil, options(o))
+func (r *Customers) ListConnections(ctx context.Context, id, project string, o ...RequestOptions) (Response[Envelope[[]CustomerConnection]], error) {
+	return request[Envelope[[]CustomerConnection]](ctx, r.t, "GET", customerPath(id)+"/connections", url.Values{"projectId": {project}}, nil, options(o))
 }
 func (r *Customers) ListEvents(ctx context.Context, id string, p ListCustomerEventsParams, o ...RequestOptions) (Response[Envelope[[]CustomerEvent]], error) {
 	q := url.Values{"projectId": {p.ProjectID}}
@@ -175,9 +175,9 @@ func (r *Customers) ListPairingLinks(ctx context.Context, id, project string, o 
 func (r *Customers) RevokePairingLink(ctx context.Context, id, link, project string, o ...RequestOptions) (Response[Envelope[CustomerPairingLink]], error) {
 	return request[Envelope[CustomerPairingLink]](ctx, r.t, "DELETE", customerPath(id)+"/pairing-links/"+escaped(link), url.Values{"projectId": {project}}, nil, options(o))
 }
-func (r *Customers) TransferNumber(ctx context.Context, id, session string, b TransferCustomerNumberRequest, o ...RequestOptions) (Response[Envelope[CustomerNumber]], error) {
+func (r *Customers) TransferConnection(ctx context.Context, id, connection string, b TransferCustomerConnectionRequest, o ...RequestOptions) (Response[Envelope[CustomerConnection]], error) {
 	if !b.Confirm {
-		return Response[Envelope[CustomerNumber]]{}, validation("Number transfer requires confirm:true.")
+		return Response[Envelope[CustomerConnection]]{}, validation("Number transfer requires confirm:true.")
 	}
-	return request[Envelope[CustomerNumber]](ctx, r.t, "POST", customerPath(id)+"/numbers/"+escaped(session)+"/transfer", nil, b, options(o))
+	return request[Envelope[CustomerConnection]](ctx, r.t, "POST", customerPath(id)+"/connections/"+escaped(connection)+"/transfer", nil, b, options(o))
 }

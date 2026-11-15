@@ -12,8 +12,8 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   DataEnvelope,
   ListPlatformConnectionsParams,
-  NumberTierChange,
-  NumberTierQuoteRequest,
+  ConnectionTierChange,
+  ConnectionTierQuoteRequest,
   PlatformConnection,
   ConnectionBatchRemoveResult,
   ConnectionBatchRequest,
@@ -148,9 +148,9 @@ export class PlatformConnectionsResource {
    */
   quoteTierChange(
     connectionId: string,
-    body: NumberTierQuoteRequest,
+    body: ConnectionTierQuoteRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
     if (
       body?.hybridResolution !== undefined &&
       body?.hybridMerge !== undefined
@@ -171,7 +171,7 @@ export class PlatformConnectionsResource {
     connectionId: string,
     quoteId: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
     return this.transport.request({
       method: "GET",
       path: `${connectionPath(connectionId)}/tier-quotes/${encodeURIComponent(quoteId)}`,
@@ -184,7 +184,7 @@ export class PlatformConnectionsResource {
     connectionId: string,
     body: ConnectionTierOverrideRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<NumberTierChange>>> {
+  ): Promise<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
     if (typeof body?.quoteId !== "string" || !body.quoteId.trim()) {
       throw new PolymorfaValidationError(
         "Review a tier quote and supply its quoteId before confirming a number tier change.",

@@ -120,7 +120,7 @@ describe("@polymorfa/ui-kit package", () => {
       'const { CallsSignalingClient } = await import("@polymorfa/ui-kit/internal");',
       'const { CallsDisabledError } = await import("@polymorfa/sdk/calls");',
       'const token = await new ClientTokenManager(async () => "pmfa_ct_Zml4dHVyZQ").get();',
-      'const client = new BrowserMessagingClient({ session: "support", getClientToken: async () => token });',
+      'const client = new BrowserMessagingClient({ connection: "support", getClientToken: async () => token });',
       "const templates = createSameOriginTemplateBuilderTransport();",
       // A browser request refused because calling is off raises the one
       // CallsDisabledError class applications import from the SDK.
@@ -137,8 +137,8 @@ describe("@polymorfa/ui-kit package", () => {
       "console.log(defineAppearance().theme);",
       'const { createPolymorfaStore } = await import("@polymorfa/ui-kit/store");',
       'const store = await createPolymorfaStore({ name: "consumer" });',
-      'const result = await store.ingest({ id: "e1", session: "s", timestamp: "2026-09-01T00:00:00Z", event: "session.status", payload: { status: "ready" } });',
-      'console.log(store.mode, result.accepted, (await store.sessions.get("s")).status);',
+      'const result = await store.ingest({ id: "e1", connection: "s", timestamp: "2026-09-01T00:00:00Z", event: "connection.status", payload: { status: "ready" } });',
+      'console.log(store.mode, result.accepted, (await store.connections.get("s")).status);',
       "store.close();",
       'const components = await import("@polymorfa/ui-kit/web-components");',
       'const chat = await import("@polymorfa/ui-kit/web-components/chat");',

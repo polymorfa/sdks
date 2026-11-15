@@ -210,12 +210,12 @@ describe("coverage checker", () => {
       getCustomer: "Client.customers.retrieve",
       getCustomersStatus: "Client.customers.status",
       listCustomerEvents: "Client.customers.listEvents",
-      listCustomerNumbers: "Client.customers.listNumbers",
+      listCustomerNumbers: "Client.customers.listConnections",
       listCustomerPairingLinks: "Client.customers.listPairingLinks",
       listCustomers: "Client.customers.list",
       restoreCustomer: "Client.customers.restore",
       revokeCustomerPairingLink: "Client.customers.revokePairingLink",
-      transferCustomerNumber: "Client.customers.transferNumber",
+      transferCustomerNumber: "Client.customers.transferConnection",
       updateCustomer: "Client.customers.update",
     });
   });

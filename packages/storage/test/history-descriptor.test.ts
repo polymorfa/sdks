@@ -21,7 +21,7 @@ const descriptor = {
 it("refuses an undecoded signed descriptor before consuming its progress or marker", async () => {
   const event = {
     id: "descriptor-event",
-    session: "descriptor-session",
+    connection: "descriptor-connection",
     event: "history.sync" as const,
     timestamp: "2026-10-17T00:00:00Z",
     payload: descriptor,
@@ -40,7 +40,7 @@ it("refuses an undecoded signed descriptor before consuming its progress or mark
   await expect(storageWebhookHandler(storage)(verified)).rejects.toThrow(
     "descriptor",
   );
-  expect(await storage.hasEvent(event.session, event.id)).toBe(false);
+  expect(await storage.hasEvent(event.connection, event.id)).toBe(false);
   expect(adapter.rows("history_progress")).toHaveLength(0);
 });
 
@@ -116,7 +116,7 @@ it("rejects unprojected descriptor fields before metadata-only consumption", asy
         adapter,
         {
           id: "strict-fields",
-          session: "session",
+          connection: "connection",
           event: "history.sync",
           timestamp: "2026-10-17T00:00:00Z",
           payload,

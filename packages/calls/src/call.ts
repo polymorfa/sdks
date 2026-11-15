@@ -299,7 +299,7 @@ export function capabilitiesFrom(
 
 export interface CallInit {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly direction: CallDirection;
   /** The other party as the platform presents it: number or public ID. */
   readonly peer: string;
@@ -342,7 +342,7 @@ const RELEASE_TIMEOUT_MS = 5_000;
  */
 export class Call extends Emitter<CallEvents> {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly direction: CallDirection;
   readonly peer: string;
   /** True when the call offered video and the call can carry it. */
@@ -454,7 +454,7 @@ export class Call extends Emitter<CallEvents> {
   constructor(init: CallInit) {
     super();
     this.id = init.id;
-    this.session = init.session;
+    this.connection = init.connection;
     this.direction = init.direction;
     this.peer = init.peer;
     this.#capabilities = init.capabilities ?? DEFAULT_CALL_CAPABILITIES;

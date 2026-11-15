@@ -1,6 +1,6 @@
 import { PolymorfaValidationError } from "../errors.js";
 
-export type BillingScope = "project" | "customer" | "number";
+export type BillingScope = "project" | "customer" | "connection";
 export interface BillingPriority {
   readonly id: string;
   readonly name: string;
@@ -43,7 +43,7 @@ export type ReorderBillingPrioritiesInput =
       readonly scope: "resource";
       readonly projectId: string;
       readonly resources: readonly {
-        readonly scope: "customer" | "number";
+        readonly scope: "customer" | "connection";
         readonly resourceId: string;
       }[];
       readonly expectedRevision: number;
@@ -54,7 +54,7 @@ export type ReorderBillingPrioritiesInput =
       readonly expectedRevision: number;
     }
   | {
-      readonly scope: "customer" | "number";
+      readonly scope: "customer" | "connection";
       readonly projectId: string;
       readonly resourceIds: readonly string[];
       readonly expectedRevision: number;
@@ -73,8 +73,8 @@ export function billingRevision(value: number): void {
     invalid("expectedRevision must be a nonnegative integer");
 }
 export function billingScope(value: BillingScope): void {
-  if (value !== "project" && value !== "customer" && value !== "number")
-    invalid("scope must be project, customer or number");
+  if (value !== "project" && value !== "customer" && value !== "connection")
+    invalid("scope must be project, customer or connection");
 }
 export function billingPriority(value: number): void {
   if (!Number.isInteger(value) || value < 0 || value > 1000000)

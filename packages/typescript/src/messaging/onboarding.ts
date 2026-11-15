@@ -186,7 +186,7 @@ export class TestingResource {
   }
 }
 function phonePath(projectId: string, connection: string): string {
-  return `/messaging/testing/${encodeURIComponent(projectId)}/numbers/${encodeURIComponent(connection)}/phone`;
+  return `/messaging/testing/${encodeURIComponent(projectId)}/connections/${encodeURIComponent(connection)}/phone`;
 }
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")

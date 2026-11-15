@@ -17,7 +17,7 @@ import type {
   BanSafeIncidentReceipt,
   BanSafeIncidentsEnvelope,
   BanSafeSignalDefinition,
-  BanSafeNumberDetail,
+  BanSafeConnectionDetail,
   BanSafeTelemetryDetail,
   BanSafeTelemetryHistoryEnvelope,
   DataEnvelope,
@@ -46,7 +46,7 @@ export class BanSafeResource {
   getHealth(
     connection: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<BanSafeNumberDetail>>> {
+  ): Promise<ApiResponse<DataEnvelope<BanSafeConnectionDetail>>> {
     return this.get(
       `/platform/bansafe/health/${encodeURIComponent(connection)}`,
       {},

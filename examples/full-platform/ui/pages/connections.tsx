@@ -80,7 +80,7 @@ function PairModal({
       const result = await callApi<Readonly<Record<string, unknown>>>(
         "/api/desk/connections",
         {
-          action: "session",
+          action: "connection",
           connectionId: connection.id,
           operation,
           ...(operation === "pairingCode"
@@ -106,7 +106,7 @@ function PairModal({
   return (
     <Modal
       title={`Pair ${connection.name}`}
-      description="Link the WhatsApp app on the phone to this session."
+      description="Link the WhatsApp app on the phone to this connection."
       onClose={onClose}
       size="sm"
     >
@@ -199,10 +199,10 @@ export function ConnectionsPage() {
   const { reload, setData } = connections;
 
   useLiveEvents({
-    "session.status": (event) =>
+    "connection.status": (event) =>
       setData((current) =>
         current?.map((connection) =>
-          connection.id === event.session && "status" in event.payload
+          connection.id === event.connection && "status" in event.payload
             ? { ...connection, status: event.payload.status }
             : connection,
         ),
@@ -226,7 +226,7 @@ export function ConnectionsPage() {
     setBusy(`${connection.id}:${operation}`);
     try {
       await callApi("/api/desk/connections", {
-        action: "session",
+        action: "connection",
         connectionId: connection.id,
         operation,
       });

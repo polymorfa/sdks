@@ -21,7 +21,7 @@ export function POST(request: Request): Promise<Response> {
         return operator?.role === "admin" ? { userId: operator.userId } : null;
       },
       resolveProjectSlug: () => (demo ? "demo" : env.projectSlug()),
-      resolveSubmissionSession: () => (demo ? "demo" : env.templateSession()),
+      resolveSubmissionConnection: () => (demo ? "demo" : env.templateConnection()),
     });
   } catch (error) {
     return Promise.resolve(errorResponse(error));

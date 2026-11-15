@@ -12,26 +12,26 @@ import { usePermission, usePolymorfa, usePolymorfaClient } from "./context.js";
 const shared = new WeakMap<PolymorfaClient, Map<string, BrowserCalls>>();
 
 /**
- * The provider's shared Calls client for a session, created on first use
+ * The provider's shared Calls client for a connection, created on first use
  * with the provider's client token.
  */
 export function browserCallsFor(
   client: PolymorfaClient,
-  session: string,
+  connection: string,
 ): BrowserCalls {
-  let bySession = shared.get(client);
-  if (bySession === undefined) {
-    bySession = new Map();
-    shared.set(client, bySession);
+  let byConnection = shared.get(client);
+  if (byConnection === undefined) {
+    byConnection = new Map();
+    shared.set(client, byConnection);
   }
-  let calls = bySession.get(session);
+  let calls = byConnection.get(connection);
   if (calls === undefined) {
     calls = createBrowserCalls({
-      session,
+      connection,
       getClientToken: client.getClientToken,
       ...(client.baseUrl === undefined ? {} : { baseUrl: client.baseUrl }),
     });
-    bySession.set(session, calls);
+    byConnection.set(connection, calls);
   }
   return calls;
 }
@@ -40,8 +40,8 @@ export interface CallButtonProps {
   /** Phone number in E.164 form or a WhatsApp user ID. */
   readonly to: string;
   readonly video?: boolean;
-  /** Session that places the call. Defaults to the grant's session. */
-  readonly session?: string;
+  /** Connection that places the call. Defaults to the grant's connection. */
+  readonly connection?: string;
   /** `icon` renders a round icon button, as in the inbox header. */
   readonly variant?: "button" | "icon";
   /** Render the call overlay after placing. Defaults to `true`. */
@@ -59,7 +59,7 @@ export interface CallButtonProps {
 export function CallButton({
   to,
   video = false,
-  session,
+  connection,
   variant = "button",
   surface = true,
   children,
@@ -79,8 +79,8 @@ export function CallButton({
   const allowed = usePermission("CallButton", "button", "voip_place");
   const [calls, setCalls] = useState<BrowserCalls | undefined>();
   const [busy, setBusy] = useState(false);
-  const resolvedSession = session ?? client.getSnapshot().grant?.session;
-  if (!allowed || resolvedSession === undefined) return null;
+  const resolvedConnection = connection ?? client.getSnapshot().grant?.connection;
+  if (!allowed || resolvedConnection === undefined) return null;
   const label = text(configuration, video ? "calls.videoCall" : "calls.call");
   return (
     <>
@@ -92,7 +92,7 @@ export function CallButton({
         title={variant === "icon" ? label : undefined}
         disabled={busy}
         onClick={() => {
-          const instance = browserCallsFor(client, resolvedSession);
+          const instance = browserCallsFor(client, resolvedConnection);
           setCalls(instance);
           setBusy(true);
           (instance.connected ? Promise.resolve() : instance.connect())

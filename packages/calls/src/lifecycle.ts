@@ -26,7 +26,7 @@ export interface LifecycleCandidate {
 }
 
 export interface LifecycleReady {
-  readonly session?: string;
+  readonly connection?: string;
   /** Participant reference of the authenticated credential, when the platform sends it. */
   readonly participant?: string;
 }
@@ -34,10 +34,10 @@ export interface LifecycleReady {
 export interface LifecycleSocketOptions {
   readonly api: Pick<CallsApi, "token" | "socketUrl">;
   /**
-   * Session to follow. Sent as `?session=` for server credentials only;
-   * client tokens are bound to one session and send no query parameters.
+   * Connection to follow. Sent as `?connection=` for server credentials only;
+   * client tokens are bound to one connection and send no query parameters.
    */
-  readonly session?: string;
+  readonly connection?: string;
   /**
    * Participant name for server credentials, sent as `?participant=`.
    * Ignored for client tokens.
@@ -86,11 +86,11 @@ type Events = {
 export const SocketCloseCode = {
   /** The credential does not (or no longer) authorize the socket. */
   Unauthorized: AUTH_FAILED_CLOSE_CODE,
-  /** Call or session state refused the socket (for example a claimed call). */
+  /** Call or connection state refused the socket (for example a claimed call). */
   Conflict: 4409,
   /** Too many attempts. */
   RateLimited: 4429,
-  /** The request is invalid (for example an unknown session or participant). */
+  /** The request is invalid (for example an unknown connection or participant). */
   InvalidRequest: 4400,
   /** A policy violation, including no auth frame within 5 seconds. */
   PolicyViolation: 1008,
@@ -350,9 +350,9 @@ export class LifecycleSocket extends Emitter<Events> {
           this.#scheduleRefresh(socket, token);
           try {
             this.emit("ready", {
-              ...(frame.session === undefined
+              ...(frame.connection === undefined
                 ? {}
-                : { session: frame.session }),
+                : { connection: frame.connection }),
               ...(frame.participant === undefined
                 ? {}
                 : { participant: frame.participant }),
@@ -442,7 +442,7 @@ export class LifecycleSocket extends Emitter<Events> {
   /**
    * Replace the token on the open socket before it expires. The platform
    * re-validates the latest token on its own schedule and closes with 4401
-   * when it no longer authorizes the session.
+   * when it no longer authorizes the connection.
    */
   #scheduleRefresh(socket: WebSocket, token: CallsToken): void {
     this.#clearRefresh();
@@ -499,11 +499,11 @@ export class LifecycleSocket extends Emitter<Events> {
     }
   }
 
-  /** `/voip/ws`, naming the session only for server credentials. */
+  /** `/voip/ws`, naming the connection only for server credentials. */
   #path(token: CallsToken): string {
     if (isClientToken(token.value)) return LIFECYCLE_SOCKET_PATH;
     const query = new URLSearchParams();
-    if (this.#o.session !== undefined) query.set("session", this.#o.session);
+    if (this.#o.connection !== undefined) query.set("connection", this.#o.connection);
     if (this.#o.participant !== undefined)
       query.set("participant", this.#o.participant);
     const search = query.toString();
@@ -583,7 +583,7 @@ function closeError(code: number | undefined): CallsError | undefined {
     case SocketCloseCode.Conflict:
       return new CallsError(
         "socket_conflict",
-        "The platform refused the socket for the current session state.",
+        "The platform refused the socket for the current connection state.",
       );
     case SocketCloseCode.RateLimited:
       return new CallsError(
@@ -593,7 +593,7 @@ function closeError(code: number | undefined): CallsError | undefined {
     case SocketCloseCode.InvalidRequest:
       return new CallsError(
         "invalid_request",
-        "The platform refused the socket request; check the session and participant. Reconnection stopped.",
+        "The platform refused the socket request; check the connection and participant. Reconnection stopped.",
       );
     default:
       return undefined;

@@ -9,33 +9,33 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-// Sessions are created by QuickLink (see ../quicklinks). These routes list,
-// inspect and operate existing sessions.
-export const GET = route("agent", () => messaging().sessions.list());
+// Connections are created by QuickLink (see ../quicklinks). These routes list,
+// inspect and operate existing connections.
+export const GET = route("agent", () => messaging().connections.list());
 
-export const POST = route("admin", async ({ body, sessionOf }) => {
-  const sessions = messaging().sessions;
-  const session = sessionOf(body);
+export const POST = route("admin", async ({ body, connectionOf }) => {
+  const connections = messaging().connections;
+  const connection = connectionOf(body);
   switch (action(body)) {
     case "retrieve":
-      return sessions.retrieve(session);
+      return connections.retrieve(connection);
     case "status": {
-      const response = await sessions.retrieve(session);
+      const response = await connections.retrieve(connection);
       const { status, statusReason } = response.data.data;
-      return { session, status, statusReason };
+      return { connection, status, statusReason };
     }
     case "account":
-      return sessions.account(session);
+      return connections.account(connection);
     case "start":
-      return sessions.start(session);
+      return connections.start(connection);
     case "stop":
-      return sessions.stop(session);
+      return connections.stop(connection);
     case "restart":
-      return sessions.restart(session);
+      return connections.restart(connection);
     case "logout":
-      return sessions.logout(session);
+      return connections.logout(connection);
     case "delete":
-      return sessions.delete(session);
+      return connections.delete(connection);
     case "configure": {
       // Optimistic concurrency: pass the revision you last read.
       const history = object(body, "historySync");
@@ -43,16 +43,16 @@ export const POST = route("admin", async ({ body, sessionOf }) => {
       if (mode !== "metadata_only" && mode !== "deliver") {
         throw new InputError("historySync.mode is invalid.");
       }
-      return sessions.update(session, {
+      return connections.update(connection, {
         configuration: { set: { historySync: { mode } } },
         revision: integer(body, "revision"),
       });
     }
     // Direct pairing is entitlement-gated; QuickLink is the standard flow.
     case "qr":
-      return sessions.qr(session);
+      return connections.qr(connection);
     case "pairingCode":
-      return sessions.requestPairingCode(session, {
+      return connections.requestPairingCode(connection, {
         phone: text(body, "phone"),
       });
     default:

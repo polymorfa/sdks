@@ -11,7 +11,7 @@ import (
 )
 
 func TestNumericStoragePublicProducerParity(t *testing.T) {
-	raw, err := os.ReadFile("testdata/numeric-storage/fixture.json")
+	raw, err := os.ReadFile("testdata/numeric-storage/fixture.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,7 +35,7 @@ func TestNumericStoragePublicProducerParity(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, v := range f.Strings {
-		b, err := s.ReduceHistoryChunk(s.HistoryInput{SessionID: "numeric", Chunk: map[string]any{"syncType": 3.0, "chunkOrder": 16.0, "progress": v.Input}})
+		b, err := s.ReduceHistoryChunk(s.HistoryInput{ConnectionID: "numeric", Chunk: map[string]any{"syncType": 3.0, "chunkOrder": 16.0, "progress": v.Input}})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -93,7 +93,7 @@ func TestNumericStoragePublicProducerParity(t *testing.T) {
 		a, _ := s.NewMemoryAdapter(1000)
 		e, _ := s.NewEngine(a, s.EngineOptions{})
 		id := h.Name
-		b, err := s.ReduceHistoryChunk(s.HistoryInput{SessionID: "numeric", Chunk: h.Chunk, ChunkID: &id})
+		b, err := s.ReduceHistoryChunk(s.HistoryInput{ConnectionID: "numeric", Chunk: h.Chunk, ChunkID: &id})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -111,7 +111,7 @@ func TestNumericStoragePublicProducerParity(t *testing.T) {
 			t.Fatal("replay", err)
 		}
 		for i, c := range h.Cleanup {
-			if _, err = e.Apply(context.Background(), s.Batch{SessionID: "numeric", Operations: c.Operations}); err != nil {
+			if _, err = e.Apply(context.Background(), s.Batch{ConnectionID: "numeric", Operations: c.Operations}); err != nil {
 				t.Fatal(err)
 			}
 			id = fmt.Sprint(h.Name, "late", i)

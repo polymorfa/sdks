@@ -11,14 +11,14 @@ import {
   type Body,
 } from "../../../../lib/route.js";
 
-export const POST = route("agent", async ({ body, sessionOf }) => {
-  const session = sessionOf(body);
+export const POST = route("agent", async ({ body, connectionOf }) => {
+  const connection = connectionOf(body);
   switch (action(body)) {
     case "resolve":
-      return messaging().identities.resolve(session, identity(body));
+      return messaging().identities.resolve(connection, identity(body));
     case "securityCode":
       // Display-only verification code for a stable user id.
-      return messaging().users.getSecurityCode(session, text(body, "userId"));
+      return messaging().users.getSecurityCode(connection, text(body, "userId"));
     default:
       return unknownAction(action(body));
   }

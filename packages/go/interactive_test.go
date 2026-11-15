@@ -36,12 +36,12 @@ func TestInteractiveMediaAndCarouselWire(t *testing.T) {
 			media.Thumbnail = &preview
 		}
 		content := MessageContent{Buttons: &ButtonsContent{Body: "Choose", Media: media, Buttons: buttons}}
-		if _, err := client.Messages().Send(context.Background(), "session", SendMessageRequest{Conversation: ConversationReference{ID: "chat"}, Content: content}); err != nil {
+		if _, err := client.Messages().Send(context.Background(), "connection", SendMessageRequest{Conversation: ConversationReference{ID: "chat"}, Content: content}); err != nil {
 			t.Fatal(err)
 		}
 	}
 	cards := []CarouselCard{{Body: "Image", Image: &source, Buttons: []MessageButton{{Type: "reply", Text: "Choose", ID: "image"}}}, {Body: "Video", Video: &CarouselVideo{InteractiveMediaSource: source, Thumbnail: &preview}, Buttons: []MessageButton{{Type: "reply", Text: "Choose", ID: "video"}}}}
-	if _, err := client.Messages().Send(context.Background(), "session", SendMessageRequest{Conversation: ConversationReference{ID: "chat"}, Content: MessageContent{Carousel: &CarouselContent{Body: "Offers", Footer: &footer, Cards: cards}}}); err != nil {
+	if _, err := client.Messages().Send(context.Background(), "connection", SendMessageRequest{Conversation: ConversationReference{ID: "chat"}, Content: MessageContent{Carousel: &CarouselContent{Body: "Offers", Footer: &footer, Cards: cards}}}); err != nil {
 		t.Fatal(err)
 	}
 	if len(bodies) != 4 {

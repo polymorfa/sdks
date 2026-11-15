@@ -21,7 +21,7 @@ it("keeps reviewed billing and connection administration in the canonical Platfo
   expect(spec.components.schemas.ConnectionTierOverrideRequest.required).toEqual([
     "quoteId",
   ]);
-  expect(spec.components.schemas.NumberTierQuoteRequest.required).toEqual([
+  expect(spec.components.schemas.ConnectionTierQuoteRequest.required).toEqual([
     "tierOverride",
   ]);
   expect(spec.paths["/platform/connections/{connectionId}"].get.operationId).toBe(

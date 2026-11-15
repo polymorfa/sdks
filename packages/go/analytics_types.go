@@ -244,23 +244,23 @@ type WhatsAppMetrics struct {
 }
 type WhatsAppAnalyticsSummary struct {
 	WhatsAppMetrics
-	TotalNumbers     int `json:"totalNumbers"`
-	MeasuredNumbers  int `json:"measuredNumbers"`
-	ConnectedNumbers int `json:"connectedNumbers"`
+	TotalConnections     int `json:"totalConnections"`
+	MeasuredConnections  int `json:"measuredConnections"`
+	ConnectedConnections int `json:"connectedConnections"`
 }
-type WhatsAppAnalyticsNumber struct {
+type WhatsAppAnalyticsConnection struct {
 	WhatsAppMetrics
-	SessionID   string `json:"sessionId"`
-	ProjectID   string `json:"projectId"`
-	ProjectName string `json:"projectName"`
-	Name        string `json:"name"`
-	Backend     string `json:"backend"`
-	Status      string `json:"status"`
+	ConnectionID string `json:"connectionId"`
+	ProjectID    string `json:"projectId"`
+	ProjectName  string `json:"projectName"`
+	Name         string `json:"name"`
+	Backend      string `json:"backend"`
+	Status       string `json:"status"`
 }
 type WhatsAppCallSeriesPoint struct {
 	CallOutcomeMetrics
-	SessionID string `json:"sessionId"`
-	TS        int64  `json:"ts"`
+	ConnectionID string `json:"connectionId"`
+	TS           int64  `json:"ts"`
 }
 type WhatsAppSeriesPoint struct {
 	CustomerOnlineSignals         int64    `json:"customerOnlineSignals"`
@@ -273,7 +273,7 @@ type WhatsAppSeriesPoint struct {
 	PhoneActivityMS               float64  `json:"phoneActivityMs"`
 	PhoneQuietGaps                int64    `json:"phoneQuietGaps"`
 	PhoneQuietMS                  float64  `json:"phoneQuietMs"`
-	SessionID                     string   `json:"sessionId"`
+	ConnectionID                  string   `json:"connectionId"`
 	TS                            int64    `json:"ts"`
 	OutgoingMessages              int64    `json:"outgoingMessages"`
 	IncomingMessages              int64    `json:"incomingMessages"`
@@ -293,13 +293,13 @@ type AnalyticsRequestVitals struct {
 	ErrorRate *float64 `json:"errorRate"`
 }
 type WhatsAppAnalytics struct {
-	CallSeries    []WhatsAppCallSeriesPoint `json:"callSeries"`
-	Enabled       bool                      `json:"enabled"`
-	Period        AnalyticsPeriod           `json:"period"`
-	RequestVitals AnalyticsRequestVitals    `json:"requestVitals"`
-	Summary       *WhatsAppAnalyticsSummary `json:"summary"`
-	Numbers       []WhatsAppAnalyticsNumber `json:"numbers"`
-	Series        []WhatsAppSeriesPoint     `json:"series"`
+	CallSeries    []WhatsAppCallSeriesPoint     `json:"callSeries"`
+	Enabled       bool                          `json:"enabled"`
+	Period        AnalyticsPeriod               `json:"period"`
+	RequestVitals AnalyticsRequestVitals        `json:"requestVitals"`
+	Summary       *WhatsAppAnalyticsSummary     `json:"summary"`
+	Connections   []WhatsAppAnalyticsConnection `json:"numbers"`
+	Series        []WhatsAppSeriesPoint         `json:"series"`
 }
 type AnalyticsSettings struct {
 	Enabled bool `json:"enabled"`

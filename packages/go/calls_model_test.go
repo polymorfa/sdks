@@ -194,7 +194,7 @@ func TestCallsFollowNativeOrchestration(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: Config{BaseURL: s.URL}, Session: "support", TokenProvider: func(ctx context.Context, r CallsTokenRequest) (CallsToken, error) {
+	client, err := NewCallsClient(CallsClientConfig{Config: Config{BaseURL: s.URL}, Connection: "support", TokenProvider: func(ctx context.Context, r CallsTokenRequest) (CallsToken, error) {
 		if r.Refresh {
 			refreshes.Add(1)
 			return CallsToken{Value: "pmfa_ct_cmVmcmVzaGVk"}, nil
@@ -342,7 +342,7 @@ func TestCallsFollowRefreshesLifecycleOn4401(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
-	c, _ := NewCallsClient(CallsClientConfig{Config: Config{BaseURL: s.URL}, Session: "s", TokenProvider: func(ctx context.Context, r CallsTokenRequest) (CallsToken, error) {
+	c, _ := NewCallsClient(CallsClientConfig{Config: Config{BaseURL: s.URL}, Connection: "s", TokenProvider: func(ctx context.Context, r CallsTokenRequest) (CallsToken, error) {
 		if r.Refresh {
 			refreshes.Add(1)
 			return CallsToken{Value: "pmfa_ct_new"}, nil
@@ -438,7 +438,7 @@ func TestCallsOutboundEarlyAcceptedAndLateDisconnect(t *testing.T) {
 			defer server.Close()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
-			c, _ := NewCallsClient(CallsClientConfig{Config: teamConfig(server.URL), Session: "s", Participant: "worker"})
+			c, _ := NewCallsClient(CallsClientConfig{Config: teamConfig(server.URL), Connection: "s", Participant: "worker"})
 			session, e := c.Follow(ctx, CallsFollowOptions{})
 			if e != nil {
 				t.Fatal(e)

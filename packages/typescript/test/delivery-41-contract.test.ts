@@ -110,9 +110,9 @@ it("rejects archive writes, nested custody aliases and supplementary custody bef
       } as never),
     () =>
       m.quickLinks.create({
-        purpose: "add_connection",
+        purpose: "add_method",
         connection: "x",
-        addConnection: "official_api",
+        addMethod: "official_api",
         signalMode: "standard",
       } as never),
   ];

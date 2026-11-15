@@ -98,7 +98,7 @@ func TestOfficialRound2Wire(t *testing.T) {
 	}
 }
 func TestOfficialRound2WholeBody(t *testing.T) {
-	event := json.RawMessage(`{"id":"e","session":"","timestamp":"now","event":"future.event","payload":{"parentBsuid":"new"}}`)
+	event := json.RawMessage(`{"id":"e","connection":"","timestamp":"now","event":"future.event","payload":{"parentBsuid":"new"}}`)
 	batch := map[string]any{"object": "event_batch", "version": 1, "id": "00000000-0000-4000-8000-000000000001", "events": []json.RawMessage{event, event}}
 	signed := func(raw []byte) (VerifiedWebhookDelivery, error) {
 		m := hmac.New(sha256.New, []byte("s"))

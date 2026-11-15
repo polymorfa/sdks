@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
-  CallNumberPicker,
+  CallConnectionPicker,
   CallSurface,
   DialPad,
   PolymorfaProvider,
 } from "@polymorfa/ui-kit/react";
 import {
-  createNumberConnection,
+  createCallingConnection,
   hasActiveCall,
-  type NumberConnection,
-} from "./numbers.js";
+  type CallingConnection,
+} from "./connections.js";
 import "./style.css";
 
 const apiBaseUrl = "https://api.polymorfastaging.com";
@@ -20,15 +20,15 @@ interface Feedback {
 }
 
 function App() {
-  const [session, setSession] = useState("");
+  const [connection, setConnection] = useState("");
   const [label, setLabel] = useState("");
   const [token, setToken] = useState("");
-  const [numbers, setNumbers] = useState<readonly NumberConnection[]>([]);
+  const [connections, setConnections] = useState<readonly CallingConnection[]>([]);
   const [selectedId, setSelectedId] = useState("");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<Record<string, Feedback>>({});
   const [, redraw] = useState(0);
-  const numbersRef = useRef<readonly NumberConnection[]>([]);
+  const connectionsRef = useRef<readonly CallingConnection[]>([]);
   const subscriptions = useRef(new Map<string, () => void>());
 
   useEffect(() => {
@@ -37,30 +37,30 @@ function App() {
       window.clearInterval(timer);
       for (const stop of subscriptions.current.values()) stop();
       subscriptions.current.clear();
-      for (const number of numbersRef.current) void number.dispose();
-      numbersRef.current = [];
+      for (const connection of connectionsRef.current) void connection.dispose();
+      connectionsRef.current = [];
     };
   }, []);
 
-  async function addNumber() {
-    const id = session.trim();
-    if (numbersRef.current.some((number) => number.id === id)) {
+  async function addConnection() {
+    const id = connection.trim();
+    if (connectionsRef.current.some((connection) => connection.id === id)) {
       setError(
-        "This Number is already connected. Disconnect it before replacing its token.",
+        "This Connection is already connected. Disconnect it before replacing its token.",
       );
       return;
     }
-    let number: NumberConnection;
+    let configured: CallingConnection;
     const update = (next: Feedback) => {
-      if (!numbersRef.current.includes(number)) return;
+      if (!connectionsRef.current.includes(configured)) return;
       setFeedback((previous) => ({
         ...previous,
         [id]: { ...previous[id], ...next },
       }));
     };
     try {
-      number = createNumberConnection(
-        { session: id, label, token, baseUrl: apiBaseUrl },
+      configured = createCallingConnection(
+        { connection: id, label, token, baseUrl: apiBaseUrl },
         {
           onError: ({ code, message }) =>
             update({ error: `${code}: ${message}` }),
@@ -78,24 +78,24 @@ function App() {
       );
     } catch (cause) {
       setError(
-        cause instanceof Error ? cause.message : "Could not add Number.",
+        cause instanceof Error ? cause.message : "Could not add Connection.",
       );
       return;
     }
     setError("");
     setToken("");
-    setSession("");
+    setConnection("");
     setLabel("");
-    const next = [...numbersRef.current, number];
-    numbersRef.current = next;
-    setNumbers(next);
-    setSelectedId((current) => current || number.id);
+    const next = [...connectionsRef.current, configured];
+    connectionsRef.current = next;
+    setConnections(next);
+    setSelectedId((current) => current || configured.id);
     subscriptions.current.set(
-      number.id,
-      number.calls.controller.subscribe(() => redraw((value) => value + 1)),
+      configured.id,
+      configured.calls.controller.subscribe(() => redraw((value) => value + 1)),
     );
     try {
-      await number.calls.connect();
+      await configured.calls.connect();
     } catch (cause) {
       update({
         error:
@@ -106,53 +106,53 @@ function App() {
     }
   }
 
-  async function disconnect(number: NumberConnection) {
-    if (hasActiveCall(numbersRef.current)) return;
-    subscriptions.current.get(number.id)?.();
-    subscriptions.current.delete(number.id);
-    const next = numbersRef.current.filter((entry) => entry !== number);
-    numbersRef.current = next;
-    setNumbers(next);
+  async function disconnect(connection: CallingConnection) {
+    if (hasActiveCall(connectionsRef.current)) return;
+    subscriptions.current.get(connection.id)?.();
+    subscriptions.current.delete(connection.id);
+    const next = connectionsRef.current.filter((entry) => entry !== connection);
+    connectionsRef.current = next;
+    setConnections(next);
     setSelectedId((current) =>
-      current === number.id ? (next[0]?.id ?? "") : current,
+      current === connection.id ? (next[0]?.id ?? "") : current,
     );
     setFeedback((current) => {
       const next = { ...current };
-      delete next[number.id];
+      delete next[connection.id];
       return next;
     });
-    await number.dispose();
+    await connection.dispose();
   }
 
-  const selected = numbers.find((number) => number.id === selectedId);
-  const busy = hasActiveCall(numbers);
+  const selected = connections.find((connection) => connection.id === selectedId);
+  const busy = hasActiveCall(connections);
   return (
     <PolymorfaProvider>
       <main>
         <header>
           <p className="eyebrow">Polymorfa SDK</p>
           <h1>Calls example</h1>
-          <p>Choose an authorized staging Number for outgoing calls.</p>
+          <p>Choose an authorized staging Connection for outgoing calls.</p>
           <p className="api">API: {apiBaseUrl}</p>
         </header>
-        <section aria-label="Add authorized Number" className="card">
+        <section aria-label="Add authorized Connection" className="card">
           <form
             method="post"
             onSubmit={(event) => {
               event.preventDefault();
-              void addNumber();
+              void addConnection();
             }}
           >
-            <label htmlFor="session">Number session</label>
+            <label htmlFor="connection">Connection connection</label>
             <input
-              id="session"
-              value={session}
-              onChange={(event) => setSession(event.target.value)}
+              id="connection"
+              value={connection}
+              onChange={(event) => setConnection(event.target.value)}
               placeholder="support"
               autoComplete="off"
               required
             />
-            <label htmlFor="label">Number label</label>
+            <label htmlFor="label">Connection label</label>
             <input
               id="label"
               value={label}
@@ -160,7 +160,7 @@ function App() {
               placeholder="Support · +41…"
               autoComplete="off"
             />
-            <label htmlFor="token">Browser client token for this Number</label>
+            <label htmlFor="token">Browser client token for this Connection</label>
             <input
               id="token"
               type="password"
@@ -171,7 +171,7 @@ function App() {
               required
             />
             <div className="actions">
-              <button type="submit">Connect Number</button>
+              <button type="submit">Connect Connection</button>
             </div>
           </form>
           {error && (
@@ -180,17 +180,17 @@ function App() {
             </p>
           )}
         </section>
-        {numbers.length > 0 && (
+        {connections.length > 0 && (
           <section aria-label="Outgoing call" className="card">
-            <CallNumberPicker
-              numbers={numbers.map((number) => ({
-                id: number.id,
-                label: number.label,
-                controller: number.calls.controller,
+            <CallConnectionPicker
+              connections={connections.map((connection) => ({
+                id: connection.id,
+                label: connection.label,
+                controller: connection.calls.controller,
               }))}
               value={selectedId}
               onChange={(id) => {
-                if (!hasActiveCall(numbersRef.current)) setSelectedId(id);
+                if (!hasActiveCall(connectionsRef.current)) setSelectedId(id);
               }}
             />
             {selected !== undefined && (
@@ -198,7 +198,7 @@ function App() {
                 <h2>Call from {selected.label}</h2>
                 {busy ? (
                   <p>
-                    Finish the active call before choosing another Number or
+                    Finish the active call before choosing another Connection or
                     dialing.
                   </p>
                 ) : selected.calls.connected ? (
@@ -208,39 +208,39 @@ function App() {
                     allowVideo={false}
                   />
                 ) : (
-                  <p>Waiting for this Number's call connection.</p>
+                  <p>Waiting for this Connection's call connection.</p>
                 )}
               </>
             )}
           </section>
         )}
-        {numbers.map((number) => {
-          const failure = number.calls.controller.getSnapshot().error;
+        {connections.map((connection) => {
+          const failure = connection.calls.controller.getSnapshot().error;
           return (
             <section
-              key={number.id}
-              aria-label={`Calls on ${number.label}`}
+              key={connection.id}
+              aria-label={`Calls on ${connection.label}`}
               className="card"
             >
-              <h2>Calls on {number.label}</h2>
-              <p>Session: {number.id}</p>
+              <h2>Calls on {connection.label}</h2>
+              <p>Connection: {connection.id}</p>
               <div className="actions">
                 <button
                   type="button"
                   disabled={busy}
-                  onClick={() => void disconnect(number)}
+                  onClick={() => void disconnect(connection)}
                 >
-                  Disconnect Number
+                  Disconnect Connection
                 </button>
                 <span role="status" aria-live="polite">
-                  {number.calls.connected
+                  {connection.calls.connected
                     ? "Ready for calls"
                     : "Reconnecting to call events"}
                 </span>
               </div>
-              {feedback[number.id]?.error && (
+              {feedback[connection.id]?.error && (
                 <p className="error" role="alert">
-                  {feedback[number.id]!.error}
+                  {feedback[connection.id]!.error}
                 </p>
               )}
               {failure && (
@@ -248,12 +248,12 @@ function App() {
                   {failure.code}: {failure.message}
                 </p>
               )}
-              {feedback[number.id]?.requestFailure && (
+              {feedback[connection.id]?.requestFailure && (
                 <p className="error" role="status">
-                  Last failed request: {feedback[number.id]!.requestFailure}
+                  Last failed request: {feedback[connection.id]!.requestFailure}
                 </p>
               )}
-              <CallSurface controller={number.calls.controller} />
+              <CallSurface controller={connection.calls.controller} />
             </section>
           );
         })}

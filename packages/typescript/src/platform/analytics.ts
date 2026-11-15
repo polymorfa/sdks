@@ -266,9 +266,9 @@ export interface WhatsAppAnalytics {
   };
   summary:
     | (WhatsAppMetrics & {
-        totalNumbers: number;
-        measuredNumbers: number;
-        connectedNumbers: number;
+        totalConnections: number;
+        measuredConnections: number;
+        connectedConnections: number;
       })
     | null;
   numbers: (WhatsAppMetrics & {

@@ -27,7 +27,7 @@ describe("call interactions", () => {
     };
     const call = new Call({
       id: "call",
-      session: "support",
+      connection: "support",
       direction: "inbound",
       peer: "123",
       video: false,

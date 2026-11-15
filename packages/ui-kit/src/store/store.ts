@@ -33,7 +33,7 @@ import {
   type StoredMessage,
   type StoredMessageStatus,
   type StoredPresence,
-  type StoredSession,
+  type StoredConnection,
   type StoredTemplate,
 } from "./types.js";
 
@@ -58,7 +58,7 @@ export const DEFAULT_RETENTION: Readonly<Record<DataStoreName, RetentionRule>> =
     presence: { maxAgeMs: DAY, maxRows: 5_000 },
     calls: { maxAgeMs: 90 * DAY, maxRows: 5_000 },
     labels: { maxRows: 1_000 },
-    sessions: { maxRows: 100 },
+    connections: { maxRows: 100 },
     templates: { maxRows: 2_000 },
     events: { maxAgeMs: 7 * DAY, maxRows: 10_000 },
     custom: { maxAgeMs: 30 * DAY, maxRows: 5_000 },
@@ -90,7 +90,7 @@ export const SENSITIVE_FIELDS: Readonly<
   presence: [],
   calls: ["from", "participants"],
   labels: ["name"],
-  sessions: ["phoneNumber", "pushName", "businessName"],
+  connections: ["phoneNumber", "pushName", "businessName"],
   templates: [],
   events: ["payload"],
   custom: ["payload"],
@@ -116,7 +116,7 @@ export interface BroadcastChannelLike {
 
 export interface PolymorfaStoreOptions {
   /**
-   * Database name. Include the signed-in user and session so data never
+   * Database name. Include the signed-in user and connection so data never
    * crosses accounts, for example `support:user_123`.
    */
   readonly name: string;
@@ -125,8 +125,8 @@ export interface PolymorfaStoreOptions {
    * open, because it is a cache of events the backend still holds.
    */
   readonly version?: number;
-  /** Only events for this session are stored. */
-  readonly session?: string;
+  /** Only events for this connection are stored. */
+  readonly connection?: string;
   readonly retention?: RetentionOptions;
   /** How often to sweep, in milliseconds. `0` sweeps only on open. */
   readonly sweepIntervalMs?: number;
@@ -155,7 +155,7 @@ export interface PolymorfaStoreOptions {
 export interface IngestResult {
   readonly accepted: number;
   readonly duplicates: number;
-  /** Events dropped for a different session or a malformed envelope. */
+  /** Events dropped for a different connection or a malformed envelope. */
   readonly ignored: number;
 }
 
@@ -230,14 +230,14 @@ export interface PolymorfaStore {
     /** Writes messages from a backend history read; newer state wins. */
     upsert(
       messages: readonly MessageInput[],
-      options?: { readonly session?: string },
+      options?: { readonly connection?: string },
     ): Promise<void>;
   };
   readonly contacts: StoreReader<StoredContact>;
   readonly presence: StoreReader<StoredPresence>;
   readonly calls: StoreReader<StoredCall>;
   readonly labels: StoreReader<StoredLabel>;
-  readonly sessions: StoreReader<StoredSession>;
+  readonly connections: StoreReader<StoredConnection>;
   readonly templates: StoreReader<StoredTemplate>;
   readonly events: {
     get(id: string): Promise<StoredEvent | undefined>;
@@ -313,7 +313,7 @@ function isEnvelope(value: unknown): value is PolymorfaEvent {
     typeof event.id === "string" &&
     event.id !== "" &&
     typeof event.event === "string" &&
-    typeof event.session === "string" &&
+    typeof event.connection === "string" &&
     typeof event.timestamp === "string"
   );
 }
@@ -584,7 +584,7 @@ export async function createPolymorfaStore(
     if (payload === undefined) payload = null;
     return {
       id: event.id,
-      session: event.session,
+      connection: event.connection,
       ...(event.externalId === undefined
         ? {}
         : { externalId: event.externalId }),
@@ -603,7 +603,7 @@ export async function createPolymorfaStore(
     const valid = events.filter((event) => {
       const ok =
         isEnvelope(event) &&
-        (options.session === undefined || event.session === options.session);
+        (options.connection === undefined || event.connection === options.connection);
       if (!ok) result.ignored += 1;
       return ok;
     });
@@ -623,7 +623,7 @@ export async function createPolymorfaStore(
         id: event.id,
         _t: time,
         type: event.event,
-        session: event.session,
+        connection: event.connection,
         ...(event.externalId === undefined
           ? {}
           : { externalId: event.externalId }),
@@ -825,7 +825,7 @@ export async function createPolymorfaStore(
               context,
               pick({
                 id: message.id,
-                session: upsertOptions.session ?? options.session ?? "",
+                connection: upsertOptions.connection ?? options.connection ?? "",
                 conversationId: message.conversationId,
                 createdAt: message.createdAt,
                 fromMe: message.fromMe,
@@ -852,7 +852,7 @@ export async function createPolymorfaStore(
     presence: reader("presence"),
     calls: reader("calls"),
     labels: reader("labels"),
-    sessions: reader("sessions"),
+    connections: reader("connections"),
     templates: reader("templates"),
     events: eventReader("events"),
     custom: eventReader("custom"),

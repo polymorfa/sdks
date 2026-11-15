@@ -66,7 +66,7 @@ func exerciseSQLAdapter(t *testing.T, a *SQLAdapter) {
 		}
 	}
 	assertFixtureRows(t, e, eventRows)
-	batch, err := ReduceHistoryChunk(HistoryInput{SessionID: "native-sql-history", Chunk: history, ChunkID: str("history")})
+	batch, err := ReduceHistoryChunk(HistoryInput{ConnectionID: "native-sql-history", Chunk: history, ChunkID: str("history")})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,7 +75,7 @@ func exerciseSQLAdapter(t *testing.T, a *SQLAdapter) {
 	}
 	for _, rows := range historyRows {
 		for _, row := range rows {
-			row["sessionId"] = "native-sql-history"
+			row["connectionId"] = "native-sql-history"
 		}
 	}
 	assertFixtureRows(t, e, historyRows)
@@ -104,14 +104,14 @@ func exerciseSQLAdapter(t *testing.T, a *SQLAdapter) {
 	if err = a.db.PingContext(ctx); err != nil {
 		t.Fatal("borrowed client closed", err)
 	}
-	if _, err := a.db.ExecContext(ctx, "UPDATE "+a.table("storage_schema")+" SET "+a.q("version")+" = 3"); err != nil {
+	if _, err := a.db.ExecContext(ctx, "UPDATE "+a.table("storage_schema")+" SET "+a.q("version")+" = 4"); err != nil {
 		t.Fatal(err)
 	}
 	if _, err = NewSQLAdapter(ctx, a.db, a.dialect, a.options); err == nil {
 		t.Fatal("setup overwrote schema version")
 	}
 	var version int
-	if err = a.db.QueryRowContext(ctx, "SELECT "+a.q("version")+" FROM "+a.table("storage_schema")).Scan(&version); err != nil || version != 3 {
+	if err = a.db.QueryRowContext(ctx, "SELECT "+a.q("version")+" FROM "+a.table("storage_schema")).Scan(&version); err != nil || version != 4 {
 		t.Fatal("mismatch changed schema", err)
 	}
 	if _, err = a.Get(ctx, "messages", nil); err == nil {

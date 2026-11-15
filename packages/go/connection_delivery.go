@@ -22,7 +22,7 @@ type HistorySyncPolicyPatch struct {
 	RequestFull *bool                     `json:"requestFull,omitempty"`
 	Delivery    *HistorySyncDeliveryPatch `json:"delivery,omitempty"`
 }
-type EffectiveSessionConfiguration struct {
+type EffectiveConnectionConfiguration struct {
 	Observation *ObservationConfiguration `json:"observation,omitempty"`
 	HistorySync *HistorySyncPolicy        `json:"historySync,omitempty"`
 	HMS         *HMSConfiguration         `json:"hms,omitempty"`
@@ -31,14 +31,14 @@ type ConfigurationSource string
 type ConfigurationValueSource string
 
 const (
-	ConfigurationPlatform ConfigurationSource      = "platform"
-	ConfigurationTeam     ConfigurationSource      = "team"
-	ConfigurationProject  ConfigurationSource      = "project"
-	ConfigurationSession  ConfigurationSource      = "session"
-	ConfigurationConsent  ConfigurationValueSource = "consent"
+	ConfigurationPlatform   ConfigurationSource      = "platform"
+	ConfigurationTeam       ConfigurationSource      = "team"
+	ConfigurationProject    ConfigurationSource      = "project"
+	ConfigurationConnection ConfigurationSource      = "connection"
+	ConfigurationConsent    ConfigurationValueSource = "consent"
 )
 
-type SessionConfigurationSources struct {
+type ConnectionConfigurationSources struct {
 	HistorySyncMode        ConfigurationValueSource `json:"historySync.mode"`
 	HistorySyncRequestFull ConfigurationValueSource `json:"historySync.requestFull"`
 	HistorySyncDelivery    *ConfigurationSource     `json:"historySync.delivery,omitempty"`
@@ -51,16 +51,16 @@ type SessionConfigurationSources struct {
 
 // These reset paths keep existing []string callers source-compatible.
 const (
-	SessionResetHistorySync        = "historySync"
-	SessionResetHistoryMode        = "historySync.mode"
-	SessionResetHistoryRequestFull = "historySync.requestFull"
-	SessionResetHistoryDelivery    = "historySync.delivery"
-	SessionResetHMS                = "hms"
-	SessionResetObservation        = "observation"
-	SessionResetPresence           = "observation.presenceMode"
-	SessionResetTyping             = "observation.typingMode"
-	SessionResetLabel              = "observation.labelMode"
-	SessionResetQuickReply         = "observation.quickReplyMode"
+	ConnectionResetHistorySync        = "historySync"
+	ConnectionResetHistoryMode        = "historySync.mode"
+	ConnectionResetHistoryRequestFull = "historySync.requestFull"
+	ConnectionResetHistoryDelivery    = "historySync.delivery"
+	ConnectionResetHMS                = "hms"
+	ConnectionResetObservation        = "observation"
+	ConnectionResetPresence           = "observation.presenceMode"
+	ConnectionResetTyping             = "observation.typingMode"
+	ConnectionResetLabel              = "observation.labelMode"
+	ConnectionResetQuickReply         = "observation.quickReplyMode"
 )
 
 func deliveryOptions(o RequestOptions, intent bool) RequestOptions {
@@ -95,7 +95,7 @@ func historyIntent(x any, quick bool) (bool, error) {
 	}
 	return ok, nil
 }
-func configurationIntent(v UpdateSessionRequest) (bool, error) {
+func configurationIntent(v UpdateConnectionRequest) (bool, error) {
 	m, e := campaignObject(v)
 	if e != nil {
 		return false, e
@@ -134,17 +134,17 @@ func configurationMapIntent(m map[string]any) (bool, error) {
 				return false, configuration("reset", "Invalid reset path.")
 			}
 			switch s {
-			case SessionResetHistorySync, SessionResetHistoryMode, SessionResetHistoryRequestFull, SessionResetHistoryDelivery, SessionResetHMS, SessionResetObservation, SessionResetPresence, SessionResetTyping, SessionResetLabel, SessionResetQuickReply:
+			case ConnectionResetHistorySync, ConnectionResetHistoryMode, ConnectionResetHistoryRequestFull, ConnectionResetHistoryDelivery, ConnectionResetHMS, ConnectionResetObservation, ConnectionResetPresence, ConnectionResetTyping, ConnectionResetLabel, ConnectionResetQuickReply:
 			default:
 				return false, configuration("reset", "Invalid reset path.")
 			}
-			intent = intent || s == SessionResetHistoryDelivery
+			intent = intent || s == ConnectionResetHistoryDelivery
 		}
 	}
 	return intent, nil
 }
 func quickLinkIntent(v CreateQuickLinkRequest) (bool, error) {
-	if v.Configuration != nil && v.Configuration.SessionConfigurationOverrides.HistorySync != nil {
+	if v.Configuration != nil && v.Configuration.ConnectionConfigurationOverrides.HistorySync != nil {
 		return false, configuration("historySync", "Use the invitation historySync field.")
 	}
 	m, e := campaignObject(v)
@@ -154,17 +154,17 @@ func quickLinkIntent(v CreateQuickLinkRequest) (bool, error) {
 	return quickLinkMapIntent(m)
 }
 func quickLinkMapIntent(m map[string]any) (bool, error) {
-	if _, e := existingFields(m, []string{"purpose", "signalMode", "session", "addConnection", "connectionGoal", "projectId", "customerId", "externalId", "billingControls", "configuration"}, nil); e != nil {
+	if _, e := existingFields(m, []string{"purpose", "signalMode", "connection", "addMethod", "connectionGoal", "projectId", "customerId", "externalId", "billingControls", "configuration"}, nil); e != nil {
 		return false, e
 	}
 	mode, hasMode := m["signalMode"]
 	if hasMode && mode != "standard" && mode != "zero_knowledge" {
 		return false, configuration("signalMode", "Unsupported Signal custody mode.")
 	}
-	if m["purpose"] == "add_connection" {
-		s, ok := m["session"].(string)
-		if !ok || s == "" || (m["addConnection"] != "linked_devices" && m["addConnection"] != "official_api") || m["connectionGoal"] == "single" {
-			return false, configuration("purpose", "A supplementary invitation requires a session and connection.")
+	if m["purpose"] == "add_method" {
+		s, ok := m["connection"].(string)
+		if !ok || s == "" || (m["addMethod"] != "linked_devices" && m["addMethod"] != "official_api") || m["connectionGoal"] == "single" {
+			return false, configuration("purpose", "A supplementary invitation requires a Connection and method.")
 		}
 		for _, k := range []string{"signalMode", "customerId", "externalId", "billingControls"} {
 			if _, ok := m[k]; ok {
@@ -175,7 +175,7 @@ func quickLinkMapIntent(m map[string]any) (bool, error) {
 		if p, ok := m["purpose"]; ok && p != "initial" {
 			return false, configuration("purpose", "Unsupported invitation purpose.")
 		}
-		for _, k := range []string{"session", "addConnection"} {
+		for _, k := range []string{"connection", "addMethod"} {
 			if _, ok := m[k]; ok {
 				return false, configuration(k, "Unavailable on initial invitations.")
 			}
@@ -215,7 +215,7 @@ func (v *CreateQuickLinkRequest) UnmarshalJSON(b []byte) error {
 	*v = CreateQuickLinkRequest(x)
 	return nil
 }
-func (v *UpdateSessionRequest) UnmarshalJSON(b []byte) error {
+func (v *UpdateConnectionRequest) UnmarshalJSON(b []byte) error {
 	var m map[string]any
 	if json.Unmarshal(b, &m) != nil || m == nil {
 		return validation("A configuration object is required.")
@@ -226,12 +226,12 @@ func (v *UpdateSessionRequest) UnmarshalJSON(b []byte) error {
 	if _, e := configurationMapIntent(m); e != nil {
 		return e
 	}
-	type plain UpdateSessionRequest
+	type plain UpdateConnectionRequest
 	var x plain
 	if e := json.Unmarshal(b, &x); e != nil {
 		return e
 	}
-	*v = UpdateSessionRequest(x)
+	*v = UpdateConnectionRequest(x)
 	return nil
 }
 func (v *HistorySyncPolicy) UnmarshalJSON(b []byte) error {
@@ -248,8 +248,8 @@ func (v *HistorySyncPolicy) UnmarshalJSON(b []byte) error {
 	*v = HistorySyncPolicy(x)
 	return nil
 }
-func (v *Session) UnmarshalJSON(b []byte) error {
-	type plain Session
+func (v *Connection) UnmarshalJSON(b []byte) error {
+	type plain Connection
 	var x plain
 	if e := json.Unmarshal(b, &x); e != nil {
 		return e
@@ -259,20 +259,20 @@ func (v *Session) UnmarshalJSON(b []byte) error {
 	if raw, ok := m["signalMode"]; ok && (bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || x.SignalMode == nil || (*x.SignalMode != SignalCustodyStandard && *x.SignalMode != SignalCustodyZeroKnowledge)) {
 		return validation("Invalid immutable Signal custody mode.")
 	}
-	*v = Session(x)
+	*v = Connection(x)
 	return nil
 }
-func (v *SessionConfigurationSources) UnmarshalJSON(b []byte) error {
-	type plain SessionConfigurationSources
+func (v *ConnectionConfigurationSources) UnmarshalJSON(b []byte) error {
+	type plain ConnectionConfigurationSources
 	var x plain
 	if e := json.Unmarshal(b, &x); e != nil {
 		return e
 	}
 	var m map[string]json.RawMessage
 	json.Unmarshal(b, &m)
-	if raw, ok := m["historySync.delivery"]; ok && (bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || x.HistorySyncDelivery == nil || contractOne(string(*x.HistorySyncDelivery), "historySync.delivery", "platform", "team", "project", "session") != nil) {
+	if raw, ok := m["historySync.delivery"]; ok && (bytes.Equal(bytes.TrimSpace(raw), []byte("null")) || x.HistorySyncDelivery == nil || contractOne(string(*x.HistorySyncDelivery), "historySync.delivery", "platform", "team", "project", "connection") != nil) {
 		return validation("Invalid history delivery source.")
 	}
-	*v = SessionConfigurationSources(x)
+	*v = ConnectionConfigurationSources(x)
 	return nil
 }

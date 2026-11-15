@@ -20,9 +20,9 @@ export const WEBHOOK_EVENTS = [
   "call.received",
   "call.ended",
   "call.missed",
-  "session.status",
-  "session.connected",
-  "session.logged_out",
+  "connection.status",
+  "connection.connected",
+  "connection.logged_out",
   "template.status",
   "campaign.completed",
   "bansafe.incident",
@@ -78,24 +78,24 @@ function handle(event: WebhookEvent): void {
   // Browsers get the verified event unchanged, in the same envelope.
   publish(event);
   if (isEvent(event, "message.received")) {
-    receiveMessage(event.payload, event.session);
+    receiveMessage(event.payload, event.connection);
   } else if (isEvent(event, "message.ack")) {
     for (const message of event.payload.messages) {
       console.info("ack", message.id);
     }
-  } else if (isEvent(event, "session.connected")) {
-    console.info("connected", event.session, event.payload.accountType);
-  } else if (isEvent(event, "session.logged_out")) {
-    console.warn("logged out", event.session, event.payload.reason);
+  } else if (isEvent(event, "connection.connected")) {
+    console.info("connected", event.connection, event.payload.accountType);
+  } else if (isEvent(event, "connection.logged_out")) {
+    console.warn("logged out", event.connection, event.payload.reason);
   } else if (isEvent(event, "campaign.completed")) {
     console.info("campaign completed", event.payload.campaignId);
   } else if (isEvent(event, "bansafe.incident")) {
-    console.warn("BanSafe incident", event.session, event.payload.kind);
+    console.warn("BanSafe incident", event.connection, event.payload.kind);
   } else if (
     !isEvent(event, "call.received") &&
     !isEvent(event, "call.ended") &&
     !isEvent(event, "call.missed") &&
-    !isEvent(event, "session.status") &&
+    !isEvent(event, "connection.status") &&
     !isEvent(event, "template.status") &&
     !isEvent(event, "customer.created")
   ) {
@@ -106,7 +106,7 @@ function handle(event: WebhookEvent): void {
 
 function receiveMessage(
   payload: MessageReceivedPayload,
-  session: string | undefined,
+  connection: string | undefined,
 ): void {
   const chat = payload.conversation.phoneNumber ?? payload.conversation.id;
   const linked = isLinkedDevice(payload) ? payload : undefined;
@@ -115,12 +115,12 @@ function receiveMessage(
   const createdAt = toMilliseconds(payload.timestamp);
   const phone = payload.conversation.phoneNumber;
   // Customer messages open or update a help-desk ticket.
-  if (linked?.fromMe !== true && phone !== undefined && session !== undefined) {
+  if (linked?.fromMe !== true && phone !== undefined && connection !== undefined) {
     void desk()
       .then((data) => {
         data.ingestInbound?.({
           id: payload.id,
-          session,
+          connection,
           phone,
           text: body ?? "",
           kind: kindOf(payload.type),
@@ -129,12 +129,12 @@ function receiveMessage(
       })
       .catch((error: unknown) => console.error("ticket ingest failed", error));
   }
-  // The inbox reads and replies through POLYMORFA_SESSION, so only that
-  // session's messages go there; tickets above keep their own session.
-  if (session === undefined || session !== optionalEnv("POLYMORFA_SESSION")) {
+  // The inbox reads and replies through POLYMORFA_CONNECTION, so only that
+  // connection's messages go there; tickets above keep their own connection.
+  if (connection === undefined || connection !== optionalEnv("POLYMORFA_CONNECTION")) {
     return;
   }
-  emit("inbox.message", session, {
+  emit("inbox.message", connection, {
     chat,
     message: {
       id: payload.id,

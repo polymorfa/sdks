@@ -107,8 +107,8 @@ import {
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
-  type NumberTierChange,
-  type NumberTierQuoteRequest,
+  type ConnectionTierChange,
+  type ConnectionTierQuoteRequest,
   type ConnectionTierOverrideRequest,
   type WebhookEvent,
   type UserSecurityCode,
@@ -185,14 +185,14 @@ describe("public exports", () => {
     expectTypeOf<ApiKey>().toHaveProperty("last4");
     expectTypeOf<AuditLog>().toHaveProperty("actorEmail");
     expectTypeOf<BillingBalance>().toHaveProperty("balanceCents");
-    expectTypeOf<BillingUsage>().toHaveProperty("activeNumbers");
+    expectTypeOf<BillingUsage>().toHaveProperty("activeConnections");
     expectTypeOf<BillingTransaction>().toHaveProperty("balanceAfterCents");
     expectTypeOf<Campaign>().toHaveProperty("recipientCount");
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
     expectTypeOf<CreateCampaignRequest>().toHaveProperty("name");
     expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
-    expectTypeOf<NumberTierChange>().toHaveProperty("quote");
-    expectTypeOf<NumberTierQuoteRequest>().toHaveProperty("tierOverride");
+    expectTypeOf<ConnectionTierChange>().toHaveProperty("quote");
+    expectTypeOf<ConnectionTierQuoteRequest>().toHaveProperty("tierOverride");
     expectTypeOf<ConnectionTierOverrideRequest>().toHaveProperty("quoteId");
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");

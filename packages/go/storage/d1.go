@@ -251,7 +251,7 @@ func (a *D1Adapter) Commit(ctx context.Context, writes []Write) (CommitResult, e
 	if writes == nil {
 		writes = []Write{}
 	}
-	// Remote unconditional deletes require a same-session CAS lease in this batch.
+	// Remote unconditional deletes require a same-connection CAS lease in this batch.
 	for _, w := range writes {
 		if w.Kind != "delete" || w.ExpectedRev != nil {
 			continue

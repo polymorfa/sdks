@@ -11,59 +11,59 @@ import {
 } from "../../../../lib/route.js";
 
 export const GET = route("admin", () =>
-  team().sessions.list({ projectId: env.projectId() }),
+  team().connections.list({ projectId: env.projectId() }),
 );
 
 export const POST = route("admin", async ({ body, request }) => {
-  const sessions = team().sessions;
+  const connections = team().connections;
   const projectId = env.projectId();
   const name = action(body);
   switch (name) {
     case "stopMany":
-      return sessions.stopMany({ projectId, sessionIds: texts(body, "ids") });
+      return connections.stopMany({ projectId, connectionIds: texts(body, "ids") });
     case "deleteMany":
-      return sessions.deleteMany({ projectId, sessionIds: texts(body, "ids") });
+      return connections.deleteMany({ projectId, connectionIds: texts(body, "ids") });
   }
 
-  const sessionId = text(body, "sessionId");
+  const connectionId = text(body, "connectionId");
   switch (name) {
     case "retrieve":
-      return sessions.retrieve(sessionId);
+      return connections.retrieve(connectionId);
     case "start":
-      return sessions.start(sessionId, { projectId });
+      return connections.start(connectionId, { projectId });
     case "stop":
-      return sessions.stop(sessionId, { projectId });
+      return connections.stop(connectionId, { projectId });
     case "delete":
-      return sessions.delete(sessionId);
+      return connections.delete(connectionId);
     case "resetConfiguration": {
-      const current = await sessions.retrieve(sessionId);
-      const revision = current.data.data.configuration?.revisions.session ?? 0;
-      return sessions.update(sessionId, {
+      const current = await connections.retrieve(connectionId);
+      const revision = current.data.data.configuration?.revisions.connection ?? 0;
+      return connections.update(connectionId, {
         configuration: { reset: ["observation", "historySync"] },
         revision,
       });
     }
     case "quoteTier":
       // Review the quote with the customer, then confirm it with applyTier.
-      return sessions.quoteTierChange(sessionId, {
+      return connections.quoteTierChange(connectionId, {
         projectId,
         tierOverride: oneOf(body, "tier", ["free", "standard", "pro"]),
       });
     case "tierQuote":
-      return sessions.retrieveTierChange(sessionId, text(body, "quoteId"));
+      return connections.retrieveTierChange(connectionId, text(body, "quoteId"));
     case "applyTier":
-      return sessions.setTierOverride(
-        sessionId,
+      return connections.setTierOverride(
+        connectionId,
         { projectId, quoteId: text(body, "quoteId") },
         { idempotencyKey: idempotencyKey(request) },
       );
     case "capabilities":
       // Beta: returns 403 until the team enrolls in number capabilities.
-      return sessions.getCapabilities(sessionId);
+      return connections.getCapabilities(connectionId);
     case "safeMode":
-      return sessions.getSafeMode(sessionId);
+      return connections.getSafeMode(connectionId);
     case "updateSafeMode":
-      return sessions.updateSafeMode(sessionId, { pacing: "jittered" });
+      return connections.updateSafeMode(connectionId, { pacing: "jittered" });
     default:
       return unknownAction(name);
   }

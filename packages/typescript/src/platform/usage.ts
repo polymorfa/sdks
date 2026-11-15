@@ -107,7 +107,7 @@ export interface UsageSummary {
     readonly projectId: string | null;
     readonly meters: readonly UsageMeterTotal[];
   }[];
-  readonly numbersTruncated: boolean;
+  readonly connectionsTruncated: boolean;
 }
 
 export type UsageGateKey =
@@ -139,7 +139,7 @@ export type UsageGateMode = "off" | "record" | "enforce";
 export interface UsageGate {
   readonly key: UsageGateKey;
   readonly kind: "capability" | "quota" | "limit" | "concurrency";
-  readonly subject: "team" | "number" | "project" | "campaign";
+  readonly subject: "team" | "connection" | "project" | "campaign";
   readonly mode: UsageGateMode;
   /** Whether an action checks this gate today. */
   readonly active: boolean;

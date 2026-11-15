@@ -24,7 +24,7 @@ export class ConnectionConfigurationResource {
     return this.#transport
       .request<DataEnvelope<ConnectionConfigurationView>>({
         method: "GET",
-        path: "/platform/session-configuration",
+        path: "/platform/connection-configuration",
         ...(this.#projectId === null
           ? {}
           : { query: { projectId: this.#projectId } }),
@@ -40,7 +40,7 @@ export class ConnectionConfigurationResource {
     return this.#transport
       .request<DataEnvelope<ConnectionConfigurationView>>({
         method: "PUT",
-        path: "/platform/session-configuration",
+        path: "/platform/connection-configuration",
         body:
           this.#projectId === null
             ? campaignContractBody(input)

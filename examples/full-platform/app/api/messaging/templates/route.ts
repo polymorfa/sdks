@@ -24,7 +24,7 @@ export const POST = route("admin", async ({ body }) => {
       });
     case "submit":
       return templates.submit(slug, templateId, {
-        session: env.templateSession(),
+        connection: env.templateConnection(),
       });
     case "delete":
       return templates.delete(slug, templateId);

@@ -27,7 +27,7 @@ import type {
 } from "./types.js";
 
 export interface BrowserMessagingClientOptions extends BrowserTransportOptions {
-  readonly session: string;
+  readonly connection: string;
 }
 
 export class BrowserMessagingClient {
@@ -37,25 +37,25 @@ export class BrowserMessagingClient {
   readonly widget: BrowserWidgetResource;
 
   constructor(options: BrowserMessagingClientOptions) {
-    if (typeof options.session !== "string" || options.session.length === 0) {
+    if (typeof options.connection !== "string" || options.connection.length === 0) {
       throw new BrowserValidationError(
-        "A session is required for the browser Messaging client.",
-        "missing_session",
+        "A connection is required for the browser Messaging client.",
+        "missing_connection",
       );
     }
-    const { session, ...transportOptions } = options;
+    const { connection, ...transportOptions } = options;
     const transport = new BrowserTransport(transportOptions);
-    this.messages = new BrowserMessagesResource(transport, session);
-    this.presence = new BrowserPresenceResource(transport, session);
-    this.contacts = new BrowserContactsResource(transport, session);
-    this.widget = new BrowserWidgetResource(transport, session);
+    this.messages = new BrowserMessagesResource(transport, connection);
+    this.presence = new BrowserPresenceResource(transport, connection);
+    this.contacts = new BrowserContactsResource(transport, connection);
+    this.widget = new BrowserWidgetResource(transport, connection);
   }
 }
 
 export class BrowserMessagesResource {
   constructor(
     private readonly transport: BrowserTransport,
-    private readonly session: string,
+    private readonly connection: string,
   ) {}
 
   send(
@@ -110,7 +110,7 @@ export class BrowserMessagesResource {
   ): Promise<BrowserActionResponse<T>> {
     return this.transport.request({
       method: "POST",
-      path: `${sessionRoot(this.session)}/messages/${action}`,
+      path: `${connectionRoot(this.connection)}/messages/${action}`,
       body,
       ...options,
     });
@@ -120,7 +120,7 @@ export class BrowserMessagesResource {
 export class BrowserPresenceResource {
   constructor(
     private readonly transport: BrowserTransport,
-    private readonly session: string,
+    private readonly connection: string,
   ) {}
 
   retrieve(
@@ -130,7 +130,7 @@ export class BrowserPresenceResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/presence`,
+      path: `${connectionRoot(this.connection)}/presence`,
       ...options,
     });
   }
@@ -143,7 +143,7 @@ export class BrowserPresenceResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/presence/${encodeURIComponent(chatId)}`,
+      path: `${connectionRoot(this.connection)}/presence/${encodeURIComponent(chatId)}`,
       ...options,
     });
   }
@@ -159,7 +159,7 @@ export class BrowserPresenceResource {
   > {
     return this.transport.request({
       method: "POST",
-      path: `${sessionRoot(this.session)}/presence/${encodeURIComponent(chatId)}/subscribe`,
+      path: `${connectionRoot(this.connection)}/presence/${encodeURIComponent(chatId)}/subscribe`,
       ...options,
     });
   }
@@ -168,7 +168,7 @@ export class BrowserPresenceResource {
 export class BrowserContactsResource {
   constructor(
     private readonly transport: BrowserTransport,
-    private readonly session: string,
+    private readonly connection: string,
   ) {}
 
   list(
@@ -178,7 +178,7 @@ export class BrowserContactsResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/contacts`,
+      path: `${connectionRoot(this.connection)}/contacts`,
       ...options,
     });
   }
@@ -189,7 +189,7 @@ export class BrowserContactsResource {
   ): Promise<BrowserActionResponse<BrowserSuccessEnvelope<BrowserContact>>> {
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}`,
+      path: `${connectionRoot(this.connection)}/contacts/${encodeURIComponent(contactId)}`,
       ...options,
     });
   }
@@ -202,7 +202,7 @@ export class BrowserContactsResource {
   > {
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/contacts/${encodeURIComponent(contactId)}/picture`,
+      path: `${connectionRoot(this.connection)}/contacts/${encodeURIComponent(contactId)}/picture`,
       ...options,
     });
   }
@@ -224,7 +224,7 @@ export class BrowserContactsResource {
     }
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/contacts/check`,
+      path: `${connectionRoot(this.connection)}/contacts/check`,
       query: { phone: value },
       ...options,
     });
@@ -234,7 +234,7 @@ export class BrowserContactsResource {
 export class BrowserWidgetResource {
   constructor(
     private readonly transport: BrowserTransport,
-    private readonly session: string,
+    private readonly connection: string,
   ) {}
 
   qr(
@@ -242,7 +242,7 @@ export class BrowserWidgetResource {
   ): Promise<BrowserActionResponse<BrowserSuccessEnvelope<BrowserQrCode>>> {
     return this.transport.request({
       method: "GET",
-      path: `${sessionRoot(this.session)}/pair/qr`,
+      path: `${connectionRoot(this.connection)}/pair/qr`,
       ...options,
     });
   }
@@ -255,15 +255,15 @@ export class BrowserWidgetResource {
   > {
     return this.transport.request({
       method: "POST",
-      path: `${sessionRoot(this.session)}/pair/code`,
+      path: `${connectionRoot(this.connection)}/pair/code`,
       body,
       ...options,
     });
   }
 }
 
-function sessionRoot(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}`;
+function connectionRoot(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}`;
 }
 
 /** One key per call; automatic retries reuse it so the API never repeats the write. */

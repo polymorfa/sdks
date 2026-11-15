@@ -45,9 +45,9 @@ func TestCustomEncryptedUploadTransportNativeWireAndOffset(t *testing.T) {
 	var calls atomic.Int32
 	sdk := uploadFixture(t, func(w http.ResponseWriter, r *http.Request) { calls.Add(1); w.WriteHeader(500) })
 	var retained *WhatsAppEncryptedUploadBody
-	extension := customUploadTransport{"customer-wire", func(ctx context.Context, session string, body *WhatsAppEncryptedUploadBody) (WhatsAppUploadLocation, error) {
+	extension := customUploadTransport{"customer-wire", func(ctx context.Context, connection string, body *WhatsAppEncryptedUploadBody) (WhatsAppUploadLocation, error) {
 		retained = body
-		if session != "session" || body.MediaType() != UploadDocument || body.EncryptedLength() != int64(len(expected.Ciphertext)) || !bytes.Equal(body.FileEncSHA256(), expected.FileEncSHA256) {
+		if connection != "connection" || body.MediaType() != UploadDocument || body.EncryptedLength() != int64(len(expected.Ciphertext)) || !bytes.Equal(body.FileEncSHA256(), expected.FileEncSHA256) {
 			t.Fatal("custom body metadata")
 		}
 		copyHash := body.FileEncSHA256()
@@ -86,7 +86,7 @@ func TestCustomEncryptedUploadTransportNativeWireAndOffset(t *testing.T) {
 		}
 		return directLocation(raw)
 	}}
-	result, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "session", plain, UploadWhatsAppMediaOptions{EncryptMediaOptions: options, UploadTransport: extension})
+	result, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "connection", plain, UploadWhatsAppMediaOptions{EncryptMediaOptions: options, UploadTransport: extension})
 	if err != nil || result.Egress != "customer-wire" || result.DirectPath != "/custom/path" || calls.Load() != 0 {
 		t.Fatal("custom encrypted transport result", err)
 	}
@@ -142,7 +142,7 @@ func TestCustomEncryptedUploadRefusesIncompleteChangedAndFailedBodies(t *testing
 				}
 				return WhatsAppUploadLocation{DirectPath: "/x", URL: "https://cdn.whatsapp.net/x"}, err
 			}}
-			_, err := sdk.WhatsAppMedia().Upload(ctx, "session", func(context.Context) (io.ReadCloser, error) {
+			_, err := sdk.WhatsAppMedia().Upload(ctx, "connection", func(context.Context) (io.ReadCloser, error) {
 				value := bytes.Clone(plain)
 				if opens.Add(1) > 1 && mode == "changed" {
 					value[0] ^= 1
@@ -184,7 +184,7 @@ func TestReusableBuiltinUploadTransportWrapsEncryptedBoundary(t *testing.T) {
 				calls.Add(1)
 				return builtin.Upload(ctx, s, b)
 			}}
-			result, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "session", []byte("wrapped media"), UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, UploadTransport: wrapper})
+			result, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "connection", []byte("wrapped media"), UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, UploadTransport: wrapper})
 			if err != nil || calls.Load() != 1 || result.Egress != "wrapped-"+mode {
 				t.Fatal("reusable builtin transport", err)
 			}
@@ -210,7 +210,7 @@ func TestCustomTransportCancellationClosesBlockedSource(t *testing.T) {
 	}}
 	done := make(chan error, 1)
 	go func() {
-		_, err := sdk.WhatsAppMedia().Upload(ctx, "session", func(context.Context) (io.ReadCloser, error) {
+		_, err := sdk.WhatsAppMedia().Upload(ctx, "connection", func(context.Context) (io.ReadCloser, error) {
 			if opens.Add(1) == 1 {
 				return io.NopCloser(strings.NewReader("initial pass")), nil
 			}
@@ -261,7 +261,7 @@ func TestCustomTransportCannotIgnoreLaterSourceIntegrityFailure(t *testing.T) {
 		}
 		return WhatsAppUploadLocation{DirectPath: "/x", URL: "https://cdn.whatsapp.net/x"}, nil
 	}}
-	_, err := sdk.WhatsAppMedia().Upload(context.Background(), "session", func(context.Context) (io.ReadCloser, error) {
+	_, err := sdk.WhatsAppMedia().Upload(context.Background(), "connection", func(context.Context) (io.ReadCloser, error) {
 		raw := bytes.Clone(plain)
 		if opens.Add(1) >= 3 {
 			raw[0] ^= 1

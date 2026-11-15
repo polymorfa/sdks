@@ -18,25 +18,25 @@ import {
   type Body,
 } from "../../../../lib/route.js";
 
-export const POST = route("agent", async ({ body, sessionOf, request }) => {
+export const POST = route("agent", async ({ body, connectionOf, request }) => {
   const messages = messaging().messages;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   const conversation = conversationOf(body);
   switch (action(body)) {
     case "send":
-      return messages.send(session, buildMessage(body, { conversation }), {
+      return messages.send(connection, buildMessage(body, { conversation }), {
         idempotencyKey: idempotencyKey(request),
       });
     case "seen":
-      return messages.markSeen(session, { conversation, id: text(body, "id") });
+      return messages.markSeen(connection, { conversation, id: text(body, "id") });
     case "typing":
-      return messages.setTyping(session, {
+      return messages.setTyping(connection, {
         conversation,
         state: oneOf(body, "state", ["typing", "recording", "paused"]),
       });
     case "react":
       return messages.react(
-        session,
+        connection,
         {
           conversation,
           id: text(body, "id"),
@@ -46,7 +46,7 @@ export const POST = route("agent", async ({ body, sessionOf, request }) => {
         { idempotencyKey: idempotencyKey(request) },
       );
     case "star":
-      return messages.star(session, {
+      return messages.star(connection, {
         conversation,
         id: text(body, "id"),
         star: flag(body, "star"),

@@ -164,8 +164,8 @@ export const ENGLISH_MESSAGES = {
     "Could not confirm the change. Check the waiting room before trying again.",
   "calls.handRaised": "Hand raised",
   "calls.unmute": "Unmute",
-  "calls.outgoingNumber": "Outgoing Number",
-  "calls.chooseNumber": "Choose a Number",
+  "calls.outgoingConnection": "Outgoing Number",
+  "calls.chooseConnection": "Choose a Number",
   "calls.shareScreen": "Share screen",
   "calls.stopSharing": "Stop sharing",
   "calls.videoDeliveryUnconfirmed":

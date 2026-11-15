@@ -47,8 +47,8 @@ export interface Customer {
 }
 
 export interface CustomerSummary extends Customer {
-  readonly numberCount: number;
-  readonly connectedNumberCount: number;
+  readonly connectionCount: number;
+  readonly connectedConnectionCount: number;
   readonly activePairingLinkState: string | null;
   readonly lastActivityAt: number | null;
   readonly needsAttention: boolean;
@@ -62,7 +62,7 @@ export interface CustomersStatus {
 }
 
 export interface CustomersEnablement extends CustomersStatus {
-  readonly migratedNumberCount: number;
+  readonly migratedConnectionCount: number;
 }
 
 export interface CustomerProjectRequest {
@@ -88,7 +88,7 @@ export interface ListCustomersParams {
   readonly search?: string;
   readonly status?: CustomerStatus | "all";
   readonly isDefault?: boolean;
-  readonly hasNumbers?: boolean;
+  readonly hasConnections?: boolean;
   readonly needsAttention?: boolean;
 }
 
@@ -102,7 +102,7 @@ export interface CustomerListEnvelope {
   readonly page: CustomerListPage;
 }
 
-export interface CustomerNumber {
+export interface CustomerConnection {
   readonly id: string;
   readonly customerId: string;
   readonly connectionId: string;
@@ -186,7 +186,7 @@ export interface ListCustomerEventsParams {
   readonly limit?: number;
 }
 
-export interface TransferCustomerNumberRequest {
+export interface TransferCustomerConnectionRequest {
   readonly projectId: string;
   readonly sourceCustomerId: string;
   readonly confirm: true;
@@ -224,7 +224,7 @@ export interface CreatePlatformCampaignRequest {
   readonly variants?: readonly CampaignVariant[];
   readonly variantStrategy?: CampaignVariantStrategy;
   /**
-   * Two to five weighted alternatives for linked-device numbers (beta). Cannot
+   * Two to five weighted alternatives for linked-device connections (beta). Cannot
    * be combined with a template, composed messages or A/B variants.
    */
   readonly messageVariations?: readonly CampaignMessageVariation[];
@@ -560,7 +560,7 @@ export interface BillingBalance {
 }
 
 export interface BillingUsage {
-  readonly activeNumbers: number;
+  readonly activeConnections: number;
   readonly totalChargedCents: number;
 }
 
@@ -872,14 +872,14 @@ export interface HybridKeepResolution {
 
 /**
  * Split a Hybrid Link Number into two Standard Numbers. The Number being
- * quoted keeps `existingNumberTransport`; the other connection moves to a new
- * Number named `newNumberName` without pairing or signing up again.
+ * quoted keeps `existingConnectionTransport`; the other connection moves to a new
+ * Number named `newConnectionName` without pairing or signing up again.
  */
 export interface HybridSplitResolution {
   readonly action: "split";
-  readonly existingNumberTransport: HybridTransport;
+  readonly existingConnectionTransport: HybridTransport;
   /** 1-64 characters: a letter or digit, then letters, digits, `.`, `_` or `-`. */
-  readonly newNumberName: string;
+  readonly newConnectionName: string;
 }
 
 /** Required when a Hybrid Link Number moves to a tier without Hybrid Link. */
@@ -887,14 +887,14 @@ export type HybridResolution = HybridKeepResolution | HybridSplitResolution;
 
 /**
  * Merges another same-number Number into the quoted Number as a Hybrid Link
- * Number. The quoted Number keeps its ID; `absorbNumberId` is removed after its
+ * Number. The quoted Number keeps its ID; `absorbConnectionId` is removed after its
  * connection moves.
  */
 export interface HybridMerge {
-  readonly absorbNumberId: string;
+  readonly absorbConnectionId: string;
 }
 
-interface NumberTierQuoteBase {
+interface ConnectionTierQuoteBase {
   readonly projectId?: string;
   readonly tierOverride: "free" | "standard" | "pro" | null;
 }
@@ -904,29 +904,29 @@ interface NumberTierQuoteBase {
  * (otherwise the API returns `hybrid_choice_required`), or `hybridMerge`
  * to merge a same-number pair on an upgrade to Pro. Never both.
  */
-export type NumberTierQuoteRequest =
-  | (NumberTierQuoteBase & {
+export type ConnectionTierQuoteRequest =
+  | (ConnectionTierQuoteBase & {
       readonly hybridResolution?: undefined;
       readonly hybridMerge?: undefined;
     })
-  | (NumberTierQuoteBase & {
+  | (ConnectionTierQuoteBase & {
       readonly hybridResolution: HybridResolution;
       readonly hybridMerge?: undefined;
     })
-  | (NumberTierQuoteBase & {
+  | (ConnectionTierQuoteBase & {
       readonly hybridResolution?: undefined;
       readonly hybridMerge: HybridMerge;
     });
 
 /** Progress of the connection change, reported separately from the tier change. */
-export type NumberHybridTransitionStatus =
+export type ConnectionHybridTransitionStatus =
   "scheduled" | "running" | "completed" | "failed" | "cancelled";
 
-interface NumberHybridTransitionBase {
+interface ConnectionHybridTransitionBase {
   /** The Number that keeps its ID. */
-  readonly survivingNumberId: string;
+  readonly survivingConnectionId: string;
   /** Present once the change has been confirmed. */
-  readonly status?: NumberHybridTransitionStatus;
+  readonly status?: ConnectionHybridTransitionStatus;
   readonly failureReason?: string | null;
   /**
    * True after an Official API connection that shares the number with the
@@ -937,29 +937,29 @@ interface NumberHybridTransitionBase {
   readonly effectiveAtMs?: number | null;
 }
 
-export interface NumberHybridKeepTransition extends NumberHybridTransitionBase {
+export interface ConnectionHybridKeepTransition extends ConnectionHybridTransitionBase {
   readonly action: "keep";
   readonly keepTransport: HybridTransport;
 }
 
-export interface NumberHybridSplitTransition extends NumberHybridTransitionBase {
+export interface ConnectionHybridSplitTransition extends ConnectionHybridTransitionBase {
   readonly action: "split";
-  readonly existingNumberTransport: HybridTransport;
-  readonly newNumberName: string;
+  readonly existingConnectionTransport: HybridTransport;
+  readonly newConnectionName: string;
   /** The Number created by a completed split. */
-  readonly newNumberId?: string;
+  readonly newConnectionId?: string;
 }
 
-export interface NumberHybridMergeTransition extends NumberHybridTransitionBase {
+export interface ConnectionHybridMergeTransition extends ConnectionHybridTransitionBase {
   readonly action: "merge";
-  readonly absorbNumberId: string;
+  readonly absorbConnectionId: string;
 }
 
 /** The Hybrid Link plan echoed by a tier quote, with its progress once confirmed. */
-export type NumberHybridTransition =
-  | NumberHybridKeepTransition
-  | NumberHybridSplitTransition
-  | NumberHybridMergeTransition;
+export type ConnectionHybridTransition =
+  | ConnectionHybridKeepTransition
+  | ConnectionHybridSplitTransition
+  | ConnectionHybridMergeTransition;
 
 export type HybridMergeIneligibleReason =
   | "deletion_in_progress"
@@ -971,7 +971,7 @@ export type HybridMergeIneligibleReason =
   | "pairing_in_progress"
   | "hms_enabled";
 
-export interface HybridMergeCandidateNumber {
+export interface HybridMergeCandidateConnection {
   readonly id: string;
   readonly name: string;
   readonly transport: HybridTransport;
@@ -989,15 +989,15 @@ export interface HybridMergeCandidateNumber {
  */
 export interface HybridMergeCandidate {
   /** One Linked Devices Number and one Official API Number. */
-  readonly numbers: readonly [
-    HybridMergeCandidateNumber,
-    HybridMergeCandidateNumber,
+  readonly connections: readonly [
+    HybridMergeCandidateConnection,
+    HybridMergeCandidateConnection,
   ];
   readonly eligible: boolean;
   readonly ineligibleReason?: HybridMergeIneligibleReason;
 }
 
-export interface NumberTierChange {
+export interface ConnectionTierChange {
   readonly id: string;
   readonly status: "quoted" | "queued" | "applied" | "rejected";
   /**
@@ -1017,7 +1017,7 @@ export interface NumberTierChange {
     readonly effectiveAtMs: number;
     readonly replacesWindowId: string | null;
     /** Present when the change resolves or merges a Hybrid Link Number. */
-    readonly hybridTransition?: NumberHybridTransition;
+    readonly hybridTransition?: ConnectionHybridTransition;
   };
 }
 
@@ -1097,7 +1097,7 @@ export interface BanSafeHealthProjection {
   readonly observedAccountState: BanSafeObservedAccountState | null;
 }
 
-export interface BanSafeNumberEnforcement {
+export interface BanSafeConnectionEnforcement {
   readonly rung: BanSafeEnforcementRung;
   readonly previousRung: BanSafeEnforcementRung;
   readonly teamFloor: BanSafeEnforcementRung;
@@ -1115,12 +1115,12 @@ export interface BanSafeNumberEnforcement {
   readonly state: "applied" | "applying";
 }
 
-export interface BanSafeNumber extends BanSafeHealthProjection {
+export interface BanSafeConnection extends BanSafeHealthProjection {
   readonly connectionId: string;
   readonly connection: string;
   readonly phoneNumber: string;
   readonly projectId: string;
-  readonly enforcement: BanSafeNumberEnforcement | null;
+  readonly enforcement: BanSafeConnectionEnforcement | null;
 }
 
 export interface WarmupCurvePoint {
@@ -1128,7 +1128,7 @@ export interface WarmupCurvePoint {
   readonly allowance: number;
 }
 
-export interface BanSafeNumberWarmup {
+export interface BanSafeConnectionWarmup {
   readonly enabled: boolean;
   readonly tenureSource: "history" | "link" | "plan" | null;
   readonly tenureDay: number;
@@ -1138,8 +1138,8 @@ export interface BanSafeNumberWarmup {
   readonly curve: readonly WarmupCurvePoint[];
 }
 
-export interface BanSafeNumberDetail extends BanSafeNumber {
-  readonly warmup: BanSafeNumberWarmup;
+export interface BanSafeConnectionDetail extends BanSafeConnection {
+  readonly warmup: BanSafeConnectionWarmup;
   readonly findings: readonly BanSafeFinding[];
   readonly liftRequires: string | null;
   readonly appealState: BanSafeAppealState;
@@ -1185,7 +1185,7 @@ export interface BanSafeFinding {
   readonly snoozedUntil: string | null;
   readonly resolvedAt: string | null;
   readonly resolveReason:
-    "clean" | "key_retired" | "number_removed" | "stale" | null;
+    "clean" | "key_retired" | "connection_removed" | "stale" | null;
 }
 
 export interface BanSafeEnforcementSummary extends BanSafeHealthProjection {
@@ -1202,7 +1202,7 @@ export interface BanSafeEnforcementSummary extends BanSafeHealthProjection {
   readonly blocksUnsolicited: boolean;
   readonly suspended: boolean;
   /** Present when the API also returns the nested enforcement projection. */
-  readonly enforcement?: BanSafeNumberEnforcement | null;
+  readonly enforcement?: BanSafeConnectionEnforcement | null;
   readonly blockingFindings: readonly string[];
   readonly startedAt: string;
   readonly eligibleLiftAt: string | null;
@@ -1445,7 +1445,7 @@ export interface ListBanSafeHealthActionsParams extends ListBanSafeHealthParams 
   readonly status?: BanSafeHealthActionStatus;
 }
 
-export type BanSafeHealthEnvelope = CursorEnvelope<BanSafeNumber>;
+export type BanSafeHealthEnvelope = CursorEnvelope<BanSafeConnection>;
 export type BanSafeFindingsEnvelope = CursorEnvelope<BanSafeFinding>;
 export type BanSafeEnforcementEnvelope =
   CursorEnvelope<BanSafeEnforcementSummary>;

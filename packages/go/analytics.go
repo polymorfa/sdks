@@ -8,14 +8,14 @@ import (
 )
 
 type AnalyticsParams struct {
-	ProjectID, SessionID string
-	Start, End           *int64
+	ProjectID, ConnectionID string
+	Start, End              *int64
 }
 type AnalyticsMetricsParams struct {
-	ProjectID, SessionID string
-	WindowHours          int
-	Segments             *bool
-	Format               string
+	ProjectID, ConnectionID string
+	WindowHours             int
+	Segments                *bool
+	Format                  string
 }
 type Analytics struct {
 	t         *transport
@@ -27,9 +27,9 @@ func (c *ProjectClient) Analytics() *Analytics { return &Analytics{c.t, c.projec
 func analyticsError(code, message string) error {
 	return &Error{Kind: ValidationError, Code: code, Message: message}
 }
-func (r *Analytics) filters(project, session string) (url.Values, error) {
+func (r *Analytics) filters(project, connection string) (url.Values, error) {
 	q := url.Values{}
-	for _, v := range []struct{ name, value string }{{"projectId", project}, {"sessionId", session}} {
+	for _, v := range []struct{ name, value string }{{"projectId", project}, {"connectionId", connection}} {
 		if v.value != "" {
 			if !functionUUID.MatchString(strings.ToLower(v.value)) {
 				return nil, analyticsError("invalid_analytics_filter", v.name+" must be a UUID.")
@@ -52,7 +52,7 @@ func (r *Analytics) path() string {
 	return "/platform/analytics"
 }
 func (r *Analytics) Get(ctx context.Context, p AnalyticsParams, o ...RequestOptions) (Response[WhatsAppAnalytics], error) {
-	q, err := r.filters(p.ProjectID, p.SessionID)
+	q, err := r.filters(p.ProjectID, p.ConnectionID)
 	if err != nil {
 		return Response[WhatsAppAnalytics]{}, err
 	}
@@ -73,7 +73,7 @@ func (r *Analytics) Get(ctx context.Context, p AnalyticsParams, o ...RequestOpti
 	return unwrapped[WhatsAppAnalytics](ctx, r.t, "GET", r.path(), q, nil, options(o))
 }
 func (r *Analytics) Metrics(ctx context.Context, p AnalyticsMetricsParams, o ...RequestOptions) (Response[string], error) {
-	q, err := r.filters(p.ProjectID, p.SessionID)
+	q, err := r.filters(p.ProjectID, p.ConnectionID)
 	if err != nil {
 		return Response[string]{}, err
 	}

@@ -56,15 +56,15 @@ describe("MessagingClient.quickLinks", () => {
   it("requires an existing connection for supplementary setup at compile time", () => {
     const initial = {} satisfies CreateQuickLinkRequest;
     const supplement = {
-      purpose: "add_connection",
+      purpose: "add_method",
       connection: "existing/number",
-      addConnection: "official_api",
+      addMethod: "official_api",
     } satisfies CreateQuickLinkRequest;
     // @ts-expect-error supplementary setup requires an existing Number connection
-    const invalid: CreateQuickLinkRequest = { purpose: "add_connection" };
+    const invalid: CreateQuickLinkRequest = { purpose: "add_method" };
     expect(initial).toEqual({});
     expect(supplement.connection).toBe("existing/number");
-    expect(invalid.purpose).toBe("add_connection");
+    expect(invalid.purpose).toBe("add_method");
   });
   it("creates, retrieves, and cancels the exact hosted QuickLink resource", async () => {
     const server = await startTestServer((request) => {
@@ -164,15 +164,15 @@ describe("MessagingClient.quickLinks", () => {
     );
   });
 
-  it("serializes supplementary Hybrid setup and scoped availability without replacing the Number", async () => {
+  it("serializes supplementary Hybrid setup and scoped availability without replacing the Connection", async () => {
     const server = await startTestServer(() => ({
       headers: { "content-type": "application/json" },
       body: JSON.stringify({
         success: true,
         data: {
           allowed: false,
-          addConnection: null,
-          connections: [],
+          addMethod: null,
+          methods: [],
           resumeQuickLinkId: null,
         },
       }),
@@ -184,10 +184,10 @@ describe("MessagingClient.quickLinks", () => {
     });
     await client.quickLinks.create({
       projectId: "project-1",
-      purpose: "add_connection",
+      purpose: "add_method",
       connectionGoal: "hybrid",
       connection: "existing/number",
-      addConnection: "linked_devices",
+      addMethod: "linked_devices",
     });
     const availability = await client.quickLinks.availability({
       projectId: "project-1",
@@ -195,10 +195,10 @@ describe("MessagingClient.quickLinks", () => {
     });
     expect(JSON.parse(server.requests[0]!.body)).toEqual({
       projectId: "project-1",
-      purpose: "add_connection",
+      purpose: "add_method",
       connectionGoal: "hybrid",
       connection: "existing/number",
-      addConnection: "linked_devices",
+      addMethod: "linked_devices",
     });
     expect(server.requests[1]!.path).toBe(
       "/messaging/quicklinks/availability?projectId=project-1&connection=existing%2Fnumber",

@@ -46,7 +46,7 @@ function fixture() {
     leave: vi.fn(async () => undefined),
     end: vi.fn(async () => undefined),
   } satisfies CallsSignaling;
-  const session: CallMediaSession = {
+  const connection: CallMediaSession = {
     localStream: new MediaStream(),
     remoteStream: new MediaStream(),
     setMuted: vi.fn(),
@@ -54,7 +54,7 @@ function fixture() {
     videoEnabled: () => true,
     close: vi.fn(async () => undefined),
   };
-  const media: CallMediaFactory = { open: vi.fn(async () => session) };
+  const media: CallMediaFactory = { open: vi.fn(async () => connection) };
   const controller = new CallsController(
     createSignalingCallsBackend({
       signaling,
@@ -64,7 +64,7 @@ function fixture() {
     media,
   );
   controller.initialize();
-  return { relay, signaling, session, media, controller };
+  return { relay, signaling, connection, media, controller };
 }
 
 const roots: Root[] = [];
@@ -230,7 +230,7 @@ describe("Calls UI", () => {
     act(() => {
       (host.querySelector("[aria-label='Mute']") as HTMLButtonElement).click();
     });
-    expect(f.session.setMuted).toHaveBeenCalledWith({ audio: true });
+    expect(f.connection.setMuted).toHaveBeenCalledWith({ audio: true });
     expect(host.querySelector("[aria-label='Unmute']")).not.toBeNull();
 
     await act(async () => {
@@ -309,7 +309,7 @@ describe("Calls UI", () => {
       );
     });
     expect(f.media.open).toHaveBeenCalledTimes(1);
-    expect(f.session.close).not.toHaveBeenCalled();
+    expect(f.connection.close).not.toHaveBeenCalled();
   });
 
   it("localizes the default device option", async () => {
@@ -375,7 +375,7 @@ describe("Calls UI", () => {
       async (_id, _video, callbacks) => {
         ice = callbacks.onIceConnectionState;
         connection = callbacks.onConnectionState;
-        return f.session;
+        return f.connection;
       },
     );
     const host = mount(
@@ -598,7 +598,7 @@ describe("failed call controls", () => {
       });
       expect(host.querySelector(`[aria-label='${label}']`)).not.toBeNull();
       expect(host.textContent).toContain("Could not end the call. Try again.");
-      expect(f.session.close).not.toHaveBeenCalled();
+      expect(f.connection.close).not.toHaveBeenCalled();
       await act(async () => {
         (
           host.querySelector(`[aria-label='${label}']`) as HTMLButtonElement
@@ -615,7 +615,7 @@ describe("failed call controls", () => {
 
 it("finishes pending media setup after a refused hangup", async () => {
   const f = fixture();
-  let resolveMedia!: (session: CallMediaSession) => void;
+  let resolveMedia!: (connection: CallMediaSession) => void;
   vi.mocked(f.media.open).mockImplementationOnce(
     () =>
       new Promise((resolve) => {
@@ -648,11 +648,11 @@ it("finishes pending media setup after a refused hangup", async () => {
     ).click();
   });
   await act(async () => {
-    resolveMedia(f.session);
+    resolveMedia(f.connection);
     await answer;
   });
-  expect(f.controller.localStream).toBe(f.session.localStream);
-  expect(f.session.close).not.toHaveBeenCalled();
+  expect(f.controller.localStream).toBe(f.connection.localStream);
+  expect(f.connection.close).not.toHaveBeenCalled();
   expect(
     host.querySelector("[aria-label='End call for everyone']"),
   ).not.toBeNull();
@@ -683,7 +683,7 @@ it("ends after successful remote hangup even when local media cleanup fails", as
   await act(async () => {
     await f.controller.hangup();
   });
-  vi.mocked(f.session.close).mockRejectedValueOnce(
+  vi.mocked(f.connection.close).mockRejectedValueOnce(
     new Error("media close failed"),
   );
   await act(async () => {
@@ -1089,7 +1089,7 @@ describe("unified calls UI", () => {
         host.querySelector("[aria-label='Leave call']") as HTMLButtonElement
       ).click();
     });
-    expect(f.session.close).toHaveBeenCalledWith({ leave: true });
+    expect(f.connection.close).toHaveBeenCalledWith({ leave: true });
     expect(f.signaling.end).not.toHaveBeenCalled();
     expect(f.controller.getSnapshot()).toMatchObject({
       status: "ended",
@@ -1417,7 +1417,7 @@ it("shows direct remote mute without changing local capture", async () => {
   const callbacks = vi.mocked(f.media.open).mock.calls[0]![2];
   act(() => callbacks.onRemoteMute?.(true));
   expect(host.textContent).toContain("Their microphone is muted");
-  expect(f.session.setMuted).not.toHaveBeenCalled();
+  expect(f.connection.setMuted).not.toHaveBeenCalled();
   act(() => callbacks.onRemoteMute?.(null));
   expect(host.textContent).not.toContain("Their microphone is muted");
   await act(async () => {
@@ -1427,7 +1427,7 @@ it("shows direct remote mute without changing local capture", async () => {
 
 it("labels local camera dispatch without a peer acceptance as unverified delivery", async () => {
   const f = fixture();
-  f.session.enableVideo = vi.fn(async () => undefined);
+  f.connection.enableVideo = vi.fn(async () => undefined);
   const host = mount(
     <PolymorfaProvider>
       <CallStage controller={f.controller} />
@@ -1445,8 +1445,8 @@ it("labels local camera dispatch without a peer acceptance as unverified deliver
 
 it("starts display capture from the share control and disables the camera until stopped", async () => {
   const f = fixture();
-  f.session.startScreenShare = vi.fn(() => Promise.resolve());
-  f.session.stopScreenShare = vi.fn(() => Promise.resolve());
+  f.connection.startScreenShare = vi.fn(() => Promise.resolve());
+  f.connection.stopScreenShare = vi.fn(() => Promise.resolve());
   await act(async () => {
     await f.controller.place("+15550100");
   });
@@ -1463,7 +1463,7 @@ it("starts display capture from the share control and disables the camera until 
   await act(async () => {
     share.click();
   });
-  expect(f.session.startScreenShare).toHaveBeenCalledOnce();
+  expect(f.connection.startScreenShare).toHaveBeenCalledOnce();
   act(() => callbacks.onScreenSharing?.(true));
   expect(
     host.querySelector<HTMLButtonElement>('[aria-label="Turn camera on"]')!
@@ -1476,7 +1476,7 @@ it("starts display capture from the share control and disables the camera until 
   await act(async () => {
     stop.click();
   });
-  expect(f.session.stopScreenShare).toHaveBeenCalledOnce();
+  expect(f.connection.stopScreenShare).toHaveBeenCalledOnce();
   await act(async () => {
     await f.controller.dispose();
   });
@@ -1485,7 +1485,7 @@ it("starts display capture from the share control and disables the camera until 
 it("shows pending guests and sends moderation only with current media authority", async () => {
   const f = fixture();
   const moderate = vi.fn(async () => undefined);
-  f.session.moderateWaitingRoom = moderate;
+  f.connection.moderateWaitingRoom = moderate;
   await act(async () => {
     await f.controller.place("+15550100");
   });

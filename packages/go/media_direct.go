@@ -84,12 +84,12 @@ func unwrapUpload(value json.RawMessage) (map[string]json.RawMessage, error) {
 	}
 	return record, nil
 }
-func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, session string, kind UploadMediaType, encryptedHash []byte, options ...RequestOptions) (WhatsAppUploadGrant, error) {
+func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, connection string, kind UploadMediaType, encryptedHash []byte, options ...RequestOptions) (WhatsAppUploadGrant, error) {
 	if err := serverOnly(r.t); err != nil {
 		return WhatsAppUploadGrant{}, err
 	}
-	if session == "" {
-		return WhatsAppUploadGrant{}, configuration("session", "A session is required.")
+	if connection == "" {
+		return WhatsAppUploadGrant{}, configuration("connection", "A connection is required.")
 	}
 	mediaType, ptt, err := uploadKind(kind)
 	if err != nil {
@@ -104,7 +104,7 @@ func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, session s
 		FileEncSHA256 string `json:"fileEncSha256"`
 		PTT           *bool  `json:"ptt,omitempty"`
 	}{mediaType, hash, ptt}
-	result, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/upload-grants", nil, singleSubmission{body}, noRetry(deliveryOptions(optionsOrDefault(options), true)))
+	result, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(connection)+"/media/upload-grants", nil, singleSubmission{body}, noRetry(deliveryOptions(optionsOrDefault(options), true)))
 	if err != nil {
 		return WhatsAppUploadGrant{}, err
 	}
@@ -125,7 +125,7 @@ func (r *WhatsAppMediaResource) CreateUploadGrant(ctx context.Context, session s
 	return grant, nil
 }
 func optionsOrDefault(values []RequestOptions) RequestOptions { return options(values) }
-func (r *WhatsAppMediaResource) RelayUpload(ctx context.Context, session string, info EncryptedMediaInfo, open func(context.Context) (io.ReadCloser, error), opts ...RequestOptions) (WhatsAppUploadLocation, error) {
+func (r *WhatsAppMediaResource) RelayUpload(ctx context.Context, connection string, info EncryptedMediaInfo, open func(context.Context) (io.ReadCloser, error), opts ...RequestOptions) (WhatsAppUploadLocation, error) {
 	kind, ptt, err := uploadKind(info.MediaType)
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
@@ -134,14 +134,14 @@ func (r *WhatsAppMediaResource) RelayUpload(ctx context.Context, session string,
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
 	}
-	if session == "" || open == nil || info.EncryptedLength < 26 || info.EncryptedLength > 9007199254740991 {
-		return WhatsAppUploadLocation{}, configuration("upload", "A session, encrypted body and valid length are required.")
+	if connection == "" || open == nil || info.EncryptedLength < 26 || info.EncryptedLength > 9007199254740991 {
+		return WhatsAppUploadLocation{}, configuration("upload", "A connection, encrypted body and valid length are required.")
 	}
 	query := url.Values{"type": {kind}, "fileEncSha256": {hash}}
 	if ptt != nil {
 		query.Set("ptt", strconv.FormatBool(*ptt))
 	}
-	resp, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(session)+"/media/uploads", query, singleSubmission{&binaryRequest{open, info.EncryptedLength}}, noRetry(deliveryOptions(optionsOrDefault(opts), true)))
+	resp, err := request[json.RawMessage](ctx, r.t, "POST", "/messaging/"+escaped(connection)+"/media/uploads", query, singleSubmission{&binaryRequest{open, info.EncryptedLength}}, noRetry(deliveryOptions(optionsOrDefault(opts), true)))
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
 	}

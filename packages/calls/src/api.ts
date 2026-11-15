@@ -44,8 +44,8 @@ export interface AcceptCallResult {
 }
 
 export interface PlaceCallRequest {
-  /** Source session. Sent for server credentials; client tokens are bound to one. */
-  readonly session: string;
+  /** Source connection. Sent for server credentials; client tokens are bound to one. */
+  readonly connection: string;
   readonly to: string;
   readonly participants?: readonly string[];
   readonly groupId?: string;
@@ -241,7 +241,7 @@ export class HttpCallsApi implements CallsApi {
       "POST",
       "/messaging/voip/calls",
       async (token) => ({
-        ...(isClientToken(token) ? {} : { session: input.session }),
+        ...(isClientToken(token) ? {} : { connection: input.connection }),
         ...(input.groupId !== undefined
           ? { groupId: input.groupId }
           : input.participants === undefined

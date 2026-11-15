@@ -57,7 +57,7 @@ function assertEqual(actual: unknown, expected: unknown, message: string) {
 }
 
 let runCounter = 0;
-function uniqueSession(label: string): string {
+function uniqueConnection(label: string): string {
   runCounter += 1;
   return `conf-${label}-${Date.now().toString(36)}-${runCounter}-${Math.random()
     .toString(36)
@@ -74,7 +74,7 @@ const secs = (offsetSeconds: number) => Math.floor(T0 / 1000) + offsetSeconds;
  * revoke, a reaction added and removed, receipts out of order, chat flags
  * toggled, contact and group changes, a poll vote, and labels.
  */
-export function conformanceEvents(session: string): WebhookEvent[] {
+export function conformanceEvents(connection: string): WebhookEvent[] {
   const chat = { id: "100200300", phoneNumber: "+15550001111" };
   const group = { id: "900800700" };
   const member = { id: "100200301", phoneNumber: "+15550002222" };
@@ -346,7 +346,7 @@ export function conformanceEvents(session: string): WebhookEvent[] {
       },
     ],
     [
-      "session.connected",
+      "connection.connected",
       40,
       {
         phoneNumber: "+15559990000",
@@ -355,11 +355,11 @@ export function conformanceEvents(session: string): WebhookEvent[] {
         accountType: "business",
       },
     ],
-    ["session.logged_out", 41, { reason: "device_removed", code: 401 }],
+    ["connection.logged_out", 41, { reason: "device_removed", code: 401 }],
   ];
   return events.map(([event, offset, payload], index) => ({
     id: `evt-${index}-${event}`,
-    session,
+    connection: connection,
     timestamp: iso(offset),
     event,
     payload,
@@ -437,14 +437,14 @@ function keyOf(
     case "checkpoint":
       return {
         entity: "checkpoints",
-        key: { sessionId: operation.sessionId, stream: operation.stream },
+        key: { connectionId: operation.connectionId, stream: operation.stream },
       };
     default:
       return undefined;
   }
 }
 
-/** Stored state for the given keys, with the session ID removed. */
+/** Stored state for the given keys, with the connection ID removed. */
 async function snapshot(
   storage: Storage,
   keys: readonly { entity: EntityName; key: Record<string, string> }[],
@@ -452,8 +452,8 @@ async function snapshot(
   const lines: string[] = [];
   for (const { entity, key } of keys) {
     const row = await storage.get(entity, key);
-    const anonymous = row ? { ...row, sessionId: "*" } : null;
-    const anonymousKey = { ...key, sessionId: "*" };
+    const anonymous = row ? { ...row, connectionId: "*" } : null;
+    const anonymousKey = { ...key, connectionId: "*" };
     lines.push(
       `${entity} ${canonicalJson(anonymousKey)} ${canonicalJson(anonymous)}`,
     );
@@ -461,11 +461,11 @@ async function snapshot(
   return lines.sort();
 }
 
-function reSession(
+function reConnection(
   events: readonly WebhookEvent[],
-  session: string,
+  connection: string,
 ): WebhookEvent[] {
-  return events.map((event) => ({ ...event, session }));
+  return events.map((event) => ({ ...event, connection }));
 }
 
 function shuffled<T>(items: readonly T[], seed: number): T[] {
@@ -482,7 +482,7 @@ function shuffled<T>(items: readonly T[], seed: number): T[] {
 /**
  * Registers the shared conformance suite. Every adapter must pass it.
  *
- * `createAdapter` is called once; the suite isolates tests by session ID,
+ * `createAdapter` is called once; the suite isolates tests by connection ID,
  * so it works against a shared database without truncating it.
  */
 export function defineStorageConformance(
@@ -516,8 +516,8 @@ export function defineStorageConformance(
       "applies an event once and skips its replay",
       async () => {
         const store = await ready();
-        const session = uniqueSession("dedupe");
-        const event = conformanceEvents(session)[0]!;
+        const connection = uniqueConnection("dedupe");
+        const event = conformanceEvents(connection)[0]!;
         const first = await store.apply(reduceEvent(event));
         assert(first.applied && first.writes > 0, "first apply must write");
         const second = await store.apply(reduceEvent(event));
@@ -527,7 +527,7 @@ export function defineStorageConformance(
           "replay must be skipped",
         );
         assert(
-          await store.hasEvent(session, event.id),
+          await store.hasEvent(connection, event.id),
           "event marker must exist",
         );
       },
@@ -538,11 +538,14 @@ export function defineStorageConformance(
       "is idempotent without an event ID",
       async () => {
         const store = await ready();
-        const session = uniqueSession("idem");
-        const batches: OperationBatch[] = conformanceEvents(session).map(
+        const connection = uniqueConnection("idem");
+        const batches: OperationBatch[] = conformanceEvents(connection).map(
           (event) => {
             const batch = reduceEvent(event);
-            return { sessionId: batch.sessionId, operations: batch.operations };
+            return {
+              connectionId: batch.connectionId,
+              operations: batch.operations,
+            };
           },
         );
         for (const batch of batches) await store.apply(batch);
@@ -574,8 +577,8 @@ export function defineStorageConformance(
         ];
         let reference: string[] | undefined;
         for (const [index, order] of orders.entries()) {
-          const session = uniqueSession(`order${index}`);
-          const batches = reSession(order, session).map(reduceEvent);
+          const connection = uniqueConnection(`order${index}`);
+          const batches = reConnection(order, connection).map(reduceEvent);
           // Apply each batch twice in a row to mix replays into the order.
           for (const batch of batches) {
             await store.apply(batch);
@@ -593,11 +596,11 @@ export function defineStorageConformance(
       "applies the documented merge rules",
       async () => {
         const store = await ready();
-        const session = uniqueSession("rules");
-        for (const event of shuffled(conformanceEvents(session), 3))
+        const connection = uniqueConnection("rules");
+        for (const event of shuffled(conformanceEvents(connection), 3))
           await store.apply(reduceEvent(event));
         const message = await store.get("messages", {
-          sessionId: session,
+          connectionId: connection,
           messageId: "5001",
         });
         assertEqual(
@@ -606,7 +609,7 @@ export function defineStorageConformance(
           "latest edit and star must win",
         );
         const revoked = await store.get("messages", {
-          sessionId: session,
+          connectionId: connection,
           messageId: "5002",
         });
         assertEqual(
@@ -615,7 +618,7 @@ export function defineStorageConformance(
           "revoke must clear content permanently",
         );
         const media = await store.get("media", {
-          sessionId: session,
+          connectionId: connection,
           messageId: "5002",
         });
         assertEqual(
@@ -624,7 +627,7 @@ export function defineStorageConformance(
           "revoke clears media secrets",
         );
         const sent = await store.get("messages", {
-          sessionId: session,
+          connectionId: connection,
           messageId: "5003",
         });
         assertEqual(
@@ -633,13 +636,13 @@ export function defineStorageConformance(
           "status only advances",
         );
         const reaction = await store.get("reactions", {
-          sessionId: session,
+          connectionId: connection,
           messageId: "5003",
           senderId: "100200300",
         });
         assertEqual(reaction?.emoji, "", "latest reaction (removal) wins");
         const chat = await store.get("chats", {
-          sessionId: session,
+          connectionId: connection,
           chatId: "100200300",
         });
         assertEqual(
@@ -654,7 +657,7 @@ export function defineStorageConformance(
           "chat flags are last-writer-wins",
         );
         const contact = await store.get("contacts", {
-          sessionId: session,
+          connectionId: connection,
           contactId: "100200300",
         });
         assertEqual(
@@ -668,12 +671,12 @@ export function defineStorageConformance(
           "contact fields merge independently",
         );
         const groupRow = await store.get("groups", {
-          sessionId: session,
+          connectionId: connection,
           groupId: "900800700",
         });
         assertEqual(groupRow?.subject, "Team B", "latest subject wins");
         const member = await store.get("group_participants", {
-          sessionId: session,
+          connectionId: connection,
           groupId: "900800700",
           participantId: "100200301",
         });
@@ -683,43 +686,49 @@ export function defineStorageConformance(
           "participant role merges",
         );
         const vote = await store.get("poll_votes", {
-          sessionId: session,
+          connectionId: connection,
           messageId: "6001",
           voterId: "100200301",
         });
         assertEqual(vote?.selectedHashes, ["bb"], "latest vote wins");
-        const sessionRow = await store.get("sessions", { sessionId: session });
+        const connectionRow = await store.get("connections", {
+          connectionId: connection,
+        });
         assertEqual(
           [
-            sessionRow?.connected,
-            sessionRow?.loggedOutReason,
-            sessionRow?.phoneNumber,
+            connectionRow?.connected,
+            connectionRow?.loggedOutReason,
+            connectionRow?.phoneNumber,
           ],
           [false, "device_removed", "+15559990000"],
-          "session state",
+          "connection state",
         );
       },
       timeout,
     );
 
     api.it(
-      "stores a checkpoint and cursor per session",
+      "stores a checkpoint and cursor per connection",
       async () => {
         const store = await ready();
-        const a = uniqueSession("cpa");
-        const b = uniqueSession("cpb");
+        const a = uniqueConnection("cpa");
+        const b = uniqueConnection("cpb");
         assertEqual(
           await store.getCheckpoint(a, "events"),
           null,
           "no checkpoint yet",
         );
-        const save = (sessionId: string, cursor: string, updatedAt: number) =>
+        const save = (
+          connectionId: string,
+          cursor: string,
+          updatedAt: number,
+        ) =>
           store.apply({
-            sessionId,
+            connectionId,
             operations: [
               {
                 kind: "checkpoint",
-                sessionId,
+                connectionId,
                 stream: "events",
                 cursor,
                 position: { n: updatedAt },
@@ -738,7 +747,7 @@ export function defineStorageConformance(
         assertEqual(
           (await store.getCheckpoint(b, "events"))?.cursor,
           "cursor-b",
-          "sessions are separate",
+          "connections are separate",
         );
         assertEqual(
           await store.getCheckpoint(a, "other"),
@@ -753,10 +762,10 @@ export function defineStorageConformance(
       "implements patch and delete",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("patch");
-        const key = { sessionId, contactId: "c1" };
+        const connectionId = uniqueConnection("patch");
+        const key = { connectionId, contactId: "c1" };
         await store.apply({
-          sessionId,
+          connectionId,
           operations: [
             {
               kind: "patch",
@@ -772,7 +781,7 @@ export function defineStorageConformance(
           "patch must not create",
         );
         await store.apply({
-          sessionId,
+          connectionId,
           operations: [
             {
               kind: "upsert",
@@ -795,7 +804,7 @@ export function defineStorageConformance(
           "patch merges into existing",
         );
         await store.apply({
-          sessionId,
+          connectionId,
           operations: [{ kind: "delete", entity: "contacts", key }],
         });
         assertEqual(
@@ -804,7 +813,7 @@ export function defineStorageConformance(
           "delete removes the row",
         );
         await store.apply({
-          sessionId,
+          connectionId,
           operations: [
             {
               kind: "upsert",
@@ -828,12 +837,12 @@ export function defineStorageConformance(
       "clears a chat and ignores older copies delivered later",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("clear");
+        const connectionId = uniqueConnection("clear");
         const chat = { id: "777" };
         const message = (id: string, offset: number) =>
           ({
             id: `m-${id}`,
-            session: sessionId,
+            connection: connectionId,
             timestamp: iso(offset),
             event: "message.received",
             payload: {
@@ -851,7 +860,7 @@ export function defineStorageConformance(
           }) as WebhookEvent;
         const reaction = {
           id: "r-1",
-          session: sessionId,
+          connection: connectionId,
           timestamp: iso(2),
           event: "message.reaction",
           payload: {
@@ -874,7 +883,7 @@ export function defineStorageConformance(
         await store.apply(
           reduceEvent({
             id: "clear-1",
-            session: sessionId,
+            connection: connectionId,
             timestamp: iso(10),
             event: "chat.clear",
             payload: { from: chat },
@@ -882,7 +891,7 @@ export function defineStorageConformance(
         );
         const page = await store.query("messages", {
           index: "by_chat",
-          equals: { sessionId, chatId: "777" },
+          equals: { connectionId, chatId: "777" },
           order: "asc",
           limit: 10,
         });
@@ -892,13 +901,13 @@ export function defineStorageConformance(
           "only newer message remains",
         );
         assertEqual(
-          await store.get("media", { sessionId, messageId: "1" }),
+          await store.get("media", { connectionId, messageId: "1" }),
           null,
           "media removed",
         );
         assertEqual(
           await store.get("reactions", {
-            sessionId,
+            connectionId,
             messageId: "1",
             senderId: "self",
           }),
@@ -907,13 +916,13 @@ export function defineStorageConformance(
         );
         await store.apply(reduceEvent(message("4", 5)));
         assertEqual(
-          await store.get("messages", { sessionId, messageId: "4" }),
+          await store.get("messages", { connectionId, messageId: "4" }),
           null,
           "older late copy ignored",
         );
         await store.apply(reduceEvent(message("5", 40)));
         assert(
-          await store.get("messages", { sessionId, messageId: "5" }),
+          await store.get("messages", { connectionId, messageId: "5" }),
           "newer message stored",
         );
       },
@@ -924,13 +933,16 @@ export function defineStorageConformance(
       "orders and pages index queries",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("query");
+        const connectionId = uniqueConnection("query");
         const operations: StorageOperation[] = [];
         for (let index = 0; index < 25; index += 1)
           operations.push({
             kind: "upsert",
             entity: "messages",
-            key: { sessionId, messageId: `m${String(index).padStart(2, "0")}` },
+            key: {
+              connectionId,
+              messageId: `m${String(index).padStart(2, "0")}`,
+            },
             fields: {
               chatId: { value: "c", version: 0 },
               // Ties on purpose: rows with equal timestamps order by ID.
@@ -940,19 +952,19 @@ export function defineStorageConformance(
         operations.push({
           kind: "upsert",
           entity: "messages",
-          key: { sessionId, messageId: "other" },
+          key: { connectionId, messageId: "other" },
           fields: {
             chatId: { value: "d", version: 0 },
             timestamp: { value: 1001, version: 0 },
           },
         });
-        await store.apply({ sessionId, operations });
+        await store.apply({ connectionId, operations });
         const all: string[] = [];
         let after: { sort: number; id: string } | undefined;
         do {
           const page = await store.query("messages", {
             index: "by_chat",
-            equals: { sessionId, chatId: "c" },
+            equals: { connectionId, chatId: "c" },
             order: "asc",
             limit: 10,
             ...(after ? { after } : {}),
@@ -973,7 +985,7 @@ export function defineStorageConformance(
         do {
           const page = await store.query("messages", {
             index: "by_chat",
-            equals: { sessionId, chatId: "c" },
+            equals: { connectionId, chatId: "c" },
             order: "desc",
             limit: 7,
             ...(after ? { after } : {}),
@@ -984,7 +996,7 @@ export function defineStorageConformance(
         assertEqual(desc, [...all].reverse(), "descending pages");
         const ranged = await store.query("messages", {
           index: "by_chat",
-          equals: { sessionId, chatId: "c" },
+          equals: { connectionId, chatId: "c" },
           range: { gte: 1002, lt: 1004 },
           order: "asc",
           limit: 100,
@@ -1002,17 +1014,17 @@ export function defineStorageConformance(
       "stores a large history chunk and replays it without writes",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("large");
+        const connectionId = uniqueConnection("large");
         const chunk = conformanceHistoryChunk(largeCount);
         const first = await store.apply(
-          reduceHistoryChunk({ sessionId, chunk, chunkId: "n1" }),
+          reduceHistoryChunk({ connectionId, chunk, chunkId: "n1" }),
         );
         assert(
           first.applied && first.writes >= largeCount,
           "chunk must write every message",
         );
         const replay = await store.apply(
-          reduceHistoryChunk({ sessionId, chunk }),
+          reduceHistoryChunk({ connectionId, chunk }),
         );
         assertEqual(replay.writes, 0, "replay must not write");
         let count = 0;
@@ -1020,7 +1032,7 @@ export function defineStorageConformance(
         do {
           const page = await store.query("messages", {
             index: "by_chat",
-            equals: { sessionId, chatId: "wa:15550000000@s.whatsapp.net" },
+            equals: { connectionId, chatId: "wa:15550000000@s.whatsapp.net" },
             order: "asc",
             limit: 50,
             ...(after ? { after } : {}),
@@ -1030,7 +1042,7 @@ export function defineStorageConformance(
         } while (after);
         assertEqual(count, Math.ceil(largeCount / 20), "messages of one chat");
         const progress = await store.get("history_progress", {
-          sessionId,
+          connectionId,
           syncType: "RECENT",
         });
         assertEqual(
@@ -1039,7 +1051,7 @@ export function defineStorageConformance(
           "history progress",
         );
         const sample = await store.get("messages", {
-          sessionId,
+          connectionId,
           messageId: "wa:15550000000@s.whatsapp.net:1::HIST000000",
         });
         assertEqual(
@@ -1055,8 +1067,8 @@ export function defineStorageConformance(
       "merges concurrent writers to the same row",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("race");
-        const key = { sessionId, contactId: "c" };
+        const connectionId = uniqueConnection("race");
+        const key = { connectionId, contactId: "c" };
         const fields = [
           "fullName",
           "firstName",
@@ -1068,7 +1080,7 @@ export function defineStorageConformance(
         await Promise.all(
           fields.map((field, index) =>
             store.apply({
-              sessionId,
+              connectionId,
               operations: [
                 {
                   kind: "upsert",
@@ -1094,19 +1106,19 @@ export function defineStorageConformance(
       "round-trips every field type",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("types");
+        const connectionId = uniqueConnection("types");
         const json = {
           nested: [1, "two", { three: true }],
           empty: {},
           unicode: "çé😀",
         };
         await store.apply({
-          sessionId,
+          connectionId,
           operations: [
             {
               kind: "upsert",
               entity: "messages",
-              key: { sessionId, messageId: "a/b:c.d%e" },
+              key: { connectionId, messageId: "a/b:c.d%e" },
               fields: {
                 text: { value: "line\nbreak 'quote' \"dq\" 😀", version: 0 },
                 latitude: { value: -12.5, version: 0 },
@@ -1120,7 +1132,7 @@ export function defineStorageConformance(
           ],
         });
         const row = await store.get("messages", {
-          sessionId,
+          connectionId,
           messageId: "a/b:c.d%e",
         });
         const expected: Record<string, FieldValue> = {
@@ -1143,10 +1155,10 @@ export function defineStorageConformance(
       "rolls back every row when one conditional write fails",
       async () => {
         await ready();
-        const sessionId = uniqueSession("rollback");
+        const connectionId = uniqueConnection("rollback");
         const existing = {
           ...emptyRow(STORAGE_SCHEMA.contacts, {
-            sessionId,
+            connectionId,
             contactId: "existing",
           }),
           _rev: 1,
@@ -1167,7 +1179,7 @@ export function defineStorageConformance(
         );
         const fresh = {
           ...emptyRow(STORAGE_SCHEMA.contacts, {
-            sessionId,
+            connectionId,
             contactId: "fresh",
           }),
           _rev: 1,
@@ -1214,7 +1226,7 @@ export function defineStorageConformance(
       "fences a paused writer after its lease expires",
       async () => {
         await ready();
-        const sessionId = uniqueSession("fence");
+        const connectionId = uniqueConnection("fence");
         let clock = 1000;
         let resume!: () => void;
         let paused!: () => void;
@@ -1255,13 +1267,13 @@ export function defineStorageConformance(
           leaseWaitMs: 0,
         });
         const pending = stale.apply({
-          sessionId,
+          connectionId,
           eventId: "stale-event",
           operations: [
             {
               kind: "upsert",
               entity: "contacts",
-              key: { sessionId, contactId: "c" },
+              key: { connectionId, contactId: "c" },
               fields: { fullName: { value: "stale", version: 1 } },
             },
           ],
@@ -1275,13 +1287,13 @@ export function defineStorageConformance(
         try {
           clock = 1011;
           await fresh.apply({
-            sessionId,
+            connectionId,
             eventId: "fresh-event",
             operations: [
               {
                 kind: "upsert",
                 entity: "contacts",
-                key: { sessionId, contactId: "c" },
+                key: { connectionId, contactId: "c" },
                 fields: { fullName: { value: "fresh", version: 2 } },
               },
             ],
@@ -1294,13 +1306,13 @@ export function defineStorageConformance(
           "stale writer did not lose its fence",
         );
         assertEqual(
-          (await fresh.get("contacts", { sessionId, contactId: "c" }))
+          (await fresh.get("contacts", { connectionId, contactId: "c" }))
             ?.fullName,
           "fresh",
           "stale write survived",
         );
         assert(
-          !(await fresh.hasEvent(sessionId, "stale-event")),
+          !(await fresh.hasEvent(connectionId, "stale-event")),
           "stale event was marked complete",
         );
       },
@@ -1308,16 +1320,16 @@ export function defineStorageConformance(
     );
 
     api.it(
-      "guards checkpoints and rejects foreign-session operations",
+      "guards checkpoints and rejects foreign-connection operations",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("scope");
+        const connectionId = uniqueConnection("scope");
         await store.apply({
-          sessionId,
+          connectionId,
           operations: [
             {
               kind: "checkpoint",
-              sessionId,
+              connectionId,
               stream: "events",
               cursor: "first",
               expectedCursor: null,
@@ -1327,11 +1339,11 @@ export function defineStorageConformance(
         let failed = false;
         try {
           await store.apply({
-            sessionId,
+            connectionId,
             operations: [
               {
                 kind: "checkpoint",
-                sessionId,
+                connectionId,
                 stream: "events",
                 cursor: "stale",
                 expectedCursor: null,
@@ -1343,19 +1355,19 @@ export function defineStorageConformance(
         }
         assert(failed, "a stale checkpoint advanced");
         assertEqual(
-          (await store.getCheckpoint(sessionId, "events"))?.cursor,
+          (await store.getCheckpoint(connectionId, "events"))?.cursor,
           "first",
           "checkpoint changed",
         );
         let foreign = false;
         try {
           await store.apply({
-            sessionId,
+            connectionId,
             operations: [
               {
                 kind: "upsert",
                 entity: "contacts",
-                key: { sessionId: "foreign", contactId: "c" },
+                key: { connectionId: "foreign", contactId: "c" },
                 fields: { fullName: { value: "wrong", version: 1 } },
               },
             ],
@@ -1363,7 +1375,7 @@ export function defineStorageConformance(
         } catch (error) {
           foreign = error instanceof TypeError;
         }
-        assert(foreign, "a batch wrote a foreign session");
+        assert(foreign, "a batch wrote a foreign connection");
       },
       timeout,
     );
@@ -1372,13 +1384,13 @@ export function defineStorageConformance(
       "orders a null numeric sort as zero on every adapter",
       async () => {
         const store = await ready();
-        const sessionId = uniqueSession("nullsort");
+        const connectionId = uniqueConnection("nullsort");
         await store.apply({
-          sessionId,
+          connectionId,
           operations: ["a", "b", "c"].map((messageId, index) => ({
             kind: "upsert" as const,
             entity: "messages" as const,
-            key: { sessionId, messageId },
+            key: { connectionId, messageId },
             fields: {
               chatId: { value: "chat", version: 0 },
               timestamp: { value: index === 0 ? null : index - 1, version: 0 },
@@ -1387,7 +1399,7 @@ export function defineStorageConformance(
         });
         const rows = await store.query("messages", {
           index: "by_chat",
-          equals: { sessionId, chatId: "chat" },
+          equals: { connectionId, chatId: "chat" },
           order: "asc",
           limit: 10,
         });

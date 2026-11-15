@@ -32,20 +32,20 @@ import { TicketsPage } from "./tickets/tickets-page.js";
 function CallsProvider({ children }: { readonly children: ReactNode }) {
   const { bootstrap } = useDesk();
   const [calls, setCalls] = useState<DeskCalls | null>(null);
-  const session = bootstrap.connections[0]?.id ?? "";
+  const connection = bootstrap.connections[0]?.id ?? "";
   useEffect(() => {
     // Calls need browser media APIs, so create them after mount.
-    if (!bootstrap.me.demo && session === "") {
+    if (!bootstrap.me.demo && connection === "") {
       setCalls(null);
       return;
     }
-    const created = createDeskCalls({ demo: bootstrap.me.demo, session });
+    const created = createDeskCalls({ demo: bootstrap.me.demo, connection });
     setCalls(created);
     return () => {
       setCalls((current) => (current === created ? null : current));
       created.dispose();
     };
-  }, [bootstrap.me.demo, session]);
+  }, [bootstrap.me.demo, connection]);
 
   const names = useMemo(
     () =>

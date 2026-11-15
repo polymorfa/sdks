@@ -192,7 +192,7 @@ func TestErrorTaxonomyAndMetadata(t *testing.T) {
 	}
 }
 func TestWebhookVerification(t *testing.T) {
-	body := []byte(`{"id":"event_1","session":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"value":1}}`)
+	body := []byte(`{"id":"event_1","connection":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"value":1}}`)
 	m := hmac.New(sha256.New, []byte("secret"))
 	m.Write(body)
 	signature := "sha256=" + hex.EncodeToString(m.Sum(nil))
@@ -203,7 +203,7 @@ func TestWebhookVerification(t *testing.T) {
 	if VerifyWebhookSignature(append(body, ' '), signature, "secret") || VerifyWebhookSignature(body, "sha256=invalid", "secret") || VerifyWebhookSignature(body, signature, "") {
 		t.Fatal("invalid signature accepted")
 	}
-	for _, bad := range [][]byte{[]byte(`{"id":"event","session":null,"timestamp":"now","event":"x","payload":{}}`), []byte(`[]`), {0xff}} {
+	for _, bad := range [][]byte{[]byte(`{"id":"event","connection":null,"timestamp":"now","event":"x","payload":{}}`), []byte(`[]`), {0xff}} {
 		if _, err = ParseVerifiedWebhookEvent(bad); err == nil {
 			t.Fatal("malformed event accepted")
 		}
@@ -393,12 +393,12 @@ func TestSharedWireFixtures(t *testing.T) {
 			var response RawResponse
 			var gotErr error
 			switch f.ID {
-			case "sessions-list":
-				r, e := c.Sessions().List(ctx, opts)
+			case "connections-list":
+				r, e := c.Connections().List(ctx, opts)
 				gotErr = e
 				response.Metadata = r.Metadata
-				if e == nil && (len(r.Data.Data) != 1 || r.Data.Data[0].SessionID != "session_fixture") {
-					t.Fatal("typed sessions response", r)
+				if e == nil && (len(r.Data.Data) != 1 || r.Data.Data[0].ConnectionID != "connection_fixture") {
+					t.Fatal("typed connections response", r)
 				}
 			case "message-send":
 				text := "Hello"

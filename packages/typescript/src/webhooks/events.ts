@@ -70,9 +70,9 @@ export const KNOWN_WEBHOOK_EVENT_TYPES = [
   "customer.archiving",
   "customer.created",
   "customer.enabled",
-  "customer.number.attached",
-  "customer.number.disconnected",
-  "customer.number.transferred",
+  "customer.connection.attached",
+  "customer.connection.disconnected",
+  "customer.connection.transferred",
   "customer.pairing_link.connected",
   "customer.pairing_link.created",
   "customer.pairing_link.expired",
@@ -809,11 +809,11 @@ export interface CustomerUpdatedPayload extends CustomerEventPayload {
 }
 
 export interface CustomerEnabledPayload extends CustomerEventPayload {
-  readonly migratedNumberCount: number;
+  readonly migratedConnectionCount: number;
 }
 
 export interface CustomerArchivingPayload extends CustomerEventPayload {
-  readonly blockingNumberCount: number;
+  readonly blockingConnectionCount: number;
   readonly revokedPairingLinkCount: number;
 }
 
@@ -841,17 +841,17 @@ export interface CustomerPairingLinkRevokedPayload extends CustomerPairingLinkPa
     | "terminal_failure";
 }
 
-export interface CustomerNumberAttachedPayload extends CustomerEventPayload {
+export interface CustomerConnectionAttachedPayload extends CustomerEventPayload {
   readonly connectionId: string;
   readonly pairingLinkId?: string;
 }
 
-export interface CustomerNumberTransferredPayload extends CustomerEventPayload {
+export interface CustomerConnectionTransferredPayload extends CustomerEventPayload {
   readonly connectionId: string;
   readonly sourceCustomerId: string;
 }
 
-export interface CustomerNumberDisconnectedPayload extends CustomerEventPayload {
+export interface CustomerConnectionDisconnectedPayload extends CustomerEventPayload {
   readonly connectionId: string;
   readonly reason: string;
 }
@@ -893,7 +893,7 @@ export interface BanSafeRequiredFinding {
 export interface BanSafeActionPayload {
   readonly phoneNumber: string;
   readonly action: "applied" | "changed" | "lifted" | "daily_allowance_reached";
-  readonly scope: "number" | "team";
+  readonly scope: "connection" | "team";
   readonly rung: BanSafeEventRung;
   readonly previousRung: BanSafeEventRung | null;
   readonly reason:
@@ -1301,9 +1301,9 @@ export interface WebhookPayloadMap {
   readonly "customer.archiving": CustomerArchivingPayload;
   readonly "customer.created": CustomerCreatedPayload;
   readonly "customer.enabled": CustomerEnabledPayload;
-  readonly "customer.number.attached": CustomerNumberAttachedPayload;
-  readonly "customer.number.disconnected": CustomerNumberDisconnectedPayload;
-  readonly "customer.number.transferred": CustomerNumberTransferredPayload;
+  readonly "customer.connection.attached": CustomerConnectionAttachedPayload;
+  readonly "customer.connection.disconnected": CustomerConnectionDisconnectedPayload;
+  readonly "customer.connection.transferred": CustomerConnectionTransferredPayload;
   readonly "customer.pairing_link.connected": CustomerPairingLinkConnectedPayload;
   readonly "customer.pairing_link.created": CustomerPairingLinkCreatedPayload;
   readonly "customer.pairing_link.expired": CustomerPairingLinkExpiredPayload;

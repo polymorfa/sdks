@@ -32,7 +32,7 @@ func contractImport() CreateAudienceProfileImportRequest {
 const profileJSON = `{"id":"` + contractID + `","phone":"+15551234567","revision":1,"tags":[],"attributes":{"none":null,"flag":false,"number":0},"provenance":null,"createdAt":0,"updatedAt":0}`
 const importJSON = `{"id":"` + contractID + `","state":"queued","totalValid":1,"invalidCount":0,"invalidSamples":[],"conflictSamples":[],"processedValid":0,"createdCount":0,"updatedCount":0,"conflictCount":0,"createdAt":0,"updatedAt":0,"completedAt":null}`
 const custodyJSON = `{"signalModeDefault":null,"effectiveSignalMode":"standard","revision":0}`
-const sendJSON = `{"id":"` + contractID + `","campaignId":"` + contractID + `","status":"sent","from":{"sessionId":"` + contractID + `","phone":"+15551234567"},"to":"+15551234567","messageId":null,"variables":{},"createdAt":0}`
+const sendJSON = `{"id":"` + contractID + `","campaignId":"` + contractID + `","status":"sent","from":{"connectionId":"` + contractID + `","phone":"+15551234567"},"to":"+15551234567","messageId":null,"variables":{},"createdAt":0}`
 const assignmentJSON = `{"campaignId":"` + contractID + `","replyFlowId":null}`
 const linksJSON = `[{"key":"a","url":"https://example.com/","uniqueOpens":0,"totalOpens":1}]`
 const approvalJSON = `[{"id":"` + contractID + `","campaignId":"` + contractID + `","action":"launch","status":"pending","reasons":["agent_request"],"recipientCount":0,"scheduledAt":null,"requestedBy":{"type":"api_key","id":"issuer"},"requestedAt":0,"expiresAt":1,"decidedBy":null,"decidedAt":null,"operationId":null}]`
@@ -81,7 +81,7 @@ func contractRows() []contractWireRow {
 	}
 }
 func callContract(ctx context.Context, id string, m *MessagingClient, c *TeamClient, p *ProjectClient, bound bool, o RequestOptions) (any, error) {
-	test := CampaignTestSendRequest{SessionID: contractID, To: "+15551234567", Variables: cptr(map[string]CampaignVariable{})}
+	test := CampaignTestSendRequest{ConnectionID: contractID, To: "+15551234567", Variables: cptr(map[string]CampaignVariable{})}
 	selection := CampaignProjectParams{contractProject}
 	switch id {
 	case "getCampaignReplyFlow":
@@ -210,7 +210,7 @@ func expectedContractBody(id string) string {
 	case "createPlatformCampaignReplyFlow":
 		return strings.TrimSuffix(expectedContractBody("createCampaignReplyFlow"), "}") + `,"projectId":"` + contractProject + `"}`
 	case "testSendCampaign":
-		return `{"sessionId":"` + contractID + `","to":"+15551234567","variables":{}}`
+		return `{"connectionId":"` + contractID + `","to":"+15551234567","variables":{}}`
 	case "testSendPlatformCampaign":
 		return strings.TrimSuffix(expectedContractBody("testSendCampaign"), "}") + `,"projectId":"` + contractProject + `"}`
 	case "setCampaignReplyFlow":

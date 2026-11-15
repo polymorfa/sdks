@@ -43,7 +43,7 @@ it("reads a Test number's phone", async () => {
   expect(result.data).toEqual(phone);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project-a/numbers/test%20a/phone",
+    "https://api.example/messaging/testing/project-a/connections/test%20a/phone",
   );
   expect(init?.method).toBe("GET");
 });
@@ -60,7 +60,7 @@ it("sends a message from the phone", async () => {
   expect(result.data).toEqual(sent);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project-a/numbers/test-a/phone/messages",
+    "https://api.example/messaging/testing/project-a/connections/test-a/phone/messages",
   );
   expect(init?.method).toBe("POST");
   expect(JSON.parse(String(init?.body))).toEqual(input);
@@ -77,7 +77,7 @@ it("unlinks a companion", async () => {
   expect(result.data).toEqual(unlinked);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
-    "https://api.example/messaging/testing/project-a/numbers/test-a/phone/devices/74/unlink",
+    "https://api.example/messaging/testing/project-a/connections/test-a/phone/devices/74/unlink",
   );
   expect(init?.method).toBe("POST");
 });
@@ -134,15 +134,15 @@ it("matches the pinned Testing phone contract", () => {
   const route = (operationId: string) => contract.operations[operationId]!;
   expect(route("getTestingPhone")).toMatchObject({
     method: "GET",
-    path: "/messaging/testing/{projectId}/numbers/{connection}/phone",
+    path: "/messaging/testing/{projectId}/connections/{connection}/phone",
   });
   expect(route("sendTestingPhoneMessage")).toMatchObject({
     method: "POST",
-    path: "/messaging/testing/{projectId}/numbers/{connection}/phone/messages",
+    path: "/messaging/testing/{projectId}/connections/{connection}/phone/messages",
   });
   expect(route("unlinkTestingPhoneDevice")).toMatchObject({
     method: "POST",
-    path: "/messaging/testing/{projectId}/numbers/{connection}/phone/devices/{deviceId}/unlink",
+    path: "/messaging/testing/{projectId}/connections/{connection}/phone/devices/{deviceId}/unlink",
   });
   const fields = (name: string) =>
     Object.keys(contract.schemas[name]!.properties).sort();

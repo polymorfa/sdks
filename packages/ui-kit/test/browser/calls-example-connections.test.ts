@@ -4,13 +4,13 @@ import type {
   BrowserCallsOptions,
 } from "../../src/browser/calls/client.js";
 import {
-  createNumberConnection,
+  createCallingConnection,
   hasActiveCall,
-  type NumberConnection,
-} from "../../../../examples/calls-example/src/numbers.js";
+  type CallingConnection,
+} from "../../../../examples/calls-example/src/connections.js";
 
-describe("Calls example Number credential boundaries", () => {
-  it("keeps each token provider bound to its Number and clears only the disconnected provider", async () => {
+describe("Calls example Connection credential boundaries", () => {
+  it("keeps each token provider bound to its Connection and clears only the disconnected provider", async () => {
     const options: BrowserCallsOptions[] = [];
     const create = (input: BrowserCallsOptions): BrowserCalls => {
       options.push(input);
@@ -23,9 +23,9 @@ describe("Calls example Number credential boundaries", () => {
         } as BrowserCalls["controller"],
       };
     };
-    const first = createNumberConnection(
+    const first = createCallingConnection(
       {
-        session: "support",
+        connection: "support",
         label: "Support",
         token: "pmfa_ct_c3VwcG9ydA",
         baseUrl: "https://api.example",
@@ -33,9 +33,9 @@ describe("Calls example Number credential boundaries", () => {
       {},
       create,
     );
-    const second = createNumberConnection(
+    const second = createCallingConnection(
       {
-        session: "sales",
+        connection: "sales",
         label: "Sales",
         token: "pmfa_ct_c2FsZXM",
         baseUrl: "https://api.example",
@@ -43,13 +43,13 @@ describe("Calls example Number credential boundaries", () => {
       {},
       create,
     );
-    expect(options.map(({ session }) => session)).toEqual(["support", "sales"]);
+    expect(options.map(({ connection }) => connection)).toEqual(["support", "sales"]);
     expect(await options[0]!.getClientToken()).toBe("pmfa_ct_c3VwcG9ydA");
     expect(await options[1]!.getClientToken()).toBe("pmfa_ct_c2FsZXM");
     expect(hasActiveCall([first, second])).toBe(false);
     await first.dispose();
     await expect(options[0]!.getClientToken()).rejects.toThrow(
-      "Number disconnected",
+      "Connection disconnected",
     );
     expect(await options[1]!.getClientToken()).toBe("pmfa_ct_c2FsZXM");
     expect(second.calls.dispose).not.toHaveBeenCalled();
@@ -57,9 +57,9 @@ describe("Calls example Number credential boundaries", () => {
   it("refuses server keys before constructing a Calls client", () => {
     const create = vi.fn();
     expect(() =>
-      createNumberConnection(
+      createCallingConnection(
         {
-          session: "support",
+          connection: "support",
           label: "Support",
           token: "pmfa_secret_server",
           baseUrl: "https://api.example",
@@ -72,7 +72,7 @@ describe("Calls example Number credential boundaries", () => {
   });
   it("blocks Number changes while placement is pending without a call ID", () => {
     let placing = true;
-    const number = {
+    const connection = {
       id: "support",
       label: "Support",
       calls: {
@@ -81,9 +81,9 @@ describe("Calls example Number credential boundaries", () => {
         },
       } as BrowserCalls,
       dispose: vi.fn(() => Promise.resolve()),
-    } satisfies NumberConnection;
-    expect(hasActiveCall([number])).toBe(true);
+    } satisfies CallingConnection;
+    expect(hasActiveCall([connection])).toBe(true);
     placing = false;
-    expect(hasActiveCall([number])).toBe(false);
+    expect(hasActiveCall([connection])).toBe(false);
   });
 });

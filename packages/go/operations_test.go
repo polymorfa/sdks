@@ -25,47 +25,47 @@ type operationFixture struct {
 }
 
 var operationFixtures = []operationFixture{
-	{"MessagingClient.Sessions.List", "GET", "/platform/sessions", "", "", `{"data":[{"sessionId":"s","name":"Support"}]}`, "data.0.sessionId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().List(ctx))
+	{"MessagingClient.Connections.List", "GET", "/platform/connections", "", "", `{"data":[{"connectionId":"s","name":"Support"}]}`, "data.0.connectionId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().List(ctx))
 	}},
-	{"MessagingClient.Sessions.Retrieve", "GET", "/platform/sessions/s", "", "", `{"success":true,"data":{"sessionId":"s","name":"Support"}}`, "data.sessionId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Retrieve(ctx, "s"))
+	{"MessagingClient.Connections.Retrieve", "GET", "/platform/connections/s", "", "", `{"success":true,"data":{"connectionId":"s","name":"Support"}}`, "data.connectionId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Retrieve(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.Update", "PUT", "/platform/sessions/s", "", `{"configuration":{"reset":["hms"]},"revision":2}`, `{"success":true,"data":{"sessionId":"s","name":"Support"}}`, "data.sessionId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Update(ctx, "s", UpdateSessionRequest{Configuration: SessionConfigurationPatch{Reset: []string{"hms"}}, Revision: 2}))
+	{"MessagingClient.Connections.Update", "PUT", "/platform/connections/s", "", `{"configuration":{"reset":["hms"]},"revision":2}`, `{"success":true,"data":{"connectionId":"s","name":"Support"}}`, "data.connectionId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Update(ctx, "s", UpdateConnectionRequest{Configuration: ConnectionConfigurationPatch{Reset: []string{"hms"}}, Revision: 2}))
 	}},
-	{"MessagingClient.Sessions.Delete", "DELETE", "/platform/sessions/s", "", "", `{"data":{"removed":true,"sessionId":"s"}}`, "data.removed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Delete(ctx, "s"))
+	{"MessagingClient.Connections.Delete", "DELETE", "/platform/connections/s", "", "", `{"data":{"removed":true,"connectionId":"s"}}`, "data.removed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Delete(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.Start", "POST", "/platform/sessions/s/start", "", "", `{"data":{"starting":true,"sessionId":"s"}}`, "data.starting", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Start(ctx, "s"))
+	{"MessagingClient.Connections.Start", "POST", "/platform/connections/s/start", "", "", `{"data":{"starting":true,"connectionId":"s"}}`, "data.starting", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Start(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.Stop", "POST", "/platform/sessions/s/stop", "", "", `{"data":{"stopping":true,"sessionId":"s"}}`, "data.stopping", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Stop(ctx, "s"))
+	{"MessagingClient.Connections.Stop", "POST", "/platform/connections/s/stop", "", "", `{"data":{"stopping":true,"connectionId":"s"}}`, "data.stopping", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Stop(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.Restart", "POST", "/platform/sessions/s/restart", "", "", `{"success":true,"operationId":"op","message":"Restart accepted"}`, "operationId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Restart(ctx, "s"))
+	{"MessagingClient.Connections.Restart", "POST", "/platform/connections/s/restart", "", "", `{"success":true,"operationId":"op","message":"Restart accepted"}`, "operationId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Restart(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.Logout", "POST", "/platform/sessions/s/logout", "", "", `{"success":true,"operationId":"op","message":"Logout accepted"}`, "operationId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Logout(ctx, "s"))
+	{"MessagingClient.Connections.Logout", "POST", "/platform/connections/s/logout", "", "", `{"success":true,"operationId":"op","message":"Logout accepted"}`, "operationId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Logout(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.Account", "GET", "/platform/sessions/s/me", "", "", `{"success":true,"data":{"id":"42","pushName":"Support","accountType":"business_app"}}`, "data.accountType", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().Account(ctx, "s"))
+	{"MessagingClient.Connections.Account", "GET", "/platform/connections/s/me", "", "", `{"success":true,"data":{"id":"42","pushName":"Support","accountType":"business_app"}}`, "data.accountType", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().Account(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.QR", "GET", "/messaging/s/pair/qr", "format=json", "", `{"success":true,"data":{"qr":"display"}}`, "data.qr", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().QR(ctx, "s"))
+	{"MessagingClient.Connections.QR", "GET", "/messaging/s/pair/qr", "format=json", "", `{"success":true,"data":{"qr":"display"}}`, "data.qr", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().QR(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.RequestPairingCode", "POST", "/messaging/s/pair/code", "", `{"phone":"+15551234567"}`, `{"success":true,"data":{"code":"12345678"}}`, "data.code", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().RequestPairingCode(ctx, "s", PairingCodeRequest{Phone: "+15551234567"}))
+	{"MessagingClient.Connections.RequestPairingCode", "POST", "/messaging/s/pair/code", "", `{"phone":"+15551234567"}`, `{"success":true,"data":{"code":"12345678"}}`, "data.code", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().RequestPairingCode(ctx, "s", PairingCodeRequest{Phone: "+15551234567"}))
 	}},
-	{"MessagingClient.QuickLinks.Create", "POST", "/messaging/quicklinks", "", `{"projectId":"p","configuration":{"allowPhoneChange":false}}`, `{"success":true,"data":{"id":"ql","url":"https://connect.polymorfa.com/ql","session":"s","purpose":"initial","connectionGoal":"single","expiresAt":null}}`, "data.id", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.QuickLinks.Create", "POST", "/messaging/quicklinks", "", `{"projectId":"p","configuration":{"allowPhoneChange":false}}`, `{"success":true,"data":{"id":"ql","url":"https://connect.polymorfa.com/ql","connection":"s","purpose":"initial","connectionGoal":"single","expiresAt":null}}`, "data.id", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := false
 		return wireData(m.QuickLinks().Create(ctx, CreateQuickLinkRequest{ProjectID: "p", Configuration: &QuickLinkConfiguration{AllowPhoneChange: &v}}))
 	}},
-	{"MessagingClient.QuickLinks.Availability", "GET", "/messaging/quicklinks/availability", "projectId=p&session=s", "", `{"success":true,"data":{"allowed":true,"addConnection":"official_api","connections":[],"resumeQuickLinkId":null}}`, "data.allowed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.QuickLinks.Availability", "GET", "/messaging/quicklinks/availability", "projectId=p&connection=s", "", `{"success":true,"data":{"allowed":true,"addMethod":"official_api","methods":[],"resumeQuickLinkId":null}}`, "data.allowed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.QuickLinks().Availability(ctx, "p", "s"))
 	}},
-	{"MessagingClient.QuickLinks.Retrieve", "GET", "/messaging/quicklinks/x", "", "", `{"success":true,"data":{"id":"x","status":"connected","session":"s"}}`, "data.status", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.QuickLinks.Retrieve", "GET", "/messaging/quicklinks/x", "", "", `{"success":true,"data":{"id":"x","status":"connected","connection":"s"}}`, "data.status", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.QuickLinks().Retrieve(ctx, "x"))
 	}},
 	{"MessagingClient.QuickLinks.Cancel", "DELETE", "/messaging/quicklinks/x", "", "", `{"success":true,"message":"Cancelled"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
@@ -93,26 +93,26 @@ var operationFixtures = []operationFixture{
 	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","customer":"customer","allow":["send_message"]}`, `{"success":true,"data":{"token":"pmfa_ct_ZXhhbXBsZQ","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Customer: "customer", Allow: []string{"send_message"}}))
 	}},
-	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s"}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Session: "s"}))
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","connection":"s"}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Connection: "s"}))
 	}},
-	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s","allow":[]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Session: "s", Allow: []string{}}))
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","connection":"s","allow":[]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Connection: "s", Allow: []string{}}))
 	}},
-	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","session":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal"]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Session: "s", Allow: []string{"chats_read", "chats_manage", "contact_write", "contact_delete", "mcp", "voip_place", "voip_answer", "voip_signal"}}))
+	{"MessagingClient.ClientTokens.Mint", "POST", "/platform/client-tokens", "", `{"ephemeralId":"user","connection":"s","allow":["chats_read","chats_manage","contact_write","contact_delete","mcp","voip_place","voip_answer","voip_signal"]}`, `{"success":true,"data":{"token":"pmfa_ct_example","expiresAt":"2026-10-11"}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.ClientTokens().Mint(ctx, MintClientTokenRequest{EphemeralID: "user", Connection: "s", Allow: []string{"chats_read", "chats_manage", "contact_write", "contact_delete", "mcp", "voip_place", "voip_answer", "voip_signal"}}))
 	}},
-	{"MessagingClient.ClientTokens.RetrieveRules", "GET", "/platform/sessions/s/client-rules", "", "", `{"success":true,"data":{"recipientMode":"conversation","allowedActions":"send_message","rateLimit":0,"maxDaily":0,"allowedOrigins":"https://app.example.com"}}`, "data.recipientMode", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.ClientTokens.RetrieveRules", "GET", "/platform/connections/s/client-rules", "", "", `{"success":true,"data":{"recipientMode":"conversation","allowedActions":"send_message","rateLimit":0,"maxDaily":0,"allowedOrigins":"https://app.example.com"}}`, "data.recipientMode", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.ClientTokens().RetrieveRules(ctx, "s"))
 	}},
-	{"MessagingClient.ClientTokens.UpdateRules", "PUT", "/platform/sessions/s/client-rules", "", `{"rateLimit":0}`, `{"success":true,"message":"Updated"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.ClientTokens.UpdateRules", "PUT", "/platform/connections/s/client-rules", "", `{"rateLimit":0}`, `{"success":true,"message":"Updated"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := 0
 		return wireData(m.ClientTokens().UpdateRules(ctx, "s", SetClientRulesRequest{RateLimit: &v}))
 	}},
-	{"MessagingClient.ClientTokens.DeleteRules", "DELETE", "/platform/sessions/s/client-rules", "", "", `{"success":true,"message":"Deleted"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.ClientTokens.DeleteRules", "DELETE", "/platform/connections/s/client-rules", "", "", `{"success":true,"message":"Deleted"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.ClientTokens().DeleteRules(ctx, "s"))
 	}},
-	{"TeamClient.Projects.List", "GET", "/platform/projects", "", "", `{"data":[{"_id":"p","name":"Project","totalSessions":2}]}`, "data.0.totalSessions", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Projects.List", "GET", "/platform/projects", "", "", `{"data":[{"_id":"p","name":"Project","totalConnections":2}]}`, "data.0.totalConnections", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Projects().List(ctx))
 	}},
 	{"TeamClient.Projects.Create", "POST", "/platform/projects", "", `{"name":"Project","defaultTier":"standard"}`, `{"data":{"id":"p","name":"Project","stage":"development","defaultTier":"standard"}}`, "data.stage", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
@@ -127,7 +127,7 @@ var operationFixtures = []operationFixture{
 	{"TeamClient.Projects.CancelProductionEnrollment", "POST", "/platform/projects/p/production-enrollments/x/cancel", "", "", `{"data":{"operationId":"x","action":"cancel","accepted":true}}`, "data.action", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Projects().CancelProductionEnrollment(ctx, "p", "x"))
 	}},
-	{"MessagingClient.Media.Retrieve", "GET", "/messaging/media/x/info", "", "", `{"success":true,"data":{"id":"x","session":"s","messageId":"message","mimeType":"image/png","fileLength":64,"persisted":true}}`, "data.mimeType", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.Media.Retrieve", "GET", "/messaging/media/x/info", "", "", `{"success":true,"data":{"id":"x","connection":"s","messageId":"message","mimeType":"image/png","fileLength":64,"persisted":true}}`, "data.mimeType", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.Media().Retrieve(ctx, "x"))
 	}},
 	{"MessagingClient.Media.Persist", "POST", "/messaging/media/x/download-and-save", "", "", `{"success":true,"message":"Saved"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
@@ -212,7 +212,7 @@ func TestOperationWireFixtures(t *testing.T) {
 }
 func allOperationFixtures() []operationFixture {
 	all := append([]operationFixture{}, operationFixtures...)
-	for _, group := range [][]operationFixture{voipFixtures, developerFixtures, observationFixtures, accountFixtures, groupFixtures, contactFixtures, channelFixtures, platformSessionFixtures, streamAckFixtures, settingsFixtures, officialGroupFixtures, cloudTemplateFixtures, sipFixtures, functionFixtures, businessFixtures, messagingWebhookFixtures, chatPresencePrivacyFixtures, collectionFixtures, cloudAudienceFixtures, securityOptOutFixtures, billingFixtures, customerFixtures, projectHealthFixtures, flowFixtures, voiceFixtures, templateFixtures, campaignFixtures, banSafeFixtures, callAnalyticsFixtures, supplementFixtures} {
+	for _, group := range [][]operationFixture{voipFixtures, developerFixtures, observationFixtures, accountFixtures, groupFixtures, contactFixtures, channelFixtures, platformConnectionFixtures, streamAckFixtures, settingsFixtures, officialGroupFixtures, cloudTemplateFixtures, sipFixtures, functionFixtures, businessFixtures, messagingWebhookFixtures, chatPresencePrivacyFixtures, collectionFixtures, cloudAudienceFixtures, securityOptOutFixtures, billingFixtures, customerFixtures, projectHealthFixtures, flowFixtures, voiceFixtures, templateFixtures, campaignFixtures, banSafeFixtures, callAnalyticsFixtures, supplementFixtures} {
 		all = append(all, group...)
 	}
 	return all

@@ -15,17 +15,27 @@ import {
   type MessageReceivedEvent,
 } from "../src/webhooks/index.js";
 
+const legacyRaw = Buffer.from(
+  '{"id":"evt_1","session":"support","timestamp":"2026-08-19T10:00:00Z","event":"message.received","payload":{"id":"m1","from":{"id":"chat"},"sender":{"id":"sender"},"fromMe":false,"timestamp":1787133600,"pushName":"Ada","isGroup":false,"type":"text","text":"Hello"}}',
+);
+const legacySignature =
+  "52c730509d65561d9394c024bfef1e3787821749b97d6b5664c39f467a16a5b2";
+
 const raw = Buffer.from(
   '{"id":"evt_1","connection":"support","timestamp":"2026-08-19T10:00:00Z","event":"message.received","payload":{"id":"m1","from":{"id":"chat"},"sender":{"id":"sender"},"fromMe":false,"timestamp":1787133600,"pushName":"Ada","isGroup":false,"type":"text","text":"Hello"}}',
 );
 const signature =
-  "52c730509d65561d9394c024bfef1e3787821749b97d6b5664c39f467a16a5b2";
+  "45b02e973c6d7150d4b4778d7766e56c734950789446585f6dc9dff1cbd2f8e1";
 
 function sign(body: Uint8Array, secret = "fixture-secret"): string {
   return createHmac("sha256", secret).update(body).digest("hex");
 }
 
 describe("verifyWebhookSignature", () => {
+  it("verifies historical bytes without accepting the retired account envelope", async () => {
+    expect(await verifyWebhookSignature(legacyRaw, legacySignature, "fixture-secret")).toBe(true);
+    await expect(constructWebhookEvent(legacyRaw, legacySignature, "fixture-secret")).rejects.toThrow("Webhook body is not a valid event envelope.");
+  });
   it("accepts the native hexadecimal signature over the exact raw bytes", async () => {
     await expect(
       verifyWebhookSignature(raw, signature, "fixture-secret"),
@@ -187,7 +197,7 @@ describe("constructWebhookEvent", () => {
     "bansafe.risk_changed",
     "bansafe.health_changed",
     "bansafe.enforcement",
-  ])("preserves a signed historical %s event as unknown", async (name) => {
+  ])("preserves an unrecognized %s event name as unknown", async (name) => {
     const body = Buffer.from(
       JSON.stringify({
         id: "historical-bansafe-event",

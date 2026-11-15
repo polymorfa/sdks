@@ -23,8 +23,8 @@ import {
 import { CallsSignalingClient } from "./signaling.js";
 
 export interface BrowserCallsOptions extends BrowserTransportOptions {
-  /** Local call identity. Requests use the client token's bound session. */
-  readonly session: string;
+  /** Local call identity. Requests use the client token's bound connection. */
+  readonly connection: string;
   readonly WebSocket?: CallsClientOptions["WebSocket"];
   readonly controller?: CallsControllerOptions;
   /**
@@ -84,7 +84,7 @@ export function createBrowserCalls(
   const transport = new BrowserTransport(options);
   const api = new BrowserCallsApi(transport);
   const clientOptions: InternalCallsClientOptions = {
-    session: options.session,
+    connection: options.connection,
     api,
     mediaMode: "external",
     ...(options.WebSocket === undefined
@@ -172,7 +172,7 @@ export function createBrowserCalls(
     },
     leave: async (id, _connectionId, signal) => {
       signal.throwIfAborted();
-      // The call's own connection id is the one the media session used.
+      // The call's own connection id is the one the media connection used.
       await requireCall(id).leave();
     },
     hangup: async (id, signal) => {
@@ -310,7 +310,7 @@ export function createBrowserCalls(
           );
       // Media failed locally: leave the connection; the call continues for
       // others. The platform requires a connection id; the call's own id is
-      // the one the media session offers with.
+      // the one the media connection offers with.
       else
         void api.leave(call.id, call.connectionId).catch((cause: unknown) =>
           options.onError?.({
