@@ -208,7 +208,7 @@ class DirectMediaApi:
         self._transport = transport
 
     def require_direct(self) -> None:
-        if self._transport.credential_kind not in ("organization_api_key", "project_token"):
+        if self._transport.credential_kind not in ("team_api_key", "project_token"):
             raise ConfigurationError("credential")
 
     async def create_upload_grant(
@@ -269,11 +269,11 @@ class DirectMediaApi:
 
 
 class HistorySync:
-    def __init__(self, transport: Transport, credential: str = "organization_api_key") -> None:
+    def __init__(self, transport: Transport, credential: str = "team_api_key") -> None:
         self._transport, self._credential = transport, transport.credential_kind
 
     def _server(self) -> None:
-        if self._credential not in ("organization_api_key", "project_token"):
+        if self._credential not in ("team_api_key", "project_token"):
             raise ConfigurationError("credential")
 
     async def request_chunk_retry(
@@ -646,7 +646,7 @@ class _SequentialParts:
 
 
 class WhatsAppMedia:
-    def __init__(self, transport: Transport, credential: str = "organization_api_key") -> None:
+    def __init__(self, transport: Transport, credential: str = "team_api_key") -> None:
         self._api = DirectMediaApi(transport)
 
     def transport(

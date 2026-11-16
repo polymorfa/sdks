@@ -47,7 +47,7 @@ export function render(id, { client, request }) {
       ? "MessagingClient"
       : client === "project"
         ? "ProjectClient"
-        : "OrganizationClient";
+        : "TeamClient";
   const project = client === "project" ? `, ${p("projectId")}` : "";
-  return `using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new ${type}(Credential.OrganizationApiKey(${key})${project});\nvar result = await ${calls[id]};\nConsole.WriteLine(result);\n`;
+  return `using System;\nusing Polymorfa.Sdk;\n\nusing var sdk = new ${type}(Credential.TeamApiKey(${key})${project});\nvar result = await ${calls[id]};\nConsole.WriteLine(result);\n`;
 }

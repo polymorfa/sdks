@@ -10,7 +10,7 @@ namespace Polymorfa;
  * @phpstan-type PreviewCallLinkRequest array{session:string,video?:bool,token:string}
  * @phpstan-type CreatedCallLink array{session:string,token:string,url:string,video:bool}
  * @phpstan-type PreviewedCallLink array{session:string,video:bool,creator:Identity,approvalRequired:bool,isAdmin:bool}
- * @phpstan-type Participant array{id:string,audioMuted:bool,video:bool,state:'invited'|'ringing'|'connected'|'left',handRaised?:bool,phoneNumber?:string,bsuid?:string,username?:string}
+ * @phpstan-type Participant array{id:string,audioMuted:bool,video:bool,state:'invited'|'ringing'|'connected'|'left',handRaised?:bool,guest?:bool,name?:string,phoneNumber?:string,bsuid?:string,username?:string}
  * @phpstan-type CallSettings array{simultaneousCallsCoverageExcludedUntil:string|null,callsEnabled:bool,conferenceMode:bool,inboundRoute:'clients'|'sip_trunk',sipTrunkId:string|null,sipClaim:bool,hostCloudApiCalls:bool,simultaneousCalls:bool,revision:int,updatedAt:string|null}
  * @phpstan-type PermissionLimit array{period:string,maxAllowed:int,used:int,resetsAt:string|null}
  * @phpstan-type PermissionAction array{allowed:bool,limits:list<PermissionLimit>}
@@ -19,6 +19,9 @@ namespace Polymorfa;
  * @phpstan-type CheckRequest array{session:string,to:string}
  * @phpstan-type CallCheck array{allowed:bool,refusal:'calls_disabled'|'call_recipient_opted_out'|'call_destination_blocked'|'call_permission_required'|'call_limit_reached'|null,permission:PermissionState|null}
  * @phpstan-type Reaction array{connectionId:string,participant?:string,emoji:''|'👍'|'❤️'|'😂'|'😮'|'😢'|'🙏'}
+ * @phpstan-type WaitingRoomControl (array{type:'waiting_room_control',requestId:string,operation:'toggle',enabled:bool}|array{type:'waiting_room_control',requestId:string,operation:'admit'|'deny',participantId:string})
+ * @phpstan-type WaitingRoomControlRequest array{connectionId:string,participant?:string,control:WaitingRoomControl}
+ * @phpstan-type WaitingRoomControlResult array{type:'waiting_room_result',requestId:string,ok:bool,code?:string}
  * @phpstan-type HandRaised array{connectionId:string,participant?:string,raised:bool}
  * @phpstan-type ReportClient array{sdk:string,version:string,platform:'browser'|'node'|'other'}
  * @phpstan-type Quality array{rttMs?:int,jitterMs?:int,packetsLost?:int,packetsReceived?:int,audioCodec?:string,videoCodec?:string,candidateType?:'host'|'srflx'|'prflx'|'relay',reconnects?:int}

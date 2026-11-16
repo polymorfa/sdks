@@ -8,7 +8,7 @@ from polymorfa import AsyncClient, Credential, RequestOptions
 O = RequestOptions(idempotency_key="customer-test")
 CUSTOMER = {
     "id": "customer_1",
-    "orgId": "org_1",
+    "teamId": "team_1",
     "projectId": "project_1",
     "name": None,
     "externalCustomerId": "external_1",
@@ -48,7 +48,7 @@ EVENT = {
 }
 LINK = {
     "id": "link_1",
-    "orgId": "org_1",
+    "teamId": "team_1",
     "projectId": "project_1",
     "customerId": "customer_1",
     "expectedPhoneMasked": None,
@@ -203,7 +203,7 @@ async def test_typed_customer_methods(method, path, body, query, data, invoke):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -236,7 +236,7 @@ async def test_customer_filtered_pagination_keeps_owning_project():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

@@ -27,9 +27,9 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
         let total = json!({"meter":"call.duration","unit":"second","keySource":"none","quantity":6.5,"records":1});
         let summary = json!({"period":"2026-10","start":"2026-10-01T00:00:00Z","end":"2026-11-01T00:00:00Z","projectId":if project {Some("project")} else {None},"session":"s","billingEnabled":false,"meters":[total],"numbers":[{"session":"s","projectId":"project","meters":[total]}],"numbersTruncated":false});
         let (base, server) = support::wire("GET", path, None, json!({"data":summary})).await;
-        let org = support::organization(base);
-        let view = org.project("project").unwrap();
-        let resource = if project { view.usage() } else { org.usage() };
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
+        let resource = if project { view.usage() } else { team.usage() };
         let response = resource
             .summary(&params, RequestOptions::default())
             .await
@@ -59,9 +59,9 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
             json!({"data":{"records":[record()],"nextCursor":"next"}}),
         )
         .await;
-        let org = support::organization(base);
-        let view = org.project("project").unwrap();
-        let resource = if project { view.usage() } else { org.usage() };
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
+        let resource = if project { view.usage() } else { team.usage() };
         let response = resource
             .list_records(&params, RequestOptions::default())
             .await
@@ -79,9 +79,9 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
         };
         let gates = json!({"session":"s","gates":[{"key":"calls.outbound_monthly","kind":"quota","subject":"number","mode":"record","active":true,"limit":100.0,"used":6.5,"unit":"second","overLimit":false,"decisions":{"wouldBlock":1,"blocked":0,"evaluationError":0}},{"key":"voice.flows","kind":"capability","subject":"team","mode":"off","active":false,"limit":-1.0,"used":null,"unit":"count","overLimit":null,"decisions":{"wouldBlock":0,"blocked":0,"evaluationError":0}}]});
         let (base, server) = support::wire("GET", path, None, json!({"data":gates})).await;
-        let org = support::organization(base);
-        let view = org.project("project").unwrap();
-        let resource = if project { view.usage() } else { org.usage() };
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
+        let resource = if project { view.usage() } else { team.usage() };
         let response = resource
             .list_gates(
                 &UsageGateParams {
@@ -126,8 +126,8 @@ async fn usage_record_iterator_rejects_repeated_cursors_with_response_metadata()
             socket.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\nx-request-id: iterator\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
         }
     });
-    let org = support::organization(base);
-    let resource = org.usage();
+    let team = support::team(base);
+    let resource = team.usage();
     let mut stream = resource.iterate_records(Default::default(), RequestOptions::default());
     assert_eq!(stream.next().await.unwrap().unwrap().id, "usage");
     let error = stream.next().await.unwrap().unwrap_err();

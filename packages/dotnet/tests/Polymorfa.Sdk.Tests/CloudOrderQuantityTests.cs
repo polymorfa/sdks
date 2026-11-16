@@ -64,7 +64,7 @@ internal static class CloudOrderQuantityTests
             await Case("public history decode " + number, async () => {
                 var message = "{\"id\":\"m\",\"whatsapp_ids\":{\"official_api\":\"wamid.synthetic\"},\"direction\":\"inbound\",\"type\":\"order\",\"timestamp\":\"2026-10-22T00:00:00Z\",\"conversation\":{\"id\":\"123\"},\"fromMe\":false,\"order\":" + Order(number) + "}";
                 using var handler = new Handler("{\"success\":true,\"data\":" + message + "}");
-                using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { TransportHandler = handler });
+                using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { TransportHandler = handler });
                 Quantity((await client.Chats.RetrieveMessageAsync("n", "123", "m")).Data.Data.Order!, value);
             });
         }

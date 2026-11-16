@@ -3,13 +3,13 @@ using System.Text.Json;
 
 namespace Polymorfa.Sdk;
 
-public sealed class OrganizationClient : IDisposable
+public sealed class TeamClient : IDisposable
 {
     private readonly HttpTransport http;
     public PlatformCampaigns Campaigns { get; }
     public Audiences Audiences { get; }
     public AudienceProfiles AudienceProfiles { get; }
-    /// <summary>Organization segment authority; project clients have no segment resource.</summary>
+    /// <summary>Team segment authority; project clients have no segment resource.</summary>
     public AudienceSegments AudienceSegments { get; }
     public CallRecords Calls { get; }
     public Analytics Analytics { get; }
@@ -26,7 +26,7 @@ public sealed class OrganizationClient : IDisposable
     public PlatformMedia Media { get; }
     public Billing Billing { get; }
     public Customers Customers { get; }
-    public Organizations Organizations { get; }
+    public Teams Teams { get; }
     public Members Members { get; }
     public ApiKeys ApiKeys { get; }
     public ProjectTokens ProjectTokens { get; }
@@ -40,11 +40,11 @@ public sealed class OrganizationClient : IDisposable
     public Usage Usage { get; }
     public PlatformWebhooks Webhooks { get; }
     public WebhookDeliveries WebhookDeliveries { get; }
-    public OrganizationClient(Credential credential, ClientOptions? options = null)
+    public TeamClient(Credential credential, ClientOptions? options = null)
     {
         credential.RequireServer();
-        if (credential.Kind != CredentialKind.OrganizationApiKey) throw new PolymorfaConfigurationException("OrganizationClient requires an team key.");
-        http = new(credential, options ?? new()); AudienceProfiles = new(http); AudienceSegments = new(http); Audiences = new(http); Campaigns = new(http); QuickLinkSettings = new(http, null); Calls = new(http, null); Analytics = new(http, null); RequestLogs = new(http, null); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Organizations = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
+        if (credential.Kind != CredentialKind.TeamApiKey) throw new PolymorfaConfigurationException("TeamClient requires a team key.");
+        http = new(credential, options ?? new()); AudienceProfiles = new(http); AudienceSegments = new(http); Audiences = new(http); Campaigns = new(http); QuickLinkSettings = new(http, null); Calls = new(http, null); Analytics = new(http, null); RequestLogs = new(http, null); Projects = new(http); Sessions = new(http); Configuration = new(http, null); SipTrunks = new(http, null); Operations = new(http, null); CallPolicy = new(http); CallOptOuts = new(http); CallRetention = new(http); Media = new(http); Billing = new(http); Customers = new(http); Teams = new(http); Members = new(http); ApiKeys = new(http); ProjectTokens = new(http); BanSafe = new(http); OptOuts = new(http); Voice = new(http, null); Usage = new(http, null); AuditLogs = new(http); SecurityIncidents = new(http); SessionBans = new(http); Events = new(http, "/platform", null); Webhooks = new(http, null); WebhookDeliveries = new(http, null);
     }
     public ProjectClient Project(string projectId) => new(http, projectId);
     public Task<RawCursorPage<T>> PaginateRawAsync<T>(RawRequest request, RawPageDecoder<T> decode, string cursorParameter = "cursor") => RawCursorPage<T>.LoadAsync(http, request, decode, cursorParameter);
@@ -133,14 +133,14 @@ public sealed class Events
     {
         options ??= new();
         var project = projectId ?? options.ProjectId;
-        if (string.IsNullOrWhiteSpace(project)) throw new PolymorfaConfigurationException("Organization event streams require projectId.");
+        if (string.IsNullOrWhiteSpace(project)) throw new PolymorfaConfigurationException("Team event streams require projectId.");
         return new(http, $"/platform/projects/{Uri.EscapeDataString(project)}/events/stream", options);
     }
     public EventStreamSource LiveSource(EventStreamOptions? options = null) => new(parameters => Stream(parameters), options);
     public async Task<ApiResponse<EventStreamAcknowledgementReceipt>> AcknowledgeStreamAsync(string streamId, EventStreamAcknowledgement body, RequestOptions? options = null, string? projectId = null)
     {
         var project = this.projectId ?? projectId;
-        if (string.IsNullOrWhiteSpace(project)) throw new PolymorfaConfigurationException("Organization stream acknowledgement requires projectId.");
+        if (string.IsNullOrWhiteSpace(project)) throw new PolymorfaConfigurationException("Team stream acknowledgement requires projectId.");
         var streamPrefix = $"/platform/projects/{Uri.EscapeDataString(project)}";
         var response = await http.RequestAsync<DataEnvelope<EventStreamAcknowledgementReceipt>>(HttpMethod.Post, $"{streamPrefix}/events/stream/{Uri.EscapeDataString(streamId)}/ack", body, options).ConfigureAwait(false);
         return new(response.Data.Data, response.Metadata);

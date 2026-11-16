@@ -11,7 +11,7 @@ import {
   type HistoryMediaRetrieval,
   type HistoryPage,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 const chat: HistoryChat = {
   conversation: { id: "739182640518203", phoneNumber: "+14155550123" },
@@ -43,7 +43,7 @@ function client(
   return new MessagingClient({
     credential:
       type === "apiKey"
-        ? { type, value: ORGANIZATION_API_KEY }
+        ? { type, value: TEAM_API_KEY }
         : { type, value: `pmfa_ct_${"A".repeat(94)}` },
     baseUrl: "https://api.example.com",
     maxNetworkRetries: 0,

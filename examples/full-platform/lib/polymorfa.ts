@@ -12,7 +12,7 @@ import { env } from "./env.js";
 // Clients are created lazily so a missing variable fails the request that
 // needs it, not the whole build.
 let messagingClient: MessagingClient | undefined;
-let organizationClient: Client | undefined;
+let teamClient: Client | undefined;
 let projectClient: Client<"project"> | undefined;
 let bridgeClient: BridgeClient | undefined;
 
@@ -34,17 +34,17 @@ export function messaging(): MessagingClient {
   return messagingClient;
 }
 
-/** Organization management client for the admin area. */
-export function organization(): Client {
+/** Team management client for the admin area. */
+export function team(): Client {
   assertServerRuntime();
-  organizationClient ??= new Client({
+  teamClient ??= new Client({
     ...shared(),
     credential: {
-      type: "organizationApiKey",
-      value: env.organizationApiKey(),
+      type: "teamApiKey",
+      value: env.teamApiKey(),
     },
   });
-  return organizationClient;
+  return teamClient;
 }
 
 /** Project view of the management client, bound to the project token's project. */

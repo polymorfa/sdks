@@ -11,7 +11,7 @@ internal static class CampaignContractTests
     internal const string B = "22222222-2222-4222-8222-222222222222";
     internal const string C = "33333333-3333-4333-8333-333333333333";
     internal const string Phone = "+15551234567";
-    internal static Credential OrganizationKey() => Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
+    internal static Credential TeamKey() => Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k");
     internal const string Profile = "{\"id\":\"" + A + "\",\"phone\":\"+15551234567\",\"revision\":1,\"tags\":[\"lead\"],\"attributes\":{\"empty\":null,\"ok\":false,\"score\":1.5},\"provenance\":null,\"createdAt\":0,\"updatedAt\":1}";
     internal const string Consent = "{\"id\":\"" + B + "\",\"profileRevision\":1,\"createdAt\":0,\"purpose\":\"campaigns\",\"allowed\":false,\"source\":\"api\",\"reference\":\"supplied\",\"assertedAt\":0}";
     internal const string Job = "{\"id\":\"" + A + "\",\"state\":\"queued\",\"totalValid\":1,\"invalidCount\":1,\"invalidSamples\":[{\"row\":2,\"reason\":\"invalid_phone\"}],\"conflictSamples\":[{\"row\":3,\"reason\":\"quota\"}],\"processedValid\":0,\"createdCount\":0,\"updatedCount\":0,\"conflictCount\":1,\"createdAt\":0,\"updatedAt\":1,\"completedAt\":null}";
@@ -29,14 +29,14 @@ internal static class CampaignContractTests
     internal static CampaignReplyFlowDefinition Graph(string text = "Hello", string keyword = "yes") => new("entry", [new("entry", [new(new CampaignReplyKeyword(keyword), "done")], new CampaignReplyText(text)), new("done", [])]);
     private static void Check(bool condition, string message) { if (!condition) throw new Exception(message); }
     private static int checks;
-    private static async Task Wire<T>(string method, string path, string? body, string response, Func<OrganizationClient, MessagingClient, Task<ApiResponse<T>>> call, Action<T> verify, IReadOnlyDictionary<string, string>? headers = null, int status = 200, string version = "2026-10-14")
+    private static async Task Wire<T>(string method, string path, string? body, string response, Func<TeamClient, MessagingClient, Task<ApiResponse<T>>> call, Action<T> verify, IReadOnlyDictionary<string, string>? headers = null, int status = 200, string version = "2026-10-14")
     {
         using var fixture = new WireFixture { Authorization = "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k", ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
         var serving = fixture.ServeAsync(method, path, body, response, status, headers);
-        using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
-        using var messaging = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+        using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+        using var messaging = new MessagingClient(TeamKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
         ApiResponse<T> result;
-        try { result = await call(org, messaging); }
+        try { result = await call(team, messaging); }
         catch { if (serving.IsFaulted) await serving; throw; }
         await serving;
         Check(result.Metadata.Status == status && result.Metadata.RequestId == "req_native", "Contract metadata lost.");
@@ -44,12 +44,12 @@ internal static class CampaignContractTests
         if (body is not null && path == "/platform/audience-profile-imports") Check(fixture.CapturedBody.Length <= 14 * 1024 * 1024, "Actual import wire quota exceeded.");
         verify(result.Data); checks++;
     }
-    private static async Task Invalid(Func<OrganizationClient, MessagingClient, Task> call)
+    private static async Task Invalid(Func<TeamClient, MessagingClient, Task> call)
     {
         using var fixture = new WireFixture();
-        using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
+        using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url });
         using var messaging = new MessagingClient(Credential.ClientToken("pmfa_ct_" + new string('c', 64)), new() { BaseUrl = fixture.Url });
-        try { await call(org, messaging); throw new Exception("Invalid input accepted."); }
+        try { await call(team, messaging); throw new Exception("Invalid input accepted."); }
         catch (PolymorfaConfigurationException) { Check(!fixture.Pending, "Invalid input reached TCP."); checks++; }
     }
     public static async Task LargeImportAsync()
@@ -116,12 +116,12 @@ internal static class CampaignContractTests
     private static async Task BoundViewsAsync()
     {
         // Each alias retains its captured owner, including after a borrowed view is disposed.
-        foreach (var credential in new[] { OrganizationKey(), Credential.ProjectToken("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k") })
+        foreach (var credential in new[] { TeamKey(), Credential.ProjectToken("pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k") })
         {
             using var fixture = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = "2026-10-14" } };
             using var owning = new ProjectClient(credential, A, new() { BaseUrl = fixture.Url });
             using var retained = owning.Project(A);
-            if (credential.Kind == CredentialKind.OrganizationApiKey) { using var other = owning.Project(B); Check(other.ProjectId == B, "Organization rebind changed."); }
+            if (credential.Kind == CredentialKind.TeamApiKey) { using var other = owning.Project(B); Check(other.ProjectId == B, "Team rebind changed."); }
             else { try { owning.Project(B); throw new Exception("Project token rebound."); } catch (PolymorfaConfigurationException) { } }
             retained.Dispose();
             async Task Bound<T>(string method, string path, string? body, string reply, Func<Task<ApiResponse<T>>> call, Action<T> verify, bool csv = false)
@@ -142,8 +142,8 @@ internal static class CampaignContractTests
             await Bound("PUT", "/platform/projects/" + A + "/customers/" + B + "/signal-custody", "{\"expectedRevision\":0,\"signalModeDefault\":null}", Envelope(Custody), () => retained.SignalCustody.UpdateCustomerAsync(B, new(0, null)), VerifyCustody);
         }
         using var slot = new WireFixture();
-        using var organization = new OrganizationClient(OrganizationKey(), new() { BaseUrl = slot.Url });
-        using var first = organization.Project(A); using var second = organization.Project(B);
+        using var team = new TeamClient(TeamKey(), new() { BaseUrl = slot.Url });
+        using var first = team.Project(A); using var second = team.Project(B);
         foreach (var view in new[] { first, second, first })
         {
             var serving = slot.ServeAsync("GET", "/platform/campaign-reply-flows/" + A + "?projectId=" + view.ProjectId, null, Envelope(Flow));
@@ -270,18 +270,18 @@ internal static class CampaignContractTests
     }
     private static async Task ResponsesAsync()
     {
-        async Task Malformed(string path, string response, Func<OrganizationClient, MessagingClient, Task> call, int status = 200, string mime = "application/json")
+        async Task Malformed(string path, string response, Func<TeamClient, MessagingClient, Task> call, int status = 200, string mime = "application/json")
         {
             using var fixture = new WireFixture();
             var serving = fixture.ServeAsync("GET", path, null, response, status, new Dictionary<string, string> { ["content-type"] = mime });
-            using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
-            using var msg = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
-            try { await call(org, msg); throw new Exception("Malformed success accepted: " + path); }
+            using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+            using var msg = new MessagingClient(TeamKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+            try { await call(team, msg); throw new Exception("Malformed success accepted: " + path); }
             catch (PolymorfaServerException error) { Check(error.Code == "invalid_response" && error.Status == status && error.RequestId == "req_native", "Malformed response classification differs."); checks++; }
             await serving;
         }
         // Remove every required top-level property independently. Required null remains required.
-        var models = new (string Path, string Fixture, Func<OrganizationClient, MessagingClient, Task> Call)[]
+        var models = new (string Path, string Fixture, Func<TeamClient, MessagingClient, Task> Call)[]
         {
             ("/platform/audience-profiles/%2B15551234567", Profile, (o, _) => o.AudienceProfiles.RetrieveAsync(Phone)),
             ("/platform/audience-profile-imports/" + A, Job, (o, _) => o.AudienceProfiles.Imports.RetrieveAsync(A)),
@@ -301,7 +301,7 @@ internal static class CampaignContractTests
             await Malformed(model.Path, "{\"data\":null}", model.Call);
             await Malformed(model.Path, "{}", model.Call);
         }
-        Func<OrganizationClient, MessagingClient, Task> list = (o, _) => o.AudienceProfiles.ListAsync();
+        Func<TeamClient, MessagingClient, Task> list = (o, _) => o.AudienceProfiles.ListAsync();
         foreach (var bad in new[] { "null", "{}", "{\"data\":[],\"page\":null}", "{\"data\":null,\"page\":{\"nextCursor\":null,\"hasMore\":false}}", "{\"data\":[],\"page\":{\"hasMore\":false}}", "{\"data\":[],\"page\":{\"nextCursor\":null,\"hasMore\":0}}" }) await Malformed("/platform/audience-profiles", bad, list);
         foreach (var bad in new[] { "{\"success\":false,\"data\":" + Flow + "}", "{\"data\":" + Flow + "}", "{\"success\":true,\"data\":null}" }) await Malformed("/messaging/projects/launch/campaign-reply-flows/" + A, bad, (_, m) => m.Campaigns.GetReplyFlowAsync("launch", A));
         await Malformed("/platform/campaign-reply-flows/" + A + "?projectId=" + B, Envelope(Flow.Replace("\"kind\":\"text\"", "\"kind\":\"unknown\"")), (o, _) => o.Campaigns.GetReplyFlowAsync(A, new(B)));
@@ -325,8 +325,8 @@ internal static class CampaignContractTests
             using var fixture = new WireFixture();
             using var sink = new WireFixture();
             var serving = fixture.ServeAsync("GET", "/platform/campaigns/" + C + "/recipients/export?projectId=" + B, null, body, status, new Dictionary<string, string> { ["content-type"] = mime, ["location"] = sink.Url.ToString() });
-            using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
-            try { await org.Campaigns.ExportRecipientsAsync(C, new(B)); throw new Exception("Invalid CSV success accepted."); }
+            using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0 });
+            try { await team.Campaigns.ExportRecipientsAsync(C, new(B)); throw new Exception("Invalid CSV success accepted."); }
             catch (PolymorfaException error)
             {
                 Check(error.Status == status && error.RequestId == "req_native" && (status == 302 ? error.GetType() == typeof(PolymorfaException) && error.Code is null : error is PolymorfaServerException && error.Code == "invalid_response"), "CSV failure classification differs.");
@@ -338,8 +338,8 @@ internal static class CampaignContractTests
         {
             using var fixture = new WireFixture();
             var serving = fixture.ServeAsync("GET", "/platform/campaign-settings", null, "{\"error\":{\"code\":\"" + code + "\",\"message\":\"declined\",\"param\":\"variables.name\",\"details\":{\"count\":1}}}", status, new Dictionary<string, string> { ["x-trace-id"] = "trace", ["idempotent-replayed"] = "true", ["content-disposition"] = "attachment; filename=report.csv", ["set-cookie"] = "private", ["x-private"] = "private", ["x-polymorfa-operation-id"] = "op_capture" });
-            using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
-            try { await org.Campaigns.GetSettingsAsync(); throw new Exception("Remote error accepted."); }
+            using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url });
+            try { await team.Campaigns.GetSettingsAsync(); throw new Exception("Remote error accepted."); }
             catch (PolymorfaException error) { Check(error.Status == status && error.Code == code && error.Param == "variables.name" && error.Metadata is { Attempts: 1 } && error.Metadata.Headers["x-trace-id"] == "trace" && error.Metadata.Headers["idempotent-replayed"] == "true" && error.Metadata.Headers.ContainsKey("content-disposition") && !error.Metadata.Headers.ContainsKey("set-cookie") && !error.Metadata.Headers.ContainsKey("x-private") && error.Details?.GetProperty("count").GetInt32() == 1, "Error fields/metadata lost."); checks++; }
             await serving;
         }
@@ -367,10 +367,10 @@ internal static class CampaignContractTests
                     var path = messaging ? "/messaging/projects/launch/campaigns/" + C + "/test-send" : "/platform/campaigns/" + C + "/test-send";
                     var body = "{" + (messaging ? "" : "\"projectId\":\"" + A + "\",") + "\"sessionId\":\"" + B + "\",\"to\":\"+15551234567\",\"variables\":{\"name\":\"original\"}}";
                     var serving = Task.Run(async () => { await fixture.ServeAsync("POST", path, body, "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}", 503, new Dictionary<string, string> { ["retry-after"] = "0" }); await fixture.ServeAsync("POST", path, body, Envelope(Test, messaging)); });
-                    using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
-                    using var msg = new MessagingClient(OrganizationKey(), new() { BaseUrl = fixture.Url });
+                    using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url });
+                    using var msg = new MessagingClient(TeamKey(), new() { BaseUrl = fixture.Url });
                     var options = new RequestOptions { MaxNetworkRetries = 1, Headers = headers, IdempotencyKey = caller ? "caller-fixed" : null };
-                    var metadata = messaging ? (await msg.Campaigns.TestSendAsync("launch", C, new(B, Phone, Variables: variables), options)).Metadata : (await org.Project(A).Campaigns.TestSendAsync(C, new(B, Phone, Variables: variables), options)).Metadata;
+                    var metadata = messaging ? (await msg.Campaigns.TestSendAsync("launch", C, new(B, Phone, Variables: variables), options)).Metadata : (await team.Project(A).Campaigns.TestSendAsync(C, new(B, Phone, Variables: variables), options)).Metadata;
                     await serving; Check(metadata.Attempts == 2 && replies == 2, "Test-send retry count differs."); checks++;
                 }
             }
@@ -379,17 +379,17 @@ internal static class CampaignContractTests
             using var fixture = new WireFixture { ExpectedHeaders = new Dictionary<string, string> { ["idempotency-key"] = "caller-fixed" } };
             var body = "{\"replayKey\":\"import\",\"csvBase64\":\"YQ==\"}";
             var serving = Task.Run(async () => { await fixture.ServeAsync("POST", "/platform/audience-profile-imports", body, "{\"error\":{\"code\":\"service_unavailable\",\"message\":\"retry\"}}", 503, new Dictionary<string, string> { ["retry-after"] = "0" }); if (retryExplicit) await fixture.ServeAsync("POST", "/platform/audience-profile-imports", body, Envelope(Job)); });
-            using var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 2 });
-            try { var result = await org.AudienceProfiles.Imports.CreateAsync(new("import", "YQ=="), new() { IdempotencyKey = "caller-fixed", MaxNetworkRetries = retryExplicit ? 1 : null }); Check(retryExplicit && result.Metadata.Attempts == 2, "Explicit unsafe retry differs."); }
+            using var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 2 });
+            try { var result = await team.AudienceProfiles.Imports.CreateAsync(new("import", "YQ=="), new() { IdempotencyKey = "caller-fixed", MaxNetworkRetries = retryExplicit ? 1 : null }); Check(retryExplicit && result.Metadata.Attempts == 2, "Explicit unsafe retry differs."); }
             catch (PolymorfaServerException e) { Check(!retryExplicit && e.Status == 503 && e.Metadata!.Attempts == 1, "Unsafe request replayed by default."); }
             await serving; Check(!fixture.Pending, "Unexpected unsafe replay."); checks++;
         }
         // Cancellation before HTTP and while buffering a finite CSV body.
         using (var fixture = new WireFixture()) using (var cancelled = new CancellationTokenSource())
-        using (var org = new OrganizationClient(OrganizationKey(), new() { BaseUrl = fixture.Url }))
+        using (var team = new TeamClient(TeamKey(), new() { BaseUrl = fixture.Url }))
         {
             cancelled.Cancel();
-            try { await org.Campaigns.ExportRecipientsAsync(C, new(A), new() { CancellationToken = cancelled.Token }); throw new Exception("Pre-cancelled export completed."); }
+            try { await team.Campaigns.ExportRecipientsAsync(C, new(A), new() { CancellationToken = cancelled.Token }); throw new Exception("Pre-cancelled export completed."); }
             catch (PolymorfaCancelledException) { Check(!fixture.Pending, "Pre-cancellation reached HTTP."); checks++; }
         }
         using var listener = new TcpListener(IPAddress.Loopback, 0); listener.Start();
@@ -406,7 +406,7 @@ internal static class CampaignContractTests
             headersSent.SetResult();
             try { Check(await stream.ReadAsync(one, timeout.Token) == 0, "Cancelled CSV connection stayed open."); } catch (IOException) { }
         });
-        using var client = new OrganizationClient(OrganizationKey(), new() { BaseUrl = new Uri("http://127.0.0.1:" + ((IPEndPoint)listener.LocalEndpoint).Port), MaxNetworkRetries = 0 });
+        using var client = new TeamClient(TeamKey(), new() { BaseUrl = new Uri("http://127.0.0.1:" + ((IPEndPoint)listener.LocalEndpoint).Port), MaxNetworkRetries = 0 });
         var pending = client.Campaigns.ExportRecipientsAsync(C, new(A), new() { CancellationToken = cancelBody.Token });
         await headersSent.Task.WaitAsync(timeout.Token); cancelBody.Cancel();
         try { await pending; throw new Exception("Body-cancelled CSV completed."); } catch (PolymorfaCancelledException) { checks++; }

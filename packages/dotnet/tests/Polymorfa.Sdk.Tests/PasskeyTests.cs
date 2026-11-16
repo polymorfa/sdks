@@ -42,7 +42,7 @@ internal static class PasskeyTests
             string[] suffix = ["challenge", "assertion", "confirmation"];
             string[] key = ["issue", "assertion", "confirm"];
             var serving = wire.ServeAsync("POST", "/messaging/desk/passkey/" + suffix[i], f.GetProperty(key[i]).GetRawText(), "{\"error\":{\"code\":\"future_passkey\",\"message\":\"refused\"}}", 503);
-            using var c = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = wire.Url, MaxNetworkRetries = 3, Timeout = TimeSpan.FromSeconds(3) });
+            using var c = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = wire.Url, MaxNetworkRetries = 3, Timeout = TimeSpan.FromSeconds(3) });
             var o = new RequestOptions { MaxNetworkRetries = 3, IdempotencyKey = "caller-key" };
             try { if (i == 0) await c.Passkeys.IssueChallengeAsync("desk", issue, o); else if (i == 1) await c.Passkeys.SubmitAssertionAsync("desk", assertion, o); else await c.Passkeys.ConfirmAsync("desk", confirm, o); throw new Exception("Expected server refusal."); }
             catch (PolymorfaServerException e) { ResourceTests.Equal(e.Code, "future_passkey"); ResourceTests.Equal(e.Metadata?.Attempts, 1); }
@@ -52,7 +52,7 @@ internal static class PasskeyTests
         {
             using var wire = new WireFixture { Authorization = "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k" };
             var serving = wire.ServeAsync("POST", "/messaging/desk/passkey/confirmation", f.GetProperty("confirm").GetRawText(), "{\"error\":{\"code\":\"future_passkey\",\"message\":\"refused\"}}", status.GetInt32());
-            using var c = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = wire.Url, Timeout = TimeSpan.FromSeconds(3) });
+            using var c = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = wire.Url, Timeout = TimeSpan.FromSeconds(3) });
             try { await c.Passkeys.ConfirmAsync("desk", confirm); throw new Exception("Expected refusal."); }
             catch (PolymorfaException e) { ResourceTests.Equal(e.Code, "future_passkey"); ResourceTests.Equal(e.Status, status.GetInt32()); }
             await serving;
@@ -61,13 +61,13 @@ internal static class PasskeyTests
             for (var i = 0; i < 3; i++)
             {
                 using var handler = new BrokenHandler(nonJson);
-                using var c = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = new("https://api.example"), TransportHandler = handler });
+                using var c = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = new("https://api.example"), TransportHandler = handler });
                 var o = new RequestOptions { MaxNetworkRetries = 3, IdempotencyKey = "caller" };
                 try { if (i == 0) await c.Passkeys.IssueChallengeAsync("desk", issue, o); else if (i == 1) await c.Passkeys.SubmitAssertionAsync("desk", assertion, o); else await c.Passkeys.ConfirmAsync("desk", confirm, o); throw new Exception("Expected unknown outcome."); }
                 catch (PolymorfaException) { ResourceTests.Equal(handler.Count, 1); }
             }
         using (var handler = new BrokenHandler(false))
-        using (var c = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = new("https://api.example"), TransportHandler = handler }))
+        using (var c = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = new("https://api.example"), TransportHandler = handler }))
         {
             foreach (var bad in new[] { assertion with { Assertion = assertion.Assertion with { Id = new string('x', 1365) } }, assertion with { Assertion = assertion.Assertion with { Response = assertion.Assertion.Response with { UserHandleB64 = new string('x', 87) } } }, assertion with { Assertion = assertion.Assertion with { Response = assertion.Assertion.Response with { SignatureB64 = new string('x', 1048576) } } } })
             {

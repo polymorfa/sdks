@@ -89,7 +89,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "requestBody": {
           "required": true,
@@ -202,7 +202,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -263,7 +263,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -409,7 +409,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -544,7 +544,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -686,7 +686,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -751,7 +751,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:manage",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -897,7 +897,7 @@
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
         "x-required-scope": "functions:invoke",
-        "x-dashboard-required-organization-role": "owner_or_admin",
+        "x-dashboard-required-team-role": "owner_or_admin",
         "security": [{ "ApiKeyAuth": [] }, { "ConsoleSession": [] }],
         "parameters": [
           {
@@ -1193,7 +1193,7 @@
               "request_log_url": {
                 "type": "string",
                 "format": "uri",
-                "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             }
           },

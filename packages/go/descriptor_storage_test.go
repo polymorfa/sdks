@@ -234,7 +234,7 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 					<-r.Context().Done()
 				}))
 				defer server.Close()
-				client, err := sdk.NewOrganizationClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL, MaxNetworkRetries: intPtrDescriptor(0)})
+				client, err := sdk.NewTeamClient(sdk.Config{Credential: sdk.Credential{Kind: sdk.TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL, MaxNetworkRetries: intPtrDescriptor(0)})
 				if err != nil {
 					t.Fatal(err)
 				}

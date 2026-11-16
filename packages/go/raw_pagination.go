@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// RawRequester is implemented by organization, project and Messaging clients.
+// RawRequester is implemented by team, project and Messaging clients.
 // Every page uses Raw, preserving the client's credential and project boundary.
 type RawRequester interface {
 	Raw(context.Context, RawRequest) (RawResponse, error)

@@ -17,7 +17,7 @@ from polymorfa.errors import (
 from polymorfa.webhook_batching import validate_webhook_batching
 from polymorfa.webhooks import WebhookEventBatch, construct_webhook_delivery
 
-KEY = Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
+KEY = Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
 JPEG = (
     Path(__file__).resolve().parents[3] / "contracts/fixtures/official-group-picture.jpg"
 ).read_bytes()

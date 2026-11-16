@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-type Organization struct {
+type Team struct {
 	ID                       string  `json:"id"`
 	ExternalID               string  `json:"externalId"`
 	Name                     string  `json:"name"`
@@ -22,17 +22,17 @@ type Organization struct {
 	CreatedAt                int64   `json:"createdAt"`
 	UpdatedAt                int64   `json:"updatedAt"`
 }
-type Organizations struct{ t *transport }
+type Teams struct{ t *transport }
 
-func (c *OrganizationClient) Organizations() *Organizations { return &Organizations{c.t} }
-func (r *Organizations) Retrieve(ctx context.Context, o ...RequestOptions) (Response[Envelope[Organization]], error) {
-	return request[Envelope[Organization]](ctx, r.t, "GET", "/platform/team", nil, nil, options(o))
+func (c *TeamClient) Teams() *Teams { return &Teams{c.t} }
+func (r *Teams) Retrieve(ctx context.Context, o ...RequestOptions) (Response[Envelope[Team]], error) {
+	return request[Envelope[Team]](ctx, r.t, "GET", "/platform/team", nil, nil, options(o))
 }
 
-type OrganizationMember struct {
+type TeamMember struct {
 	ID           string  `json:"_id"`
 	CreationTime float64 `json:"_creationTime"`
-	OrgID        string  `json:"orgId"`
+	TeamID       string  `json:"teamId"`
 	UserID       string  `json:"userId"`
 	Email        string  `json:"email"`
 	Name         *string `json:"name"`
@@ -43,9 +43,9 @@ type OrganizationMember struct {
 }
 type Members struct{ t *transport }
 
-func (c *OrganizationClient) Members() *Members { return &Members{c.t} }
-func (r *Members) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]OrganizationMember]], error) {
-	return request[Envelope[[]OrganizationMember]](ctx, r.t, "GET", "/platform/members", nil, nil, options(o))
+func (c *TeamClient) Members() *Members { return &Members{c.t} }
+func (r *Members) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]TeamMember]], error) {
+	return request[Envelope[[]TeamMember]](ctx, r.t, "GET", "/platform/members", nil, nil, options(o))
 }
 
 type APIKeyRecord struct {
@@ -55,7 +55,7 @@ type APIKeyRecord struct {
 	KeyID        string  `json:"keyId"`
 	Start        string  `json:"start"`
 	Last4        string  `json:"last4"`
-	OrgID        string  `json:"orgId"`
+	TeamID       string  `json:"teamId"`
 	Label        string  `json:"label"`
 	Scopes       int64   `json:"scopes"`
 	Source       string  `json:"source"`
@@ -69,7 +69,7 @@ type APIKeyDeactivation struct {
 }
 type APIKeys struct{ t *transport }
 
-func (c *OrganizationClient) APIKeys() *APIKeys { return &APIKeys{c.t} }
+func (c *TeamClient) APIKeys() *APIKeys { return &APIKeys{c.t} }
 func (r *APIKeys) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]APIKeyRecord]], error) {
 	return request[Envelope[[]APIKeyRecord]](ctx, r.t, "GET", "/platform/keys", nil, nil, options(o))
 }
@@ -90,7 +90,7 @@ type ProjectTokenRecord struct {
 }
 type ProjectTokens struct{ t *transport }
 
-func (c *OrganizationClient) ProjectTokens() *ProjectTokens { return &ProjectTokens{c.t} }
+func (c *TeamClient) ProjectTokens() *ProjectTokens { return &ProjectTokens{c.t} }
 func (r *ProjectTokens) List(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[[]ProjectTokenRecord]], error) {
 	return request[Envelope[[]ProjectTokenRecord]](ctx, r.t, "GET", "/platform/tokens", url.Values{"projectId": {id}}, nil, options(o))
 }

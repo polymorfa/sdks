@@ -87,7 +87,7 @@
       "testFile": "tests/request_logs.rs"
     },
     {
-      "sdkMethod": "OrganizationClient.campaigns().get_frequency_cap",
+      "sdkMethod": "TeamClient.campaigns().get_frequency_cap",
       "method": "GET",
       "fixturePath": "/platform/campaign-settings/frequency-cap",
       "status": "covered",
@@ -97,7 +97,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.campaigns().update_frequency_cap",
+      "sdkMethod": "TeamClient.campaigns().update_frequency_cap",
       "method": "PUT",
       "fixturePath": "/platform/campaign-settings/frequency-cap",
       "status": "covered",
@@ -107,7 +107,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.campaigns().enroll",
+      "sdkMethod": "TeamClient.campaigns().enroll",
       "method": "POST",
       "fixturePath": "/platform/campaigns/c%2F1/enrollments",
       "status": "covered",
@@ -127,7 +127,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().list",
+      "sdkMethod": "TeamClient.audience_segments().list",
       "method": "GET",
       "fixturePath": "/platform/audience-segments",
       "status": "covered",
@@ -137,7 +137,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().create",
+      "sdkMethod": "TeamClient.audience_segments().create",
       "method": "POST",
       "fixturePath": "/platform/audience-segments",
       "status": "covered",
@@ -147,7 +147,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().retrieve",
+      "sdkMethod": "TeamClient.audience_segments().retrieve",
       "method": "GET",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -157,7 +157,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().update",
+      "sdkMethod": "TeamClient.audience_segments().update",
       "method": "PATCH",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -167,7 +167,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().delete",
+      "sdkMethod": "TeamClient.audience_segments().delete",
       "method": "DELETE",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -177,7 +177,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().preview",
+      "sdkMethod": "TeamClient.audience_segments().preview",
       "method": "GET",
       "fixturePath": "/platform/audience-segments/s/preview",
       "status": "covered",
@@ -187,7 +187,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.audience_segments().preview_rules",
+      "sdkMethod": "TeamClient.audience_segments().preview_rules",
       "method": "POST",
       "fixturePath": "/platform/audience-segments/preview",
       "status": "covered",

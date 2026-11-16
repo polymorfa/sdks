@@ -1,12 +1,12 @@
 #[allow(dead_code)]
 mod support;
-use polymorfa_sdk::{organization_controls::*, RequestOptions};
+use polymorfa_sdk::{team_controls::*, RequestOptions};
 use serde_json::json;
 #[tokio::test]
-async fn organization_optout_keyword_settings_and_legacy_open_objects_native_wire() {
+async fn team_optout_keyword_settings_and_legacy_open_objects_native_wire() {
     let single: PlatformPayload = [("phone".into(), json!("+15551234567"))].into();
     let batch: PlatformPayload = [("phones".into(), json!(["+15551234567"]))].into();
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/optouts",
@@ -14,7 +14,7 @@ async fn organization_optout_keyword_settings_and_legacy_open_objects_native_wir
         json!({"data":{"entries":[{"phone":"+15551234567"}]}}),
         client.opt_outs().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/optouts",
@@ -24,7 +24,7 @@ async fn organization_optout_keyword_settings_and_legacy_open_objects_native_wir
             .opt_outs()
             .create(Some(&single), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/optouts/batch",
@@ -34,7 +34,7 @@ async fn organization_optout_keyword_settings_and_legacy_open_objects_native_wir
             .opt_outs()
             .create_batch(Some(&batch), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/optouts/%2B15551234567",
@@ -44,7 +44,7 @@ async fn organization_optout_keyword_settings_and_legacy_open_objects_native_wir
             .opt_outs()
             .delete("+15551234567", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/optouts/settings",
@@ -52,7 +52,7 @@ async fn organization_optout_keyword_settings_and_legacy_open_objects_native_wir
         json!({"data":{"enabled":true,"optOutKeywords":["STOP"],"optInKeywords":["START"],"updatedAt":null}}),
         client.opt_outs().get_settings(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/optouts/settings",
@@ -75,7 +75,7 @@ async fn platform_media_and_session_ban_metadata_native_wire() {
         ("contentType".into(), json!("application/pdf")),
     ]
     .into();
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/media/media",
@@ -83,7 +83,7 @@ async fn platform_media_and_session_ban_metadata_native_wire() {
         json!({"data":{"id":"media","contentType":"application/pdf","filename":"file.pdf"}}),
         client.media().retrieve("media", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/media/media",
@@ -91,7 +91,7 @@ async fn platform_media_and_session_ban_metadata_native_wire() {
         json!({"data":{"deleted":true}}),
         client.media().delete("media", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/media/uploads",
@@ -101,7 +101,7 @@ async fn platform_media_and_session_ban_metadata_native_wire() {
             .media()
             .create_upload(Some(&body), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bans",
@@ -109,7 +109,7 @@ async fn platform_media_and_session_ban_metadata_native_wire() {
         json!({"data":[{"id":"ban","sessionName":"support","banCode":403,"banReason":"restricted","banExpiresAt":null,"occurredAt":1000,"status":"active"}]}),
         client.session_bans().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/bans/active",

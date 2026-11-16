@@ -98,3 +98,10 @@ export {
   type MediaStateReply,
 } from "./media-state.js";
 export { isCallReactionEmoji } from "./protocol.js";
+
+export {
+  WaitingRoomCommands,
+  type WaitingRoomAction,
+  type WaitingRoomRequest,
+  type WaitingRoomResult,
+} from "./waiting-room.js";

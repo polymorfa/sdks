@@ -11,11 +11,17 @@ public sealed record RejectIncomingCallResponse(bool Success, string? Message, S
 public sealed record RejectCallRequest(string? Participant = null);
 public sealed record LeaveCallRequest(string ConnectionId, string? Participant = null);
 public sealed record AddCallParticipantRequest(string To);
-public sealed record CallParticipant(string Id, bool AudioMuted, bool Video, string State, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, bool? HandRaised = null);
+public sealed record CallParticipant(string Id, bool AudioMuted, bool Video, string State, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, bool? HandRaised = null, bool? Guest = null, string? Name = null);
 public sealed record CreateCallLinkRequest(string Session, bool? Video = null);
 public sealed record PreviewCallLinkRequest(string Session, string Token, bool? Video = null);
 public sealed record CreatedCallLink(string Session, string Token, string Url, bool Video);
 public sealed record PreviewedCallLink(string Session, bool Video, ConversationReference CreatorConversationIdentity, bool ApprovalRequired, bool IsAdmin);
+public sealed record WaitingRoomControl(string RequestId, string Operation, bool? Enabled = null, string? ParticipantId = null)
+{
+    public string Type => "waiting_room_control";
+}
+public sealed record WaitingRoomControlRequest(string ConnectionId, WaitingRoomControl Control, string? Participant = null);
+public sealed record WaitingRoomControlResult(string Type, string RequestId, bool Ok, string? Code = null);
 public sealed record CallReactionRequest(string ConnectionId, string Emoji, string? Participant = null);
 public sealed record CallHandRequest(string ConnectionId, bool Raised, string? Participant = null);
 public sealed record CheckCallRequest(string Session, string To);
@@ -80,6 +86,15 @@ public sealed class Calls
     {
         Participant(body.Participant); Connection(body.ConnectionId); if (!(new[] { "", "👍", "❤️", "😂", "😮", "😢", "🙏" }).Contains(body.Emoji)) throw new PolymorfaValidationException("Invalid call reaction.", "invalid_parameter");
         return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/reaction", body, (options ?? new()) with { MaxNetworkRetries = 0 });
+    }
+    /// <summary>Reauthorizes through the API. Inspect Data.Data.Ok; unknown outcomes are never replayed.</summary>
+    public Task<ApiResponse<SuccessEnvelope<WaitingRoomControlResult>>> ModerateWaitingRoomAsync(string callId, WaitingRoomControlRequest body, RequestOptions? options = null)
+    {
+        Participant(body.Participant); Connection(body.ConnectionId); Connection(body.Control.RequestId);
+        var control = body.Control;
+        var valid = control.Operation == "toggle" ? control.Enabled is not null && control.ParticipantId is null : control.Operation is "admit" or "deny" && control.Enabled is null && control.ParticipantId is not null && Regex.IsMatch(control.ParticipantId, @"^[1-9][0-9]{0,18}$", RegexOptions.CultureInvariant);
+        if (!valid) throw new PolymorfaValidationException("Invalid waiting-room control.", "invalid_parameter");
+        return http.RequestAsync<SuccessEnvelope<WaitingRoomControlResult>>(HttpMethod.Post, Path(callId) + "/waiting-room", body, (options ?? new()) with { MaxNetworkRetries = 0 });
     }
     public Task<ApiResponse<SuccessResponse>> SetHandRaisedAsync(string callId, CallHandRequest body, RequestOptions? options = null) { Participant(body.Participant); Connection(body.ConnectionId); return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/hand", body, (options ?? new()) with { MaxNetworkRetries = 0 }); }
     public Task<ApiResponse<SuccessEnvelope<CallPermission>>> RetrieveCallPermissionAsync(string session, string to, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(session, "session"); NonEmpty(to, "to"); return http.RequestAsync<SuccessEnvelope<CallPermission>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(session)}/call-permissions/{Uri.EscapeDataString(to)}", null, options); }

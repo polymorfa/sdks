@@ -230,3 +230,31 @@ describe("participant_left", () => {
     ).toMatchObject({ reason: "hangup" });
   });
 });
+
+describe("guest participants", () => {
+  it("preserves the provider marker and name without requiring a phone", () => {
+    const participant = {
+      id: "123",
+      guest: true,
+      name: "<Ada Guest>",
+      audioMuted: false,
+      video: false,
+      state: "connected",
+    };
+    expect(
+      parseMediaControl(
+        JSON.stringify({ type: "participant_joined", participant }),
+      ),
+    ).toEqual({ type: "participant_joined", participant });
+    for (const invalid of [
+      { ...participant, guest: "true" },
+      { ...participant, name: 23 },
+    ]) {
+      expect(
+        parseMediaControl(
+          JSON.stringify({ type: "participant_joined", participant: invalid }),
+        ),
+      ).toBeUndefined();
+    }
+  });
+});

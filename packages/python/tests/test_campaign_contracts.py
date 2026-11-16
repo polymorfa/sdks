@@ -67,7 +67,7 @@ async def wire(
             server,
             AsyncClient(
                 Credential(
-                    "organization_api_key",
+                    "team_api_key",
                     "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
@@ -377,7 +377,7 @@ def response_fixture(method, path):
 
 
 @pytest.mark.parametrize("method,path,invoke,query,body", route_cases())
-async def test_all_non_csv_organization_and_bound_routes(method, path, invoke, query, body):
+async def test_all_non_csv_team_and_bound_routes(method, path, invoke, query, body):
     payload = response_fixture(method, path)
     async with wire(payload) as (client, requests):
         result = await invoke(client)
@@ -461,7 +461,7 @@ async def test_messaging_routes_escape_slug_and_keep_envelope(operation, tail, b
         assert requests[0][2] == body
 
 
-@pytest.mark.parametrize("resource", ["organization", "project", "messaging"])
+@pytest.mark.parametrize("resource", ["team", "project", "messaging"])
 async def test_csv_is_one_exact_page_and_keeps_safe_metadata(resource):
     csv = '\ufeffphone,note\r\n+15551234567,"one\r\ntwo"\r\n'
     async with wire(
@@ -475,7 +475,7 @@ async def test_csv_is_one_exact_page_and_keeps_safe_metadata(resource):
         },
         raw=csv.encode(),
     ) as (client, requests):
-        if resource == "organization":
+        if resource == "team":
             result = await client.campaigns.export_recipients(
                 ID, {"projectId": PROJECT, "limit": 1}
             )
@@ -513,7 +513,7 @@ async def test_csv_refuses_wrong_status_content_and_redirect(status, content_typ
         assert len(requests) == 1
 
 
-async def test_bound_resources_are_immutable_and_expose_no_organization_operations():
+async def test_bound_resources_are_immutable_and_expose_no_team_operations():
     async with wire(
         {"data": {"signalModeDefault": None, "effectiveSignalMode": "standard", "revision": 0}}
     ) as (client, requests):
@@ -789,7 +789,7 @@ async def test_cancelling_csv_body_wait_settles_request_and_does_not_fetch_next_
         async with (
             AsyncClient(
                 Credential(
-                    "organization_api_key",
+                    "team_api_key",
                     "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
@@ -830,7 +830,7 @@ async def test_cancelling_import_wait_is_not_a_durable_cancel():
         async with (
             AsyncClient(
                 Credential(
-                    "organization_api_key",
+                    "team_api_key",
                     "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
                 ),
                 base_url=f"http://127.0.0.1:{server.sockets[0].getsockname()[1]}",
@@ -974,7 +974,7 @@ async def test_profile_read_retries_capture_query_before_caller_mutation():
         ),
     ],
 )
-async def test_org_custody_null_body_or_selector_never_becomes_project_read(invoke):
+async def test_team_custody_null_body_or_selector_never_becomes_project_read(invoke):
     async with wire() as (client, requests):
         with pytest.raises(ValidationError):
             await invoke(client)

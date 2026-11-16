@@ -6,7 +6,7 @@ import {
   assertServerRuntime,
   validateClientCredential,
   type ClientOptions,
-  type OrganizationClientOptions,
+  type TeamClientOptions,
   type ProjectScopedClientOptions,
 } from "./credentials.js";
 import { PolymorfaConfigurationError } from "./errors.js";
@@ -43,7 +43,7 @@ import type { ClientOwner } from "./platform/developer-types.js";
 import { MediaResource } from "./platform/media.js";
 import { MembersResource } from "./platform/members.js";
 import { OptOutsResource } from "./platform/opt-outs.js";
-import { OrganizationsResource } from "./platform/organizations.js";
+import { TeamsResource } from "./platform/teams.js";
 import { ProjectTokensResource } from "./platform/project-tokens.js";
 import { ProjectsResource } from "./platform/projects.js";
 import { QuickLinkSettingsResource } from "./platform/quicklink-settings.js";
@@ -86,7 +86,7 @@ export interface ClientBase<O extends ClientOwner> {
   project(projectId: string): Client<"project">;
 }
 
-export interface OrganizationControlPlaneResources {
+export interface TeamControlPlaneResources {
   readonly audienceProfiles: AudienceProfilesResource;
   readonly apiKeys: ApiKeysResource;
   readonly audiences: AudiencesResource;
@@ -101,7 +101,7 @@ export interface OrganizationControlPlaneResources {
   readonly audienceSegments: AudienceSegmentsResource;
   readonly customers: CustomersResource;
   readonly members: MembersResource;
-  readonly organizations: OrganizationsResource;
+  readonly teams: TeamsResource;
   readonly media: MediaResource;
   readonly optOuts: OptOutsResource;
   readonly projects: ProjectsResource;
@@ -118,13 +118,11 @@ export interface ProjectControlPlaneResources {
   readonly functions: FunctionsResource;
 }
 
-export type Client<O extends ClientOwner = "organization"> = ClientBase<O> &
-  (O extends "organization"
-    ? OrganizationControlPlaneResources
-    : ProjectControlPlaneResources);
+export type Client<O extends ClientOwner = "team"> = ClientBase<O> &
+  (O extends "team" ? TeamControlPlaneResources : ProjectControlPlaneResources);
 
 export interface ClientConstructor {
-  new (options: OrganizationClientOptions): Client<"organization">;
+  new (options: TeamClientOptions): Client<"team">;
   new (options: ProjectScopedClientOptions): Client<"project">;
 }
 
@@ -166,7 +164,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         "projectId",
       );
     }
-    this.owner = projectId === null ? "organization" : "project";
+    this.owner = projectId === null ? "team" : "project";
     this.projectId = projectId;
     this.#credential = credential;
     this.#transport =
@@ -228,7 +226,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         signalCustody: new SignalCustodyResource(this.#transport, projectId),
       });
 
-    if (this.owner === "organization") {
+    if (this.owner === "team") {
       Object.assign(this, {
         apiKeys: new ApiKeysResource(this.#transport),
         audiences: new AudiencesResource(this.#transport),
@@ -242,7 +240,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         audienceSegments: new AudienceSegmentsResource(this.#transport),
         customers: new CustomersResource(this.#transport),
         members: new MembersResource(this.#transport),
-        organizations: new OrganizationsResource(this.#transport),
+        teams: new TeamsResource(this.#transport),
         media: new MediaResource(this.#transport),
         optOuts: new OptOutsResource(this.#transport),
         projects: new ProjectsResource(this.#transport),

@@ -90,7 +90,7 @@ func TestInteractiveCampaignStableReplyIDWire(t *testing.T) {
 		w.Write([]byte(campaignFixture))
 	}))
 	defer server.Close()
-	client, err := NewOrganizationClient(orgConfig(server.URL))
+	client, err := NewTeamClient(teamConfig(server.URL))
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -121,7 +121,7 @@ func TestInteractiveCampaignExtensionIDConflictsNoHTTP(t *testing.T) {
 	calls := 0
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++ }))
 	defer server.Close()
-	client, err := NewOrganizationClient(orgConfig(server.URL))
+	client, err := NewTeamClient(teamConfig(server.URL))
 	if err != nil {
 		t.Fatal(err)
 	}

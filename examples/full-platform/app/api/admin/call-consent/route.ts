@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import {
   action,
   integer,
@@ -15,7 +15,7 @@ import {
 
 /** Reads the blocked country codes and the first page of the do-not-call list. */
 export const GET = route("admin", async ({ url }) => {
-  const client = organization();
+  const client = team();
   const cursor = url.searchParams.get("cursor");
   const [policy, page] = await Promise.all([
     client.callPolicy.retrieve(),
@@ -32,7 +32,7 @@ export const GET = route("admin", async ({ url }) => {
 });
 
 export const POST = route("admin", async ({ body }) => {
-  const client = organization();
+  const client = team();
   switch (action(body)) {
     case "setBlockedCountryCodes":
       return client.callPolicy.update({

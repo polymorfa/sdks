@@ -82,7 +82,7 @@ async def test_typed_media_public_json_routes(case):
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     async with cls(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -141,7 +141,7 @@ async def test_all_media_binary_helpers_and_storage_credential_isolation(helper,
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -195,7 +195,7 @@ async def test_all_media_binary_helpers_and_storage_credential_isolation(helper,
 async def test_invalid_storage_redirect_metadata_preserved(location):
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(
@@ -240,7 +240,7 @@ async def test_body_failure_after_operation_admission_preserves_metadata_and_nev
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -302,7 +302,7 @@ async def test_actual_unbuffered_media_stream_and_task_cancellation():
         url = f"http://127.0.0.1:{native.sockets[0].getsockname()[1]}"
         async with AsyncMessagingClient(
             Credential(
-                "organization_api_key",
+                "team_api_key",
                 "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             ),
             base_url=url,

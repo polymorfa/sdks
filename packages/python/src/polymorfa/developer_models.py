@@ -17,7 +17,7 @@ class EncodedPayload(TypedDict):
 
 class EventBase(TypedDict):
     id: str
-    organizationId: str
+    teamId: str
     type: str
     source: Literal["runtime", "platform", "test"]
     environment: Literal["development", "production"]
@@ -28,7 +28,7 @@ class EventBase(TypedDict):
     metadataExpiresAt: str
 
 
-class OrganizationEvent(EventBase):
+class TeamEvent(EventBase):
     projectId: None
 
 
@@ -36,7 +36,7 @@ class ProjectEvent(EventBase):
     projectId: str
 
 
-Event = OrganizationEvent | ProjectEvent
+Event = TeamEvent | ProjectEvent
 
 
 class ListEvents(TypedDict, total=False):
@@ -113,7 +113,7 @@ class WebhookBatching(TypedDict):
 class WebhookBase(TypedDict):
     batching: WebhookBatching
     id: str
-    organizationId: str
+    teamId: str
     url: str
     eventTypes: list[str]
     enabled: bool
@@ -125,8 +125,8 @@ class WebhookBase(TypedDict):
     updatedAt: str
 
 
-class OrganizationWebhook(WebhookBase):
-    owner: Literal["organization"]
+class TeamWebhook(WebhookBase):
+    owner: Literal["team"]
     projectId: None
 
 
@@ -135,7 +135,7 @@ class ProjectWebhook(WebhookBase):
     projectId: str
 
 
-Webhook = OrganizationWebhook | ProjectWebhook
+Webhook = TeamWebhook | ProjectWebhook
 
 
 class CreateWebhook(TypedDict):
@@ -227,7 +227,7 @@ class DeliveryOutcome(TypedDict):
 
 class DeliveryBase(TypedDict):
     id: str
-    organizationId: str
+    teamId: str
     eventId: str
     webhookId: str
     status: DeliveryStatus
@@ -244,7 +244,7 @@ class DeliveryBase(TypedDict):
     lastOutcome: DeliveryOutcome | None
 
 
-class OrganizationDelivery(DeliveryBase):
+class TeamDelivery(DeliveryBase):
     projectId: None
 
 
@@ -252,7 +252,7 @@ class ProjectDelivery(DeliveryBase):
     projectId: str
 
 
-Delivery = OrganizationDelivery | ProjectDelivery
+Delivery = TeamDelivery | ProjectDelivery
 
 
 class ListDeliveries(TypedDict, total=False):
@@ -278,7 +278,7 @@ class AttemptResponse(TypedDict):
 
 class AttemptBase(TypedDict):
     id: str
-    organizationId: str
+    teamId: str
     deliveryId: str
     number: int
     status: Literal["pending", "delivering", "succeeded", "failed"]
@@ -292,7 +292,7 @@ class AttemptBase(TypedDict):
     metadataExpiresAt: str
 
 
-class OrganizationAttempt(AttemptBase):
+class TeamAttempt(AttemptBase):
     projectId: None
 
 
@@ -300,7 +300,7 @@ class ProjectAttempt(AttemptBase):
     projectId: str
 
 
-Attempt = OrganizationAttempt | ProjectAttempt
+Attempt = TeamAttempt | ProjectAttempt
 
 
 class RetriedDelivery(TypedDict):
@@ -356,7 +356,7 @@ class OperationCapabilities(TypedDict):
 
 class OperationBase(TypedDict):
     id: str
-    organizationId: str
+    teamId: str
     kind: OperationKind
     resource: OperationResource
     status: OperationStatus
@@ -371,7 +371,7 @@ class OperationBase(TypedDict):
     completedAt: str | None
 
 
-class OrganizationOperation(OperationBase):
+class TeamOperation(OperationBase):
     projectId: None
 
 
@@ -379,7 +379,7 @@ class ProjectOperation(OperationBase):
     projectId: str
 
 
-Operation = OrganizationOperation | ProjectOperation
+Operation = TeamOperation | ProjectOperation
 
 
 class ListOperations(TypedDict, total=False):

@@ -6,7 +6,7 @@ import {
   PolymorfaServerError,
 } from "../src/index.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 const projectId = "018f0000-0000-7000-8000-000000000001";
 const servers: TestServer[] = [];
 afterEach(async () => {
@@ -16,7 +16,7 @@ it("selects delivery intent versions without changing legacy reset or explicit v
   const server = await startTestServer(() => ({ body: '{"data":{}}' }));
   servers.push(server);
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   }).project(projectId);
   await c.sessionConfiguration.update({
@@ -51,7 +51,7 @@ it("keeps QuickLink omission, explicit modes and descriptor consent distinct", a
   }));
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   await m.quickLinks.create();
@@ -91,11 +91,11 @@ it("keeps QuickLink omission, explicit modes and descriptor consent distinct", a
 it("rejects archive writes, nested custody aliases and supplementary custody before I/O", async () => {
   const fetch = vi.fn<typeof globalThis.fetch>();
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     fetch,
   });
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     fetch,
   }).project(projectId);
   const calls = [
@@ -196,7 +196,7 @@ it("validates canonical history success and server credentials", async () => {
   }));
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   await expect(
@@ -244,7 +244,7 @@ it("submits keyed history commands once with call-time wire bytes", async () => 
   });
   servers.push(server);
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const options = {
@@ -281,7 +281,7 @@ it("retains A/B configuration owners through interleaved reads, writes and calle
   const server = await startTestServer(() => ({ body: '{"data":{}}' }));
   servers.push(server);
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const a = c.project(projectId).sessionConfiguration,
@@ -369,7 +369,7 @@ it("retains old and new configuration reads, requested/effective divergence and 
   });
   servers.push(server);
   const c = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const legacy = (await c.project(projectId).sessionConfiguration.retrieve())
@@ -426,7 +426,7 @@ it("retains old and new configuration reads, requested/effective divergence and 
 it("rejects history command enum, uint32, null and hash violations before I/O", async () => {
   const fetch = vi.fn<typeof globalThis.fetch>();
   const m = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     fetch,
   });
   const retry = { syncType: "RECENT", chunkOrder: 0 };

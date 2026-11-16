@@ -52,7 +52,7 @@ func TestNativeFrameworkAuthenticatedTokenBoundary(t *testing.T) {
 				w.Write([]byte(`{"success":true,"data":{"token":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","expiresAt":"2030-01-01T00:00:00Z"}}`))
 			}))
 			defer upstream.Close()
-			sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: upstream.URL})
+			sdk, err := polymorfa.NewMessagingClient(polymorfa.Config{Credential: polymorfa.Credential{Kind: polymorfa.TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: upstream.URL})
 			if err != nil {
 				t.Fatal(err)
 			}

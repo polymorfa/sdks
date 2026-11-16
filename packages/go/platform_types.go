@@ -46,7 +46,7 @@ type ProjectIcon struct {
 }
 type Project struct {
 	ID          string      `json:"id"`
-	OrgID       string      `json:"orgId"`
+	TeamID      string      `json:"teamId"`
 	Name        string      `json:"name"`
 	Slug        string      `json:"slug"`
 	Icon        ProjectIcon `json:"icon"`
@@ -57,7 +57,7 @@ type Project struct {
 type ProjectWithStats struct {
 	ID             string      `json:"_id"`
 	CreationTime   int64       `json:"_creationTime"`
-	OrgID          string      `json:"orgId"`
+	TeamID         string      `json:"teamId"`
 	Name           string      `json:"name"`
 	Slug           string      `json:"slug"`
 	Icon           ProjectIcon `json:"icon"`
@@ -85,7 +85,7 @@ type ProductionEnrollmentRequest struct {
 }
 type ProductionEnrollmentResult struct {
 	ID               string `json:"id"`
-	OrgID            string `json:"orgId"`
+	TeamID           string `json:"teamId"`
 	Name             string `json:"name"`
 	Slug             string `json:"slug"`
 	Stage            string `json:"stage"`
@@ -105,7 +105,7 @@ type EncodedEventPayload struct {
 }
 type PlatformEvent struct {
 	ID                  string               `json:"id"`
-	OrganizationID      string               `json:"organizationId"`
+	TeamID              string               `json:"teamId"`
 	ProjectID           *string              `json:"projectId"`
 	Type                string               `json:"type"`
 	Source              string               `json:"source"`
@@ -167,20 +167,20 @@ type WebhookSecretMetadata struct {
 	PreviousValidUntil *string `json:"previousValidUntil"`
 }
 type PlatformWebhook struct {
-	Batching       WebhookBatching         `json:"batching"`
-	ID             string                  `json:"id"`
-	OrganizationID string                  `json:"organizationId"`
-	Owner          string                  `json:"owner"`
-	ProjectID      *string                 `json:"projectId"`
-	URL            string                  `json:"url"`
-	EventTypes     []string                `json:"eventTypes"`
-	Enabled        bool                    `json:"enabled"`
-	Format         string                  `json:"format"`
-	RetryPolicy    WebhookRetryPolicy      `json:"retryPolicy"`
-	Headers        []WebhookHeaderMetadata `json:"headers"`
-	Secret         WebhookSecretMetadata   `json:"secret"`
-	CreatedAt      string                  `json:"createdAt"`
-	UpdatedAt      string                  `json:"updatedAt"`
+	Batching    WebhookBatching         `json:"batching"`
+	ID          string                  `json:"id"`
+	TeamID      string                  `json:"teamId"`
+	Owner       string                  `json:"owner"`
+	ProjectID   *string                 `json:"projectId"`
+	URL         string                  `json:"url"`
+	EventTypes  []string                `json:"eventTypes"`
+	Enabled     bool                    `json:"enabled"`
+	Format      string                  `json:"format"`
+	RetryPolicy WebhookRetryPolicy      `json:"retryPolicy"`
+	Headers     []WebhookHeaderMetadata `json:"headers"`
+	Secret      WebhookSecretMetadata   `json:"secret"`
+	CreatedAt   string                  `json:"createdAt"`
+	UpdatedAt   string                  `json:"updatedAt"`
 }
 type CreateWebhookRequest struct {
 	Batching    *WebhookBatchingInput `json:"batching,omitempty"`
@@ -248,14 +248,14 @@ type TestWebhookRequest struct {
 	SessionID string               `json:"sessionId,omitempty"`
 }
 type WebhookDelivery struct {
-	ID             string  `json:"id"`
-	OrganizationID string  `json:"organizationId"`
-	ProjectID      *string `json:"projectId"`
-	EventID        string  `json:"eventId"`
-	WebhookID      string  `json:"webhookId"`
-	Status         string  `json:"status"`
-	AttemptCount   int     `json:"attemptCount"`
-	Capabilities   struct {
+	ID           string  `json:"id"`
+	TeamID       string  `json:"teamId"`
+	ProjectID    *string `json:"projectId"`
+	EventID      string  `json:"eventId"`
+	WebhookID    string  `json:"webhookId"`
+	Status       string  `json:"status"`
+	AttemptCount int     `json:"attemptCount"`
+	Capabilities struct {
 		Retryable bool `json:"retryable"`
 	} `json:"capabilities"`
 	PayloadAvailability string  `json:"payloadAvailability"`
@@ -291,19 +291,19 @@ func (p ListWebhookDeliveriesParams) query() url.Values {
 }
 
 type WebhookDeliveryAttempt struct {
-	ID             string  `json:"id"`
-	OrganizationID string  `json:"organizationId"`
-	ProjectID      *string `json:"projectId"`
-	DeliveryID     string  `json:"deliveryId"`
-	Number         int     `json:"number"`
-	Status         string  `json:"status"`
-	StartedAt      *string `json:"startedAt"`
-	CompletedAt    *string `json:"completedAt"`
-	NextRetryAt    *string `json:"nextRetryAt"`
-	DurationMS     *int    `json:"durationMs"`
-	StatusCode     *int    `json:"statusCode"`
-	ErrorCode      *string `json:"errorCode"`
-	Response       *struct {
+	ID          string  `json:"id"`
+	TeamID      string  `json:"teamId"`
+	ProjectID   *string `json:"projectId"`
+	DeliveryID  string  `json:"deliveryId"`
+	Number      int     `json:"number"`
+	Status      string  `json:"status"`
+	StartedAt   *string `json:"startedAt"`
+	CompletedAt *string `json:"completedAt"`
+	NextRetryAt *string `json:"nextRetryAt"`
+	DurationMS  *int    `json:"durationMs"`
+	StatusCode  *int    `json:"statusCode"`
+	ErrorCode   *string `json:"errorCode"`
+	Response    *struct {
 		ContentType string `json:"contentType"`
 		Excerpt     string `json:"excerpt"`
 		Truncated   bool   `json:"truncated"`
@@ -331,11 +331,11 @@ type OperationActionRequired struct {
 	Details json.RawMessage `json:"details"`
 }
 type Operation struct {
-	ID             string  `json:"id"`
-	OrganizationID string  `json:"organizationId"`
-	ProjectID      *string `json:"projectId"`
-	Kind           string  `json:"kind"`
-	Resource       struct {
+	ID        string  `json:"id"`
+	TeamID    string  `json:"teamId"`
+	ProjectID *string `json:"projectId"`
+	Kind      string  `json:"kind"`
+	Resource  struct {
 		Type string `json:"type"`
 		ID   string `json:"id"`
 	} `json:"resource"`

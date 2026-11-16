@@ -89,7 +89,7 @@ export class OptOutsResource {
     return this.write("/platform/optouts/batch", body, options);
   }
 
-  /** Read the organization's STOP/START keyword capture settings. */
+  /** Read the team's STOP/START keyword capture settings. */
   getSettings(
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<OptOutSettings>>> {

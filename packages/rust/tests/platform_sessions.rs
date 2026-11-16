@@ -3,13 +3,13 @@ mod support;
 use polymorfa_sdk::{configuration::*, platform_sessions::*, RequestOptions};
 use serde_json::json;
 #[tokio::test]
-async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
+async fn team_session_lifecycle_batch_and_configuration_native_wire() {
     let context = SessionProjectContext {
         project_id: Some("project".into()),
     };
-    let session = json!({"sessionId":"s","name":"Support","tenantId":"org","type":"linked_device","testMode":false,"status":"CONNECTED","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
+    let session = json!({"sessionId":"s","name":"Support","tenantId":"team","type":"linked_device","testMode":false,"status":"CONNECTED","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
     let platform = json!({"_id":"number","_creationTime":1,"projectId":"project","sessionId":"s","name":"Support","isBusiness":true,"testMode":false,"status":"CONNECTED","messageCount":2});
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/sessions?projectId=project",
@@ -17,7 +17,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
         json!({"data":[platform]}),
         client.sessions().list(&context, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/sessions/s%2Fone",
@@ -31,7 +31,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
         configuration: SessionConfigurationPatch::default(),
         revision: 3,
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/sessions/s",
@@ -41,7 +41,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
             .sessions()
             .update("s", &update, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/sessions/s/start",
@@ -51,7 +51,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
             .sessions()
             .start("s", &context, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/sessions/s/stop",
@@ -65,7 +65,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
         project_id: Some("project".into()),
         session_ids: vec!["s".into(), "s2".into()],
     };
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/sessions/stop",
@@ -75,7 +75,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
             .sessions()
             .stop_many(&batch, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/sessions/s",
@@ -83,7 +83,7 @@ async fn organization_session_lifecycle_batch_and_configuration_native_wire() {
         json!({"data":{"removed":true,"sessionId":"s"}}),
         client.sessions().delete("s", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/sessions/delete",
@@ -105,7 +105,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
             absorb_number_id: "other".into(),
         }),
     };
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/sessions/s/tier-quotes",
@@ -117,7 +117,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
             .sessions()
             .quote_tier_change("s", &request, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/sessions/s/tier-quotes/q%2Fone",
@@ -131,7 +131,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
         project_id: None,
         quote_id: "quote".into(),
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         "/platform/sessions/s",
@@ -142,7 +142,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
             .set_tier_override("s", &confirm, RequestOptions::default())
     );
     let capabilities = json!({"session":"s","projectId":"project","status":"synced","syncedAt":"2026-10-11T12:00:00Z","checkedAt":null,"accountType":"business","capabilities":[{"kind":"feature","key":"channels","source":"server","unit":null,"value":true},{"kind":"limit","key":"messageEdit.windowSeconds","source":"client_default","unit":"seconds","value":900},{"kind":"feature","key":"futureFeature","source":null,"unit":null,"value":null}]});
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/sessions/s/capabilities",
@@ -154,7 +154,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
     );
     let settings = json!({"presence":"dark","typing":"before_text","reads":"replied_chats","pacing":"jittered","onlineStart":9.0,"onlineEnd":18.0});
     let safety = json!({"session":"s","projectId":"project","project":settings,"override":{"presence":"inherit","typing":"off","reads":"inherit","pacing":"inherit"},"effective":settings,"applied":{"observedAt":"2026-10-11T12:00:00Z","presence":"dark","typing":"off","reads":null,"pacing":"jittered"},"mismatch":false,"entitled":true,"entitlementReason":null});
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/sessions/s/safe-mode",
@@ -169,7 +169,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
         pacing: Some(Inheritable::Setting(SafeModePacing::Conversation)),
         ..Default::default()
     };
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/sessions/s/safe-mode",
@@ -191,7 +191,7 @@ async fn reviewed_tier_changes_hybrid_choices_and_safety_native_wire() {
 }
 #[tokio::test]
 async fn reviewed_quote_confirmation_rejects_ambiguous_or_missing_choice_before_network() {
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     let request = NumberTierQuoteRequest {
         project_id: None,
         tier_override: Some(NumberTier::Pro),

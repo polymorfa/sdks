@@ -62,7 +62,7 @@ export function checkNativeSupplements(root, inventory) {
     inventory.implementationReference.typescriptCommit,
     /^[a-f0-9]{40}$/,
   );
-  assert.equal(inventory.baselineLedger.operations, 582);
+  assert.equal(inventory.baselineLedger.operations, 579);
   const supplements = new Map();
   for (const entry of inventory.supplements) {
     const contract = JSON.parse(readFileSync(resolve(root, entry.path)));

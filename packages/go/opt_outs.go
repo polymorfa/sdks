@@ -15,7 +15,7 @@ type UpdateOptOutSettingsRequest struct {
 }
 type OptOuts struct{ t *transport }
 
-func (c *OrganizationClient) OptOuts() *OptOuts { return &OptOuts{c.t} }
+func (c *TeamClient) OptOuts() *OptOuts { return &OptOuts{c.t} }
 func (r *OptOuts) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[PlatformPayload]], error) {
 	return request[Envelope[PlatformPayload]](ctx, r.t, "GET", "/platform/optouts", nil, nil, options(o))
 }

@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
 
@@ -197,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("171a9683ff45d11a4b5d3917dc428ad2722b0d99");
+    expect(source.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -211,29 +211,33 @@ describe("reconciled coverage evidence", () => {
     }
   });
 
-  it("keeps the six Test-route overrides bound to their accepted source", () => {
-    const pin = JSON.parse(
-      readFileSync(
-        repositoryFile("contracts/test-number-dropin-routes.json"),
-        "utf8",
-      ),
-    );
-    expect(pin.repository).toBe("polymorfa/polymorfa");
-    expect(pin.commit).toBe("eda77760b56095a771c55e5d2df18be23e985377");
-    const overrides = ledger.operations.filter(
-      (operation) => operation.sourceCommit === pin.commit,
-    );
-    expect(overrides.map((operation) => operation.operationId).sort()).toEqual([
+  it("covers the six Number-scoped Test routes from the global baseline", () => {
+    const ids = [
       "createTestingHistoryFixture",
       "getTestingPhone",
       "listTestEventFixtures",
       "sendTestingPhoneMessage",
       "triggerTestEvent",
       "unlinkTestingPhoneDevice",
-    ]);
-    expect(
-      overrides.every((operation) => operation.typescript.status === "covered"),
-    ).toBe(true);
+    ];
+    const operations = ledger.operations.filter((operation) =>
+      ids.includes(operation.operationId),
+    );
+    expect(operations.map((operation) => operation.operationId).sort()).toEqual(
+      ids,
+    );
+    for (const operation of operations) {
+      expect(operation.typescript.status, operation.operationId).toBe(
+        "covered",
+      );
+      expect(operation.path, operation.operationId).not.toContain(
+        "/messaging/testing/",
+      );
+      expect(
+        (operation as LedgerEntry & { sourceCommit?: string }).sourceCommit,
+        operation.operationId,
+      ).toBeUndefined();
+    }
   });
 
   it("pins Analytics to the same full Platform source and snapshot hash", () => {
@@ -246,7 +250,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.supplements).toBeUndefined();
     expect(source.contracts.platform.sha256).toBe(
-      "71454ab4bb66d844aeedd325d9a62086cd6b6ba39a135197fd4f5ca29ef089e8",
+      "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485",
     );
     for (const id of [
       "getWhatsAppAnalytics",
@@ -291,15 +295,24 @@ describe("reconciled coverage evidence", () => {
     "proves $operationId uses its covered HTTP route and body",
     async (fixture) => {
       const mapping = entry(fixture.operationId);
-      expect(mapping.typescript).toEqual({
-        status: "covered",
-        method: `MessagingClient.voip.${fixture.method}`,
-      });
+      if (fixture.operationId === "updateCallSettings") {
+        // The request also accepts acceptTerms and termsLocale, which the SDK
+        // does not type yet; the route and body below are still proven.
+        expect(mapping.typescript).toMatchObject({
+          status: "partial",
+          milestone: "contract-f180dc1ee2-sync",
+        });
+      } else {
+        expect(mapping.typescript).toEqual({
+          status: "covered",
+          method: `MessagingClient.voip.${fixture.method}`,
+        });
+      }
       const fetch = vi.fn(async () =>
         Response.json(fixture.response, { status: fixture.status }),
       );
       const messaging = new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         baseUrl: "https://api.example.com",
         maxNetworkRetries: 0,
         fetch,
@@ -331,7 +344,7 @@ describe("reconciled coverage evidence", () => {
         expect(JSON.parse(init.body as string)).toEqual(fixture.body);
       }
       expect(new Headers(init.headers).get("authorization")).toBe(
-        `Bearer ${ORGANIZATION_API_KEY}`,
+        `Bearer ${TEAM_API_KEY}`,
       );
       if (fixture.method === "place") {
         expect(new Headers(init.headers).get("idempotency-key")).toBe(
@@ -361,8 +374,8 @@ describe("reconciled coverage evidence", () => {
     const fetch = vi.fn(async () => Response.json({ data: {} }));
     const client = new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       fetch,
     });

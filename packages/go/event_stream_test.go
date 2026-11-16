@@ -15,15 +15,15 @@ import (
 )
 
 type streamWireCase struct {
-	SDKMethod    string
-	Method       string
-	Path         string
-	Organization bool
+	SDKMethod string
+	Method    string
+	Path      string
+	Team      bool
 }
 
 var streamWireCases = []streamWireCase{
 	{"ProjectClient.Events.Stream", "GET", "/platform/projects/p/events/stream", false},
-	{"OrganizationClient.Events.Stream", "GET", "/platform/projects/p/events/stream", true},
+	{"TeamClient.Events.Stream", "GET", "/platform/projects/p/events/stream", true},
 }
 
 func TestEventStreamWire(t *testing.T) {
@@ -54,11 +54,11 @@ func TestEventStreamWire(t *testing.T) {
 				io.WriteString(w, "data: \"event\":{\"id\":\"e\",\"projectId\":\"p\",\"type\":\"future.event\",\"payloadAvailability\":\"available\",\"payload\":{\"encoding\":\"base64\",\"data\":\""+payload+"\"}}}\n\n")
 			}))
 			defer s.Close()
-			org, err := NewOrganizationClient(orgConfig(s.URL))
+			team, err := NewTeamClient(teamConfig(s.URL))
 			if err != nil {
 				t.Fatal(err)
 			}
-			project, _ := org.Project("p")
+			project, _ := team.Project("p")
 			resource := project.Events()
 			params := EventStreamParams{Types: []string{"message.*"}, Since: "start", Ack: "manual", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond, OnGap: func(g EventStreamGap) {
 				if g.MissedEvents != 2 {
@@ -66,8 +66,8 @@ func TestEventStreamWire(t *testing.T) {
 				}
 				gaps++
 			}}
-			if f.Organization {
-				resource = org.Events()
+			if f.Team {
+				resource = team.Events()
 				params.ProjectID = "p"
 			}
 			stream, err := resource.Stream(params)
@@ -107,8 +107,8 @@ func TestEventStreamHeartbeatAndRevocation(t *testing.T) {
 				<-r.Context().Done()
 			}))
 			defer s.Close()
-			org, _ := NewOrganizationClient(orgConfig(s.URL))
-			p, _ := org.Project("p")
+			team, _ := NewTeamClient(teamConfig(s.URL))
+			p, _ := team.Project("p")
 			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 			defer cancel()
 			reconnects := 0
@@ -141,10 +141,10 @@ func TestEventStreamHeartbeatAndRevocation(t *testing.T) {
 }
 
 var streamAckFixtures = []operationFixture{
-	{"ProjectClient.Events.AcknowledgeStream", "POST", "/platform/projects/p/events/stream/stream/ack", "", `{"cursor":"next","sequence":2}`, `{"data":{"streamId":"stream","acknowledgedCursor":"next","sequence":2,"replayed":false}}`, "acknowledgedCursor", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"ProjectClient.Events.AcknowledgeStream", "POST", "/platform/projects/p/events/stream/stream/ack", "", `{"cursor":"next","sequence":2}`, `{"data":{"streamId":"stream","acknowledgedCursor":"next","sequence":2,"replayed":false}}`, "acknowledgedCursor", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(p.Events().AcknowledgeStream(ctx, "stream", EventStreamAcknowledgement{"next", 2}, ""))
 	}},
-	{"OrganizationClient.Events.AcknowledgeStream", "POST", "/platform/projects/p/events/stream/stream/ack", "", `{"cursor":"next","sequence":2}`, `{"data":{"streamId":"stream","acknowledgedCursor":"next","sequence":2,"replayed":true}}`, "replayed", func(ctx context.Context, m *MessagingClient, o *OrganizationClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Events.AcknowledgeStream", "POST", "/platform/projects/p/events/stream/stream/ack", "", `{"cursor":"next","sequence":2}`, `{"data":{"streamId":"stream","acknowledgedCursor":"next","sequence":2,"replayed":true}}`, "replayed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Events().AcknowledgeStream(ctx, "stream", EventStreamAcknowledgement{"next", 2}, "p"))
 	}},
 }
@@ -167,8 +167,8 @@ func TestEventStreamInvalidPayloadRetainsResumeCursor(t *testing.T) {
 				}
 			}))
 			defer server.Close()
-			org, _ := NewOrganizationClient(orgConfig(server.URL))
-			project, _ := org.Project("p")
+			team, _ := NewTeamClient(teamConfig(server.URL))
+			project, _ := team.Project("p")
 			stream, _ := project.Events().Stream(EventStreamParams{Since: "initial", Ack: "manual", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond})
 			var cursors []string
 			for item, err := range stream.Items(context.Background()) {
@@ -197,8 +197,8 @@ func TestEventStreamFrameByteBounds(t *testing.T) {
 				io.WriteString(w, wire)
 			}))
 			defer server.Close()
-			org, _ := NewOrganizationClient(orgConfig(server.URL))
-			project, _ := org.Project("p")
+			team, _ := NewTeamClient(teamConfig(server.URL))
+			project, _ := team.Project("p")
 			stream, _ := project.Events().Stream(EventStreamParams{Since: "safe"})
 			err, stopped := stream.consume(context.Background(), func(EventStreamItem, error) bool { t.Error("oversized frame delivered"); return false })
 			var failure *Error
@@ -215,8 +215,8 @@ func TestEventStreamFrameByteBounds(t *testing.T) {
 		io.WriteString(w, wire+wire)
 	}))
 	defer server.Close()
-	org, _ := NewOrganizationClient(orgConfig(server.URL))
-	project, _ := org.Project("p")
+	team, _ := NewTeamClient(teamConfig(server.URL))
+	project, _ := team.Project("p")
 	stream, _ := project.Events().Stream(EventStreamParams{})
 	delivered := 0
 	_, stopped := stream.consume(context.Background(), func(item EventStreamItem, err error) bool {

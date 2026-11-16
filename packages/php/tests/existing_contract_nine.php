@@ -64,7 +64,7 @@ foreach ([$ecA,$ecB,$ecA] as $view) {
     $r = $ecRun('GET', '/platform/projects/'.$selected.'/request-logs?limit=1&cursor=next', null, ['data' => [$log],'page' => ['nextCursor' => null,'hasMore' => false,'followCursor' => 'follow']], fn () => $view->requestLogs->list(['cursor' => 'next','limit' => 1]));
     ecCheck($r->items === [$log] && $r->items[0]['id'] === '1234567890123456789' && $r->nextCursor === null, 'RequestLogPage identity and nullable data');
 }
-$ecRun('GET', '/platform/projects/'.$ecProject.'/request-logs?traceId=trace', null, ['data' => [$ecLog],'page' => ['nextCursor' => null,'hasMore' => false,'followCursor' => 'follow']], fn () => $ecOrg->requestLogs->list(['projectId' => $ecProject,'traceId' => 'trace']));
+$ecRun('GET', '/platform/projects/'.$ecProject.'/request-logs?traceId=trace', null, ['data' => [$ecLog],'page' => ['nextCursor' => null,'hasMore' => false,'followCursor' => 'follow']], fn () => $ecTeam->requestLogs->list(['projectId' => $ecProject,'traceId' => 'trace']));
 // Independent Node-authored encryption vectors. SDK serializers never make expected bytes.
 $ecVectors = json_decode((string)file_get_contents(__DIR__.'/fixtures/php41-media-vectors.json'), true, flags:JSON_THROW_ON_ERROR)['fixtures'];
 foreach ($ecPrincipals as $principal) {

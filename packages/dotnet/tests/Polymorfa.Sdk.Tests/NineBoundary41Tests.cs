@@ -4,7 +4,7 @@ using static CampaignExistingTests;
 
 internal static class NineBoundary41Tests
 {
-    private sealed record Boundary(string Name, string Method, string Path, string? Body, string Success, int Status, string Version, Func<MessagingClient, OrganizationClient, RequestOptions?, Task> Call);
+    private sealed record Boundary(string Name, string Method, string Path, string? Body, string Success, int Status, string Version, Func<MessagingClient, TeamClient, RequestOptions?, Task> Call);
     internal static async Task RunAsync()
     {
         var hash = Convert.ToBase64String(new byte[32]); var encoded = hash.TrimEnd('=');
@@ -29,18 +29,18 @@ internal static class NineBoundary41Tests
             await Wire(b, b.Success, b.Status, null, InvalidResponse, b.Version, new Dictionary<string, string> { ["content-type"] = "text/html" });
             foreach (var status in new[] { 401, 409, 422 })
                 await Wire(b, "{\"error\":{\"code\":\"future_remote_code\",\"message\":\"Synthetic\",\"param\":\"safe\"}}", status, null, async call => { try { await call(); throw new Exception("Remote error accepted"); } catch (PolymorfaException e) { Check(e.Status == status && e.Code == "future_remote_code" && e.Param == "safe" && e.Metadata!.Headers["x-trace-id"] == "safe" && !e.Metadata.Headers.ContainsKey("set-cookie"), "Nine safe error metadata"); } }, b.Version, new Dictionary<string, string> { ["x-trace-id"] = "safe", ["set-cookie"] = "secret" });
-            using var wire = new WireFixture(); using var c = new MessagingClient(Key, Options(wire)); using var org = new OrganizationClient(Key, Options(wire));
+            using var wire = new WireFixture(); using var c = new MessagingClient(Key, Options(wire)); using var team = new TeamClient(Key, Options(wire));
             using var stop = new CancellationTokenSource(); stop.Cancel();
-            try { await b.Call(c, org, new() { CancellationToken = stop.Token }); throw new Exception("Cancelled seam succeeded"); } catch (PolymorfaCancelledException) { Check(!wire.Pending, "Nine pre-cancel no HTTP"); }
-            try { await b.Call(c, org, new() { Timeout = TimeSpan.FromMilliseconds(30) }); throw new Exception("Timeout seam succeeded"); } catch (PolymorfaTimeoutException) { Check(wire.Pending, "Nine timeout preserved outside decoding"); }
+            try { await b.Call(c, team, new() { CancellationToken = stop.Token }); throw new Exception("Cancelled seam succeeded"); } catch (PolymorfaCancelledException) { Check(!wire.Pending, "Nine pre-cancel no HTTP"); }
+            try { await b.Call(c, team, new() { Timeout = TimeSpan.FromMilliseconds(30) }); throw new Exception("Timeout seam succeeded"); } catch (PolymorfaTimeoutException) { Check(wire.Pending, "Nine timeout preserved outside decoding"); }
         }
         Console.WriteLine("PASS nine41 per-seam exact status/MIME, explicit versions, malformed metadata, remote errors, cancellation and timeout");
     }
     private static async Task Wire(Boundary b, string response, int status, RequestOptions? options, Func<Func<Task>, Task> expectation, string version, IReadOnlyDictionary<string, string>? headers = null)
     {
         using var wire = new WireFixture { AbsentHeaders = ["idempotency-key"], ExpectedHeaders = new Dictionary<string, string> { ["polymorfa-version"] = version } };
-        using var c = new MessagingClient(Key, Options(wire)); using var org = new OrganizationClient(Key, Options(wire));
+        using var c = new MessagingClient(Key, Options(wire)); using var team = new TeamClient(Key, Options(wire));
         var serve = wire.ServeAsync(b.Method, b.Path, b.Body, response, status, headers);
-        await expectation(() => b.Call(c, org, options)); await serve;
+        await expectation(() => b.Call(c, team, options)); await serve;
     }
 }

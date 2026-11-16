@@ -1,4 +1,4 @@
-//! Organization-owned Number lifecycle, reviewed tier changes and resolved safety settings.
+//! Team-owned Number lifecycle, reviewed tier changes and resolved safety settings.
 use crate::{
     models::*,
     transport::{configuration, encode, HttpTransport},

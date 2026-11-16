@@ -202,7 +202,7 @@
       "sdkMethod": "chats.downloadMessageMediaStream",
       "status": "covered",
       "testFile": "tests/history_media_stream.php",
-      "behavior": "Native incremental stored-history bytes for organization/project credentials; escaped scoped route, binary Accept/custom headers, filename, response metadata, authoritative history denial, preflight principal/identifier guards, cancellation and admitted body failure without restart."
+      "behavior": "Native incremental stored-history bytes for team/project credentials; escaped scoped route, binary Accept/custom headers, filename, response metadata, authoritative history denial, preflight principal/identifier guards, cancellation and admitted body failure without restart."
     },
     {
       "sdkMethod": "events.listIndexed / IndexedEventPage.nextPage",

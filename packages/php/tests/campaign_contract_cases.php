@@ -24,7 +24,7 @@ $ccRetarget = ['id' => '88888888-8888-4888-8888-888888888888', 'name' => 'Replie
 $ccStop = ['teamId' => $ccProject, 'enabled' => false, 'locale' => null, 'revision' => 0, 'textRevision' => 1, 'acknowledgement' => null, 'updatedAt' => null];
 $ccSummary = ['enabled' => false, 'counts' => ['queued' => 0, 'admitted' => 0, 'completed' => 0, 'failed' => 0, 'unknown' => 0]];
 $ccPage = ['nextCursor' => null, 'hasMore' => false];
-$ccOrg = new Polymorfa\Client($ccCredential, baseUrl: $ccUrl);
+$ccTeam = new Polymorfa\Client($ccCredential, baseUrl: $ccUrl);
 $ccMessaging = new Polymorfa\MessagingClient($ccCredential, baseUrl: $ccUrl);
 $ccJson = static fn (mixed $data): string => json_encode(['data' => $data], JSON_THROW_ON_ERROR);
 $ccMessagingJson = static fn (mixed $data): string => json_encode(['success' => true, 'data' => $data], JSON_THROW_ON_ERROR);
@@ -49,30 +49,30 @@ $ccCases = [
     ['getCampaignReplyFlow', 'GET', '/messaging/projects/slug/campaign-reply-flows/'.$ccFlowId, null, $ccMessagingJson($ccFlowData), fn () => $ccMessaging->campaigns->getReplyFlow('slug', $ccFlowId, $ccOptions->value)],
     ['setCampaignReplyFlow', 'PUT', '/messaging/projects/slug/campaigns/'.$ccCampaign.'/reply-flow', ['replyFlowId' => null], $ccMessagingJson($ccAssignment), fn () => $ccMessaging->campaigns->setReplyFlow('slug', $ccCampaign, ['replyFlowId' => null], $ccOptions->value)],
     ['exportProjectCampaignRecipients', 'GET', '/messaging/projects/slug/campaigns/'.$ccCampaign.'/recipients/export?limit=2', null, "phone,status\r\n\"+15555555555\",sent\r\n", fn () => $ccMessaging->campaigns->exportRecipients('slug', $ccCampaign, ['limit' => 2], $ccOptions->value), ['contentType' => 'text/csv; charset=utf-8', 'headers' => ['Polymorfa-Next-Cursor' => 'next', 'Content-Disposition' => 'attachment; filename="recipients.csv"']]],
-    ['getProjectSignalCustody', 'GET', '/platform/projects/'.$ccProject.'/signal-custody', null, $ccJson($ccCustody), fn () => $ccOrg->projects->getSignalCustody($ccProject, $ccOptions->value)],
-    ['updateProjectSignalCustody', 'PUT', '/platform/projects/'.$ccProject.'/signal-custody', $ccProjectUpdate, $ccJson($ccCustody), fn () => $ccOrg->projects->updateSignalCustody($ccProject, $ccProjectUpdate, $ccOptions->value)],
-    ['getCustomerSignalCustody', 'GET', '/platform/projects/'.$ccProject.'/customers/'.$ccCustomer.'/signal-custody', null, $ccJson($ccCustody), fn () => $ccOrg->customers->getSignalCustody($ccProject, $ccCustomer, $ccOptions->value)],
-    ['updateCustomerSignalCustody', 'PUT', '/platform/projects/'.$ccProject.'/customers/'.$ccCustomer.'/signal-custody', $ccCustomerUpdate, $ccJson($ccCustody), fn () => $ccOrg->customers->updateSignalCustody($ccProject, $ccCustomer, $ccCustomerUpdate, $ccOptions->value)],
-    ['testSendPlatformCampaign', 'POST', '/platform/campaigns/'.$ccCampaign.'/test-send', ['projectId' => $ccProject, ...$ccSendWire], $ccJson($ccSendData), fn () => $ccOrg->campaigns->testSend($ccCampaign, ['projectId' => $ccProject, ...$ccSendBody], $ccOptions->value)],
-    ['createPlatformCampaignReplyFlow', 'POST', '/platform/campaign-reply-flows', ['projectId' => $ccProject, ...$ccFlowInput], $ccJson($ccFlowData), fn () => $ccOrg->campaigns->createReplyFlow(['projectId' => $ccProject, ...$ccFlowInput], $ccOptions->value)],
-    ['getPlatformCampaignReplyFlow', 'GET', '/platform/campaign-reply-flows/'.$ccFlowId.'?projectId='.$ccProject, null, $ccJson($ccFlowData), fn () => $ccOrg->campaigns->getReplyFlow($ccFlowId, ['projectId' => $ccProject], $ccOptions->value)],
-    ['setPlatformCampaignReplyFlow', 'PUT', '/platform/campaigns/'.$ccCampaign.'/reply-flow', ['projectId' => $ccProject, 'replyFlowId' => null], $ccJson($ccAssignment), fn () => $ccOrg->campaigns->setReplyFlow($ccCampaign, ['projectId' => $ccProject, 'replyFlowId' => null], $ccOptions->value)],
-    ['exportCampaignRecipients', 'GET', '/platform/campaigns/'.$ccCampaign.'/recipients/export?projectId='.$ccProject.'&limit=2', null, "phone,status\r\n", fn () => $ccOrg->campaigns->exportRecipients($ccCampaign, ['projectId' => $ccProject, 'limit' => 2], $ccOptions->value), ['contentType' => 'text/csv']],
-    ['getCampaignLinks', 'GET', '/platform/campaigns/'.$ccCampaign.'/links?projectId='.$ccProject, null, $ccJson($ccLinks), fn () => $ccOrg->campaigns->links($ccCampaign, ['projectId' => $ccProject], $ccOptions->value)],
-    ['listCampaignLaunchApprovals', 'GET', '/platform/campaigns/'.$ccCampaign.'/approvals?projectId='.$ccProject, null, $ccJson([]), fn () => $ccOrg->campaigns->listLaunchApprovals($ccCampaign, ['projectId' => $ccProject], $ccOptions->value)],
-    ['getCampaignSettings', 'GET', '/platform/campaign-settings', null, $ccJson(['launchApproval' => ['recipientThreshold' => null]]), fn () => $ccOrg->campaigns->getSettings($ccOptions->value)],
-    ['createAudienceFromCampaign', 'POST', '/platform/audiences/from-campaign', ['name' => 'Replied', 'campaignId' => $ccCampaign, 'outcome' => 'replied'], $ccJson($ccRetarget), fn () => $ccOrg->audiences->createFromCampaign(['name' => 'Replied', 'campaignId' => $ccCampaign, 'outcome' => 'replied'], $ccOptions->value)],
-    ['listAudienceProfiles', 'GET', '/platform/audience-profiles?cursor='.$ccCustomer.'&limit=2', null, json_encode(['data' => [$ccProfile], 'page' => $ccPage], JSON_THROW_ON_ERROR), fn () => $ccOrg->audienceProfiles->list(['cursor' => $ccCustomer, 'limit' => 2], $ccOptions->value)],
-    ['getAudienceProfile', 'GET', '/platform/audience-profiles/%2B15555555555', null, $ccJson($ccProfile), fn () => $ccOrg->audienceProfiles->retrieve('+15555555555', $ccOptions->value)],
-    ['putAudienceProfile', 'PUT', '/platform/audience-profiles/%2B15555555555', $ccPutWire, $ccJson($ccProfile), fn () => $ccOrg->audienceProfiles->put('+15555555555', $ccPut, $ccOptions->value)],
-    ['deleteAudienceProfile', 'DELETE', '/platform/audience-profiles/%2B15555555555?expectedRevision=1', null, $ccJson(['deleted' => true, 'phone' => '+15555555555', 'revision' => 2]), fn () => $ccOrg->audienceProfiles->delete('+15555555555', 1, $ccOptions->value)],
-    ['listAudienceProfileConsent', 'GET', '/platform/audience-profiles/%2B15555555555/consent', null, json_encode(['data' => [$ccConsent], 'page' => $ccPage], JSON_THROW_ON_ERROR), fn () => $ccOrg->audienceProfiles->listConsent('+15555555555', [], $ccOptions->value)],
-    ['createAudienceProfileImport', 'POST', '/platform/audience-profile-imports', ['replayKey' => 'fixture', 'csvBase64' => base64_encode("phone\n+15555555555\n")], $ccJson($ccJob), fn () => $ccOrg->audienceProfiles->imports->create(['replayKey' => 'fixture', 'csvBase64' => base64_encode("phone\n+15555555555\n")], $ccOptions->value)],
-    ['getAudienceProfileImport', 'GET', '/platform/audience-profile-imports/'.$ccJobId, null, $ccJson($ccJob), fn () => $ccOrg->audienceProfiles->imports->retrieve($ccJobId, $ccOptions->value)],
-    ['cancelAudienceProfileImport', 'DELETE', '/platform/audience-profile-imports/'.$ccJobId, null, $ccJson($ccJob), fn () => $ccOrg->audienceProfiles->imports->cancel($ccJobId, $ccOptions->value)],
-    ['getStopConfirmationSettings', 'GET', '/platform/optouts/confirmation-settings', null, $ccJson($ccStop), fn () => $ccOrg->optOuts->getConfirmationSettings($ccOptions->value)],
-    ['updateStopConfirmationSettings', 'PUT', '/platform/optouts/confirmation-settings', ['teamId' => $ccProject, 'enabled' => false, 'locale' => null, 'revision' => 0], $ccJson($ccStop), fn () => $ccOrg->optOuts->updateConfirmationSettings(['teamId' => $ccProject, 'enabled' => false, 'locale' => null, 'revision' => 0], $ccOptions->value)],
-    ['getStopConfirmationSummary', 'GET', '/platform/optouts/confirmation-summary', null, $ccJson($ccSummary), fn () => $ccOrg->optOuts->getConfirmationSummary($ccOptions->value)],
+    ['getProjectSignalCustody', 'GET', '/platform/projects/'.$ccProject.'/signal-custody', null, $ccJson($ccCustody), fn () => $ccTeam->projects->getSignalCustody($ccProject, $ccOptions->value)],
+    ['updateProjectSignalCustody', 'PUT', '/platform/projects/'.$ccProject.'/signal-custody', $ccProjectUpdate, $ccJson($ccCustody), fn () => $ccTeam->projects->updateSignalCustody($ccProject, $ccProjectUpdate, $ccOptions->value)],
+    ['getCustomerSignalCustody', 'GET', '/platform/projects/'.$ccProject.'/customers/'.$ccCustomer.'/signal-custody', null, $ccJson($ccCustody), fn () => $ccTeam->customers->getSignalCustody($ccProject, $ccCustomer, $ccOptions->value)],
+    ['updateCustomerSignalCustody', 'PUT', '/platform/projects/'.$ccProject.'/customers/'.$ccCustomer.'/signal-custody', $ccCustomerUpdate, $ccJson($ccCustody), fn () => $ccTeam->customers->updateSignalCustody($ccProject, $ccCustomer, $ccCustomerUpdate, $ccOptions->value)],
+    ['testSendPlatformCampaign', 'POST', '/platform/campaigns/'.$ccCampaign.'/test-send', ['projectId' => $ccProject, ...$ccSendWire], $ccJson($ccSendData), fn () => $ccTeam->campaigns->testSend($ccCampaign, ['projectId' => $ccProject, ...$ccSendBody], $ccOptions->value)],
+    ['createPlatformCampaignReplyFlow', 'POST', '/platform/campaign-reply-flows', ['projectId' => $ccProject, ...$ccFlowInput], $ccJson($ccFlowData), fn () => $ccTeam->campaigns->createReplyFlow(['projectId' => $ccProject, ...$ccFlowInput], $ccOptions->value)],
+    ['getPlatformCampaignReplyFlow', 'GET', '/platform/campaign-reply-flows/'.$ccFlowId.'?projectId='.$ccProject, null, $ccJson($ccFlowData), fn () => $ccTeam->campaigns->getReplyFlow($ccFlowId, ['projectId' => $ccProject], $ccOptions->value)],
+    ['setPlatformCampaignReplyFlow', 'PUT', '/platform/campaigns/'.$ccCampaign.'/reply-flow', ['projectId' => $ccProject, 'replyFlowId' => null], $ccJson($ccAssignment), fn () => $ccTeam->campaigns->setReplyFlow($ccCampaign, ['projectId' => $ccProject, 'replyFlowId' => null], $ccOptions->value)],
+    ['exportCampaignRecipients', 'GET', '/platform/campaigns/'.$ccCampaign.'/recipients/export?projectId='.$ccProject.'&limit=2', null, "phone,status\r\n", fn () => $ccTeam->campaigns->exportRecipients($ccCampaign, ['projectId' => $ccProject, 'limit' => 2], $ccOptions->value), ['contentType' => 'text/csv']],
+    ['getCampaignLinks', 'GET', '/platform/campaigns/'.$ccCampaign.'/links?projectId='.$ccProject, null, $ccJson($ccLinks), fn () => $ccTeam->campaigns->links($ccCampaign, ['projectId' => $ccProject], $ccOptions->value)],
+    ['listCampaignLaunchApprovals', 'GET', '/platform/campaigns/'.$ccCampaign.'/approvals?projectId='.$ccProject, null, $ccJson([]), fn () => $ccTeam->campaigns->listLaunchApprovals($ccCampaign, ['projectId' => $ccProject], $ccOptions->value)],
+    ['getCampaignSettings', 'GET', '/platform/campaign-settings', null, $ccJson(['launchApproval' => ['recipientThreshold' => null]]), fn () => $ccTeam->campaigns->getSettings($ccOptions->value)],
+    ['createAudienceFromCampaign', 'POST', '/platform/audiences/from-campaign', ['name' => 'Replied', 'campaignId' => $ccCampaign, 'outcome' => 'replied'], $ccJson($ccRetarget), fn () => $ccTeam->audiences->createFromCampaign(['name' => 'Replied', 'campaignId' => $ccCampaign, 'outcome' => 'replied'], $ccOptions->value)],
+    ['listAudienceProfiles', 'GET', '/platform/audience-profiles?cursor='.$ccCustomer.'&limit=2', null, json_encode(['data' => [$ccProfile], 'page' => $ccPage], JSON_THROW_ON_ERROR), fn () => $ccTeam->audienceProfiles->list(['cursor' => $ccCustomer, 'limit' => 2], $ccOptions->value)],
+    ['getAudienceProfile', 'GET', '/platform/audience-profiles/%2B15555555555', null, $ccJson($ccProfile), fn () => $ccTeam->audienceProfiles->retrieve('+15555555555', $ccOptions->value)],
+    ['putAudienceProfile', 'PUT', '/platform/audience-profiles/%2B15555555555', $ccPutWire, $ccJson($ccProfile), fn () => $ccTeam->audienceProfiles->put('+15555555555', $ccPut, $ccOptions->value)],
+    ['deleteAudienceProfile', 'DELETE', '/platform/audience-profiles/%2B15555555555?expectedRevision=1', null, $ccJson(['deleted' => true, 'phone' => '+15555555555', 'revision' => 2]), fn () => $ccTeam->audienceProfiles->delete('+15555555555', 1, $ccOptions->value)],
+    ['listAudienceProfileConsent', 'GET', '/platform/audience-profiles/%2B15555555555/consent', null, json_encode(['data' => [$ccConsent], 'page' => $ccPage], JSON_THROW_ON_ERROR), fn () => $ccTeam->audienceProfiles->listConsent('+15555555555', [], $ccOptions->value)],
+    ['createAudienceProfileImport', 'POST', '/platform/audience-profile-imports', ['replayKey' => 'fixture', 'csvBase64' => base64_encode("phone\n+15555555555\n")], $ccJson($ccJob), fn () => $ccTeam->audienceProfiles->imports->create(['replayKey' => 'fixture', 'csvBase64' => base64_encode("phone\n+15555555555\n")], $ccOptions->value)],
+    ['getAudienceProfileImport', 'GET', '/platform/audience-profile-imports/'.$ccJobId, null, $ccJson($ccJob), fn () => $ccTeam->audienceProfiles->imports->retrieve($ccJobId, $ccOptions->value)],
+    ['cancelAudienceProfileImport', 'DELETE', '/platform/audience-profile-imports/'.$ccJobId, null, $ccJson($ccJob), fn () => $ccTeam->audienceProfiles->imports->cancel($ccJobId, $ccOptions->value)],
+    ['getStopConfirmationSettings', 'GET', '/platform/optouts/confirmation-settings', null, $ccJson($ccStop), fn () => $ccTeam->optOuts->getConfirmationSettings($ccOptions->value)],
+    ['updateStopConfirmationSettings', 'PUT', '/platform/optouts/confirmation-settings', ['teamId' => $ccProject, 'enabled' => false, 'locale' => null, 'revision' => 0], $ccJson($ccStop), fn () => $ccTeam->optOuts->updateConfirmationSettings(['teamId' => $ccProject, 'enabled' => false, 'locale' => null, 'revision' => 0], $ccOptions->value)],
+    ['getStopConfirmationSummary', 'GET', '/platform/optouts/confirmation-summary', null, $ccJson($ccSummary), fn () => $ccTeam->optOuts->getConfirmationSummary($ccOptions->value)],
 ];
 foreach ($ccCases as $ccCase) {
     $ccResponse = $ccRun($ccCase);
@@ -179,7 +179,7 @@ foreach ([
 ] as $ccInvoke) {
     ccThrows($ccInvoke, Polymorfa\ConfigurationException::class);
 }
-ccCheck(!method_exists($ccBound->campaigns, 'getSettings') && !method_exists($ccBound->campaigns, 'create') && !property_exists($ccBound, 'audienceProfiles') && !property_exists($ccBound, 'optOuts'), 'Organization-only surfaces are absent on ProjectClient');
+ccCheck(!method_exists($ccBound->campaigns, 'getSettings') && !method_exists($ccBound->campaigns, 'create') && !property_exists($ccBound, 'audienceProfiles') && !property_exists($ccBound, 'optOuts'), 'Team-only surfaces are absent on ProjectClient');
 ccThrows(fn () => $ccBound->project($ccCustomer), Polymorfa\ConfigurationException::class);
 ccThrows(function () use ($ccBound, $ccCustomer): void {
     $ccBound->projectId = $ccCustomer;
@@ -192,9 +192,9 @@ ccThrows(fn () => $ccBound->signalCustody->updateCustomer($ccCustomer, null), Ty
 ccCheck(json_decode((string) $ccHttp->get($ccUrl.'/__state')->getBody(), true) === [], 'Credential and immutable owner refusals perform no HTTP');
 echo "22 bound aliases,6 Project Messaging calls and19 credential denials passed.\n";
 
-// Retain two views from one organization transport and interleave their calls.
-$ccViewA = $ccOrg->project($ccProject);
-$ccViewB = $ccOrg->project($ccCustomer);
+// Retain two views from one team transport and interleave their calls.
+$ccViewA = $ccTeam->project($ccProject);
+$ccViewB = $ccTeam->project($ccCustomer);
 foreach ([
     ['retainedARead', 'GET', '/platform/campaigns/'.$ccCampaign.'/links?projectId='.$ccProject, null, $ccJson($ccLinks), fn () => $ccViewA->campaigns->links($ccCampaign)],
     ['retainedBWrite', 'POST', '/platform/campaigns/'.$ccCampaign.'/test-send', [...$ccSendWire, 'projectId' => $ccCustomer], $ccJson($ccSendData), fn () => $ccViewB->campaigns->testSend($ccCampaign, $ccSendBody)],

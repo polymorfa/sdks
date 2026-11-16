@@ -64,7 +64,7 @@ model!(ObservedAccountState {
     source: ObservedSource
 });
 model!(HealthProjection {health:Option<f64>,band:HealthBand,health_source:HealthSource,health_estimator_version:Option<String>,health_model_version:Option<String>,health_evaluated_at:Option<String>,health_feature_coverage:Option<f64>,health_reliability:HealthReliability,health_unavailable_reason:Option<HealthUnavailableReason>,health_probabilities:Option<HealthProbabilities>,most_likely_health_state:Option<HealthState>,health_explanation:Option<HealthExplanation>,observed_account_state:Option<ObservedAccountState>});
-model!(NumberEnforcement {rung:EnforcementRung,previous_rung:EnforcementRung,organization_floor:EnforcementRung,reason:String,source:EnforcementSource,throughput_per_minute:Option<f64>,blocks_unsolicited:bool,suspended:bool,started_at:String,eligible_lift_at:Option<String>,exit_progress:f64,blocking_findings:Vec<String>,operator_hold:bool,appeal_state:AppealState,state:EnforcementState});
+model!(NumberEnforcement {rung:EnforcementRung,previous_rung:EnforcementRung,team_floor:EnforcementRung,reason:String,source:EnforcementSource,throughput_per_minute:Option<f64>,blocks_unsolicited:bool,suspended:bool,started_at:String,eligible_lift_at:Option<String>,exit_progress:f64,blocking_findings:Vec<String>,operator_hold:bool,appeal_state:AppealState,state:EnforcementState});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct BanSafeNumber {
@@ -101,7 +101,7 @@ pub struct EnforcementSummary {
     pub project_id: String,
     pub rung: EnforcementRung,
     pub previous_rung: EnforcementRung,
-    pub organization_floor: EnforcementRung,
+    pub team_floor: EnforcementRung,
     pub reason: String,
     pub source: EnforcementSource,
     pub throughput_per_minute: Option<f64>,

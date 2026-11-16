@@ -58,7 +58,7 @@ export async function runEdgeRuntimeSmoke() {
 
   const fakeKey = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
   const platform = new Client({
-    credential: { type: "organizationApiKey", value: fakeKey },
+    credential: { type: "teamApiKey", value: fakeKey },
     baseUrl: "https://example.invalid",
     maxNetworkRetries: 0,
     fetch: async (input, init) => {

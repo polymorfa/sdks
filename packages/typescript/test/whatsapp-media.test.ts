@@ -34,7 +34,7 @@ import {
   nodeMediaCrypto,
   writeStreamToFile,
 } from "../src/node.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 const INFO: Record<WhatsAppMediaKind, string> = {
   image: "WhatsApp Image Keys",
@@ -563,7 +563,7 @@ describe("WhatsApp media crypto", () => {
   it("is reachable from MessagingClient.media and returns a typed Blob", async () => {
     const f = fixture("image", 300);
     const messaging = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
     });
     const download = await messaging.media.downloadFromWhatsApp(
       { type: "image", media: f.media },

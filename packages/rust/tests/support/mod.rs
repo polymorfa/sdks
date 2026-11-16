@@ -1,4 +1,4 @@
-use polymorfa_sdk::{ClientOptions, Credential, MessagingClient, OrganizationClient};
+use polymorfa_sdk::{ClientOptions, Credential, MessagingClient, TeamClient};
 use serde_json::Value;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -27,7 +27,7 @@ pub fn credential_token() -> String {
 }
 
 pub fn credential() -> Credential {
-    Credential::organization_api_key(credential_token()).unwrap()
+    Credential::team_api_key(credential_token()).unwrap()
 }
 pub fn messaging(base: String) -> MessagingClient {
     MessagingClient::new(
@@ -40,8 +40,8 @@ pub fn messaging(base: String) -> MessagingClient {
     )
     .unwrap()
 }
-pub fn organization(base: String) -> OrganizationClient {
-    OrganizationClient::new(
+pub fn team(base: String) -> TeamClient {
+    TeamClient::new(
         credential(),
         ClientOptions {
             base_url: base,
@@ -197,11 +197,11 @@ macro_rules! wire_messaging {
     }};
 }
 #[macro_export]
-macro_rules! wire_organization {
+macro_rules! wire_team {
     ($client:ident,$method:expr,$path:expr,$body:expr,$response:expr,$call:expr) => {{
         let expected = $response;
         let (base, server) = $crate::support::wire($method, $path, $body, expected.clone()).await;
-        let $client = $crate::support::organization(base);
+        let $client = $crate::support::team(base);
         let response = $call.await.unwrap();
         assert_eq!(
             response.metadata.request_id.as_deref(),
@@ -213,11 +213,11 @@ macro_rules! wire_organization {
 }
 /// Native resources that unwrap the API envelope still assert the full typed data.
 #[macro_export]
-macro_rules! wire_unwrapped_organization {
+macro_rules! wire_unwrapped_team {
     ($client:ident,$method:expr,$path:expr,$body:expr,$response:expr,$call:expr) => {{
         let expected = $response;
         let (base, server) = $crate::support::wire($method, $path, $body, expected.clone()).await;
-        let $client = $crate::support::organization(base);
+        let $client = $crate::support::team(base);
         let response = $call.await.unwrap();
         assert_eq!(
             response.metadata.request_id.as_deref(),

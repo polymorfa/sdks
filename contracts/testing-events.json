@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "eda77760b56095a771c55e5d2df18be23e985377",
+  "commit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "5b51b9933e2f002e2f845ee184eb243d62093d8acb4c4101fb4996cc2df79d85",
+  "sourceSha256": "0c66f1ee93923cf57425ac29c01a84c5c140b703ace2160e1b899ee6dad0b071",
   "operations": {
     "triggerTestEvent": {
       "method": "POST",
@@ -534,10 +534,12 @@
                 "hybrid_transport_unavailable",
                 "hybrid_target_reference_unavailable",
                 "send_outcome_unknown",
+                "terms_acceptance_required",
+                "terms_activation_blocked",
                 "idempotency_conflict",
                 "idempotency_in_progress",
-                "idempotency_completed",
                 "idempotency_outcome_unknown",
+                "idempotency_replay_unavailable",
                 "call_claimed",
                 "call_not_ringing",
                 "connection_limit",
@@ -592,7 +594,7 @@
                 "whatsapp_group_suspended",
                 "whatsapp_group_has_no_participants",
                 "bansafe_suspended",
-                "bansafe_org_suspended",
+                "bansafe_team_suspended",
                 "bansafe_cold_blocked",
                 "bansafe_cold_held",
                 "bansafe_throttled",
@@ -620,7 +622,7 @@
             "request_log_url": {
               "type": "string",
               "format": "uri",
-              "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+              "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
             }
           },
           "required": ["type", "code", "message", "param", "request_id"]

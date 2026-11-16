@@ -242,7 +242,7 @@ func TestPasskeyWritesOfferNoBodyRewind(t *testing.T) {
 	handle := "AQID"
 	assertion := SubmitPasskeyAssertionRequest{TicketID: "t", Assertion: PasskeyAssertion{ID: "id", RawIDB64URL: "id", Response: PasskeyAssertionResponse{AuthenticatorDataB64: "AQID", ClientDataJSONB64: "e30", SignatureB64: "AQID", UserHandleB64: &handle}}}
 	rewindable := map[string]bool{}
-	config := orgConfig("https://api.fixture.invalid")
+	config := teamConfig("https://api.fixture.invalid")
 	config.HTTPClient = &http.Client{Transport: mediaRoundTripper(func(req *http.Request) (*http.Response, error) {
 		if req.Method == "POST" {
 			rewindable[req.URL.Path] = req.GetBody != nil

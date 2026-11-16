@@ -49,6 +49,10 @@ const ACTIVE = new Set<CallsSnapshot["status"]>([
  * here. Without it, other participants keep ringing and can join.
  */
 export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
+  #moderating = false;
+  #moderationFailed = false;
+  #moderationCall: string | undefined;
+
   static readonly observedAttributes = ["exclusive"];
 
   /** Claim calls answered from this element. Reflects the `exclusive` attribute. */
@@ -352,12 +356,89 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
           list.append(
             textElement(
               "li",
-              `${participant.phoneNumber ?? participant.id}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
+              `${participant.name || participant.phoneNumber || participant.id}${participant.guest ? ` · ${messages["calls.guest"]}` : ""}${participant.handRaised ? ` · ${messages["calls.handRaised"]}` : ""}`,
               participant.audioMuted ? "participant muted" : "participant",
             ),
           );
         panel.append(list);
       }
+    }
+    if (this.#moderationCall !== snapshot?.callId) {
+      this.#moderationCall = snapshot?.callId;
+      this.#moderating = false;
+      this.#moderationFailed = false;
+    }
+    const room = snapshot?.waitingRoom;
+    if (room !== undefined && ACTIVE.has(status)) {
+      const waiting = element("section", "waiting-room");
+      waiting.setAttribute("aria-label", messages["calls.waitingRoom"]);
+      waiting.append(
+        textElement("h3", messages["calls.waitingRoom"], "waiting-title"),
+      );
+      const admin =
+        status === "connected" && room.isAdmin && controller !== undefined;
+      const moderate = (action: () => Promise<void>) => {
+        this.#moderating = true;
+        this.#moderationFailed = false;
+        const callId = snapshot?.callId;
+        this.render();
+        void action()
+          .catch(() => {
+            if (this.#moderationCall === callId) this.#moderationFailed = true;
+          })
+          .finally(() => {
+            if (this.#moderationCall === callId) {
+              this.#moderating = false;
+              this.render();
+            }
+          });
+      };
+      if (admin) {
+        const label = element("label", "waiting-approval");
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = room.enabled;
+        checkbox.disabled = this.#moderating;
+        checkbox.onchange = () => {
+          const enabled = checkbox.checked;
+          moderate(() => controller.setApprovalRequired(enabled));
+        };
+        label.append(
+          checkbox,
+          document.createTextNode(messages["calls.approvalRequired"]),
+        );
+        waiting.append(label);
+      }
+      const list = element("ul", "waiting-participants");
+      for (const participant of room.users) {
+        const item = textElement(
+          "li",
+          `${participant.name || participant.phoneNumber || participant.id}${participant.guest ? ` · ${messages["calls.guest"]}` : ""}`,
+          "waiting-participant",
+        );
+        if (admin) {
+          const admit = button(messages["calls.admit"], "admit", () =>
+            moderate(() => controller.admitParticipant(participant.id)),
+          );
+          const deny = button(messages["calls.deny"], "deny", () =>
+            moderate(() => controller.denyParticipant(participant.id)),
+          );
+          admit.disabled = deny.disabled = this.#moderating;
+          item.append(admit, deny);
+        }
+        list.append(item);
+      }
+      waiting.append(list);
+      if (this.#moderationFailed) {
+        const error = textElement(
+          "p",
+          messages["calls.waitingRoomFailed"],
+          "waiting-error",
+        );
+        error.setAttribute("role", "alert");
+        waiting.append(error);
+      }
+      panel.append(waiting);
     }
     return [panel];
   }

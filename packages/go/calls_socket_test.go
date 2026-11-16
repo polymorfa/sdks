@@ -35,7 +35,7 @@ func TestCallsLifecycleNativeSocket(t *testing.T) {
 			done <- err
 			return
 		}
-		if auth.Type != "auth" || auth.Token != orgConfig("").Credential.Value {
+		if auth.Type != "auth" || auth.Token != teamConfig("").Credential.Value {
 			t.Error("first message authentication")
 		}
 		wsjson.Write(ctx, conn, LifecycleFrame{Type: "ready", Session: "support", Participant: "worker"})
@@ -51,7 +51,7 @@ func TestCallsLifecycleNativeSocket(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: orgConfig(s.URL), Session: "support", Participant: "worker"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support", Participant: "worker"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,7 +95,7 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 			done <- err
 			return
 		}
-		if auth.Type != "auth" || auth.ConnectionID != "connection_123" || auth.Participant != "worker" || auth.Token != orgConfig("").Credential.Value {
+		if auth.Type != "auth" || auth.ConnectionID != "connection_123" || auth.Participant != "worker" || auth.Token != teamConfig("").Credential.Value {
 			t.Error("media first message")
 		}
 		video := true
@@ -129,6 +129,17 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 		off := false
 		state.VideoEnabled = &off
 		wsjson.Write(ctx, conn, state)
+		var waiting MediaControlFrame
+		if err = wsjson.Read(ctx, conn, &waiting); err != nil {
+			done <- err
+			return
+		}
+		if waiting.Type != "waiting_room_control" || waiting.Operation != "admit" || waiting.ParticipantID != "123" {
+			t.Error(waiting)
+		}
+		ok := true
+		wsjson.Write(ctx, conn, MediaControlFrame{Type: "waiting_room_result", RequestID: "unrelated", OK: &ok})
+		wsjson.Write(ctx, conn, MediaControlFrame{Type: "waiting_room_result", RequestID: waiting.RequestID, OK: &ok})
 		done <- nil
 		var leave MediaControlFrame
 		wsjson.Read(ctx, conn, &leave)
@@ -137,7 +148,7 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: orgConfig(s.URL), Session: "support", Participant: "worker"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support", Participant: "worker"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -170,6 +181,9 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 	if err != nil || state.AudioMuted == nil || !*state.AudioMuted {
 		t.Fatal(state, err)
 	}
+	if err = socket.ModerateWaitingRoom(ctx, "admit", "123", nil); err != nil {
+		t.Fatal(err)
+	}
 	if err = <-done; err != nil {
 		t.Fatal(err)
 	}
@@ -192,7 +206,7 @@ func TestCallsAuthAndCodecFailures(t *testing.T) {
 		wsjson.Write(r.Context(), conn, LifecycleFrame{Type: "error", Code: "invalid_token", Message: "Refused"})
 	}))
 	defer s.Close()
-	client, err := NewCallsClient(CallsClientConfig{Config: orgConfig(s.URL), Session: "support"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support"})
 	if err != nil {
 		t.Fatal(err)
 	}
