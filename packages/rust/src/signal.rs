@@ -118,6 +118,7 @@ pub struct SignalHistoryDescriptor {
 /// Plaintext stays in the caller's application. Never log the event body.
 #[derive(Clone, Deserialize)]
 pub struct SignalEvent {
+    pub status_scope: Option<String>,
     pub id: String,
     #[serde(rename = "type")]
     pub event_type: String,

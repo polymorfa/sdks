@@ -66,15 +66,7 @@ LinkedDeviceMessageType = Literal[
 ]
 
 
-class LinkedDeviceMessagePayload(TypedDict):
-    id: str
-    whatsapp_ids: WhatsAppMessageIds
-    whatsapp_id: NotRequired[str]
-    conversation: ConversationReference
-    fromMe: bool
-    timestamp: float
-    pushName: str
-    isGroup: bool
+class ReceivedContent(TypedDict):
     type: LinkedDeviceMessageType
     text: NotRequired[str]
     caption: NotRequired[str]
@@ -97,6 +89,48 @@ class LinkedDeviceMessagePayload(TypedDict):
     nativeFlowResponse: NotRequired[NativeFlowResponse]
     replyChoice: NotRequired[ReplyChoice]
     parentMessageId: NotRequired[str]
+
+
+class LinkedDeviceMessagePayload(ReceivedContent):
+    id: str
+    whatsapp_ids: WhatsAppMessageIds
+    whatsapp_id: NotRequired[str]
+    conversation: ConversationReference
+    fromMe: bool
+    timestamp: float
+    pushName: str
+    isGroup: bool
+
+
+class StatusPublicationBase(TypedDict):
+    id: str
+    whatsapp_ids: WhatsAppMessageIds
+    whatsapp_id: NotRequired[str]
+    fromMe: bool
+    timestamp: float
+    pushName: str
+    content: ReceivedContent
+
+
+class PersonalStatusPublication(StatusPublicationBase):
+    scope: Literal["personal"]
+    publisher: IdentityReference
+
+
+class GroupStatusPublication(StatusPublicationBase):
+    scope: Literal["group"]
+    publisher: IdentityReference
+    group: IdentityReference
+
+
+class ChannelStatusPublication(StatusPublicationBase):
+    scope: Literal["channel"]
+    channel: IdentityReference
+
+
+StatusPublicationPayload = (
+    PersonalStatusPublication | GroupStatusPublication | ChannelStatusPublication
+)
 
 
 MessagePayload = LinkedDeviceMessagePayload

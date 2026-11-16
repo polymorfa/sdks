@@ -1,0 +1,51 @@
+{
+  "statusReceived": {
+    "id": "018f0000-0000-7000-8000-000000000001",
+    "session": "739182640518203",
+    "timestamp": "2026-11-15T00:00:00.000Z",
+    "event": "status.received",
+    "payload": {
+      "id": "739182640518204",
+      "whatsapp_ids": {
+        "linked_devices": "AUTHORED-STATUS-EXAMPLE"
+      },
+      "scope": "personal",
+      "fromMe": false,
+      "timestamp": 1794700800,
+      "pushName": "Authored example",
+      "content": {
+        "type": "text",
+        "text": "Authored status example. No live account or customer traffic."
+      },
+      "publisher": {
+        "id": "739182640518205"
+      }
+    }
+  },
+  "statusUpdated": {
+    "id": "018f0000-0000-7000-8000-000000000001",
+    "session": "739182640518203",
+    "timestamp": "2026-11-15T00:00:00.000Z",
+    "event": "status.update",
+    "payload": {
+      "id": "739182640518204",
+      "whatsapp_ids": {
+        "linked_devices": "AUTHORED-STATUS-EXAMPLE"
+      },
+      "scope": "group",
+      "fromMe": false,
+      "timestamp": 1794700800,
+      "pushName": "Authored example",
+      "content": {
+        "type": "text",
+        "text": "Authored status example. No live account or customer traffic."
+      },
+      "publisher": {
+        "id": "739182640518205"
+      },
+      "group": {
+        "id": "739182640518206"
+      }
+    }
+  }
+}

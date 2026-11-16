@@ -2,6 +2,8 @@ export {
   KNOWN_WEBHOOK_EVENT_TYPES,
   PHONE_OFFLINE_START_DAY,
   isEvent,
+  type ReceivedContent,
+  type StatusPublicationPayload,
   type BanSafeActionPayload,
   type BanSafeClaimPayload,
   type BanSafeEventRung,

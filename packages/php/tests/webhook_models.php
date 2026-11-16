@@ -7,7 +7,9 @@ $linked = ['id' => 'message','whatsapp_ids' => $messageIds,'conversation' => $id
 $cloud = ['id' => 'message','whatsapp_ids' => ['official_api' => 'wamid.fixture'],'conversation' => ['id' => 'business-user','bsuid' => 'business-user'],'timestamp' => '1','type' => 'interactive','nativeFlowResponse' => ['name' => 'flow','paramsJson' => '{"answer":false}'],'replyChoice' => ['kind' => 'button','id' => 'choice'],'referral' => ['ctwa_clid' => 'click','source_id' => 'ad']];
 $customer = ['eventId' => 'event','occurredAt' => 'now','teamId' => 'team','projectId' => 'project','customerId' => 'customer','actorKind' => 'team_key'];
 $payment = ['reportedBy' => 'whatsapp','providerEventId' => 'provider','referenceId' => 'order','conversation' => ['phoneNumber' => '+15555555555']];
+$status = ['id'=>'123','whatsapp_ids'=>$messageIds,'scope'=>'personal','publisher'=>['id'=>'456'],'fromMe'=>false,'timestamp'=>1700000000,'pushName'=>'Authored','content'=>['type'=>'text','text'=>'publication']];
 $cases = [
+ ['status.received',$status],['status.update',$status],['status.revoked',$status],
  ['marketing.onboarding_updated',['kind'=>'terms_signed','wabaId'=>'w','metaEvent'=>'MM_LITE_TERMS_SIGNED']],
  ['contact.marketing_preference_updated',['waId'=>'opaque','preference'=>'stop','category'=>'marketing_messages']],
  ['message.received',$linked],['message.received',$cloud],['message.reaction',$linked],
@@ -52,7 +54,7 @@ $source = file_get_contents(__DIR__.'/../src/WebhookModels.php');
 foreach (Polymorfa\Webhooks::KNOWN_TYPES as $name) {
     check(str_contains($source, "'".$name."'"), 'Every known name has a typed union variant: '.$name);
 }
-check(count(Polymorfa\Webhooks::KNOWN_TYPES) === 86, 'Pinned known event catalog');
+check(count(Polymorfa\Webhooks::KNOWN_TYPES) === 89, 'Pinned known event catalog');
 $raw = '{"id":"event","session":"","timestamp":"now","event":"future.event","payload":null}';
 $flow = 't=1000,v1='.strtoupper(hash_hmac('sha256', '1000.'.$raw, 'secret'));
 check(Polymorfa\Webhooks::verifyFlowForwardSignature($raw, $flow, 'secret', nowUnixSeconds:1000.5), 'Flow raw HMAC and uppercase signature');
@@ -75,3 +77,6 @@ check(Polymorfa\ErrorCodes::isKnown('whatsapp_number_not_registered'), 'Known Of
 check(Polymorfa\ErrorCodes::isKnown('whatsapp_payment_method_required'), 'Known Official API code: whatsapp_payment_method_required');
 check((new Polymorfa\PolymorfaException('Fixture', 'future_api_code'))->errorCode === 'future_api_code', 'Unknown API codes preserved');
 echo count($cases)." signed typed webhook fixtures, 84 union variants and signature utility checks passed.\n";
+
+$remoteStatus = Polymorfa\SignalEvent::fromJson('{"id":"authored-status-event","type":"status.received","status_scope":"personal","session_id":"authored-session","chat":"status@broadcast","sender":"123@s.whatsapp.net","message_id":"authored-publication","timestamp":1700000000,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"CgdmaXh0dXJl","text":"authored publication"}');
+check($remoteStatus->type === 'status.received' && $remoteStatus->statusScope === 'personal', 'Remote status scope stays separate from messages');

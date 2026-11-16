@@ -39,14 +39,19 @@ type WebhookPollOption struct {
 }
 type LinkedDeviceMessagePayload struct {
 	webhookPayloadBase
-	ID                 string              `json:"id"`
-	WhatsAppIDs        WhatsAppMessageIDs  `json:"whatsapp_ids"`
-	WhatsAppID         string              `json:"whatsapp_id,omitempty"`
-	Conversation       WebhookConversation `json:"conversation"`
-	FromMe             bool                `json:"fromMe"`
-	Timestamp          int64               `json:"timestamp"`
-	PushName           string              `json:"pushName"`
-	IsGroup            bool                `json:"isGroup"`
+	ID           string              `json:"id"`
+	WhatsAppIDs  WhatsAppMessageIDs  `json:"whatsapp_ids"`
+	WhatsAppID   string              `json:"whatsapp_id,omitempty"`
+	Conversation WebhookConversation `json:"conversation"`
+	FromMe       bool                `json:"fromMe"`
+	Timestamp    int64               `json:"timestamp"`
+	PushName     string              `json:"pushName"`
+	IsGroup      bool                `json:"isGroup"`
+	ReceivedContent
+}
+
+// ReceivedContent is shared by messages and status publications.
+type ReceivedContent struct {
 	Type               string              `json:"type"`
 	Text               string              `json:"text,omitempty"`
 	Caption            string              `json:"caption,omitempty"`
@@ -78,6 +83,61 @@ type CloudMessageReferral struct {
 	CTWAClid   string          `json:"ctwa_clid,omitempty"`
 	Extra      PlatformPayload `json:"-"`
 }
+type StatusScope string
+
+const (
+	StatusPersonal StatusScope = "personal"
+	StatusGroup    StatusScope = "group"
+	StatusChannel  StatusScope = "channel"
+)
+
+type StatusPublicationPayload struct {
+	webhookPayloadBase
+	ID          string             `json:"id"`
+	WhatsAppIDs WhatsAppMessageIDs `json:"whatsapp_ids"`
+	WhatsAppID  string             `json:"whatsapp_id,omitempty"`
+	Scope       StatusScope        `json:"scope"`
+	Publisher   *WebhookIdentity   `json:"publisher,omitempty"`
+	Group       *WebhookIdentity   `json:"group,omitempty"`
+	Channel     *WebhookIdentity   `json:"channel,omitempty"`
+	FromMe      bool               `json:"fromMe"`
+	Timestamp   int64              `json:"timestamp"`
+	PushName    string             `json:"pushName"`
+	Content     ReceivedContent    `json:"content"`
+	Extra       PlatformPayload    `json:"-"`
+}
+
+func (v *StatusPublicationPayload) UnmarshalJSON(body []byte) error {
+	type plain StatusPublicationPayload
+	if err := webhookOpenDecode(body, (*plain)(v), &v.Extra); err != nil {
+		return err
+	}
+	var raw struct {
+		Content json.RawMessage `json:"content"`
+	}
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return err
+	}
+	return webhookOpenDecode(raw.Content, &v.Content, &v.Content.Extra)
+}
+func (v StatusPublicationPayload) MarshalJSON() ([]byte, error) {
+	type plain StatusPublicationPayload
+	body, err := webhookOpenEncode(plain(v), v.Extra)
+	if err != nil {
+		return nil, err
+	}
+	var raw map[string]json.RawMessage
+	if err := json.Unmarshal(body, &raw); err != nil {
+		return nil, err
+	}
+	content, err := webhookOpenEncode(v.Content, v.Content.Extra)
+	if err != nil {
+		return nil, err
+	}
+	raw["content"] = content
+	return json.Marshal(raw)
+}
+
 type CloudMessagePayload struct {
 	Order *CloudOrder `json:"order,omitempty"`
 	webhookPayloadBase
@@ -907,6 +967,8 @@ type SessionCapabilitiesUpdatedPayload struct {
 func (e WebhookEvent) TypedPayload() (KnownWebhookPayload, bool, error) {
 	var v KnownWebhookPayload
 	switch e.Event {
+	case "status.received", "status.update", "status.revoked":
+		v = &StatusPublicationPayload{}
 	case "message.received", "message.reaction":
 		var ts struct {
 			Timestamp json.RawMessage `json:"timestamp"`

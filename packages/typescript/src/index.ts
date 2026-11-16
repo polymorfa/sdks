@@ -1313,6 +1313,8 @@ export {
   FLOW_FORWARD_SIGNATURE_HEADER,
   verifyFlowForwardSignature,
   type VerifyFlowForwardSignatureOptions,
+  type ReceivedContent,
+  type StatusPublicationPayload,
 } from "./webhooks/index.js";
 
 export type * from "./messaging/session-configuration.js";

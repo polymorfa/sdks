@@ -284,6 +284,18 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         ("message.reaction", cloud()),
         ("message.received", linked()),
+        (
+            "status.received",
+            json!({"id":"123","whatsapp_ids":ids(),"scope":"personal","publisher":identity(),"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"text","text":"publication"}}),
+        ),
+        (
+            "status.update",
+            json!({"id":"123","whatsapp_ids":ids(),"scope":"group","publisher":identity(),"group":identity(),"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"text","text":"publication"}}),
+        ),
+        (
+            "status.revoked",
+            json!({"id":"123","whatsapp_ids":ids(),"scope":"channel","channel":identity(),"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"revoke","revokedId":"456"}}),
+        ),
         ("message.revoked", linked()),
         (
             "message.sent",
@@ -368,6 +380,12 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         pinned["sourceSdkCommit"],
         "ff51567105b64bf6997e7330ba8eb502d875e7b9"
     );
+    let status_candidate: Value = serde_json::from_str(include_str!(
+        "../../../contracts/status-publications.candidate.json"
+    ))
+    .unwrap();
+    assert_eq!(status_candidate["sourceAccepted"], false);
+    assert_eq!(status_candidate["published"], false);
     assert_eq!(
         KNOWN_EVENT_TYPES.iter().copied().collect::<BTreeSet<_>>(),
         pinned["events"]
@@ -375,6 +393,13 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             .unwrap()
             .iter()
             .map(|event| event.as_str().unwrap())
+            .chain(
+                status_candidate["events"]
+                    .as_object()
+                    .unwrap()
+                    .keys()
+                    .map(String::as_str)
+            )
             .collect()
     );
     for (event, expected) in cases {

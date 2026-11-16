@@ -1154,3 +1154,17 @@ or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+### Candidate status publication events
+
+The source models recognize `status.received`, `status.update` and
+`status.revoked` separately from message events. Their payload shares received
+content types and identifies `scope` as `personal`, `group` or `channel`.
+Personal and group publications identify their publisher; group and channel
+publications identify their respective audience. Replies and mentions remain
+message events. Status publications do not create a chat conversation.
+
+These events have no released API or SDK version and are unavailable in staging
+and production. Keep existing subscriptions until a release notice confirms
+availability for your API version. The separately pinned candidate contract
+does not advance the accepted API baseline or authorize package publication.

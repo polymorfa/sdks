@@ -357,6 +357,9 @@ fn signature_error() -> Error {
     )
 }
 pub const KNOWN_EVENT_TYPES: &[&str] = &[
+    "status.received",
+    "status.update",
+    "status.revoked",
     "marketing.onboarding_updated",
     "contact.marketing_preference_updated",
     "bansafe.action",

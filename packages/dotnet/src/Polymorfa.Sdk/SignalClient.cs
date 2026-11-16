@@ -68,6 +68,7 @@ public sealed record SignalHistoryDescriptor
 }
 public sealed record SignalEvent
 {
+    public string? StatusScope { get; init; }
     public required string Id { get; init; }
     public required string Type { get; init; }
     public required string SessionId { get; init; }

@@ -19,6 +19,7 @@ final class Webhooks
         'customer.pairing_link.connected', 'customer.pairing_link.created', 'customer.pairing_link.expired', 'customer.pairing_link.failed',
         'customer.pairing_link.opened', 'customer.pairing_link.revoked', 'customer.restored', 'customer.updated', 'group.participant',
         'group.update', 'history.sync', 'labels.update', 'message.ack', 'message.delete', 'message.echo', 'message.edited',
+        'status.received', 'status.update', 'status.revoked',
         'message.failed', 'message.reaction', 'message.received', 'message.revoked', 'message.sent', 'message.update', 'message.vote',
         'newsletter.update', 'order.payment_updated', 'presence.update', 'session.capabilities_updated', 'session.connected',
         'session.logged_out', 'session.phone_offline', 'session.restriction_updated', 'session.status', 'template.status',

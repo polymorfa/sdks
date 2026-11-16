@@ -57,6 +57,13 @@ pub struct LinkedDeviceMessagePayload {
     pub timestamp: u64,
     pub push_name: String,
     pub is_group: bool,
+    #[serde(flatten)]
+    pub content: ReceivedContent,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ReceivedContent {
     #[serde(rename = "type")]
     pub message_type: LinkedDeviceMessageType,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -104,6 +111,42 @@ pub struct LinkedDeviceMessagePayload {
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
+impl std::ops::Deref for LinkedDeviceMessagePayload {
+    type Target = ReceivedContent;
+    fn deref(&self) -> &Self::Target {
+        &self.content
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "scope", rename_all = "snake_case")]
+pub enum StatusAudience {
+    Personal {
+        publisher: ConversationIdentity,
+    },
+    Group {
+        publisher: ConversationIdentity,
+        group: ConversationIdentity,
+    },
+    Channel {
+        channel: ConversationIdentity,
+    },
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct StatusPublicationPayload {
+    pub id: String,
+    #[serde(rename = "whatsapp_ids")]
+    pub whatsapp_ids: WhatsAppMessageIds,
+    #[serde(rename = "whatsapp_id", skip_serializing_if = "Option::is_none")]
+    pub whatsapp_id: Option<String>,
+    #[serde(flatten)]
+    pub audience: StatusAudience,
+    pub from_me: bool,
+    pub timestamp: u64,
+    pub push_name: String,
+    pub content: ReceivedContent,
+}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CloudMessageReferral {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -816,6 +859,12 @@ pub struct SessionCapabilitiesUpdatedPayload {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "event", content = "payload")]
 pub enum KnownWebhookPayload {
+    #[serde(rename = "status.received")]
+    StatusReceived(Box<StatusPublicationPayload>),
+    #[serde(rename = "status.update")]
+    StatusUpdate(Box<StatusPublicationPayload>),
+    #[serde(rename = "status.revoked")]
+    StatusRevoked(Box<StatusPublicationPayload>),
     #[serde(rename = "marketing.onboarding_updated")]
     MarketingOnboardingUpdated(Box<crate::official_round2::MarketingOnboardingUpdatedPayload>),
     #[serde(rename = "contact.marketing_preference_updated")]
