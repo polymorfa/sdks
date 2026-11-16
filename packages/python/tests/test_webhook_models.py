@@ -52,7 +52,7 @@ MESSAGE = {
 CUSTOMER = {
     "eventId": "event_1",
     "occurredAt": NOW,
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": "project_1",
     "customerId": "customer_1",
     "actorKind": "project_token",
@@ -68,7 +68,7 @@ PARTICIPANT = {
 VOICE = {
     "eventId": "event_1",
     "occurredAt": NOW,
-    "organizationId": "org_1",
+    "teamId": "team_1",
     "projectId": "project_1",
     "assetId": "asset_1",
     "name": "Greeting",

@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -48,7 +48,7 @@ async function profileServer(): Promise<{
     client: new MessagingClient({
       credential: {
         type: "apiKey",
-        value: ORGANIZATION_API_KEY,
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,

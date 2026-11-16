@@ -3,17 +3,17 @@ mod support;
 use polymorfa_sdk::{customers::*, ErrorKind, RequestOptions};
 use serde_json::json;
 fn customer() -> serde_json::Value {
-    json!({"id":"customer","orgId":"team","projectId":"project","name":"Customer","externalCustomerId":"external","status":"active","isDefault":false,"archivedAt":null,"createdAt":1000,"updatedAt":2000})
+    json!({"id":"customer","teamId":"team","projectId":"project","name":"Customer","externalCustomerId":"external","status":"active","isDefault":false,"archivedAt":null,"createdAt":1000,"updatedAt":2000})
 }
 fn number() -> serde_json::Value {
     json!({"id":"number","customerId":"customer","sessionId":"session","name":"Number","phoneMasked":"+1555***4567","status":"connected","backend":"linked_devices","createdAt":1000})
 }
 fn link() -> serde_json::Value {
-    json!({"id":"link","orgId":"team","projectId":"project","customerId":"customer","expectedPhoneMasked":"+1555***4567","methods":["qr","phone"],"locale":"pt-BR","theme":"system","expiresAt":2000,"status":"connecting","attemptCount":1,"maxAttempts":3,"pendingSessionId":"session","createdBy":"user","reservedAt":1000,"openedAt":1100,"connectingAt":1200,"connectedAt":null,"failedAt":null,"expiredAt":null,"revokedAt":null,"lastErrorCode":null,"failedExchangeCount":0,"phoneMismatchCount":0,"createdAt":1000,"updatedAt":1200})
+    json!({"id":"link","teamId":"team","projectId":"project","customerId":"customer","expectedPhoneMasked":"+1555***4567","methods":["qr","phone"],"locale":"pt-BR","theme":"system","expiresAt":2000,"status":"connecting","attemptCount":1,"maxAttempts":3,"pendingSessionId":"session","createdBy":"user","reservedAt":1000,"openedAt":1100,"connectingAt":1200,"connectedAt":null,"failedAt":null,"expiredAt":null,"revokedAt":null,"lastErrorCode":null,"failedExchangeCount":0,"phoneMismatchCount":0,"createdAt":1000,"updatedAt":1200})
 }
 #[tokio::test]
 async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects/project/customers/status",
@@ -23,7 +23,7 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
             .customers()
             .status("project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/projects/project/customers/enable",
@@ -39,8 +39,8 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
     summary["activePairingLinkState"] = json!("connecting");
     summary["lastActivityAt"] = json!(2000);
     summary["needsAttention"] = json!(true);
-    wire_organization!(client,"GET","/platform/customers?projectId=project&cursor=cursor&search=Customer&limit=25&status=all&isDefault=false&hasNumbers=true&needsAttention=true",None,json!({"data":[summary],"page":{"nextCursor":"next","hasMore":true}}),client.customers().list(&ListCustomersParameters{project_id:"project".into(),cursor:Some("cursor".into()),search:Some("Customer".into()),limit:Some(25),status:Some(CustomerListStatus::All),is_default:Some(false),has_numbers:Some(true),needs_attention:Some(true)},RequestOptions::default()));
-    wire_organization!(
+    wire_team!(client,"GET","/platform/customers?projectId=project&cursor=cursor&search=Customer&limit=25&status=all&isDefault=false&hasNumbers=true&needsAttention=true",None,json!({"data":[summary],"page":{"nextCursor":"next","hasMore":true}}),client.customers().list(&ListCustomersParameters{project_id:"project".into(),cursor:Some("cursor".into()),search:Some("Customer".into()),limit:Some(25),status:Some(CustomerListStatus::All),is_default:Some(false),has_numbers:Some(true),needs_attention:Some(true)},RequestOptions::default()));
+    wire_team!(
         client,
         "POST",
         "/platform/customers",
@@ -55,7 +55,7 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/customers/customer?projectId=project",
@@ -65,7 +65,7 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
             .customers()
             .retrieve("customer", "project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PATCH",
         "/platform/customers/customer",
@@ -81,7 +81,7 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/customers/customer/archive",
@@ -95,7 +95,7 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/customers/customer/restore",
@@ -112,7 +112,7 @@ async fn customer_enablement_listing_sparse_patches_and_lifecycle_native_wire() 
 }
 #[tokio::test]
 async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/customers/customer/numbers?projectId=project",
@@ -122,7 +122,7 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
             .customers()
             .list_numbers("customer", "project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/customers/customer/events?projectId=project&limit=25",
@@ -139,7 +139,7 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
     );
     let mut created = link();
     created["url"] = json!("https://pair.example.com/link");
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/customers/customer/pairing-links",
@@ -161,7 +161,7 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/customers/customer/pairing-links?projectId=project",
@@ -171,7 +171,7 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
             .customers()
             .list_pairing_links("customer", "project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/customers/customer/pairing-links/link?projectId=project",
@@ -184,7 +184,7 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/customers/customer/numbers/session/transfer",
@@ -201,7 +201,7 @@ async fn customer_number_events_pairing_link_and_confirmed_transfer_native_wire(
             RequestOptions::default()
         )
     );
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     assert_eq!(
         client
             .customers()

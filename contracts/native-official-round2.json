@@ -523,10 +523,10 @@
   "platformBatching": {
     "snapshot": "contracts/official-api-round2/oa-30.json",
     "operations": [
-      "listOrganizationWebhooks",
-      "getOrganizationWebhook",
-      "createOrganizationWebhook",
-      "updateOrganizationWebhook",
+      "listTeamWebhooks",
+      "getTeamWebhook",
+      "createTeamWebhook",
+      "updateTeamWebhook",
       "listProjectWebhooks",
       "getProjectWebhook",
       "createProjectWebhook",

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$session = ['sessionId' => 'support','name' => 'support','tenantId' => 'org_1','type' => 'linked_device','testMode' => true,'status' => 'CONNECTED','createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
+$session = ['sessionId' => 'support','name' => 'support','tenantId' => 'team_1','type' => 'linked_device','testMode' => true,'status' => 'CONNECTED','createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
 $platform = json_decode(file_get_contents(dirname(__DIR__, 3).'/contracts/fixtures/behavior.json'), true, flags:JSON_THROW_ON_ERROR)['scenarios'][0]['responses'][0]['body'];
 $accepted = ['success' => true,'message' => 'Queued','operationId' => 'op_1'];
 $cases = [

@@ -12,8 +12,6 @@ defineUiKit({ tokenEndpoint: "/api/polymorfa/token" });
 ```
 
 ```html
-<pmfa-session-status></pmfa-session-status>
-<pmfa-connect-whatsapp></pmfa-connect-whatsapp>
 <pmfa-inbox style="height: 640px"></pmfa-inbox>
 ```
 

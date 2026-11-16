@@ -1,4 +1,4 @@
-//! Organization suppression, media upload metadata and session ban evidence.
+//! Team suppression, media upload metadata and session ban evidence.
 use crate::{
     models::DataEnvelope,
     transport::{encode, HttpTransport},

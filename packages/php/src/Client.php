@@ -43,7 +43,7 @@ final readonly class Client
     public Resources\SessionBans $sessionBans;
     public Resources\SecurityIncidents $securityIncidents;
     public Resources\OptOuts $optOuts;
-    public Resources\Organizations $organizations;
+    public Resources\Teams $teams;
     public Resources\Members $members;
     public Resources\ApiKeys $apiKeys;
     public Resources\ProjectTokens $projectTokens;
@@ -56,7 +56,7 @@ final readonly class Client
         ?string $proxy = null,
         ?ClientInterface $http = null
     ) {
-        if ($credential->kind !== 'organization_api_key') {
+        if ($credential->kind !== 'team_api_key') {
             throw new ConfigurationException('credential');
         }
         $this->transport = new HttpTransport($credential, $baseUrl, $apiVersion, $timeout, $maxNetworkRetries, $proxy, $http);
@@ -83,7 +83,7 @@ final readonly class Client
         $this->sessionBans = new Resources\SessionBans($this->transport);
         $this->securityIncidents = new Resources\SecurityIncidents($this->transport);
         $this->optOuts = new Resources\OptOuts($this->transport);
-        $this->organizations = new Resources\Organizations($this->transport);
+        $this->teams = new Resources\Teams($this->transport);
         $this->members = new Resources\Members($this->transport);
         $this->apiKeys = new Resources\ApiKeys($this->transport);
         $this->projectTokens = new Resources\ProjectTokens($this->transport);

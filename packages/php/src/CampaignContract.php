@@ -24,9 +24,9 @@ final class CampaignContract
 
     /** @param array<string,mixed> $query
      * @return ApiResponse<array<string,mixed>> */
-    public static function request(HttpTransport $transport, string $method, string $path, array $query, mixed $body, ?RequestOptions $options, string $model, bool $messaging = false, bool $replay = false, bool $organizationOnly = false): ApiResponse
+    public static function request(HttpTransport $transport, string $method, string $path, array $query, mixed $body, ?RequestOptions $options, string $model, bool $messaging = false, bool $replay = false, bool $teamOnly = false): ApiResponse
     {
-        self::authority($transport, $organizationOnly);
+        self::authority($transport, $teamOnly);
         $selected = self::options($options, $method !== 'GET', $replay);
         $selected->cancellation?->throwIfCancelled();
         $captured = [];
@@ -53,10 +53,10 @@ final class CampaignContract
         return strtolower(trim(explode(';', $metadata->headers['content-type'] ?? '')[0])) === 'application/json';
     }
 
-    public static function authority(HttpTransport $transport, bool $organizationOnly = false): void
+    public static function authority(HttpTransport $transport, bool $teamOnly = false): void
     {
         $kind = $transport->credentialKind();
-        if (!in_array($kind, ['organization_api_key', 'project_token'], true) || ($organizationOnly && $kind !== 'organization_api_key')) {
+        if (!in_array($kind, ['team_api_key', 'project_token'], true) || ($teamOnly && $kind !== 'team_api_key')) {
             CampaignContractValidation::invalid('credential');
         }
     }

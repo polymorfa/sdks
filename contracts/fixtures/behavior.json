@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "sourceSdkCommit": "ff51567105b64bf6997e7330ba8eb502d875e7b9",
   "apiVersion": "2026-09-22",
-  "organizationCredential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
+  "teamCredential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
   "projectCredential": "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
   "scenarios": [
     {
@@ -1084,14 +1084,14 @@
   ],
   "configuration": [
     {
-      "id": "organization-valid",
+      "id": "team-valid",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "valid": true
     },
     {
-      "id": "messaging-org-valid",
+      "id": "messaging-team-valid",
       "client": "messaging",
       "credentialType": "apiKey",
       "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
@@ -1123,17 +1123,17 @@
       "field": "credential"
     },
     {
-      "id": "organization-short",
+      "id": "team-short",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
       "valid": false,
       "field": "credential"
     },
     {
-      "id": "organization-wrong-principal",
+      "id": "team-wrong-principal",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "valid": false,
       "field": "credential"
@@ -1150,7 +1150,7 @@
     {
       "id": "listener-refused",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_ls_fixture",
       "valid": false,
       "field": "credential"
@@ -1174,7 +1174,7 @@
     {
       "id": "invalid-base-url",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "baseUrl": "https://user:password@example.invalid",
       "valid": false,
@@ -1183,7 +1183,7 @@
     {
       "id": "negative-retries",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "maxNetworkRetries": -1,
       "valid": false
@@ -1191,7 +1191,7 @@
     {
       "id": "zero-timeout",
       "client": "platform",
-      "credentialType": "organizationApiKey",
+      "credentialType": "teamApiKey",
       "credential": "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
       "timeoutMs": 0,
       "valid": false

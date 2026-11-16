@@ -134,8 +134,8 @@ type Usage struct {
 	projectID string
 }
 
-func (c *OrganizationClient) Usage() *Usage { return &Usage{t: c.t} }
-func (c *ProjectClient) Usage() *Usage      { return &Usage{c.t, c.projectID} }
+func (c *TeamClient) Usage() *Usage    { return &Usage{t: c.t} }
+func (c *ProjectClient) Usage() *Usage { return &Usage{c.t, c.projectID} }
 func (r *Usage) query(p UsageSummaryParams) url.Values {
 	q := url.Values{}
 	setString(q, "projectId", p.ProjectID)

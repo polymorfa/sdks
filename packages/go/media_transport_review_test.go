@@ -24,7 +24,7 @@ func TestMediaBodyTimeoutAndCancellation(t *testing.T) {
 					<-r.Context().Done()
 				}))
 				defer server.Close()
-				config := orgConfig(server.URL)
+				config := teamConfig(server.URL)
 				config.MaxNetworkRetries = reviewPointer(0)
 				client, err := NewMessagingClient(config)
 				if err != nil {
@@ -78,7 +78,7 @@ func TestRedirectedMediaRetainsBodyDeadlineAndCustomTransport(t *testing.T) {
 		http.Redirect(w, r, storage.URL+"/signed?capability=synthetic", 302)
 	}))
 	defer api.Close()
-	config := orgConfig(api.URL)
+	config := teamConfig(api.URL)
 	config.HTTPClient = storage.Client()
 	config.MaxNetworkRetries = reviewPointer(0)
 	client, err := NewMessagingClient(config)
@@ -115,7 +115,7 @@ func TestMediaEOFCannotHideCancellationOrDeadline(t *testing.T) {
 				t.Run(fmt.Sprintf("redirected=%v/stream=%v/%s", redirected, stream, mode), func(t *testing.T) {
 					ctx, cancel := context.WithCancel(context.Background())
 					defer cancel()
-					config := orgConfig("https://api.fixture.invalid")
+					config := teamConfig("https://api.fixture.invalid")
 					config.MaxNetworkRetries = reviewPointer(0)
 					config.HTTPClient = &http.Client{Transport: mediaRoundTripper(func(req *http.Request) (*http.Response, error) {
 						header := http.Header{"Content-Type": []string{"application/octet-stream"}, "X-Request-Id": []string{"eof_download"}}
@@ -199,7 +199,7 @@ func TestBasePathPreservedForHTTPAndCallsSocket(t *testing.T) {
 		io.WriteString(w, `{"success":true,"data":{"id":"a/b"}}`)
 	}))
 	defer server.Close()
-	config := orgConfig(server.URL + "/proxy%20base/")
+	config := teamConfig(server.URL + "/proxy%20base/")
 	client, err := NewMessagingClient(config)
 	if err != nil {
 		t.Fatal(err)

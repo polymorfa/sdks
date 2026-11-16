@@ -113,7 +113,7 @@ func (s *CallsTokenSource) Invalidate() {
 	s.mu.Unlock()
 }
 func callsCredential(value string) (Credential, error) {
-	kind := OrganizationAPIKey
+	kind := TeamAPIKey
 	if strings.HasPrefix(value, "pmfa_ct_") {
 		kind = ClientToken
 	} else if strings.HasPrefix(value, "pmfa_pt_") {

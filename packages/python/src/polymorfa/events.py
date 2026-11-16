@@ -40,7 +40,7 @@ from .webhooks import WebhookEvent, parse_verified_webhook_event
 
 class StreamEvent(TypedDict):
     id: str
-    organizationId: str
+    teamId: str
     projectId: str
     type: str
     source: Literal["runtime", "platform", "test"]

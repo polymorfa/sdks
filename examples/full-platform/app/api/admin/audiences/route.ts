@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import type { CreateAudienceRequest } from "@polymorfa/sdk";
 
 import {
@@ -13,10 +13,10 @@ import {
 
 // Audience creation and membership are typed; the remaining audience payloads
 // stay open in the contract, so `payload` is forwarded.
-export const GET = route("admin", () => organization().audiences.list());
+export const GET = route("admin", () => team().audiences.list());
 
 export const POST = route("admin", async ({ body }) => {
-  const audiences = organization().audiences;
+  const audiences = team().audiences;
   switch (action(body)) {
     case "create":
       return audiences.create(

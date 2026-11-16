@@ -7,6 +7,7 @@ internal static class CallsTests
     private const string Settings = "{\"success\":true,\"data\":{\"callsEnabled\":true,\"conferenceMode\":false,\"inboundRoute\":\"clients\",\"sipTrunkId\":null,\"sipClaim\":false,\"hostCloudApiCalls\":false,\"revision\":2,\"updatedAt\":null}}";
     public static async Task RunAsync()
     {
+        await Messaging("POST", "/messaging/voip/calls/call/waiting-room", "{\"connectionId\":\"connection1\",\"control\":{\"type\":\"waiting_room_control\",\"requestId\":\"request_123\",\"operation\":\"deny\",\"participantId\":\"123\"}}", "{\"success\":true,\"data\":{\"type\":\"waiting_room_result\",\"requestId\":\"request_123\",\"ok\":true}}", async c => True((await c.Calls.ModerateWaitingRoomAsync("call", new("connection1", new("request_123", "deny", ParticipantId: "123")))).Data.Data.Ok));
         await CallSettingsCoverageEndTests.RunAsync();
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true,\"acknowledgeRisk\":true}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true, AcknowledgeRisk: true))).Data.Data.Revision, 2L));
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":false}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: false))).Data.Data.Revision, 2L));
@@ -28,7 +29,7 @@ internal static class CallsTests
         await Messaging("POST", "/messaging/voip/call-links", "{\"session\":\"s\",\"video\":true}", "{\"success\":true,\"data\":{\"session\":\"s\",\"token\":\"link\",\"url\":\"https://call.whatsapp.com/video/link\",\"video\":true}}", async c => ResourceTests.Equal((await c.Calls.CreateCallLinkAsync(new("s", true))).Data.Data.Token, "link"));
         await Messaging("POST", "/messaging/voip/call-links/preview", "{\"session\":\"s\",\"token\":\"link\"}", "{\"success\":true,\"data\":{\"session\":\"s\",\"video\":true,\"creatorConversationIdentity\":{\"phoneNumber\":\"+15551234567\"},\"approvalRequired\":true,\"isAdmin\":false}}", async c => True((await c.Calls.PreviewCallLinkAsync(new("s", "link"))).Data.Data.ApprovalRequired));
         await Messaging("POST", "/messaging/voip/calls/call/reports", "{\"kind\":\"quality\",\"connectionId\":\"connection1\",\"client\":{\"sdk\":\"polymorfa-dotnet\",\"version\":\"0.1.0\",\"platform\":\"other\"},\"quality\":{\"rttMs\":20,\"candidateType\":\"relay\"}}", Success, async c => True((await c.Calls.ReportAsync("call", new("quality", "connection1", new("polymorfa-dotnet", "0.1.0", "other"), Quality: new(RttMs: 20, CandidateType: "relay")))).Data.Success));
-        using var client = new MessagingClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
+        using var client = new MessagingClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
         await Invalid(() => client.Calls.PlaceAsync(new(Session: "s", To: "peer", GroupId: "group")));
         await Invalid(() => client.Calls.PlaceAsync(new(Session: "s", Participants: ["peer", "peer"])));
         await Invalid(() => client.Calls.SendReactionAsync("call", new("connection1", "unsupported")));

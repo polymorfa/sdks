@@ -11,7 +11,7 @@ if (apiKey === undefined || projectId === undefined) {
 }
 
 const platform = new Client({
-  credential: { type: "organizationApiKey", value: apiKey },
+  credential: { type: "teamApiKey", value: apiKey },
 });
 const project = platform.project(projectId);
 

@@ -1,4 +1,4 @@
-import { organization, project } from "../../../../lib/polymorfa.js";
+import { team, project } from "../../../../lib/polymorfa.js";
 import {
   action,
   integer,
@@ -8,13 +8,13 @@ import {
 } from "../../../../lib/route.js";
 
 // Session configuration defaults and saved QuickLink branding, for the team
-// (organization view) and for this project (project view).
+// (team view) and for this project (project view).
 export const GET = route("admin", async () => {
   const [teamConfig, projectConfig, teamLinks, projectLinks] =
     await Promise.all([
-      organization().sessionConfiguration.retrieve(),
+      team().sessionConfiguration.retrieve(),
       project().sessionConfiguration.retrieve(),
-      organization().quickLinkSettings.retrieve(),
+      team().quickLinkSettings.retrieve(),
       project().quickLinkSettings.retrieve(),
     ]);
   return {
@@ -54,7 +54,7 @@ export const POST = route("admin", async ({ body }) => {
       });
     }
     case "teamQuickLink":
-      return organization().quickLinkSettings.update({ theme: "dark" });
+      return team().quickLinkSettings.update({ theme: "dark" });
     default:
       return unknownAction(action(body));
   }

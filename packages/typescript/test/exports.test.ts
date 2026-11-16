@@ -93,7 +93,7 @@ import {
   type ManagementOperationKind,
   type ManagementOperationProgress,
   type ManagementOperationStatus,
-  type OrganizationMember,
+  type TeamMember,
   type PlatformPayload,
   type ClientOptions,
   type ProjectToken,
@@ -112,7 +112,7 @@ import {
   type SessionTierOverrideRequest,
   type WebhookEvent,
   type UserSecurityCode,
-  type OrganizationQuickLinkSettings,
+  type TeamQuickLinkSettings,
   type ProjectQuickLinkSettings,
   type SessionCallSettings,
   type UpdateSessionCallSettingsRequest,
@@ -213,7 +213,7 @@ describe("public exports", () => {
     expectTypeOf<ManagementOperationProgress>().toHaveProperty("code");
     expectTypeOf<ManagementOperationError>().toHaveProperty("retryable");
     expectTypeOf<ManagementOperationActionRequired>().toHaveProperty("details");
-    expectTypeOf<OrganizationMember>().toHaveProperty("role");
+    expectTypeOf<TeamMember>().toHaveProperty("role");
     expectTypeOf<PlatformPayload>().toMatchTypeOf<
       Readonly<Record<string, unknown>>
     >();
@@ -252,10 +252,8 @@ describe("public exports", () => {
     expectTypeOf<TemplateDefinition>().toHaveProperty("variables");
     expectTypeOf<WebhookEvent>().toHaveProperty("event");
     expectTypeOf<UserSecurityCode>().toHaveProperty("numericCode");
-    expectTypeOf<OrganizationQuickLinkSettings>().toHaveProperty("headline");
-    expectTypeOf<
-      OrganizationQuickLinkSettings["projectId"]
-    >().toEqualTypeOf<null>();
+    expectTypeOf<TeamQuickLinkSettings>().toHaveProperty("headline");
+    expectTypeOf<TeamQuickLinkSettings["projectId"]>().toEqualTypeOf<null>();
     expectTypeOf<
       ProjectQuickLinkSettings["projectId"]
     >().toEqualTypeOf<string>();

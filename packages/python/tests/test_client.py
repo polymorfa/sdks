@@ -25,7 +25,7 @@ from polymorfa import (
 )
 
 KEY = Credential(
-    "organization_api_key",
+    "team_api_key",
     "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
 )
 RECEIPT = {
@@ -44,7 +44,7 @@ SESSION = {
     "data": {
         "sessionId": "support",
         "name": "support",
-        "tenantId": "org_1",
+        "tenantId": "team_1",
         "type": "linked_device",
         "testMode": True,
         "status": "CONNECTED",
@@ -83,7 +83,7 @@ WEBHOOK = {
     "success": True,
     "data": {
         "id": "hook_1",
-        "tenantId": "org_1",
+        "tenantId": "team_1",
         "url": "https://example.com/webhook",
         "events": ["message.received"],
         "retries": {"attempts": 1, "delaySeconds": 1, "policy": "constant"},

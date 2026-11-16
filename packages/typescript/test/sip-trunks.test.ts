@@ -11,7 +11,7 @@ import {
   type SipEndpointTransport,
   type SipTrunk,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 const TRUNK_ID = "6f1c2f0e-1d5b-4d8e-9a55-0d4b8a6c1f10";
 
@@ -53,9 +53,9 @@ function request(fetch: ReturnType<typeof vi.fn>, index: number) {
   };
 }
 
-function organizationClient(fetch: typeof globalThis.fetch) {
+function teamClient(fetch: typeof globalThis.fetch) {
   return new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     fetch,
     maxNetworkRetries: 0,
   });
@@ -66,7 +66,7 @@ describe("SIP trunks", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: [trunk()] }),
     );
-    const client = organizationClient(fetch);
+    const client = teamClient(fetch);
     const listed = await client.sipTrunks.list("project-a");
     expect(listed.data).toEqual([trunk()]);
     const first = request(fetch, 0);
@@ -105,7 +105,7 @@ describe("SIP trunks", () => {
   });
 
   it("requires a project for team clients", async () => {
-    const client = organizationClient(vi.fn());
+    const client = teamClient(vi.fn());
     // @ts-expect-error team clients must name the project
     expect(() => client.sipTrunks.list()).toThrow(PolymorfaConfigurationError);
   });
@@ -140,7 +140,7 @@ describe("SIP trunks", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: trunk("project-b") }),
     );
-    const scoped = organizationClient(fetch).project("project-a");
+    const scoped = teamClient(fetch).project("project-a");
     await expect(scoped.sipTrunks.delete(TRUNK_ID)).rejects.toBeInstanceOf(
       PolymorfaNotFoundError,
     );
@@ -179,7 +179,7 @@ describe("SIP trunks", () => {
           })
         : Response.json({ success: true, data: trunk("project-a") }),
     );
-    const scoped = organizationClient(fetch).project("project-a");
+    const scoped = teamClient(fetch).project("project-a");
     await scoped.sipTrunks.delete(TRUNK_ID, {
       apiVersion: "2026-09-01",
       headers: { "x-trace": "abc" },
@@ -199,7 +199,7 @@ describe("SIP trunks", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: trunk(projectId.toLowerCase()) }),
     );
-    const scoped = organizationClient(fetch).project(projectId);
+    const scoped = teamClient(fetch).project(projectId);
     await expect(scoped.sipTrunks.retrieve(TRUNK_ID)).resolves.toBeDefined();
   });
 
@@ -216,7 +216,7 @@ describe("SIP trunks", () => {
         { status: 409 },
       ),
     );
-    const error = await organizationClient(fetch)
+    const error = await teamClient(fetch)
       .sipTrunks.delete(TRUNK_ID)
       .catch((cause: unknown) => cause);
     expect(error).toBeInstanceOf(PolymorfaConflictError);
@@ -273,7 +273,7 @@ describe("SIP address", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: hosted }),
     );
-    const response = await organizationClient(fetch).sipTrunks.endpoint();
+    const response = await teamClient(fetch).sipTrunks.endpoint();
     expect(response.data).toEqual(hosted);
     expect(fetch).toHaveBeenCalledTimes(1);
     const sent = request(fetch, 0);
@@ -325,7 +325,7 @@ describe("SIP address", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: hosted }),
     );
-    const project = organizationClient(fetch).project("project-a");
+    const project = teamClient(fetch).project("project-a");
     await project.sipTrunks.endpoint();
     expect(fetch).toHaveBeenCalledTimes(1);
     expect(request(fetch, 0).url.pathname).toBe("/platform/sip/endpoint");

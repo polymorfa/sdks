@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-$passkeyCredential = \Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
+$passkeyCredential = \Polymorfa\Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
 $f = json_decode(file_get_contents(dirname(__DIR__,3).'/contracts/fixtures/passkeys.candidate.json'),true,512,JSON_THROW_ON_ERROR);
 $cases = [
  ['POST','/challenge',$f['issue'],'ticket',fn($c) => $c->passkeys->issueChallenge($f['session'],$f['issue'])],

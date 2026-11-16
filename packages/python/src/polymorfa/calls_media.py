@@ -75,7 +75,7 @@ class ManagedMedia:
                                 "Media consumer did not keep up.", code="media_queue_full"
                             )
                     self.frames.put_nowait(frame)
-                elif frame.get("type") in ("media_state", "media_error"):
+                elif frame.get("type") in ("media_state", "media_error", "waiting_room_result"):
                     if (
                         self._pending is not None
                         and frame.get("requestId") == self._pending[0]
@@ -148,6 +148,65 @@ class ManagedMedia:
                 if reply.get("screenSharing") is True:
                     result["screenSharing"] = True
                 return result
+        finally:
+            self._queued -= 1
+
+    async def moderate_waiting_room(
+        self, operation: str, participant_id: str | None = None, enabled: bool | None = None
+    ) -> None:
+        import re
+
+        if operation == "toggle":
+            valid = isinstance(enabled, bool) and participant_id is None
+        else:
+            valid = (
+                operation in ("admit", "deny")
+                and isinstance(participant_id, str)
+                and re.fullmatch(r"[1-9][0-9]{0,18}", participant_id) is not None
+                and enabled is None
+            )
+        if not valid:
+            raise CallsError(
+                "Specify a waiting-room operation and public target.",
+                code="invalid_waiting_room_control",
+            )
+        if self._closed or self._queued >= 16:
+            raise CallsError(
+                "Waiting-room controls are unavailable.", code="waiting_room_unavailable"
+            )
+        self._queued += 1
+        try:
+            async with self._lock:
+                if self._closed:
+                    raise CallsError("Media connection closed.", code="waiting_room_unavailable")
+                request_id = secrets.token_urlsafe(18)
+                future: asyncio.Future[JsonObject] = asyncio.get_running_loop().create_future()
+                self._pending = (request_id, future)
+                try:
+                    frame: JsonObject = {
+                        "type": "waiting_room_control",
+                        "requestId": request_id,
+                        "operation": operation,
+                    }
+                    if operation == "toggle":
+                        frame["enabled"] = enabled
+                    else:
+                        frame["participantId"] = participant_id
+                    await self.socket.send_control(frame)
+                    reply = await asyncio.wait_for(future, self._timeout)
+                except asyncio.TimeoutError:
+                    raise CallsError(
+                        "Waiting-room control was not confirmed.",
+                        code="waiting_room_control_unknown",
+                    ) from None
+                finally:
+                    self._pending = None
+                if reply.get("type") != "waiting_room_result" or reply.get("ok") is not True:
+                    code = reply.get("code")
+                    raise CallsError(
+                        "Waiting-room control was refused.",
+                        code=code if isinstance(code, str) else "waiting_room_control_unknown",
+                    )
         finally:
             self._queued -= 1
 

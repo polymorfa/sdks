@@ -6,7 +6,7 @@ import {
   PolymorfaValidationError,
   type TestingPhone,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -23,7 +23,7 @@ function client(response: Response, type: "apiKey" | "clientToken" = "apiKey") {
     client: new MessagingClient({
       credential:
         type === "apiKey"
-          ? { type, value: ORGANIZATION_API_KEY }
+          ? { type, value: TEAM_API_KEY }
           : { type, value: "pmfa_ct_YnJvd3Nlcg" },
       baseUrl: "https://api.example",
       fetch: fetcher,

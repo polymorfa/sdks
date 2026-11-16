@@ -3,6 +3,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import type { CallsController, CallsSnapshot } from "@polymorfa/ui-kit";
+import { PolymorfaProvider } from "../../src/react/context.js";
 import { CallNumberPicker } from "../../src/react/call-number-picker.js";
 
 (
@@ -54,6 +55,74 @@ function mount(numbers: ReturnType<typeof number>[], onChange = vi.fn()) {
   return { select: host.querySelector("select")!, onChange, host };
 }
 describe("outgoing Number selection", () => {
+  it("applies provider appearance and public styling slots without host CSS", () => {
+    document.getElementById("pmfa-component-styles")?.remove();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    roots.push(root);
+    act(() =>
+      root.render(
+        <PolymorfaProvider
+          appearance={{
+            theme: "dark",
+            variables: { colorPrimary: "#0f766e" },
+            elements: {
+              callNumberSelect: { styles: { borderRadius: "12px" } },
+            },
+          }}
+        >
+          <CallNumberPicker
+            numbers={[number("support")]}
+            value="support"
+            onChange={vi.fn()}
+            className="application-picker"
+            classNames={{ callNumberSelect: "application-choice" }}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    const picker = host.querySelector<HTMLElement>(
+      '[data-slot="callNumberPicker"]',
+    )!;
+    expect(picker.classList.contains("pmfa-dark")).toBe(true);
+    expect(picker.classList.contains("application-picker")).toBe(true);
+    expect(picker.style.getPropertyValue("--pmfa-color-primary")).toBe(
+      "#0f766e",
+    );
+    const select = host.querySelector<HTMLSelectElement>(
+      '[data-slot="callNumberSelect"]',
+    )!;
+    expect(select.classList.contains("application-choice")).toBe(true);
+    expect(select.style.borderRadius).toBe("12px");
+    expect(
+      host.querySelector<HTMLLabelElement>('[data-slot="callNumberLabel"]')
+        ?.htmlFor,
+    ).toBe(select.id);
+    expect(document.getElementById("pmfa-component-styles")).not.toBeNull();
+  });
+
+  it("respects an unstyled provider without installing a stylesheet", () => {
+    document.getElementById("pmfa-component-styles")?.remove();
+    const host = document.createElement("div");
+    document.body.append(host);
+    const root = createRoot(host);
+    roots.push(root);
+    act(() =>
+      root.render(
+        <PolymorfaProvider appearance={{ unstyled: true }}>
+          <CallNumberPicker
+            numbers={[number("support")]}
+            value="support"
+            onChange={vi.fn()}
+          />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(host.querySelector('[data-slot="callNumberPicker"]')).not.toBeNull();
+    expect(document.getElementById("pmfa-component-styles")).toBeNull();
+  });
+
   it("selects only an application-supplied Number without changing its controller", () => {
     const support = number("support");
     const sales = number("sales");

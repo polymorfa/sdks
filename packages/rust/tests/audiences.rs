@@ -14,7 +14,7 @@ fn imported() -> serde_json::Value {
 }
 #[tokio::test]
 async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/audiences",
@@ -22,7 +22,7 @@ async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire
         json!({"data":{"audiences":[audience()]}}),
         client.audiences().list(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/audiences",
@@ -40,7 +40,7 @@ async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/audiences",
@@ -61,7 +61,7 @@ async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/audiences/audience",
@@ -71,7 +71,7 @@ async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire
             .audiences()
             .retrieve("audience", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/audiences/audience",
@@ -82,7 +82,7 @@ async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire
             .delete("audience", RequestOptions::default())
     );
     let upload: AudiencePayload = [("filename".into(), json!("members.csv"))].into();
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/audiences/uploads",
@@ -95,7 +95,7 @@ async fn audiences_inline_file_import_and_open_read_upload_contracts_native_wire
 }
 #[tokio::test]
 async fn audience_paginated_members_partial_append_and_phone_deletion_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/audiences/audience/members?cursor=cursor&limit=25",
@@ -110,7 +110,7 @@ async fn audience_paginated_members_partial_append_and_phone_deletion_native_wir
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "POST",
         "/platform/audiences/audience/members",
@@ -127,7 +127,7 @@ async fn audience_paginated_members_partial_append_and_phone_deletion_native_wir
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "DELETE",
         "/platform/audiences/audience/members/%2B15551234567",

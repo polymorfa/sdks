@@ -202,7 +202,7 @@ func TestOfficialRound2PlatformBatchingWire(t *testing.T) {
 	}))
 	defer s.Close()
 	m := mustMessaging(t, s.URL)
-	o, e := NewOrganizationClient(m.t.config)
+	o, e := NewTeamClient(m.t.config)
 	if e != nil {
 		t.Fatal(e)
 	}

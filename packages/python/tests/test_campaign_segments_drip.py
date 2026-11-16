@@ -34,7 +34,7 @@ SEG = json.loads((ROOT / "contracts/campaign-segments-drip.json").read_text())
 PROJECT = "11111111-1111-4111-8111-111111111111"
 ID = "22222222-2222-4222-8222-222222222222"
 KEY = Credential(
-    "organization_api_key",
+    "team_api_key",
     "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
 )
 RULES = {

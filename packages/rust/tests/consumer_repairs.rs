@@ -2,7 +2,7 @@ use futures_util::{SinkExt, StreamExt};
 use polymorfa_sdk::{
     raw::{DecodedRawPage, RawRequest},
     signal::*,
-    ClientOptions, Credential, ErrorKind, MessagingClient, OrganizationClient, RequestOptions,
+    ClientOptions, Credential, ErrorKind, MessagingClient, RequestOptions, TeamClient,
 };
 use serde_json::{json, Value};
 use std::{
@@ -82,8 +82,8 @@ async fn api_base_prefix_and_escaped_query_are_retained() {
             reply(&mut socket, 200, "application/json", "{}").await;
             seen
         });
-        let client = OrganizationClient::new(
-            Credential::organization_api_key(KEY).unwrap(),
+        let client = TeamClient::new(
+            Credential::team_api_key(KEY).unwrap(),
             options(format!("{base}{prefix}")),
         )
         .unwrap();
@@ -171,7 +171,7 @@ async fn calls_base_prefix_and_first_frame_authority_are_retained() {
                 let credential = if client_token {
                     Credential::client_token(secret).unwrap()
                 } else {
-                    Credential::organization_api_key(secret).unwrap()
+                    Credential::team_api_key(secret).unwrap()
                 };
                 let client =
                     MessagingClient::new(credential, options(format!("{base}{prefix}"))).unwrap();
@@ -239,11 +239,8 @@ async fn raw_cursor_cycles_stop_before_a_repeated_request() {
                 .await;
             }
         });
-        let client = OrganizationClient::new(
-            Credential::organization_api_key(KEY).unwrap(),
-            options(base),
-        )
-        .unwrap();
+        let client =
+            TeamClient::new(Credential::team_api_key(KEY).unwrap(), options(base)).unwrap();
         let mut request = RawRequest::get("/raw");
         request.query.insert("position".into(), "seed".into());
         let page = client
@@ -431,11 +428,8 @@ async fn usage_iteration_honors_starting_cursor_and_seeds_cycle_detection() {
                 }
             }
         });
-        let client = OrganizationClient::new(
-            Credential::organization_api_key(KEY).unwrap(),
-            options(base),
-        )
-        .unwrap();
+        let client =
+            TeamClient::new(Credential::team_api_key(KEY).unwrap(), options(base)).unwrap();
         let usage = client.usage();
         let mut stream = usage.iterate_records(
             polymorfa_sdk::usage::UsageRecordParams {

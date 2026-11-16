@@ -1,13 +1,13 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { MessagingClient, PolymorfaConfigurationError } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 afterEach(() => vi.restoreAllMocks());
 it("serializes scoped routing revisions and pause guards exactly", async () => {
   const fetch = vi.fn<typeof globalThis.fetch>(async () =>
     Response.json({ success: true, data: { revision: "new", paused: true } }),
   );
   const client = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: "https://api.example.test",
     fetch,
   });

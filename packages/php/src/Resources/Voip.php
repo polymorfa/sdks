@@ -22,6 +22,8 @@ use Polymorfa\ValidationException;
  * @phpstan-import-type CheckRequest from VoipModels
  * @phpstan-import-type CallCheck from VoipModels
  * @phpstan-import-type Reaction from VoipModels
+ * @phpstan-import-type WaitingRoomControlRequest from VoipModels
+ * @phpstan-import-type WaitingRoomControlResult from VoipModels
  * @phpstan-import-type HandRaised from VoipModels
  * @phpstan-import-type Report from VoipModels
  * @phpstan-import-type Success from Models
@@ -199,6 +201,18 @@ final class Voip extends Resource
         /** @var ApiResponse<Success> */
         return $this->request('POST', '/messaging/voip/calls/'.self::segment($id).'/reaction', $body, options:($options ?? new RequestOptions())->withoutRetries());
     }
+    /** Reauthorizes through the API; inspect data.ok and never replay an unknown outcome.
+     * @param WaitingRoomControlRequest $body
+     * @return ApiResponse<array{success:bool,data:WaitingRoomControlResult}> */
+    public function moderateWaitingRoom(string $id, array $body, ?RequestOptions $options = null): ApiResponse
+    {
+        $this->participant($body['participant'] ?? null);
+        self::connection($body['connectionId']);
+        $control = $body['control'];
+        self::waitingControl($control);
+        /** @var ApiResponse<array{success:bool,data:WaitingRoomControlResult}> */
+        return $this->request('POST', '/messaging/voip/calls/'.self::segment($id).'/waiting-room', $body, options:($options ?? new RequestOptions())->withoutRetries());
+    }
     /** @param HandRaised $body
      * @return ApiResponse<Success> */
     public function setHandRaised(string $id, array $body, ?RequestOptions $options = null): ApiResponse
@@ -217,6 +231,19 @@ final class Voip extends Resource
         $this->participant($body['participant'] ?? null);
         /** @var ApiResponse<Success> */
         return $this->request('POST', '/messaging/voip/calls/'.self::segment($id).'/reports', $body, options:$options);
+    }
+    private static function waitingControl(mixed $control): void
+    {
+        if (!is_array($control)) throw new ValidationException('Invalid waiting-room control.');
+        self::connection($control['requestId'] ?? null);
+        $valid = ($control['type'] ?? null) === 'waiting_room_control';
+        if (($control['operation'] ?? null) === 'toggle') {
+            $valid = $valid && is_bool($control['enabled'] ?? null) && !array_key_exists('participantId', $control);
+        } else {
+            $target = $control['participantId'] ?? null;
+            $valid = $valid && in_array($control['operation'] ?? null, ['admit', 'deny'], true) && !array_key_exists('enabled', $control) && is_string($target) && preg_match('/^[1-9][0-9]{0,18}$/D', $target) === 1;
+        }
+        if (!$valid) throw new ValidationException('Invalid waiting-room control.');
     }
     private static function connection(mixed $value): void
     {

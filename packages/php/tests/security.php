@@ -3,7 +3,7 @@
 declare(strict_types=1);
 $audit = ['id' => 'audit','actorEmail' => 'u@example.com','actorUserId' => null,'actorRole' => null,'action' => 'read','resource' => 'project','projectId' => null,'projectName' => null,'ip' => null,'userAgent' => null,'duration' => null,'source' => null,'description' => null,'result' => 'success','metadata' => ['future' => false],'createdAt' => 1];
 $ban = ['id' => 'ban','sessionName' => 'support','banCode' => null,'banReason' => null,'banExpiresAt' => null,'occurredAt' => 1,'status' => 'active'];
-$incident = ['id' => 'incident','keyId' => 'key','tokenType' => 'organization_api_key','source' => 'api','url' => null,'ref' => null,'resolution' => 'pending','detectedAt' => 1,'acknowledgedAt' => null,'acknowledgedBy' => null,'createdAt' => 1];
+$incident = ['id' => 'incident','keyId' => 'key','tokenType' => 'team_api_key','source' => 'api','url' => null,'ref' => null,'resolution' => 'pending','detectedAt' => 1,'acknowledgedAt' => null,'acknowledgedBy' => null,'createdAt' => 1];
 $settings = ['enabled' => false,'optOutKeywords' => ['STOP'],'optInKeywords' => ['START'],'updatedAt' => null];
 $update = $settings;
 unset($update['updatedAt']);

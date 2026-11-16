@@ -176,7 +176,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "order_cancellation_failed",
     "number_restricted",
     "bansafe_suspended",
-    "bansafe_org_suspended",
+    "bansafe_team_suspended",
     "bansafe_cold_blocked",
     "bansafe_cold_held",
     "bansafe_throttled",
@@ -190,6 +190,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "idempotency_conflict",
     "idempotency_in_progress",
     "idempotency_outcome_unknown",
+    "idempotency_replay_unavailable",
     "feature_unavailable",
     "stream_connection_limit_reached",
     "stream_cursor_expired",
@@ -227,6 +228,12 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "hybrid_group_linked_devices_unavailable",
     "catalog_cache_full",
     "catalog_sync_cooldown",
+    "billing_credit_required",
+    "safe_mode_not_entitled",
+    "warmup_plan_not_entitled",
+    "team_deletion_scheduled",
+    "terms_acceptance_required",
+    "terms_activation_blocked",
 ];
 
 pub fn is_known_error_code(code: &str) -> bool {

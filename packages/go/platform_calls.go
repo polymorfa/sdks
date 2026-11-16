@@ -180,8 +180,8 @@ type PlatformCalls struct {
 	projectID string
 }
 
-func (c *OrganizationClient) Calls() *PlatformCalls { return &PlatformCalls{t: c.t} }
-func (c *ProjectClient) Calls() *PlatformCalls      { return &PlatformCalls{c.t, c.projectID} }
+func (c *TeamClient) Calls() *PlatformCalls    { return &PlatformCalls{t: c.t} }
+func (c *ProjectClient) Calls() *PlatformCalls { return &PlatformCalls{c.t, c.projectID} }
 
 var callIDPattern = regexp.MustCompile(`^[\x21-\x7e]{1,128}$`)
 var callTimestampPattern = regexp.MustCompile(`^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$`)

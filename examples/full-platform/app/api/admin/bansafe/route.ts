@@ -1,6 +1,6 @@
 import type { BanSafeNumber } from "@polymorfa/sdk";
 
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import {
   action,
@@ -11,9 +11,9 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-// Organization-wide BanSafe reads. `listHealth` pages with `page.nextCursor`.
+// Team-wide BanSafe reads. `listHealth` pages with `page.nextCursor`.
 export const GET = route("admin", async () => {
-  const banSafe = organization().banSafe;
+  const banSafe = team().banSafe;
   const projectId = env.projectId();
   const numbers: BanSafeNumber[] = [];
   let cursor: string | undefined;
@@ -60,7 +60,7 @@ export const GET = route("admin", async () => {
 });
 
 export const POST = route("admin", async ({ body, request }) => {
-  const banSafe = organization().banSafe;
+  const banSafe = team().banSafe;
   switch (action(body)) {
     case "number": {
       const session = text(body, "session");

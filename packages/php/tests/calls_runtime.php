@@ -10,6 +10,13 @@ function callsCheck(bool $condition, string $message): void
         throw new RuntimeException($message);
     }
 }
+$guest = Polymorfa\CallParticipant::fromArray(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>true,'name'=>'<Ada Guest>']);
+callsCheck($guest?->guest === true && $guest->label() === '<Ada Guest>' && $guest->phoneNumber === null, 'Guest metadata without a phone');
+foreach ([[['name'=>'','phoneNumber'=>'+15550001'], '+15550001'], [['name'=>''], '123'], [['name'=>'','phoneNumber'=>'','username'=>'nickname'], 'nickname'], [['name'=>'0'], '0']] as [$metadata,$label]) {
+    $participant=Polymorfa\CallParticipant::fromArray(array_merge(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>true],$metadata));
+    callsCheck($participant?->label()===$label, 'Empty guest name uses a visible fallback while nonempty names are preserved');
+}
+callsCheck(Polymorfa\CallParticipant::fromArray(['id'=>'123','audioMuted'=>false,'video'=>false,'state'=>'connected','guest'=>'true']) === null, 'Malformed guest marker');
 $old = Credential::projectToken('pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
 $fresh = Credential::projectToken('pmfa_pt_YmJiYmJiYmJiYmJiYmJiYmJiYmKK0GQs');
 $now = 100.;
@@ -151,6 +158,9 @@ try {
     for ($i = 0;$i < 8;$i++) {
         $events = array_merge($events, $client->poll());
     }
+    callsCheck($incoming->waitingRoom?->users[0]->name === 'Ada Guest', 'Typed guest waiting state');
+    $incoming->admitParticipant('123');
+    callsCheck($incoming->waitingRoom?->users[0]->id === '123', 'Acknowledgement leaves roster authoritative');
     callsCheck(isset($incoming->participants['15550000001']) && $incoming->remoteAudioMuted === true && $incoming->videoSources[42]->connectionParticipant === 'server:other', 'Typed roster, remote audio, and video owner');
     callsCheck(count(array_filter($events, static fn ($event): bool => $event->value instanceof AudioFrame && $event->value->samples === [2,-2])) >= 1, 'Native PCM decoded');
     callsCheck(!isset($incoming->videoSources[43]) && count(array_filter($events, static fn ($event): bool => $event->type === 'keyframe_request')) >= 1, 'Native source removal and keyframe request');
@@ -241,6 +251,7 @@ final class CallsTestSocket implements Polymorfa\PollingCallSocket
             return null;
         }
         $frame = array_shift($this->frames);
+        if ($frame instanceof Closure) { $frame = $frame($this); }
         if ($frame instanceof Throwable) {
             throw $frame;
         }
@@ -355,11 +366,68 @@ try {
 } catch (Polymorfa\TimeoutException $error) {
     callsCheck($error->errorCode === 'media_control_timeout' && !$effectCall->audioMuted, 'Missing acknowledgement cannot mutate preferences');
 }
+$firstMedia->frames[] = ['type' => 'waiting_room','state' => ['enabled' => true,'isAdmin' => true,'inWaitingRoom' => false,'users' => []]];
+$effects->poll();
+callsCheck($effectCall->waitingRoom?->isAdmin === true, 'Current socket grants waiting-room authority');
 $firstMedia->frames[] = Polymorfa\CallsSocketErrors::closed(4401);
 $effects->poll();
+callsCheck($effectCall->waitingRoom === null, 'Socket loss clears waiting-room authority immediately');
 usleep(2000);
 $effects->poll();
+callsCheck($effectCall->waitingRoom === null, 'Reattach requires a fresh waiting-room snapshot');
+$beforeModeration = count($secondMedia->sent);
+try {
+    $effectCall->admitParticipant('123');
+    throw new RuntimeException('Expected fresh administrator authority.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode === 'waiting_room_admin_required', 'Stale administrator authority cannot moderate');
+}
+callsCheck(count($secondMedia->sent) === $beforeModeration, 'No moderation write before fresh authority');
 callsCheck($mediaAttempt === 2 && count($secondMedia->sent) === 1 && json_decode($firstMedia->sent[0]['data'], true)['connectionId'] === json_decode($secondMedia->sent[0]['data'], true)['connectionId'], 'Unknown media command is not replayed on stable-ID reattach');
+$secondMedia->frames[] = ['type'=>'waiting_room','state'=>['enabled'=>true,'isAdmin'=>true,'inWaitingRoom'=>false,'users'=>[]]];
+$effects->poll();
+$secondMedia->frames[] = static function (CallsTestSocket $socket): array {
+    $sent=json_decode($socket->sent[array_key_last($socket->sent)]['data'],true);
+    return ['type'=>'waiting_room_result','requestId'=>$sent['requestId'],'ok'=>false,'code'=>'waiting_room_target_unavailable'];
+};
+try {
+    $effectCall->denyParticipant('123');
+    throw new RuntimeException('Expected provider refusal.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode==='waiting_room_target_unavailable' && $effectCall->waitingRoom?->isAdmin===true, 'Ordinary moderation refusal retains current authority');
+}
+$secondMedia->frames[] = ['type'=>'error','code'=>'authentication_failed'];
+try {
+    $effectCall->admitParticipant('123');
+    throw new RuntimeException('Expected media authentication error frame.');
+} catch (Polymorfa\AuthenticationException $error) {
+    callsCheck($error->errorCode==='authentication_failed' && $effectCall->waitingRoom===null, 'Media error frame clears moderation authority before throwing');
+}
+$beforeErrorRetry=count($secondMedia->sent);
+try {
+    $effectCall->denyParticipant('123');
+    throw new RuntimeException('Expected fresh authority after media error frame.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode==='waiting_room_admin_required', 'Media error frame blocks subsequent moderation');
+}
+callsCheck(count($secondMedia->sent)===$beforeErrorRetry, 'No moderation write after media error frame');
+$secondMedia->frames[] = ['type'=>'waiting_room','state'=>['enabled'=>true,'isAdmin'=>true,'inWaitingRoom'=>false,'users'=>[]]];
+$effects->poll();
+$secondMedia->frames[] = new Polymorfa\ConnectionException('lost during moderation','connection_error');
+try {
+    $effectCall->admitParticipant('123');
+    throw new RuntimeException('Expected moderation socket failure.');
+} catch (Polymorfa\ConnectionException) {
+    callsCheck($effectCall->waitingRoom===null, 'Pending moderation socket failure clears authority immediately');
+}
+$beforeModeration=count($secondMedia->sent);
+try {
+    $effectCall->denyParticipant('123');
+    throw new RuntimeException('Expected fresh authority after socket failure.');
+} catch (Polymorfa\ConflictException $error) {
+    callsCheck($error->errorCode==='waiting_room_admin_required', 'Lost socket authority cannot authorize another command');
+}
+callsCheck(count($secondMedia->sent)===$beforeModeration, 'Lost authority blocks moderation writes');
 $before = count($secondMedia->sent);
 $cancelled = new CancellationToken();
 $cancelled->cancel();

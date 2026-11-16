@@ -160,7 +160,7 @@ public sealed record UpdateAudienceSegmentRequest(long ExpectedRevision)
 public sealed record ListAudienceSegmentsParameters(int? Limit = null, string? Cursor = null);
 public sealed record AudienceSegmentDeletion(bool Deleted, string Id);
 
-/// <summary>Organization-owned saved audience segments (contracts/campaign-segments-drip.json). Team keys only: campaigns:read for reads, campaigns:manage for writes and unsaved previews. Revision conflicts and bounded evaluation timeouts return 409 state_conflict; re-read, reconcile or simplify the rules. Writes and previews are sent once.</summary>
+/// <summary>Team-owned saved audience segments (contracts/campaign-segments-drip.json). Team keys only: campaigns:read for reads, campaigns:manage for writes and unsaved previews. Revision conflicts and bounded evaluation timeouts return 409 state_conflict; re-read, reconcile or simplify the rules. Writes and previews are sent once.</summary>
 public sealed class AudienceSegments : Resource
 {
     internal AudienceSegments(HttpTransport http) : base(http) { }

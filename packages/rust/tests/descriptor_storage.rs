@@ -345,8 +345,10 @@ async fn actual_native_http_sse_manual_ack_resume_and_failure_order() {
                 .unwrap();
             let a = Arc::new(MemoryAdapter::new());
             let s = Arc::new(Storage::new(a.clone(), Default::default()).unwrap());
-            let org = support::organization(base.to_string());
-            let project = org.project("018f0000-0000-7000-8000-000000000077").unwrap();
+            let team = support::team(base.to_string());
+            let project = team
+                .project("018f0000-0000-7000-8000-000000000077")
+                .unwrap();
             let events = project.events();
             let native = Observed {
                 native: NativeStorageEventSource::new(

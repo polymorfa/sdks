@@ -1,4 +1,4 @@
-//! Organization billing balances and revision-guarded resource controls.
+//! Team billing balances and revision-guarded resource controls.
 use crate::{
     models::DataEnvelope, transport::HttpTransport, ApiResponse, Error, ErrorKind, RequestOptions,
     Result,

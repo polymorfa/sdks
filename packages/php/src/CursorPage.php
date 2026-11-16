@@ -64,7 +64,7 @@ final class CursorPage implements \IteratorAggregate
         $seen = [];
         $index = 0;
         while ($current !== null) {
-            if ($current->hasMore && isset($seen[$current->nextCursor])) {
+            if ($current->hasMore && $current->nextCursor !== null && isset($seen[$current->nextCursor])) {
                 throw new ServerException('Repeated cursor.', 'invalid_response');
             }
             foreach ($current->items as $item) {

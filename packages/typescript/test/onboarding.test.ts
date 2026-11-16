@@ -1,6 +1,6 @@
 import { afterEach, expect, it, vi } from "vitest";
 import { MessagingClient } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 afterEach(() => vi.unstubAllGlobals());
 it("uploads fixture content separately and advances an existing QuickLink without session credentials", async () => {
   const fetcher = vi.fn<typeof globalThis.fetch>(
@@ -11,7 +11,7 @@ it("uploads fixture content separately and advances an existing QuickLink withou
   );
   vi.stubGlobal("fetch", fetcher);
   const client = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: "https://api.example",
   });
   const input = {
@@ -55,9 +55,9 @@ it("rejects client-token fixture upload and Meta continuation before transport",
   });
   expect(() =>
     client.testing.createHistoryFixture("project-a", { messages: [] }),
-  ).toThrow("requires an team key or project token");
+  ).toThrow("requires a team key or project token");
   expect(() =>
     client.cloudOnboarding.advance({ quicklinkId: "ql_test" }),
-  ).toThrow("requires an team key or project token");
+  ).toThrow("requires a team key or project token");
   expect(fetcher).not.toHaveBeenCalled();
 });

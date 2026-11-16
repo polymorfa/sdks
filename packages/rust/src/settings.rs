@@ -94,7 +94,7 @@ pub enum QuickLinkShape {
 pub enum QuickLinkLogoMode {
     None,
     Custom,
-    Organization,
+    Team,
     Project,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]

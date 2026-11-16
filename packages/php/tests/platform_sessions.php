@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 $platformSession = ['_id' => 'number','_creationTime' => 1,'projectId' => 'project','sessionId' => 'support','name' => 'support','phone' => null,'platform' => null,'isBusiness' => false,'testMode' => true,'tierOverride' => null,'status' => 'stopped','messageCount' => 0,'lastActiveAt' => null,'paidUntil' => null];
-$session = ['sessionId' => 'support','name' => 'support','tenantId' => 'org','type' => 'linked_device','testMode' => true,'status' => 'stopped','createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
+$session = ['sessionId' => 'support','name' => 'support','tenantId' => 'team','type' => 'linked_device','testMode' => true,'status' => 'stopped','createdAt' => '2026-10-11T00:00:00Z','updatedAt' => '2026-10-11T00:00:00Z'];
 $quote = ['id' => 'quote','status' => 'queued','failureReason' => null,'expiresAtMs' => 100,'quote' => ['tier' => 'pro','tierOverride' => 'pro','amountCents' => 1.234567,'priceVersion' => '1','action' => 'upgrade','effectiveAtMs' => 90,'replacesWindowId' => null,'hybridTransition' => ['action' => 'merge','survivingNumberId' => 'number','absorbNumberId' => 'other','status' => 'scheduled']]];
 $capabilities = ['session' => 'support','projectId' => 'project','status' => 'synced','syncedAt' => '2026-10-11T00:00:00Z','checkedAt' => null,'accountType' => 'business','capabilities' => [['key' => 'channels','source' => 'server','kind' => 'feature','unit' => null,'value' => false],['key' => 'group.limit','source' => 'client_default','kind' => 'limit','unit' => 'members','value' => 10]]];
 $cases = [

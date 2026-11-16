@@ -73,21 +73,21 @@
       "testFile": "supplements_test.go"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns.Reschedule",
+      "sdkMethod": "TeamClient.Campaigns.Reschedule",
       "method": "POST",
       "fixturePath": "/platform/campaigns/campaign/reschedule",
       "status": "covered",
       "testFile": "supplements_test.go"
     },
     {
-      "sdkMethod": "OrganizationClient.RequestLogs.List / ProjectClient.RequestLogs.List / RequestLogs.Follow",
+      "sdkMethod": "TeamClient.RequestLogs.List / ProjectClient.RequestLogs.List / RequestLogs.Follow",
       "method": "GET",
       "fixturePath": "/platform/projects/project/request-logs",
       "status": "covered",
       "testFile": "request_logs_test.go"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns().GetFrequencyCap",
+      "sdkMethod": "TeamClient.Campaigns().GetFrequencyCap",
       "method": "GET",
       "fixturePath": "/platform/campaign-settings/frequency-cap",
       "status": "covered",
@@ -97,7 +97,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns().UpdateFrequencyCap",
+      "sdkMethod": "TeamClient.Campaigns().UpdateFrequencyCap",
       "method": "PUT",
       "fixturePath": "/platform/campaign-settings/frequency-cap",
       "status": "covered",
@@ -107,7 +107,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns().Enroll",
+      "sdkMethod": "TeamClient.Campaigns().Enroll",
       "method": "POST",
       "fixturePath": "/platform/campaigns/c%2F1/enrollments",
       "status": "covered",
@@ -127,7 +127,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().List",
+      "sdkMethod": "TeamClient.AudienceSegments().List",
       "method": "GET",
       "fixturePath": "/platform/audience-segments",
       "status": "covered",
@@ -137,7 +137,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().Create",
+      "sdkMethod": "TeamClient.AudienceSegments().Create",
       "method": "POST",
       "fixturePath": "/platform/audience-segments",
       "status": "covered",
@@ -147,7 +147,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().Retrieve",
+      "sdkMethod": "TeamClient.AudienceSegments().Retrieve",
       "method": "GET",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -157,7 +157,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().Update",
+      "sdkMethod": "TeamClient.AudienceSegments().Update",
       "method": "PATCH",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -167,7 +167,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().Delete",
+      "sdkMethod": "TeamClient.AudienceSegments().Delete",
       "method": "DELETE",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -177,7 +177,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().Preview",
+      "sdkMethod": "TeamClient.AudienceSegments().Preview",
       "method": "GET",
       "fixturePath": "/platform/audience-segments/s/preview",
       "status": "covered",
@@ -187,7 +187,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments().PreviewRules",
+      "sdkMethod": "TeamClient.AudienceSegments().PreviewRules",
       "method": "POST",
       "fixturePath": "/platform/audience-segments/preview",
       "status": "covered",

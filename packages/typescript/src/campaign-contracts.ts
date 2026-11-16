@@ -61,7 +61,7 @@ export interface CreateCampaignReplyFlowRequest {
   readonly revision?: number;
 }
 
-/** Organization calls select the project explicitly. Bound project calls omit it. */
+/** Team calls select the project explicitly. Bound project calls omit it. */
 export interface CampaignProjectParams {
   readonly projectId: string;
 }

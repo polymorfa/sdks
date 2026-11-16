@@ -11,6 +11,13 @@ matching production acceptance. Every contract snapshot and feature supplement,
 including client-token ceilings, must reconcile with that exact accepted
 producer. Keep publication holds until this reconciliation is reviewed.
 
+The shared npm and native release gate also enforces
+`contracts/calls-guests.candidate.json`. Both the guest-call candidate and its
+HTTP moderation operation must have reviewed source acceptance and publication
+approval. The candidate's API version, producer commit and Messaging specification
+hash must match the accepted release contract. Merging SDK source does not lift
+these holds.
+
 The workflow binds inspected package bytes to `release-contract.json`, confirms
 registry contents after publication and refuses conflicting existing versions.
 Go tags and Composer mirror commits follow the same accepted source. A local

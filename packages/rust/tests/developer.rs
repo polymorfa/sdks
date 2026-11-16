@@ -6,14 +6,14 @@ use serde_json::json;
 macro_rules! webhook_wire {
     ($project:expr,$prefix:expr,$method:expr,$suffix:expr,$body:expr,$response:expr,$resource:ident,$call:expr)=>{{
         let expected=($response).clone();let (base,server)=support::wire($method,&format!("{}{}",$prefix,$suffix),$body,json!({"data":expected})).await;
-        let organization=support::organization(base);let view=organization.project("project").unwrap();let $resource=if $project { view.webhooks() } else { organization.webhooks() };
+        let team=support::team(base);let view=team.project("project").unwrap();let $resource=if $project { view.webhooks() } else { team.webhooks() };
         let result=$call.await.unwrap();support::assert_subset(&expected,&serde_json::to_value(result.data).unwrap());assert_eq!(result.metadata.request_id.as_deref(),Some("wire_fixture"));server.await.unwrap();
     }};
 }
 macro_rules! delivery_wire {
     ($project:expr,$prefix:expr,$method:expr,$suffix:expr,$body:expr,$response:expr,$resource:ident,$call:expr)=>{{
         let expected=($response).clone();let (base,server)=support::wire($method,&format!("{}{}",$prefix,$suffix),$body,json!({"data":expected})).await;
-        let organization=support::organization(base);let view=organization.project("project").unwrap();let $resource=if $project { view.webhook_deliveries() } else { organization.webhook_deliveries() };
+        let team=support::team(base);let view=team.project("project").unwrap();let $resource=if $project { view.webhook_deliveries() } else { team.webhook_deliveries() };
         let result=$call.await.unwrap();support::assert_subset(&expected,&serde_json::to_value(result.data).unwrap());assert_eq!(result.metadata.request_id.as_deref(),Some("wire_fixture"));server.await.unwrap();
     }};
 }
@@ -22,7 +22,7 @@ fn receipt() -> serde_json::Value {
 }
 
 #[tokio::test]
-async fn organization_and_project_webhook_public_methods_native_wire_contracts() {
+async fn team_and_project_webhook_public_methods_native_wire_contracts() {
     for project in [false, true] {
         let prefix = if project {
             "/platform/projects/project"
@@ -31,7 +31,7 @@ async fn organization_and_project_webhook_public_methods_native_wire_contracts()
         };
         let secret =
             json!({"version":1,"createdAt":"2026-10-11T12:00:00Z","previousValidUntil":null});
-        let webhook = json!({"batching":{"enabled":false,"maxEvents":100,"windowMs":1000},"id":"hook","organizationId":"org","owner":if project { "project" } else { "organization" },"projectId":if project { Some("project") } else { None },"url":"https://example.test/webhook","eventTypes":["message.received"],"enabled":true,"format":"native","retryPolicy":{"maximumAttempts":3,"backoff":"exponential","initialDelaySeconds":5},"headers":[{"name":"x-custom"}],"secret":secret,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
+        let webhook = json!({"batching":{"enabled":false,"maxEvents":100,"windowMs":1000},"id":"hook","teamId":"team","owner":if project { "project" } else { "team" },"projectId":if project { Some("project") } else { None },"url":"https://example.test/webhook","eventTypes":["message.received"],"enabled":true,"format":"native","retryPolicy":{"maximumAttempts":3,"backoff":"exponential","initialDelaySeconds":5},"headers":[{"name":"x-custom"}],"secret":secret,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
         let (base, server) = support::wire(
             "GET",
             &format!("{prefix}/webhooks?enabled=true&eventType=message.received&limit=1"),
@@ -39,12 +39,12 @@ async fn organization_and_project_webhook_public_methods_native_wire_contracts()
             json!({"data":[webhook],"page":{"nextCursor":null,"hasMore":false}}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.webhooks()
         } else {
-            organization.webhooks()
+            team.webhooks()
         };
         let page = resource
             .list(
@@ -165,8 +165,8 @@ async fn organization_and_project_webhook_public_methods_native_wire_contracts()
             )
         );
     }
-    let organization = support::organization("http://localhost:1".into());
-    let error = organization
+    let team = support::team("http://localhost:1".into());
+    let error = team
         .webhooks()
         .test(
             "hook",
@@ -186,15 +186,15 @@ async fn organization_and_project_webhook_public_methods_native_wire_contracts()
 }
 
 #[tokio::test]
-async fn organization_and_project_delivery_public_methods_native_wire_contracts() {
+async fn team_and_project_delivery_public_methods_native_wire_contracts() {
     for project in [false, true] {
         let prefix = if project {
             "/platform/projects/project"
         } else {
             "/platform"
         };
-        let delivery = json!({"id":"delivery","organizationId":"org","projectId":if project { Some("project") } else { None },"eventId":"event","webhookId":"hook","status":"failed","attemptCount":1,"capabilities":{"retryable":true},"payloadAvailability":"available","replayableUntil":"2026-10-12T12:00:00Z","metadataExpiresAt":"2026-11-11T12:00:00Z","nextAttemptAt":null,"lastAttemptAt":"2026-10-11T12:00:00Z","completedAt":"2026-10-11T12:00:00Z","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z","lastOutcome":{"statusCode":503,"errorCode":"remote_error"}});
-        let attempt = json!({"id":"attempt","organizationId":"org","projectId":if project { Some("project") } else { None },"deliveryId":"delivery","number":1,"status":"failed","startedAt":"2026-10-11T12:00:00Z","completedAt":"2026-10-11T12:00:00Z","nextRetryAt":null,"durationMs":20,"statusCode":503,"errorCode":"remote_error","response":{"contentType":"text/plain","excerpt":"Service unavailable","truncated":false},"metadataExpiresAt":"2026-11-11T12:00:00Z"});
+        let delivery = json!({"id":"delivery","teamId":"team","projectId":if project { Some("project") } else { None },"eventId":"event","webhookId":"hook","status":"failed","attemptCount":1,"capabilities":{"retryable":true},"payloadAvailability":"available","replayableUntil":"2026-10-12T12:00:00Z","metadataExpiresAt":"2026-11-11T12:00:00Z","nextAttemptAt":null,"lastAttemptAt":"2026-10-11T12:00:00Z","completedAt":"2026-10-11T12:00:00Z","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z","lastOutcome":{"statusCode":503,"errorCode":"remote_error"}});
+        let attempt = json!({"id":"attempt","teamId":"team","projectId":if project { Some("project") } else { None },"deliveryId":"delivery","number":1,"status":"failed","startedAt":"2026-10-11T12:00:00Z","completedAt":"2026-10-11T12:00:00Z","nextRetryAt":null,"durationMs":20,"statusCode":503,"errorCode":"remote_error","response":{"contentType":"text/plain","excerpt":"Service unavailable","truncated":false},"metadataExpiresAt":"2026-11-11T12:00:00Z"});
         let (base, server) = support::wire(
             "GET",
             &format!("{prefix}/webhook-deliveries?status=failed&webhookId=hook"),
@@ -202,12 +202,12 @@ async fn organization_and_project_delivery_public_methods_native_wire_contracts(
             json!({"data":[delivery],"page":{"nextCursor":null,"hasMore":false}}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.webhook_deliveries()
         } else {
-            organization.webhook_deliveries()
+            team.webhook_deliveries()
         };
         let page = resource
             .list(
@@ -239,12 +239,12 @@ async fn organization_and_project_delivery_public_methods_native_wire_contracts(
             json!({"data":[attempt],"page":{"nextCursor":null,"hasMore":false}}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.webhook_deliveries()
         } else {
-            organization.webhook_deliveries()
+            team.webhook_deliveries()
         };
         let page = resource
             .list_attempts(

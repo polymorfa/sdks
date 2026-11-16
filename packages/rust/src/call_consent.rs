@@ -1,4 +1,4 @@
-//! Organization-wide call policy and do-not-call list.
+//! Team-wide call policy and do-not-call list.
 use crate::{
     models::{DataEnvelope, Query},
     pagination::CursorPage,

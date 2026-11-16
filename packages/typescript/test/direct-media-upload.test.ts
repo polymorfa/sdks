@@ -13,7 +13,7 @@ import {
   prepareWhatsAppUpload,
 } from "../src/media/upload.js";
 import { nodeMediaEncryptor } from "../src/node.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 type Request = {
   method: string;
@@ -70,7 +70,7 @@ const location = {
 };
 function client(baseUrl: string) {
   return new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl,
     maxNetworkRetries: 0,
   });

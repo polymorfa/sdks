@@ -128,7 +128,7 @@ async def test_typed_client_token_methods(method, path, body, fixture, invoke):
 async def test_mint_target_guards_before_network():
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     ) as client:

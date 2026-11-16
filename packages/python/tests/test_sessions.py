@@ -9,7 +9,7 @@ from polymorfa import AsyncMessagingClient, ConfigurationError, Credential
 SESSION = {
     "sessionId": "support",
     "name": "support",
-    "tenantId": "org_1",
+    "tenantId": "team_1",
     "type": "linked_device",
     "testMode": True,
     "status": "CONNECTED",
@@ -95,7 +95,7 @@ async def test_all_typed_session_management_methods(method, suffix, body, fixtur
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

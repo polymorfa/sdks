@@ -156,7 +156,7 @@ async def test_actual_event_source_skips_absent_payload_delivers_cursor_and_unsu
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         source = event_stream_source(
             lambda cursor: client.project("project_1").events.stream(since=cursor)
@@ -191,7 +191,7 @@ async def test_native_event_source_reports_terminal_authorization_error():
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         subscription = event_stream_source(
             lambda cursor: client.project("project_1").events.stream(since=cursor)
