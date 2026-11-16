@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { releaseTag, validateReleaseAuthorization } from "./release-policy.mjs";
-import { publicationFingerprint } from "./release-gate.mjs";
+import { publicationFingerprint, releaseSource } from "./release-gate.mjs";
 
 const directory = resolve(process.env.RELEASE_OUTPUT);
 const provenance = JSON.parse(
@@ -13,6 +13,7 @@ const provenance = JSON.parse(
 const channel = process.env.RELEASE_CHANNEL;
 assert.equal(provenance.channel, channel);
 assert.equal(provenance.sourceSha, process.env.GITHUB_SHA);
+assert.equal(provenance.sourceSha, releaseSource());
 assert.equal(provenance.repository, "polymorfa/sdks");
 const environment =
   channel === "preview"

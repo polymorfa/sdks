@@ -20,6 +20,7 @@ import {
   pythonVersion,
   validateReleaseAuthorization,
 } from "./release-policy.mjs";
+import { releaseSource } from "./release-gate.mjs";
 
 export const registries = {
   crates: "rust",
@@ -526,6 +527,8 @@ if (
         );
       console.log(`${registry}: every planned artifact is confirmed.`);
     } else {
+      if (process.env.NATIVE_PUBLISH_DRY_RUN !== "1")
+        assert.equal(receipt.sourceSha, releaseSource());
       const results = await executeSteps(steps, adapter, {
         dryRun: process.env.NATIVE_PUBLISH_DRY_RUN === "1",
       });

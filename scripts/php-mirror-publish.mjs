@@ -21,6 +21,8 @@ import {
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { releaseSource } from "./release-gate.mjs";
+import { validateReleaseAuthorization } from "./release-policy.mjs";
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 function files(dir, base = dir, out = {}) {
@@ -217,9 +219,17 @@ if (
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
   const [command, prepared, value] = process.argv.slice(2);
-  if (command === "push")
+  if (command === "push") {
+    assert.ok(
+      process.env.PHP_MIRROR_RECEIPT,
+      "Publication requires release provenance",
+    );
+    const receipt = validateReleaseAuthorization(
+      JSON.parse(readFileSync(process.env.PHP_MIRROR_RECEIPT)),
+    );
+    assert.equal(receipt.sourceSha, releaseSource());
     console.log(JSON.stringify(push(resolve(prepared), value)));
-  else if (command === "verify")
+  } else if (command === "verify")
     console.log(await verify(resolve(prepared), value));
   else throw new Error("Use push or verify");
 }
