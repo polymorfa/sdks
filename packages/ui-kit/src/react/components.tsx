@@ -564,7 +564,7 @@ export interface ChatDetailsProps {
   readonly phoneNumber?: string;
   readonly observedName?: string;
   readonly labels?: readonly string[];
-  readonly sendingNumber?: string;
+  readonly sendingConnection?: string;
   readonly lastActivity?: number;
   readonly retentionDays?: number | null;
   readonly onClose?: () => void;
@@ -580,7 +580,7 @@ export function ChatDetails({
   phoneNumber,
   observedName,
   labels,
-  sendingNumber,
+  sendingConnection,
   lastActivity,
   retentionDays,
   onClose,
@@ -627,7 +627,7 @@ export function ChatDetails({
       )}
       <dl>
         {field("chat.observedName", observedName)}
-        {field("chat.sendingNumber", sendingNumber)}
+        {field("chat.sendingConnection", sendingConnection)}
         {field(
           "chat.lastActivity",
           lastActivity === undefined || !Number.isFinite(lastActivity)

@@ -380,7 +380,7 @@ apply to reply snippets and exclude stale body/media content. `OrderCartView`
 and `ContentUnavailable` are available separately.
 
 `ChatDetails` accepts customer fields such as `name`, `phoneNumber`, `observedName`,
-`labels`, `sendingNumber`, `lastActivity` and `retentionDays`. Use `onContact` and
+`labels`, `sendingConnection`, `lastActivity` and `retentionDays`. Use `onContact` and
 `onClose` for host navigation. Its `children` slot can hold developer details
 without exposing raw identifiers in the default view.
 

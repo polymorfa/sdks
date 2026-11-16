@@ -43,7 +43,10 @@ describe("Calls example Connection credential boundaries", () => {
       {},
       create,
     );
-    expect(options.map(({ connection }) => connection)).toEqual(["support", "sales"]);
+    expect(options.map(({ connection }) => connection)).toEqual([
+      "support",
+      "sales",
+    ]);
     expect(await options[0]!.getClientToken()).toBe("pmfa_ct_c3VwcG9ydA");
     expect(await options[1]!.getClientToken()).toBe("pmfa_ct_c2FsZXM");
     expect(hasActiveCall([first, second])).toBe(false);
@@ -70,7 +73,7 @@ describe("Calls example Connection credential boundaries", () => {
     ).toThrow("browser client token");
     expect(create).not.toHaveBeenCalled();
   });
-  it("blocks Number changes while placement is pending without a call ID", () => {
+  it("blocks Connection changes while placement is pending without a call ID", () => {
     let placing = true;
     const connection = {
       id: "support",

@@ -99,7 +99,7 @@ Connect each Number separately with its own session, display label and browser
 client token. The page keeps an independent Calls client and token provider per
 entry, only in memory. Choose **Outgoing Number** before dialing; **Call from**
 shows the selected source. Each Number has its own labeled incoming-call
-surface, so changing the outgoing choice never hides another Number's call.
+surface, so changing the outgoing choice never hides another Connection's call.
 The selector and disconnect buttons lock while any Number is placing, answering
 or carrying a call. Finish that call before changing the outgoing Number.
 

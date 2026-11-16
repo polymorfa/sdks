@@ -313,7 +313,7 @@ it("renders customer details and a host extension without requiring a client or 
     <ChatDetails
       name="Ana"
       labels={["Customer"]}
-      sendingNumber="Support"
+      sendingConnection="Support"
       retentionDays={30}
     >
       <button>Developer details</button>

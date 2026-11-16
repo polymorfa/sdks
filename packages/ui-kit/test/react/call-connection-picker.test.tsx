@@ -13,7 +13,7 @@ afterEach(() => {
   for (const root of roots.splice(0)) act(() => root.unmount());
   document.body.replaceChildren();
 });
-function number(id: string) {
+function connection(id: string) {
   let snapshot = { status: "ready", answering: false } as CallsSnapshot;
   const listeners = new Set<() => void>();
   return {
@@ -37,7 +37,10 @@ function number(id: string) {
     listeners,
   };
 }
-function mount(connections: ReturnType<typeof number>[], onChange = vi.fn()) {
+function mount(
+  connections: ReturnType<typeof connection>[],
+  onChange = vi.fn(),
+) {
   const host = document.createElement("div");
   document.body.append(host);
   const root = createRoot(host);
@@ -53,13 +56,13 @@ function mount(connections: ReturnType<typeof number>[], onChange = vi.fn()) {
   );
   return { select: host.querySelector("select")!, onChange, host };
 }
-describe("outgoing Number selection", () => {
-  it("selects only an application-supplied Number without changing its controller", () => {
-    const support = number("support");
-    const sales = number("sales");
+describe("outgoing Connection selection", () => {
+  it("selects only an application-supplied Connection without changing its controller", () => {
+    const support = connection("support");
+    const sales = connection("sales");
     const view = mount([support, sales]);
     expect(view.host.querySelector("label")?.textContent).toBe(
-      "Outgoing Number",
+      "Outgoing connection",
     );
     act(() => {
       view.select.value = "sales";
@@ -70,10 +73,10 @@ describe("outgoing Number selection", () => {
     expect(sales.controller.getSnapshot().status).toBe("ready");
   });
   it.each(["ringing", "connecting", "connected", "reconnecting"] as const)(
-    "locks every choice while another Number is %s",
+    "locks every choice while another Connection is %s",
     (status) => {
-      const support = number("support");
-      const sales = number("sales");
+      const support = connection("support");
+      const sales = connection("sales");
       const view = mount([support, sales]);
       act(() => sales.set(status));
       expect(view.select.disabled).toBe(true);
@@ -87,8 +90,8 @@ describe("outgoing Number selection", () => {
     },
   );
   it("checks a new answer operation before a stale change handler can select", () => {
-    const support = number("support");
-    const sales = number("sales");
+    const support = connection("support");
+    const sales = connection("sales");
     const view = mount([support, sales]);
     act(() => {
       sales.set("incoming", true);
@@ -102,8 +105,8 @@ describe("outgoing Number selection", () => {
     expect(sales.listeners.size).toBe(0);
   });
   it("locks selection while placement is pending and the call remains ready", () => {
-    const support = number("support");
-    const sales = number("sales");
+    const support = connection("support");
+    const sales = connection("sales");
     const view = mount([support, sales]);
     act(() => support.set("ready", false, true));
     expect(view.select.disabled).toBe(true);

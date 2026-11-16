@@ -23,7 +23,7 @@ export interface InboxConversation {
   readonly pinned?: boolean;
   readonly archived?: boolean;
   readonly markedUnread?: boolean;
-  /** Owning Number or another short scope label. */
+  /** Owning Connection or another short scope label. */
   readonly subtitle?: string;
   readonly lastMessage?: {
     readonly text: string;
@@ -250,7 +250,8 @@ export class InboxController extends ObservableController<InboxSnapshot> {
       );
       incoming = {
         ...(existing ?? { id: change.conversationId, unreadCount: 0 }),
-        ...(existing?.connection === undefined && change.connection !== undefined
+        ...(existing?.connection === undefined &&
+        change.connection !== undefined
           ? { connection: change.connection }
           : {}),
         ...(existing?.name === undefined && change.name !== undefined

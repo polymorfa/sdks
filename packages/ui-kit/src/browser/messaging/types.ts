@@ -99,7 +99,7 @@ export type BrowserMessageContent = ExclusiveUnion<
   | { readonly contact: { readonly vcard: string } }
   | { readonly requestPhoneNumber: Readonly<Record<string, never>> }
   | {
-      /** Cloud API numbers only. Requires the existing send_message grant. */
+      /** Cloud API connections only. Requires the existing send_message grant. */
       readonly callPermissionRequest: {
         /** Why you want to call. The API accepts 1 to 1,024 characters. */
         readonly body: string;
