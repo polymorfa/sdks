@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 import { copyFileSync, mkdirSync, readFileSync, readdirSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { dotnetPackages, rustCrates } from "./native-packages.mjs";
+import { validateReleaseAuthorization } from "./release-policy.mjs";
 const language = process.argv[2];
 assert.ok(["go", "python", "php", "rust", "dotnet"].includes(language));
 const root = resolve(import.meta.dirname, "..");
@@ -11,9 +12,8 @@ const receipt = resolve(
   "release-contract.json",
 );
 const provenance = JSON.parse(readFileSync(receipt));
-assert.equal(provenance.repository, "polymorfa/sdks");
+validateReleaseAuthorization(provenance);
 const version = provenance.versions.semver;
-assert.match(version, /^\d+\.\d+\.\d+(?:-dev\.\d{14})?$/);
 const pkg = join(root, "packages", language);
 assert.deepEqual(
   JSON.parse(readFileSync(join(pkg, "release-contract.json"))),
@@ -108,5 +108,5 @@ run("python3", [
 ]);
 copyFileSync(receipt, join(output, "release-contract.json"));
 console.log(
-  `Prepared only accepted ${language} artifacts in ${output}. No publication occurred.`,
+  `Prepared ${provenance.channel} ${language} artifacts in ${output}. No publication occurred.`,
 );
