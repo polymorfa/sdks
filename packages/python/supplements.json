@@ -40,21 +40,21 @@
     {
       "sdkMethod": "AsyncMessagingClient.testing.get_phone",
       "method": "GET",
-      "fixturePath": "/messaging/testing/project_1/numbers/support/phone",
+      "fixturePath": "/messaging/support/phone",
       "status": "covered",
       "testFile": "tests/test_onboarding.py"
     },
     {
       "sdkMethod": "AsyncMessagingClient.testing.send_phone_message",
       "method": "POST",
-      "fixturePath": "/messaging/testing/project_1/numbers/support/phone/messages",
+      "fixturePath": "/messaging/support/phone/messages",
       "status": "covered",
       "testFile": "tests/test_onboarding.py"
     },
     {
       "sdkMethod": "AsyncMessagingClient.testing.unlink_phone_device",
       "method": "POST",
-      "fixturePath": "/messaging/testing/project_1/numbers/support/phone/devices/2/unlink",
+      "fixturePath": "/messaging/support/phone/devices/2/unlink",
       "status": "covered",
       "testFile": "tests/test_onboarding.py"
     },

@@ -17,14 +17,14 @@ nativeCases([
  ['GET','/messaging/projects/project/observation-policy',null,$envelope($projectPolicy),fn ($c) => $c->observationPolicies->retrieveForProject('project')],
  ['GET','/messaging/session/observation-policy',null,$envelope($sessionPolicy),fn ($c) => $c->observationPolicies->retrieveForSession('session')],
  ['POST','/messaging/cloud-api/embedded-signup',['quicklinkId' => 'link','result' => ['code' => 'synthetic_fixture','wabaId' => 'waba','phoneNumberId' => 'phone','coexistence' => false]],$envelope(['stage' => 'complete']),fn ($c) => $c->cloudOnboarding->advance(['quicklinkId' => 'link','result' => ['code' => 'synthetic_fixture','wabaId' => 'waba','phoneNumberId' => 'phone','coexistence' => false]])],
- ['POST','/messaging/testing/project/history-fixtures',['messages' => [['id' => 'message','senderPhone' => '+15555555555','text' => 'Fixture','timestamp' => 1,'fromMe' => false]]],['fixtureId' => 'fixture'],fn ($c) => $c->testing->createHistoryFixture('project', ['messages' => [['id' => 'message','senderPhone' => '+15555555555','text' => 'Fixture','timestamp' => 1,'fromMe' => false]]])],
- ['POST','/messaging/testing/project/events',['session' => 'session','event' => 'message.received','fromSession' => 'sender','overrides' => ['text' => 'Fixture']],$trigger,fn ($c) => $c->testing->triggerEvent('project', ['session' => 'session','event' => 'message.received','fromSession' => 'sender','overrides' => ['text' => 'Fixture']])],
- ['GET','/messaging/testing/project/events/fixtures',null,$fixtures,fn ($c) => $c->testing->listEventFixtures('project')],
- ['GET','/messaging/testing/project/numbers/session/phone',null,['session' => 'session','phone' => '+15555555555','online' => false,'devices' => [['deviceId' => 1]]],fn ($c) => $c->testing->getPhone('project', 'session')],
- ['POST','/messaging/testing/project/numbers/session/phone/messages',['to' => '+15555555555','text' => 'Fixture'],['session' => 'session','to' => '+15555555555','messageId' => null],fn ($c) => $c->testing->sendPhoneMessage('project', 'session', ['to' => '+15555555555','text' => 'Fixture']),null,['status' => 202]],
- ['POST','/messaging/testing/project/numbers/session/phone/devices/1/unlink',null,['session' => 'session','deviceId' => 1,'unlinked' => true],fn ($c) => $c->testing->unlinkPhoneDevice('project', 'session', 1)],
+ ['POST','/messaging/projects/project/test-history-fixtures',['messages' => [['id' => 'message','senderPhone' => '+15555555555','text' => 'Fixture','timestamp' => 1,'fromMe' => false]]],['fixtureId' => 'fixture'],fn ($c) => $c->testing->createHistoryFixture('project', ['messages' => [['id' => 'message','senderPhone' => '+15555555555','text' => 'Fixture','timestamp' => 1,'fromMe' => false]]])],
+ ['POST','/messaging/session/test-events',['event' => 'message.received','fromNumber' => 'sender','overrides' => ['text' => 'Fixture']],$trigger,fn ($c) => $c->testing->triggerEvent('session', ['event' => 'message.received','fromNumber' => 'sender','overrides' => ['text' => 'Fixture']])],
+ ['GET','/messaging/test-events/fixtures',null,$fixtures,fn ($c) => $c->testing->listEventFixtures()],
+ ['GET','/messaging/session/phone',null,['session' => 'session','phone' => '+15555555555','online' => false,'devices' => [['deviceId' => 1]]],fn ($c) => $c->testing->getPhone('session')],
+ ['POST','/messaging/session/phone/messages',['to' => '+15555555555','text' => 'Fixture'],['session' => 'session','to' => '+15555555555','messageId' => null],fn ($c) => $c->testing->sendPhoneMessage('session', ['to' => '+15555555555','text' => 'Fixture']),null,['status' => 202]],
+ ['POST','/messaging/session/phone/devices/1/unlink',null,['session' => 'session','deviceId' => 1,'unlinked' => true],fn ($c) => $c->testing->unlinkPhoneDevice('session', 1)],
 ], fn ($credential, $url) => new Polymorfa\MessagingClient($credential, baseUrl:$url));
-raises(fn () => (new Polymorfa\MessagingClient($credential))->testing->unlinkPhoneDevice('project', 'session', 0), Polymorfa\ValidationException::class);
+raises(fn () => (new Polymorfa\MessagingClient($credential))->testing->unlinkPhoneDevice('session', 0), Polymorfa\ValidationException::class);
 $history = [];
 new Polymorfa\SystemClient(baseUrl:'http://api.fixture.invalid', http:mocked([], $history));
 nativeCases([

@@ -25,21 +25,21 @@
     },
     {
       "method": "GET",
-      "fixturePath": "/messaging/testing/project/numbers/session/phone",
+      "fixturePath": "/messaging/session/phone",
       "sdkMethod": "MessagingClient::testing.getPhone",
       "status": "covered",
       "testFile": "tests/onboarding.php"
     },
     {
       "method": "POST",
-      "fixturePath": "/messaging/testing/project/numbers/session/phone/messages",
+      "fixturePath": "/messaging/session/phone/messages",
       "sdkMethod": "MessagingClient::testing.sendPhoneMessage",
       "status": "covered",
       "testFile": "tests/onboarding.php"
     },
     {
       "method": "POST",
-      "fixturePath": "/messaging/testing/project/numbers/session/phone/devices/1/unlink",
+      "fixturePath": "/messaging/session/phone/devices/1/unlink",
       "sdkMethod": "MessagingClient::testing.unlinkPhoneDevice",
       "status": "covered",
       "testFile": "tests/onboarding.php"
