@@ -258,6 +258,8 @@ describe("createStoreConversationSource with ConversationController", () => {
       { id: "g2", sender: { id: "222@lid", name: "Bo" } },
       { id: "g1", sender: { id: "111@lid", name: "Ana" } },
     ]);
+    // An author's name never becomes the group's name, even with no metadata.
+    expect((await store.conversations.get(group))?.name).toBeUndefined();
     store.close();
   });
 

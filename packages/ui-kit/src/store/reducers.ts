@@ -186,7 +186,15 @@ export async function upsertMessage(
     readonly session: string;
   },
   time: number,
-  options: { readonly content: boolean; readonly status?: StoredMessageStatus },
+  options: {
+    readonly content: boolean;
+    readonly status?: StoredMessageStatus;
+    /**
+     * Whether the message's `pushName` may name the conversation. History
+     * writes pass `false`: their author name belongs to a group message.
+     */
+    readonly nameConversation?: boolean;
+  },
 ): Promise<void> {
   const conversation =
     (await context.get("conversations", patch.conversationId)) ??
@@ -240,7 +248,12 @@ export async function upsertMessage(
     createdAt > (conversation.readAt ?? -Infinity);
   if (isNewInbound)
     summary = { ...summary, unreadCount: summary.unreadCount + 1 };
-  if (!next.fromMe && next.pushName !== undefined && summary.isGroup !== true)
+  if (
+    options.nameConversation !== false &&
+    !next.fromMe &&
+    next.pushName !== undefined &&
+    summary.isGroup !== true
+  )
     summary = applyFields(summary, { name: next.pushName }, time);
   if (summary !== conversation || existing === undefined)
     context.put("conversations", {

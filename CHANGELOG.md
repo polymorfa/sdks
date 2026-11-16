@@ -52,7 +52,8 @@
 - UI Kit: `<ContactList/>` without a custom source waits for the token's
   first grant before loading, as `<NewChat/>` does, instead of failing with a
   permission error. The browser store keeps a group message's author when it
-  caches backend history, so later local reads still name each sender.
+  caches backend history, so later local reads still name each sender, without
+  ever using an author's name as the group's name.
   `MessageInput` gains optional `senderId` and `pushName`.
 
 - UI Kit: give `CallNumberPicker` built-in themes, appearance variables and

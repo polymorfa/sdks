@@ -844,6 +844,9 @@ export async function createPolymorfaStore(
               message.createdAt,
               {
                 content: true,
+                // History carries an author only for group messages; it never
+                // names the conversation, even before group metadata arrives.
+                nameConversation: false,
                 ...(message.status === undefined
                   ? {}
                   : { status: message.status }),
