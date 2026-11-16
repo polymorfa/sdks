@@ -9,6 +9,9 @@ if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); r
 
 if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsync(); return; }
 
+NewsletterObservationTests.Run();
+if (args.Contains("--newsletter-only")) return;
+
 OpaqueCredentialTests.Run();
 await OpaqueCredentialTests.WireAsync();
 if (args.Contains("--credential-opaque-only")) { Console.WriteLine("PASS opaque credential shapes"); return; }

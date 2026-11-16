@@ -457,10 +457,40 @@ class CallConnectionLeftPayload(TypedDict):
     ]
 
 
+class NewsletterViewCount(TypedDict):
+    type: NotRequired[str]
+    count: int
+
+
+class NewsletterMessageReference(TypedDict):
+    id: str
+    whatsapp_ids: WhatsAppMessageIds
+
+
+class NewsletterMessageObservation(TypedDict):
+    position: int
+    message: NotRequired[NewsletterMessageReference]
+    timestamp: NotRequired[str]
+    viewCounts: NotRequired[list[NewsletterViewCount]]
+    forwards: NotRequired[int]
+    reactionCounts: NotRequired[dict[str, int]]
+
+
+class NewsletterMilestone(TypedDict):
+    # Related post position. Absent for channel-level milestones such as follower counts.
+    position: NotRequired[int]
+    type: str
+    value: int
+    reactionCode: NotRequired[str]
+
+
 class NewsletterUpdatePayload(TypedDict):
     id: str
     action: str
     muted: NotRequired[bool]
+    sourceTimestamp: NotRequired[str]
+    messages: NotRequired[list[NewsletterMessageObservation]]
+    milestone: NotRequired[NewsletterMilestone]
 
 
 class BlocklistChange(TypedDict):
