@@ -260,6 +260,15 @@ describe("createStoreConversationSource with ConversationController", () => {
     ]);
     // An author's name never becomes the group's name, even with no metadata.
     expect((await store.conversations.get(group))?.name).toBeUndefined();
+    // A later live write for the same message without a display name must not
+    // promote the cached author name either.
+    const live = received("g2", "two", {
+      at: 2_000,
+      conversation: { id: group, phoneNumber: "" },
+    });
+    delete (live.payload as { pushName?: string }).pushName;
+    await store.ingest([live]);
+    expect((await store.conversations.get(group))?.name).toBeUndefined();
     store.close();
   });
 

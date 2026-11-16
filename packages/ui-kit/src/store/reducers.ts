@@ -248,13 +248,15 @@ export async function upsertMessage(
     createdAt > (conversation.readAt ?? -Infinity);
   if (isNewInbound)
     summary = { ...summary, unreadCount: summary.unreadCount + 1 };
+  // Only a display name carried by this write may name the conversation: a
+  // name merged from an earlier history write belongs to a group author.
   if (
     options.nameConversation !== false &&
     !next.fromMe &&
-    next.pushName !== undefined &&
+    patch.pushName !== undefined &&
     summary.isGroup !== true
   )
-    summary = applyFields(summary, { name: next.pushName }, time);
+    summary = applyFields(summary, { name: patch.pushName }, time);
   if (summary !== conversation || existing === undefined)
     context.put("conversations", {
       ...summary,
