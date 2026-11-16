@@ -7,7 +7,7 @@ fn configuration() -> serde_json::Value {
     json!({"effective":{"observation":{"presenceMode":"cache","typingMode":"events","labelMode":"project","quickReplyMode":"off"},"historySync":{"mode":"deliver","requestFull":true},"hms":{"enabled":true,"region":"eu","policy":"standard","retentionDays":30,"policyVersion":"1","legalHold":false}},"overrides":{"observation":{"presenceMode":"cache"},"hms":{"enabled":true,"region":"eu","policy":"standard"}},"sources":{"historySync.mode":"consent","historySync.requestFull":"session","hms":"project","observation.presenceMode":"session","observation.typingMode":"team","observation.labelMode":"project","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":true},"historyConsent":"accepted","revisions":{"team":1,"project":2,"session":3},"application":{"desiredGeneration":4,"appliedGeneration":4,"status":"applied"}})
 }
 fn session() -> serde_json::Value {
-    json!({"sessionId":"s","name":"Support","tenantId":"org","type":"linked_device","testMode":false,"status":"CONNECTED","configuration":configuration(),"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"})
+    json!({"sessionId":"s","name":"Support","tenantId":"team","type":"linked_device","testMode":false,"status":"CONNECTED","configuration":configuration(),"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"})
 }
 
 #[tokio::test]

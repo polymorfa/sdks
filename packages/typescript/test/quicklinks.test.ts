@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import {
@@ -42,7 +42,7 @@ describe("MessagingClient.quickLinks", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
     const response = await client.quickLinks.retrieve("ql_1");
@@ -114,7 +114,7 @@ describe("MessagingClient.quickLinks", () => {
     const client = new MessagingClient({
       credential: {
         type: "apiKey",
-        value: ORGANIZATION_API_KEY,
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -179,7 +179,7 @@ describe("MessagingClient.quickLinks", () => {
     }));
     servers.push(server);
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
     });
     await client.quickLinks.create({
@@ -294,7 +294,7 @@ it("applies initial financial controls in the create request and rejects test-nu
   servers.push(server);
   const client = new MessagingClient({
     baseUrl: server.url,
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   });
   await client.quickLinks.create({

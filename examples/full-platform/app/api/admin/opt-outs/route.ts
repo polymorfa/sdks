@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import {
   action,
   object,
@@ -8,10 +8,10 @@ import {
 } from "../../../../lib/route.js";
 
 // The opt-out contract leaves request payloads open, so `payload` is forwarded.
-export const GET = route("admin", () => organization().optOuts.list());
+export const GET = route("admin", () => team().optOuts.list());
 
 export const POST = route("admin", async ({ body }) => {
-  const optOuts = organization().optOuts;
+  const optOuts = team().optOuts;
   switch (action(body)) {
     case "create":
       return optOuts.create(object(body, "payload"));

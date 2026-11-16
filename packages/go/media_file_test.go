@@ -21,7 +21,7 @@ func TestNativeMediaFileAndDownloadURLHelpers(t *testing.T) {
 	calls := 0
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		calls++
-		if r.Method != "GET" || r.Header.Get("Authorization") != "Bearer "+orgConfig("").Credential.Value {
+		if r.Method != "GET" || r.Header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value {
 			t.Error("authentication")
 		}
 		if r.URL.Path == "/messaging/media/url" {
@@ -39,7 +39,7 @@ func TestNativeMediaFileAndDownloadURLHelpers(t *testing.T) {
 		w.Write([]byte{0, 1, 255, 2})
 	}))
 	defer s.Close()
-	c, _ := NewMessagingClient(orgConfig(s.URL))
+	c, _ := NewMessagingClient(teamConfig(s.URL))
 	result, err := c.Media().DownloadToFile(context.Background(), "media", path, MediaFileOptions{MaxBytes: 4})
 	actual, _ := os.ReadFile(path)
 	if err != nil || result.Bytes != 4 || result.Metadata.RequestID != "file_request" || result.ContentType != "audio/ogg" || result.Filename != "voice.ogg" || string(actual) != string([]byte{0, 1, 255, 2}) {

@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -173,12 +173,12 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
-      total: 579,
-      covered: 442,
-      partial: 0,
-      missing: 0,
-      excluded: 137,
+      sourceCommit: "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
+      total: 671,
+      covered: 451,
+      partial: 2,
+      missing: 58,
+      excluded: 160,
       changed: 0,
     });
     const resolutions = (result.report?.resolutions ?? []) as Array<{
@@ -317,7 +317,7 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps batch session lifecycle to the organization-key client", () => {
+  it("maps batch session lifecycle to the team-key client", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
@@ -345,8 +345,8 @@ describe("coverage checker", () => {
     };
     const client = new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
     });
     const projectClient = client.project("project_coverage");
@@ -354,7 +354,7 @@ describe("coverage checker", () => {
       MessagingClient: new MessagingClient({
         credential: {
           type: "apiKey",
-          value: ORGANIZATION_API_KEY,
+          value: TEAM_API_KEY,
         },
       }),
       Client: client,
@@ -629,6 +629,7 @@ describe("coverage checker", () => {
       "checkCall",
       "getCallPermission",
       "getUserSecurityCode",
+      "listSessionCalls",
       "rejectCall",
       "resolveIdentity",
     ]);
@@ -641,7 +642,7 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps the organization-key Platform access family and excludes dashboard member mutations", () => {
+  it("maps the team-key Platform access family and excludes dashboard member mutations", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
@@ -658,7 +659,6 @@ describe("coverage checker", () => {
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
       "getPlatformOperation",
-      "listPolymorfaTokens",
       "inviteMember",
       "updateMemberRole",
       "deleteMember",
@@ -670,14 +670,11 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toMatchObject({
-      deactivateApiKey: {
-        status: "covered",
-        method: "Client.apiKeys.deactivate",
-      },
-      listApiKeys: {
-        status: "covered",
-        method: "Client.apiKeys.list",
-      },
+      // polymorfa/polymorfa#887 moved key management to dashboard-identity
+      // Console routes; the SDK's Client.apiKeys methods still target the
+      // retired /platform/keys paths and await a removal decision.
+      deactivateApiKey: { status: "excluded" },
+      listApiKeys: { status: "excluded" },
       listMembers: {
         status: "covered",
         method: "Client.members.list",
@@ -706,14 +703,33 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.operations.get",
       },
-      listPolymorfaTokens: {
-        status: "covered",
-        method: "Client.projectTokens.list",
-      },
       inviteMember: { status: "excluded" },
       updateMemberRole: { status: "excluded" },
       deleteMember: { status: "excluded" },
     });
+  });
+
+  it("records operations that left the specification as retired, not covered", () => {
+    const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
+      operations: Array<{ operationId: string }>;
+      retiredOperations: Array<{ operationId: string; sdkMethods: unknown }>;
+    };
+    const retired = ledger.retiredOperations.map(
+      ({ operationId }) => operationId,
+    );
+    expect(retired.sort()).toEqual([
+      "createTestingHistoryFixture",
+      "deactivateApiKey",
+      "listApiKeys",
+      "listPolymorfaTokens",
+      "listTestEventFixtures",
+      "triggerTestEvent",
+    ]);
+    expect(
+      ledger.operations.some(
+        ({ operationId }) => operationId === "listPolymorfaTokens",
+      ),
+    ).toBe(false);
   });
 
   it("accepts a complete ledger and emits machine-readable counts", () => {

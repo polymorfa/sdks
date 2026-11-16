@@ -13,7 +13,7 @@ internal static class ConstrainedTypeTests
         {
             var body = JsonSerializer.SerializeToElement(input, options); ResourceTests.Equal(body.GetProperty("provider").GetString(), provider); ResourceTests.Equal(body.GetProperty("voiceId").GetString(), voice); ResourceTests.Equal(body.GetProperty("model").GetString(), model);
             ResourceTests.Equal(JsonSerializer.Deserialize<SynthesizeVoiceAudioInput>(body.GetRawText(), options), input);
-            await BillingTests.Organization("POST", "/platform/voice/audio/tts", body.GetRawText()[..^1] + ",\"projectId\":\"p1\"}", """{"data":{"id":"voice","projectId":"p1","name":"Greeting","source":"tts","status":"transcoding","inUseCount":0,"revision":1,"createdAt":"2026-10-14","updatedAt":"2026-10-14"}}""", async c => ResourceTests.Equal((await c.Voice.Audio.SynthesizeAsync(input, "p1")).Data.Status, "transcoding"));
+            await BillingTests.Team("POST", "/platform/voice/audio/tts", body.GetRawText()[..^1] + ",\"projectId\":\"p1\"}", """{"data":{"id":"voice","projectId":"p1","name":"Greeting","source":"tts","status":"transcoding","inUseCount":0,"revision":1,"createdAt":"2026-10-14","updatedAt":"2026-10-14"}}""", async c => ResourceTests.Equal((await c.Voice.Audio.SynthesizeAsync(input, "p1")).Data.Status, "transcoding"));
         }
         foreach (var json in new[] { "{\"provider\":\"openai\",\"voiceId\":\"not_a_voice\"}", "{\"provider\":\"openai\",\"voiceId\":\"alloy\",\"model\":\"eleven_flash_v2_5\"}", "{\"provider\":\"future\"}" })
             try { JsonSerializer.Deserialize<SynthesizeVoiceAudioInput>(json, options); throw new Exception("Invalid synthesis type accepted"); } catch (JsonException) { }

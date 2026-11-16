@@ -334,7 +334,7 @@ export async function generate() {
       family: entry.family,
       method: entry.method,
       path: entry.path,
-      credentialKind: "organization_api_key",
+      credentialKind: "team_api_key",
       request: recipe.request,
     };
     for (const language of languages) {

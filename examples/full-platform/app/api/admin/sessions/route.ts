@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import {
   action,
@@ -11,11 +11,11 @@ import {
 } from "../../../../lib/route.js";
 
 export const GET = route("admin", () =>
-  organization().sessions.list({ projectId: env.projectId() }),
+  team().sessions.list({ projectId: env.projectId() }),
 );
 
 export const POST = route("admin", async ({ body, request }) => {
-  const sessions = organization().sessions;
+  const sessions = team().sessions;
   const projectId = env.projectId();
   const name = action(body);
   switch (name) {

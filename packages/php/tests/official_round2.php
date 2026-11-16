@@ -35,7 +35,7 @@ $officialHandler->push(\GuzzleHttp\Middleware::tap(
         }
     }
 ), 'official-picture-observer');
-$c = new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http);
+$c = new MessagingClient(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), http:$http);
 $c->catalogs->list('n /x');
 check($c->catalogs->retrieve('n /x','123')->data['data']['syncedAt'] === null, 'nullable sync');
 $c->catalogs->sync('n /x','123');
@@ -63,22 +63,22 @@ $bad=$batch;$bad['version']=2;raises(fn()=>$signed($bad),ValidationException::cl
 foreach ([['batching'=>['enabled'=>true,'maxEvents'=>1]],['format'=>'meta','batching'=>['enabled'=>true]]] as $body) { raises(fn()=>\Polymorfa\WebhookBatching::validate($body), ValidationException::class); }
 foreach ([false,true] as $project) {
     $history=[];$hook=['id'=>'w','batching'=>['enabled'=>false,'maxEvents'=>100,'windowMs'=>1000]];
-    $owner=new \Polymorfa\Client(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse(['data'=>['webhook'=>$hook]]),jsonResponse(['data'=>['webhook'=>$hook]]),jsonResponse(['data'=>$hook])],$history));
+    $owner=new \Polymorfa\Client(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse(['data'=>['webhook'=>$hook]]),jsonResponse(['data'=>['webhook'=>$hook]]),jsonResponse(['data'=>$hook])],$history));
     $resource=($project ? $owner->project('p/x') : $owner)->webhooks;
     $resource->create(['url'=>'https://example.test','eventTypes'=>[],'batching'=>['enabled'=>false]]);
     $resource->update('w',['batching'=>['enabled'=>false]]);
     check($resource->retrieve('w')->data['batching']['maxEvents']===100,'batching read');
     check(json_decode((string)$history[1]['request']->getBody(),true,512,JSON_THROW_ON_ERROR)===['batching'=>['enabled'=>false]],'PATCH omission and false');
 }
-$history=[];$c=new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse(['error'=>['code'=>'catalog_sync_cooldown','message'=>'Wait']],429,['Retry-After'=>'120'])],$history));
+$history=[];$c=new MessagingClient(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse(['error'=>['code'=>'catalog_sync_cooldown','message'=>'Wait']],429,['Retry-After'=>'120'])],$history));
 $error=raises(fn()=>$c->catalogs->sync('n','123',new RequestOptions(maxNetworkRetries:3,idempotencyKey:'key')),\Polymorfa\RateLimitException::class);
 check(count($history)===1,'one sync submission');
 foreach ([...\Polymorfa\OfficialRound2Models::READINESS_CODES,'future_readiness',null] as $code) {
-    $history=[];$c=new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse(['success'=>true,'data'=>['errorCode'=>$code,'onboarding'=>['errorCode'=>$code]]])],$history));
+    $history=[];$c=new MessagingClient(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse(['success'=>true,'data'=>['errorCode'=>$code,'onboarding'=>['errorCode'=>$code]]])],$history));
     $status=$c->quickLinks->retrieve('q')->data['data'];check($status['errorCode']===$code && $status['onboarding']['errorCode']===$code,'open nullable readiness');
 }
 $history=[];$graph=['id'=>'w','marketing_messages_onboarding_status'=>'future','owner_business_info'=>['marketing_messages_onboarding_status'=>['status'=>'future_terms','time'=>'now']],'disable_marketing_messages_on_cloud_api'=>false];
-$c=new MessagingClient(Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse($graph)],$history));
+$c=new MessagingClient(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'),http:mocked([jsonResponse($graph)],$history));
 check($c->cloudMarketing->status('w',['version'=>'v26.0'])->data===$graph,'raw graph terms and disabled');
 
 $cancel=new \Polymorfa\CancellationToken();$cancel->cancel();

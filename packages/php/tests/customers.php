@@ -1,12 +1,12 @@
 <?php
 
 declare(strict_types=1);
-$customer = ['id' => 'customer','orgId' => 'org','projectId' => 'project','name' => null,'externalCustomerId' => null,'status' => 'active','isDefault' => false,'archivedAt' => null,'createdAt' => 1,'updatedAt' => 2];
+$customer = ['id' => 'customer','teamId' => 'team','projectId' => 'project','name' => null,'externalCustomerId' => null,'status' => 'active','isDefault' => false,'archivedAt' => null,'createdAt' => 1,'updatedAt' => 2];
 $summary = $customer + ['numberCount' => 1,'connectedNumberCount' => 0,'activePairingLinkState' => null,'lastActivityAt' => null,'needsAttention' => false];
 $status = ['enabled' => false,'enabledAt' => null,'enabledBy' => null,'defaultCustomer' => $customer];
 $number = ['id' => 'number','customerId' => 'customer','sessionId' => 'support','name' => null,'phoneMasked' => null,'status' => 'stopped','backend' => null,'createdAt' => 1];
 $event = ['id' => 'event','action' => 'update','fromStatus' => null,'toStatus' => null,'sessionId' => null,'pairingLinkId' => null,'metadata' => ['fields' => ['name']],'occurredAt' => 1];
-$link = ['id' => 'link','orgId' => 'org','projectId' => 'project','customerId' => 'customer','expectedPhoneMasked' => null,'methods' => ['qr'],'locale' => null,'theme' => null,'expiresAt' => 100,'status' => 'active','attemptCount' => 0,'maxAttempts' => 2,'pendingSessionId' => null,'createdBy' => null,'reservedAt' => null,'openedAt' => null,'connectingAt' => null,'connectedAt' => null,'failedAt' => null,'expiredAt' => null,'revokedAt' => null,'lastErrorCode' => null,'failedExchangeCount' => 0,'phoneMismatchCount' => 0,'createdAt' => 1,'updatedAt' => 2];
+$link = ['id' => 'link','teamId' => 'team','projectId' => 'project','customerId' => 'customer','expectedPhoneMasked' => null,'methods' => ['qr'],'locale' => null,'theme' => null,'expiresAt' => 100,'status' => 'active','attemptCount' => 0,'maxAttempts' => 2,'pendingSessionId' => null,'createdBy' => null,'reservedAt' => null,'openedAt' => null,'connectingAt' => null,'connectedAt' => null,'failedAt' => null,'expiredAt' => null,'revokedAt' => null,'lastErrorCode' => null,'failedExchangeCount' => 0,'phoneMismatchCount' => 0,'createdAt' => 1,'updatedAt' => 2];
 $cases = [
  ['GET','/platform/projects/project/customers/status',null,['data' => $status],fn ($c) => $c->customers->status('project')],
  ['POST','/platform/projects/project/customers/enable',null,['data' => $status + ['migratedNumberCount' => 1]],fn ($c) => $c->customers->enable('project')],

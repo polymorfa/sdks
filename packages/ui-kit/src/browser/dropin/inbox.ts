@@ -19,7 +19,7 @@ export interface InboxConversation {
   readonly name?: string;
   readonly phoneNumber?: string;
   readonly avatarUrl?: string;
-  /** Observed organization from the host source. UI actions must await that source. */
+  /** Observed team from the host source. UI actions must await that source. */
   readonly pinned?: boolean;
   readonly archived?: boolean;
   readonly markedUnread?: boolean;

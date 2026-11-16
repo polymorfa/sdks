@@ -7,13 +7,13 @@ The module import is `github.com/polymorfa/sdks/packages/go`. This corrects the 
 ```go
 client, err := polymorfa.NewMessagingClient(polymorfa.Config{
     Credential: polymorfa.Credential{
-        Kind: polymorfa.OrganizationAPIKey,
+        Kind: polymorfa.TeamAPIKey,
         Value: os.Getenv("POLYMORFA_API_KEY"),
     },
 })
 ```
 
-`NewOrganizationClient` accepts an team key. `NewProjectClient` accepts an team key or a project token with an explicit project ID. `org.Project(id)` returns a separate view; project tokens cannot rebind to another project. `NewMessagingClient` additionally accepts a scoped client token, with server-only operations rejected before a request. Credential formatting redacts token values. `NewSystemClient` sends no credentials. `NewBridgeClient` accepts only project tokens for regional route discovery.
+`NewTeamClient` accepts a team key. `NewProjectClient` accepts a team key or a project token with an explicit project ID. `team.Project(id)` returns a separate view; project tokens cannot rebind to another project. `NewMessagingClient` additionally accepts a scoped client token, with server-only operations rejected before a request. Credential formatting redacts token values. `NewSystemClient` sends no credentials. `NewBridgeClient` accepts only project tokens for regional route discovery.
 
 Pass `context.Context` to each request. Each `Response[T]` includes typed data and safe response metadata. Developer resources unwrap documented `data` envelopes; Messaging resources retain their native success envelope. Errors expose semantic kind, API code, request ID and metadata through `errors.As(err, &apiError)`. API codes remain open strings so new server errors do not break decoding.
 
@@ -24,7 +24,7 @@ Pass `context.Context` to each request. Each `Response[T]` includes typed data a
 `RequestLogs().List` reads typed project request-log pages and retains nullable
 status, durations and removed credentials. `Follow` advances the follow cursor;
 `Tail` yields backfill chronologically and follows new requests, with bounded
-rate-limit waits and context cancellation. Organization callers select a project;
+rate-limit waits and context cancellation. Team callers select a project;
 project views reject foreign selections. API `logs:read` permission still applies.
 `Events().LiveSource` adapts retained webhook bodies to cancellable subscriptions.
 It skips events without retained payloads, passes their resume cursor to the
@@ -98,7 +98,7 @@ These methods follow `contracts/campaign-frequency-cap.json` and
 `contracts/campaign-segments-drip.json`. They do not enroll a team in a beta;
 the API returns `403 feature_unavailable` when a team lacks access.
 
-The team cap is an organization setting. `Campaigns().GetFrequencyCap(ctx)`
+The team cap is a team setting. `Campaigns().GetFrequencyCap(ctx)`
 returns both limits, `Revision` and `UpdatedAt` (nil until first saved).
 `UpdateFrequencyCap` replaces both windows with the revision you read; nil
 limits remove them. The PUT is sent once. A stale revision returns a
@@ -107,7 +107,7 @@ limits remove them. The PUT is sent once. A stale revision returns a
 recipients report `CampaignFailureFrequencyCap`, and analytics add
 `FrequencyCap.SkippedRecipientCount`.
 
-`OrganizationClient.AudienceSegments()` lists, retrieves, creates, updates and
+`TeamClient.AudienceSegments()` lists, retrieves, creates, updates and
 deletes saved segments, and previews a saved segment or unsaved rules. A
 project client has no segment methods. Build rules from typed conditions such
 as `AudienceSegmentTagContains` and `AudienceSegmentAttributeCompare`; conditions
@@ -537,14 +537,14 @@ An SDK method does not establish deployed beta access or package availability.
 
 `MessagingClient.Campaigns()` adds `GetReplyFlow`, `CreateReplyFlow`,
 `SetReplyFlow`, `TestSend`, `Links` and `ExportRecipients`, using a project slug.
-All six require an team key or project token; client tokens fail
+All six require a team key or project token; client tokens fail
 before HTTP. The API still checks live scopes, project ownership, feature access,
 funding and sender eligibility. Test sends require both campaign read and manage
 scopes and send real messages.
 
-`org.Campaigns()` exposes the corresponding Platform methods plus
-`ListLaunchApprovals` and organization-only `GetSettings`. Its project selection
-belongs in the typed query or request body. `org.Project(projectID).Campaigns()`
+`team.Campaigns()` exposes the corresponding Platform methods plus
+`ListLaunchApprovals` and team-only `GetSettings`. Its project selection
+belongs in the typed query or request body. `team.Project(projectID).Campaigns()`
 and a project-token client's `Campaigns()` expose only the seven confined
 operations. They retain their project privately and accept no caller project
 selector. Creating another project view does not retarget an existing resource.
@@ -557,7 +557,7 @@ own discriminator. The SDK checks structural and byte limits; the API owns graph
 semantics, compliance and campaign state. `SetCampaignReplyFlowRequest{}` sends
 required `replyFlowId:null` to detach; a non-null `Nullable[string].Value` attaches.
 
-`org.AudienceProfiles()` adds `List`, `Retrieve`, `Put`, `Delete` and `ListConsent`;
+`team.AudienceProfiles()` adds `List`, `Retrieve`, `Put`, `Delete` and `ListConsent`;
 its `Imports()` resource adds `Create`, `Retrieve` and `Cancel`. These team-wide
 resources are absent from project clients. Profiles are customer-supplied campaign
 data, independent of WhatsApp-synchronized contacts. `Put` replaces tags and
@@ -581,12 +581,12 @@ capture. The update requires the exact team and revision; false, zero and a null
 locale remain explicit. Enabling requires a supported non-null locale.
 
 `project.SignalCustody()` adds `Retrieve`, `Update`, `RetrieveCustomer` and
-`UpdateCustomer`. Organization aliases live on `Projects()` and `Customers()`.
+`UpdateCustomer`. Team aliases live on `Projects()` and `Customers()`.
 These defaults apply to future Number reservations and never convert existing
 Numbers. Project mode cannot be null. Customer null restores inheritance:
 
 ```go
-project, err := org.Project(projectID)
+project, err := team.Project(projectID)
 if err != nil {
     return err
 }
@@ -920,6 +920,48 @@ confirmExplicitly := func() error {
 }
 _ = confirmExplicitly
 ```
+
+
+## Guest participants and waiting rooms (unreleased)
+
+Call participants and participant webhooks can include optional `guest` and
+`name` fields. A guest can have an opaque public ID without a phone number.
+The name is self-reported; display it as text and never use it for authorization.
+A name change updates the existing participant ID. Video-source labels prefer the
+name, then the phone number, then the public ID.
+
+`call.Snapshot().WaitingRoom` exposes the latest waiting-room state and pending public
+identities. Host controls are `call.SetApprovalRequired(ctx, true)`,
+`call.AdmitParticipant(ctx, "739182640518203")` and
+`call.DenyParticipant(ctx, "739182640518203")`.
+They require the current media connection, call-owner authority and current
+provider administrator state. Pass a pending participant's public ID, never a
+provider address. Commands wait for a matching acknowledgement and do not
+change the roster optimistically. A timeout or connection loss leaves the
+outcome unknown. Inspect fresh state before trying again; reconnect does not
+replay moderation commands.
+
+These methods require the matching unreleased backend. Source and local package
+builds do not establish registry publication or deployed availability. They do
+not enable anonymous Polymorfa access or guest messaging.
+
+
+### Authenticated HTTP moderation (unreleased)
+
+`client.VoIP().ModerateWaitingRoom` sends a correlated action to
+`POST /messaging/voip/calls/{id}/waiting-room`. Supply the held connection ID and
+an action with `type: waiting_room_control`, `requestId`, and either `toggle`
+with `enabled`, or `admit`/`deny` with the pending participant's public ID.
+Server credentials may name their connection's participant; client tokens omit
+that field and need `voip_signal`.
+
+The API checks current credential and Number/project authority per request. Read
+`data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
+The SDK disables automatic network retries for this operation. A missing reply
+or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
+path; programmatic media WebSocket controls retain their credential rechecks.
+This source requires the matching unreleased backend. It does not enable a
+customer environment or advance package/API availability.
 
 ## Audience profile list filters (source preparation)
 

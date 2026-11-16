@@ -16,7 +16,7 @@ func TestRawPaginationNativeScopeDecoderAndCursor(t *testing.T) {
 	count := 0
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		count++
-		if r.Method != "POST" || r.URL.Path != "/platform/projects/p/search" || r.URL.Query().Get("filter") != "saved" || r.Header.Get("X-Test") != "kept" || r.Header.Get("Authorization") != "Bearer "+orgConfig("").Credential.Value {
+		if r.Method != "POST" || r.URL.Path != "/platform/projects/p/search" || r.URL.Query().Get("filter") != "saved" || r.Header.Get("X-Test") != "kept" || r.Header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value {
 			t.Errorf("request %s %s", r.Method, r.URL)
 		}
 		b, _ := io.ReadAll(r.Body)
@@ -35,8 +35,8 @@ func TestRawPaginationNativeScopeDecoderAndCursor(t *testing.T) {
 		}
 	}))
 	defer s.Close()
-	org, _ := NewOrganizationClient(orgConfig(s.URL))
-	client, _ := org.Project("p")
+	team, _ := NewTeamClient(teamConfig(s.URL))
+	client, _ := team.Project("p")
 	request := RawRequest{Method: "POST", Path: "/search", Query: url.Values{"filter": {"saved"}}, Body: map[string]string{"term": "hello"}, Options: RequestOptions{Headers: http.Header{"X-Test": {"kept"}}}}
 	decode := func(raw json.RawMessage, metadata Metadata) (PageResult[int], error) {
 		if metadata.RequestID != "raw-page" {
@@ -115,8 +115,8 @@ func TestRawPaginationNativeFailures(t *testing.T) {
 	if count != 2 {
 		t.Fatal("cancelled request sent", count)
 	}
-	org, _ := NewOrganizationClient(orgConfig(s.URL))
-	project, _ := org.Project("p")
+	team, _ := NewTeamClient(teamConfig(s.URL))
+	project, _ := team.Project("p")
 	for _, path := range []string{"/platform/projects/other/data", "//foreign", "/../other"} {
 		_, e := PaginateRaw(context.Background(), project, RawRequest{Method: "GET", Path: path}, func(json.RawMessage, Metadata) (PageResult[string], error) { return PageResult[string]{}, nil })
 		if e == nil {

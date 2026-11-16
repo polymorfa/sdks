@@ -5,7 +5,7 @@ import {
   PolymorfaValidationError,
   type UpdateSessionCallSettingsRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 const fixture = JSON.parse(
   readFileSync(
@@ -26,7 +26,7 @@ describe("call settings coverage end is response-only", () => {
           simultaneousCallsCoverageExcludedUntil: value.until,
         };
         const client = new MessagingClient({
-          credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+          credential: { type: "apiKey", value: TEAM_API_KEY },
           baseUrl: "https://api.example",
           maxNetworkRetries: 0,
           fetch: async (input, init) => {
@@ -59,7 +59,7 @@ describe("call settings coverage end is response-only", () => {
   it("rejects the response-only field and unknown keys next to a setting", async () => {
     let sent = 0;
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       maxNetworkRetries: 0,
       fetch: async () => {
         sent += 1;
@@ -85,7 +85,7 @@ describe("call settings coverage end is response-only", () => {
   });
   it("preserves older-server absence without converting it to a coverage decision", async () => {
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       fetch: async () =>
         new Response(
           JSON.stringify({ success: true, data: fixture.settings }),

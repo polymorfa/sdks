@@ -11,7 +11,7 @@ fn page() -> serde_json::Value {
 #[tokio::test]
 async fn list_follow_decode_full_typed_payload_and_encode_filters() {
     let (base,server)=support::wire("GET","/platform/projects/project/request-logs?status=404%2C5xx&method=GET%2CPOST&source=api&route=%2Fmessaging%2F%3Asession%2Fmessages&credentialId=key&requestId=req&traceId=trace&since=2026-10-11T00%3A00%3A00Z&until=2026-10-12T00%3A00%3A00Z&limit=5",None,page()).await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let result = client
         .request_logs()
         .list(
@@ -54,7 +54,7 @@ async fn list_follow_decode_full_typed_payload_and_encode_filters() {
         page(),
     )
     .await;
-    let client = support::organization(base).project("project").unwrap();
+    let client = support::team(base).project("project").unwrap();
     let result = client
         .request_logs()
         .follow(
@@ -72,7 +72,7 @@ async fn list_follow_decode_full_typed_payload_and_encode_filters() {
 }
 #[tokio::test]
 async fn cursor_filters_and_foreign_project_fail_before_http_and_bad_page_keeps_metadata() {
-    let client = support::organization("http://127.0.0.1:1".into())
+    let client = support::team("http://127.0.0.1:1".into())
         .project("project")
         .unwrap();
     let logs = client.request_logs();
@@ -102,7 +102,7 @@ async fn cursor_filters_and_foreign_project_fail_before_http_and_bad_page_keeps_
         json!({"data":[],"page":{"hasMore":false,"followCursor":"next"}}),
     )
     .await;
-    let error = support::organization(base)
+    let error = support::team(base)
         .project("project")
         .unwrap()
         .request_logs()
@@ -147,7 +147,7 @@ async fn tail_yields_backfill_oldest_first_and_stops_on_cancellation() {
                 .unwrap();
         }
     });
-    let client = support::organization(base).project("project").unwrap();
+    let client = support::team(base).project("project").unwrap();
     let cancel = tokio_util::sync::CancellationToken::new();
     let stream = client.request_logs().tail(
         TailRequestLogs {

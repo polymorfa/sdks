@@ -155,6 +155,13 @@ export const ENGLISH_MESSAGES = {
   "calls.socialFailed":
     "Could not confirm the call interaction. Check the current state before trying again.",
   "calls.clearReaction": "Clear reaction",
+  "calls.guest": "Guest",
+  "calls.waitingRoom": "Waiting to join",
+  "calls.approvalRequired": "Require approval to join",
+  "calls.admit": "Admit",
+  "calls.deny": "Deny",
+  "calls.waitingRoomFailed":
+    "Could not confirm the change. Check the waiting room before trying again.",
   "calls.handRaised": "Hand raised",
   "calls.unmute": "Unmute",
   "calls.outgoingNumber": "Outgoing Number",

@@ -190,7 +190,7 @@ export interface UsageGateParams {
 /**
  * Metered usage and usage gates. Usage is measured, not charged. Requires the
  * `sessions:read` scope; a project token reads only its own project's usage,
- * and gate state needs an team key.
+ * and gate state needs a team key.
  */
 export class UsageResource {
   constructor(
@@ -257,7 +257,7 @@ export class UsageResource {
 
   /**
    * `GET /platform/gates`: every usage gate with its mode, limit and usage.
-   * Gate state covers the whole team, so this needs an organization client;
+   * Gate state covers the whole team, so this needs a team client;
    * the API refuses project credentials with 403.
    */
   async listGates(

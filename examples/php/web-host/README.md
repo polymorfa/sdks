@@ -16,7 +16,7 @@ Before starting PHP, configure `EXAMPLE_APP_USERNAME`, `EXAMPLE_APP_PASSWORD`, `
 
 These are loopback demonstration hosts with one configured application account. Sign-in creates an opaque random session, retained in a private file for 30 minutes, and an HttpOnly, SameSite=Strict cookie. POST routes enforce the configured application origin. The authenticated token endpoint derives the user and authorized number on the server, mints a ten-minute client token through `clientTokens->mint`, and returns browser claims with `Cache-Control: no-store, private`. Browser request fields cannot select the user or number. Sign-out removes the stored session and disposes the browser client. The inbox uses the native server SDK; the separate token endpoint remains an optional browser-grant example.
 
-Before public hosting, use the application's real authentication, live membership and number authorization, HTTPS origin, managed sessions and CSRF protection appropriate to the application. Keep project and organization credentials exclusively on the server.
+Before public hosting, use the application's real authentication, live membership and number authorization, HTTPS origin, managed sessions and CSRF protection appropriate to the application. Keep project and team credentials exclusively on the server.
 
 Laravel uses its real HTTP application and Blade view service; Symfony uses HttpKernel, HttpFoundation and Twig. Their dependencies and Composer lock file are separate from the SDK package. Blade caches and sessions remain outside the source checkout. Asset building bundles the workspace Web Components and downloads pinned HTMX 2.0.4 after verifying its SHA-256 digest.
 

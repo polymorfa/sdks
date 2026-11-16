@@ -11,7 +11,7 @@ import {
   type UpdatePlatformCampaignRequest,
   type CampaignRecipientFailureReason,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 const servers: TestServer[] = [];
 afterEach(async () => {
@@ -81,7 +81,7 @@ it("reads, replaces and removes team limits with the observed revision", async (
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const read = await client.campaigns.getFrequencyCap();
@@ -119,7 +119,7 @@ it.each([
     }));
     servers.push(server);
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: server.url,
       maxNetworkRetries: 2,
     });
@@ -143,15 +143,15 @@ it("passes cap fields and recipient reason filters through both audiences", asyn
   servers.push(server);
   const config = {
     credential: {
-      type: "organizationApiKey" as const,
-      value: ORGANIZATION_API_KEY,
+      type: "teamApiKey" as const,
+      value: TEAM_API_KEY,
     },
     baseUrl: server.url,
   };
   const client = new Client(config);
   const messaging = new MessagingClient({
     ...config,
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
   });
   await client.campaigns.create({
     name: "cap",
@@ -214,11 +214,11 @@ it("preserves cap reads, skip analytics and recipient reasons on both surfaces",
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const messaging = new MessagingClient({
-    credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "apiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   expect(

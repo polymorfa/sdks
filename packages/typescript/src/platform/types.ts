@@ -35,7 +35,7 @@ export type CustomerStatus = "active" | "archiving" | "archived";
 
 export interface Customer {
   readonly id: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly projectId: string;
   readonly name: string | null;
   readonly externalCustomerId: string | null;
@@ -142,7 +142,7 @@ export type CustomerPairingLinkStatus =
 
 export interface CustomerPairingLink {
   readonly id: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly projectId: string;
   readonly customerId: string;
   readonly expectedPhoneMasked: string | null;
@@ -192,7 +192,7 @@ export interface TransferCustomerNumberRequest {
   readonly confirm: true;
 }
 
-/** Create a campaign through the organization client's Platform resource. */
+/** Create a campaign through the team client's Platform resource. */
 export interface CreatePlatformCampaignRequest {
   readonly variableMapping?: CampaignVariableMapping;
   readonly trackedLinks?: readonly CampaignTrackedLink[] | null;
@@ -249,7 +249,7 @@ export interface ListCampaignsParams {
  * Query parameters shared by the single-campaign Platform operations.
  *
  * A team API key is not bound to one project, so it must name the project that
- * owns the campaign. This resource is exposed only on organization clients.
+ * owns the campaign. This resource is exposed only on team clients.
  */
 export interface PlatformCampaignParams {
   readonly projectId: string;
@@ -312,7 +312,7 @@ export interface PlatformCampaignAnalytics extends CampaignAnalytics {
 
 export interface ListPlatformCampaignRecipientsParams {
   readonly reason?: CampaignRecipientFailureReason;
-  /** Owning project for this organization-client request. */
+  /** Owning project for this team-client request. */
   readonly projectId: string;
   readonly status?: CampaignRecipientStatus;
   readonly cursor?: string;
@@ -534,7 +534,7 @@ export interface UpdateOptOutSettingsRequest {
   readonly optInKeywords: readonly string[];
 }
 
-export interface Organization {
+export interface Team {
   readonly id: string;
   readonly externalId: string;
   readonly name: string;
@@ -587,7 +587,7 @@ export interface TierPricing {
   readonly features: readonly string[];
 }
 
-/** Metadata for an team key. Raw key material is never returned. */
+/** Metadata for a team key. Raw key material is never returned. */
 export interface ApiKey {
   readonly _id: string;
   readonly _creationTime: number;
@@ -595,7 +595,7 @@ export interface ApiKey {
   readonly keyId: string;
   readonly start: string;
   readonly last4: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly label: string;
   readonly scopes: number;
   readonly source: string;
@@ -609,16 +609,16 @@ export interface ApiKeyDeactivation {
   readonly keyId: string;
 }
 
-export type OrganizationMemberRole = "owner" | "admin" | "member";
+export type TeamMemberRole = "owner" | "admin" | "member";
 
-export interface OrganizationMember {
+export interface TeamMember {
   readonly _id: string;
   readonly _creationTime: number;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly userId: string;
   readonly email: string;
   readonly name: string | null;
-  readonly role: OrganizationMemberRole;
+  readonly role: TeamMemberRole;
   readonly status: string;
   readonly invitedAt: number | null;
   readonly joinedAt: number | null;
@@ -702,7 +702,7 @@ export interface ProjectIcon {
 
 export interface Project {
   readonly id: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly name: string;
   readonly slug: string;
   readonly icon: ProjectIcon | Readonly<Record<string, unknown>>;
@@ -719,7 +719,7 @@ export interface CreatedProject extends Project {
 export interface ProjectWithStats {
   readonly _id: string;
   readonly _creationTime: number;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly name: string;
   readonly slug: string;
   readonly icon: ProjectIcon | Readonly<Record<string, unknown>>;
@@ -752,7 +752,7 @@ export interface CreateProjectRequest {
 /** The project returned by `projects.create`, always in development. */
 export interface CreatedProject {
   readonly id: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly name: string;
   readonly slug: string;
   readonly icon: ProjectIcon;
@@ -773,7 +773,7 @@ export interface ProductionEnrollmentRequest {
 
 export interface ProductionEnrollmentResult {
   readonly id: string;
-  readonly orgId: string;
+  readonly teamId: string;
   readonly name: string;
   readonly slug: string;
   readonly stage: "development";
@@ -1100,7 +1100,7 @@ export interface BanSafeHealthProjection {
 export interface BanSafeNumberEnforcement {
   readonly rung: BanSafeEnforcementRung;
   readonly previousRung: BanSafeEnforcementRung;
-  readonly organizationFloor: BanSafeEnforcementRung;
+  readonly teamFloor: BanSafeEnforcementRung;
   readonly reason: string;
   readonly source: "automatic" | "operator";
   readonly throughputPerMinute: number | null;
@@ -1195,7 +1195,7 @@ export interface BanSafeEnforcementSummary extends BanSafeHealthProjection {
   readonly projectId: string;
   readonly rung: BanSafeEnforcementRung;
   readonly previousRung: BanSafeEnforcementRung;
-  readonly organizationFloor: BanSafeEnforcementRung;
+  readonly teamFloor: BanSafeEnforcementRung;
   readonly reason: string;
   readonly source: "automatic" | "operator";
   readonly throughputPerMinute: number | null;

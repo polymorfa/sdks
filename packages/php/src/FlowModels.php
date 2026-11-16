@@ -17,7 +17,7 @@ namespace Polymorfa;
  * @phpstan-type ProviderInput array{sessionId:string,categories?:list<Category>,requestId?:string}
  * @phpstan-type ProviderOperation array{id:string,requestId:?string,flowId:string,flowName:string,sessionId:string,session:string,action:'create'|'upload'|'publish'|'deprecate'|'delete',state:'pending'|'succeeded'|'rejected'|'uncertain'|'superseded',resolution:'response'|'reconciled'|'superseded'|null,wabaId:?string,metaFlowId:?string,definitionDigest:?string,providerStatus:?string,errorCode:?string,providerCode:int|float|null,providerSubcode:int|float|null,createdAt:int|float,updatedAt:int|float,completedAt:int|float|null}
  * @phpstan-type ProviderResult array{operation:ProviderOperation|null,flow:Draft}
- * @phpstan-type Endpoint array{id:string,orgId:string,projectId:string,flowId:string,sessionId:string,mode:'forward'|'function'|'direct',url:?string,functionId:?string,deploymentId:?string,enabled:bool,revision:int,endpointUri:string,createdAt:int|float,updatedAt:int|float}
+ * @phpstan-type Endpoint array{id:string,teamId:string,projectId:string,flowId:string,sessionId:string,mode:'forward'|'function'|'direct',url:?string,functionId:?string,deploymentId:?string,enabled:bool,revision:int,endpointUri:string,createdAt:int|float,updatedAt:int|float}
  * @phpstan-type ManagedKey array{id:string,state:'pending'|'uncertain'|'active'|'retiring'|'retired'|'failed',fingerprint:string,publicKey:string,errorCode:?string,createdAt:int|float,activatedAt:int|float|null,retireAfter:int|float|null}
  * @phpstan-type Custody array{custody:'managed'|'customer',activeKeyId:?string,keys:list<ManagedKey>}
  * @phpstan-type Rotation array{custody:'managed'|'customer',activeKeyId:?string,keys:list<ManagedKey>,key:ManagedKey}

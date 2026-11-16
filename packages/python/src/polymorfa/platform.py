@@ -1,4 +1,4 @@
-"""Organization and immutable project-bound Platform resource surfaces."""
+"""Team and immutable project-bound Platform resource surfaces."""
 
 from __future__ import annotations
 
@@ -151,7 +151,7 @@ class Raw:
 
 class PlatformResource(Resource):
     def __init__(self, transport: Transport, prefix: str) -> None:
-        super().__init__(transport, "organization_api_key")
+        super().__init__(transport, "team_api_key")
         self._prefix = prefix
 
     async def _unwrapped(
@@ -587,7 +587,7 @@ class PlatformWebhooks(PlatformResource):
         options: RequestOptions = O,
     ) -> ApiResponse[D.ReplayReceipt]:
         if self._prefix == "/platform" and body and ("body" in body or "sessionId" in body):
-            raise ValidationError("Organization tests do not accept body or sessionId.")
+            raise ValidationError("Team tests do not accept body or sessionId.")
         return await self._unwrapped(
             "POST",
             self._prefix + "/webhooks/" + segment(webhook_id) + "/tests",

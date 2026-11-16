@@ -1906,7 +1906,7 @@
                       "whatsapp_group_suspended",
                       "whatsapp_group_has_no_participants",
                       "bansafe_suspended",
-                      "bansafe_org_suspended",
+                      "bansafe_team_suspended",
                       "bansafe_cold_blocked",
                       "bansafe_cold_held",
                       "bansafe_throttled",
@@ -1934,7 +1934,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 },
                 "required": ["type", "code", "message", "param", "request_id"]
@@ -3593,7 +3593,7 @@
             "summary": "Get campaign settings",
             "description": "Returns the team's campaign settings. `launchApproval.recipientThreshold` is the number of recipients above which a launch needs a team owner or admin; null means no launch needs approval. A team that never saved settings receives `launchApproval.recipientThreshold: null`.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -3662,7 +3662,7 @@
             "summary": "Create an audience from a campaign",
             "description": "Creates an audience from the recipients of a previous campaign that had one `outcome`, to send them a follow-up campaign. The members are a snapshot taken when the request runs: later receipts, reads or replies on the source campaign do not change the audience. Numbers on the team's opt-out list are left out and counted in `optedOutCount`; each member keeps the template variables it had on the source campaign. Outcomes: `delivered` (the device confirmed delivery), `not_delivered` (sent, with no delivery confirmation), `read`, `not_read` (sent and not read, including sends never delivered), `replied`, `not_replied` (sent and no reply was attributed), and `failed` (confirmed failed sends; sends whose outcome is uncertain, such as a timeout waiting for WhatsApp, are excluded). Read outcomes depend on the recipient's read receipts. `404` means the campaign is not in your team (or not in `projectId` when given); `409` means no recipient that is not opted out has the outcome, and nothing is created.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -3778,7 +3778,7 @@
             "summary": "List audience profiles",
             "description": "Lists customer-supplied profiles for the team with cursor pagination. Deleted profiles are omitted.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -3949,7 +3949,7 @@
             "summary": "Get an audience profile",
             "description": "Gets one customer-supplied profile by its E.164 phone. Deleted profiles return 404.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -4104,7 +4104,7 @@
             "summary": "Create or update an audience profile",
             "description": "Creates a bounded team profile, or replaces tags and attributes at the observed revision. A stale revision returns 409. To recreate a profile deleted in the last 30 days, send the `revision` the delete returned as `expectedRevision`; a put without it returns 409 with a message naming that revision. A consent assertion records the customer's statement; it does not clear an opt-out or authorize a send. This beta requires enrollment and release eligibility.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -4355,7 +4355,7 @@
             "summary": "Delete an audience profile",
             "description": "Removes profile fields, consent assertions and reusable audience-list memberships at the observed revision, and clears the preview row of each audience the phone belonged to. Recipients already added to campaigns (including drafts), previously uploaded files and opt-outs are not changed. The phone's deletion record is kept for 30 days; `revision` is its revision. During that time, adding the phone to an audience returns 409, and recreating the profile requires `expectedRevision` set to this revision. Deletion remains available after beta withdrawal.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -4464,7 +4464,7 @@
             "summary": "List audience consent assertions",
             "description": "Lists the customer's recorded campaign consent assertions for one profile. Assertions do not override opt-outs.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -4614,7 +4614,7 @@
             "summary": "Start an audience profile CSV import",
             "description": "Queues a bounded CSV import of customer-supplied team profiles. Exact CSV header names can be mapped to profile fields. At most one import is active per team. Files contain at most 10 MiB and 10,000 rows; the CSV is removed after completion or cancellation. The same replay key, file and mapping return the existing job. Requires beta enrollment.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -4870,7 +4870,7 @@
             "summary": "Get an audience profile import report",
             "description": "Returns aggregate counts and up to 20 row-number/reason samples. Raw phone numbers and custom values are not included. Reports expire 30 days after completion or cancellation.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -5056,7 +5056,7 @@
             "summary": "Cancel an audience profile import",
             "description": "Stops the next batch and removes the CSV. Already committed profile edits remain. Cancellation and report reads remain available after beta withdrawal.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -5244,7 +5244,7 @@
             "summary": "Get STOP confirmation settings",
             "description": "Returns the team's optional acknowledgement preference. Confirmations are disabled by default. A locale is explicitly selected from English, Brazilian Portuguese or Spanish; the response includes the reviewed acknowledgement text. Reads remain available after beta withdrawal.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -5311,7 +5311,7 @@
             "summary": "Update STOP confirmation settings",
             "description": "Replaces the team's preference using the observed revision. Enabling requires STOP confirmations beta access and a selected locale. A team owner or admin can also change it in the console. A new STOP opt-out queues at most one plain acknowledgement from the receiving connection; manual opt-outs, repeated STOP while suppressed and START produce none. A confirmation cannot undo suppression. Disabling remains available after beta withdrawal and cancels queued acknowledgements. A changed revision returns 409. Unknown send outcomes are never resent with a new operation identity.\n\nRequires a team API key with `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:manage",
             "security": [
@@ -5393,7 +5393,7 @@
             "summary": "Get STOP confirmation outcome counts",
             "description": "Returns aggregate acknowledgement outcomes from the last 30 days, without recipient phones or message content. Disabled is the preference state, queued is waiting, admitted may have been submitted, completed means the provider accepted the send rather than delivered it, failed is a proven skip or rejection, and unknown means the send outcome could not be established. All outcomes preserve the opt-out.\n\nRequires a team API key with `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
-            "x-polymorfa-resource-boundary": "organization",
+            "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
             "x-required-scope": "campaigns:read",
             "security": [
@@ -5518,7 +5518,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 }
               },

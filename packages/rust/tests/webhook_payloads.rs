@@ -24,7 +24,7 @@ fn cloud() -> Value {
     json!({"id":"message","whatsapp_ids":ids(),"whatsapp_id":"cloud","conversation":identity(),"timestamp":"1800000000","type":"interactive","senderName":"Pat","nativeFlowResponse":{"name":"flow","paramsJson":"{}"},"replyChoice":{"kind":"list","id":"row"},"parentMessageId":"parent","interactive":{"type":"button"},"referral":{"source_type":"ad","source_id":"ad-id","source_url":"https://example.com/ad","ctwa_clid":"click","future":true},"futureField":[1,2]})
 }
 fn customer() -> Value {
-    json!({"eventId":"event","occurredAt":"2026-10-11T12:00:00Z","organizationId":"org","projectId":"project","customerId":"customer","actorKind":"org_key"})
+    json!({"eventId":"event","occurredAt":"2026-10-11T12:00:00Z","teamId":"team","projectId":"project","customerId":"customer","actorKind":"team_key"})
 }
 fn signed(event: &str, payload: Value) -> WebhookEvent {
     let raw=serde_json::to_vec(&json!({"id":"event","session":"s","externalId":"external","timestamp":"2026-10-11T12:00:00Z","event":event,"payload":payload})).unwrap();
@@ -44,7 +44,7 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
     let participant = json!({"id":"p","phoneNumber":"+15551234567","bsuid":"bsuid","username":"pat","audioMuted":false,"video":false,"state":"connected","handRaised":true});
     let capabilities = json!({"session":"s","projectId":"project","status":"synced","syncedAt":null,"checkedAt":null,"accountType":"business","capabilities":[{"key":"channels","kind":"feature","unit":null,"value":true,"source":"server"}],"changedKeys":["channels"]});
     let customer_link = merge(customer(), json!({"pairingLinkId":"link"}));
-    let voice = json!({"eventId":"event","occurredAt":"2026-10-11T12:00:00Z","organizationId":"org","projectId":"project","assetId":"asset","name":"Greeting","source":"tts"});
+    let voice = json!({"eventId":"event","occurredAt":"2026-10-11T12:00:00Z","teamId":"team","projectId":"project","assetId":"asset","name":"Greeting","source":"tts"});
     let cases = vec![
         (
             "bansafe.action",

@@ -5,9 +5,9 @@
   "sourceSha256": "40daa415c68780699172c97011eb97fe2288234274cdc417023ba05a9e63170b",
   "contractSha256": "d370e621cfb177e087e9f294ec1347c0ec45abefbc4b77a599c615babf3b497e",
   "baseline": {
-    "sourceApiCommit": "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+    "sourceApiCommit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
     "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
-    "operations": 579
+    "operations": 671
   },
   "baselineUnchanged": true,
   "published": false,
@@ -55,7 +55,7 @@
     },
     "go": {
       "sendMethod": "MessagingClient.Messages.Send",
-      "campaignMethod": "OrganizationClient.Campaigns.Create",
+      "campaignMethod": "TeamClient.Campaigns.Create",
       "mediaHeader": {
         "sourceFile": "interactive.go",
         "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
@@ -155,7 +155,7 @@
     },
     "rust": {
       "sendMethod": "MessagingClient.messages.send",
-      "campaignMethod": "OrganizationClient.campaigns.create",
+      "campaignMethod": "TeamClient.campaigns.create",
       "mediaHeader": {
         "sourceFile": "src/message_content.rs",
         "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
@@ -197,7 +197,7 @@
     },
     "dotnet": {
       "sendMethod": "MessagingClient.Messages.SendAsync",
-      "campaignMethod": "OrganizationClient.Campaigns.CreateAsync",
+      "campaignMethod": "TeamClient.Campaigns.CreateAsync",
       "mediaHeader": {
         "sourceFile": "src/Polymorfa.Sdk/MessageContent.cs",
         "symbols": ["ButtonsMedia", "InteractiveMediaSource"],

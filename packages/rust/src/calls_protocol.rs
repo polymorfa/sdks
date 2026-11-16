@@ -64,8 +64,52 @@ pub enum VideoSourceOwner {
     },
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WaitingRoomState {
+    pub enabled: bool,
+    pub is_admin: bool,
+    pub in_waiting_room: bool,
+    pub users: Vec<Participant>,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "operation", rename_all = "snake_case")]
+pub enum WaitingRoomAction {
+    Toggle {
+        enabled: bool,
+    },
+    Admit {
+        #[serde(rename = "participantId")]
+        participant_id: String,
+    },
+    Deny {
+        #[serde(rename = "participantId")]
+        participant_id: String,
+    },
+}
+impl WaitingRoomAction {
+    pub fn is_valid(&self) -> bool {
+        match self {
+            Self::Toggle { .. } => true,
+            Self::Admit { participant_id } | Self::Deny { participant_id } => {
+                (1..=19).contains(&participant_id.len())
+                    && participant_id.as_bytes()[0] != b'0'
+                    && participant_id.bytes().all(|b| b.is_ascii_digit())
+            }
+        }
+    }
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum MediaControlFrame {
+    WaitingRoom {
+        state: WaitingRoomState,
+    },
+    WaitingRoomResult {
+        #[serde(rename = "requestId")]
+        request_id: String,
+        ok: bool,
+        code: Option<String>,
+    },
     MediaState {
         #[serde(rename = "requestId")]
         request_id: String,
@@ -168,6 +212,12 @@ pub fn parse_media_control(raw: &str) -> Option<MediaControlFrame> {
     let value: serde_json::Value = serde_json::from_str(raw).ok()?;
     let frame: MediaControlFrame = serde_json::from_value(value.clone()).ok()?;
     let valid = match &frame {
+        MediaControlFrame::WaitingRoom { state } => state.users.iter().all(valid_participant),
+        MediaControlFrame::WaitingRoomResult {
+            request_id,
+            ok,
+            code,
+        } => is_connection_id(request_id) && (*ok || code.is_some()),
         MediaControlFrame::Ready { sample_rate, .. } => *sample_rate > 0,
         MediaControlFrame::MediaState { request_id, .. }
         | MediaControlFrame::MediaError { request_id, .. } => is_connection_id(request_id),

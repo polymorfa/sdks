@@ -16,7 +16,7 @@ fn operation() -> Value {
     json!({"id":"operation","requestId":"request","flowId":FLOW,"flowName":"contact","sessionId":"sid","session":"support","action":"upload","state":"uncertain","resolution":null,"wabaId":"waba","metaFlowId":"meta","definitionDigest":"abc","providerStatus":"DRAFT","errorCode":"provider_unavailable","providerCode":503,"providerSubcode":1,"createdAt":1000,"updatedAt":1001,"completedAt":null})
 }
 fn endpoint() -> Value {
-    json!({"id":"endpoint","orgId":"org","projectId":PROJECT,"flowId":FLOW,"sessionId":"sid","mode":"function","url":null,"functionId":"function","deploymentId":null,"enabled":true,"revision":2,"endpointUri":"https://api.example.com/flow","createdAt":1000,"updatedAt":1001})
+    json!({"id":"endpoint","teamId":"team","projectId":PROJECT,"flowId":FLOW,"sessionId":"sid","mode":"function","url":null,"functionId":"function","deploymentId":null,"enabled":true,"revision":2,"endpointUri":"https://api.example.com/flow","createdAt":1000,"updatedAt":1001})
 }
 fn key() -> Value {
     json!({"id":"key","state":"active","fingerprint":"abc","publicKey":"PUBLIC KEY","errorCode":null,"createdAt":1000,"activatedAt":1001,"retireAfter":null})
@@ -26,7 +26,7 @@ fn encryption() -> Value {
 }
 #[tokio::test]
 async fn drafts_and_provider_reconciliation_native_wire() {
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/flows?projectId=00000000-0000-0000-0000-000000000001",
@@ -39,7 +39,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             .list(RequestOptions::default())
     );
     let definition: FlowDefinition = serde_json::from_value(draft()["definition"].clone()).unwrap();
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flows",
@@ -54,8 +54,8 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":draft()}),client.project(PROJECT).unwrap().flows().retrieve(FLOW,RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":draft()}),client.project(PROJECT).unwrap().flows().retrieve(FLOW,RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "PATCH",
         "/platform/flows/00000000-0000-0000-0000-000000000002",
@@ -72,13 +72,13 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete(FLOW,RequestOptions::default()));
+    wire_unwrapped_team!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete(FLOW,RequestOptions::default()));
     let body = FlowProviderRequest {
         session_id: "support".into(),
         categories: Some(vec![FlowCategory::ContactUs]),
         request_id: Some("request".into()),
     };
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/upload",
@@ -92,7 +92,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             .flows()
             .upload(FLOW, &body, RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/publish",
@@ -106,7 +106,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             .flows()
             .publish(FLOW, &body, RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/deprecate",
@@ -120,7 +120,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             .flows()
             .deprecate(FLOW, &body, RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/discard",
@@ -134,7 +134,7 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             .flows()
             .discard(FLOW, &body, RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flows/00000000-0000-0000-0000-000000000002/sync",
@@ -148,16 +148,16 @@ async fn drafts_and_provider_reconciliation_native_wire() {
             .flows()
             .sync(FLOW, &body, RequestOptions::default())
     );
-    wire_unwrapped_organization!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/receipts?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":[operation()]}),client.project(PROJECT).unwrap().flows().receipts(FLOW,RequestOptions::default()));
-    wire_unwrapped_organization!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":null}),client.project(PROJECT).unwrap().flows().retrieve(FLOW,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/receipts?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":[operation()]}),client.project(PROJECT).unwrap().flows().receipts(FLOW,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002?projectId=00000000-0000-0000-0000-000000000001",None,json!({"data":null}),client.project(PROJECT).unwrap().flows().retrieve(FLOW,RequestOptions::default()));
 }
 #[tokio::test]
 async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_wire() {
     let number = FlowNumberRequest {
         session_id: "support".into(),
     };
-    wire_unwrapped_organization!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":{"endpoint":endpoint(),"encryption":encryption()}}),client.project(PROJECT).unwrap().flows().endpoint(FLOW,&number,RequestOptions::default()));
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":{"endpoint":endpoint(),"encryption":encryption()}}),client.project(PROJECT).unwrap().flows().endpoint(FLOW,&number,RequestOptions::default()));
+    wire_unwrapped_team!(
         client,
         "PUT",
         "/platform/flows/00000000-0000-0000-0000-000000000002/endpoint",
@@ -179,7 +179,7 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "PUT",
         "/platform/flows/00000000-0000-0000-0000-000000000002/endpoint",
@@ -201,12 +201,12 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete_endpoint(FLOW,&number,RequestOptions::default()));
-    wire_unwrapped_organization!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint/receipts?limit=5&projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":[{"id":"receipt","flowId":FLOW,"endpointId":"endpoint","sessionId":"sid","mode":"function","action":"INIT","outcome":"succeeded","httpStatus":200,"errorCode":null,"keyId":"key","functionInvocationId":"invocation","durationMs":2.5,"createdAt":1000,"completedAt":1001}]}),client.project(PROJECT).unwrap().flows().endpoint_receipts(FLOW,&ListEndpointReceiptsParameters{session_id:Some("support".into()),limit:Some(5)},RequestOptions::default()));
-    wire_unwrapped_organization!(client,"GET","/platform/flow-encryption-keys?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":encryption()}),client.project(PROJECT).unwrap().flows().encryption_key(&number,RequestOptions::default()));
+    wire_unwrapped_team!(client,"DELETE","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":{"ok":true}}),client.project(PROJECT).unwrap().flows().delete_endpoint(FLOW,&number,RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flows/00000000-0000-0000-0000-000000000002/endpoint/receipts?limit=5&projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":[{"id":"receipt","flowId":FLOW,"endpointId":"endpoint","sessionId":"sid","mode":"function","action":"INIT","outcome":"succeeded","httpStatus":200,"errorCode":null,"keyId":"key","functionInvocationId":"invocation","durationMs":2.5,"createdAt":1000,"completedAt":1001}]}),client.project(PROJECT).unwrap().flows().endpoint_receipts(FLOW,&ListEndpointReceiptsParameters{session_id:Some("support".into()),limit:Some(5)},RequestOptions::default()));
+    wire_unwrapped_team!(client,"GET","/platform/flow-encryption-keys?projectId=00000000-0000-0000-0000-000000000001&sessionId=support",None,json!({"data":encryption()}),client.project(PROJECT).unwrap().flows().encryption_key(&number,RequestOptions::default()));
     let mut rotation = encryption();
     rotation["key"] = key();
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/flow-encryption-keys/rotate",
@@ -218,7 +218,7 @@ async fn endpoint_modes_one_time_secret_encryption_custody_and_receipts_native_w
             .flows()
             .rotate_encryption_key(&number, RequestOptions::default())
     );
-    let client = support::organization("http://127.0.0.1:1".into())
+    let client = support::team("http://127.0.0.1:1".into())
         .project(PROJECT)
         .unwrap();
     assert!(client

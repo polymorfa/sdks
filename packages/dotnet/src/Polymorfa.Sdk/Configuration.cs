@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Polymorfa.Sdk;
 
-public enum CredentialKind { OrganizationApiKey, ProjectToken, ClientToken }
+public enum CredentialKind { TeamApiKey, ProjectToken, ClientToken }
 
 /// <summary>A principal with locally checked framing. Its string representation never contains the secret.</summary>
 public sealed class Credential
@@ -11,14 +11,14 @@ public sealed class Credential
     internal string Value { get; }
     public CredentialKind Kind { get; }
     private Credential(CredentialKind kind, string value) { Kind = kind; Value = value; }
-    public static Credential OrganizationApiKey(string value) => Create(CredentialKind.OrganizationApiKey, value, "pmfa_");
+    public static Credential TeamApiKey(string value) => Create(CredentialKind.TeamApiKey, value, "pmfa_");
     public static Credential ProjectToken(string value) => Create(CredentialKind.ProjectToken, value, "pmfa_pt_");
     public static Credential ClientToken(string value) => Create(CredentialKind.ClientToken, value, "^pmfa_ct_[^\\r\\n]+$");
     private static Credential Create(CredentialKind kind, string value, string pattern)
     {
         if (value is null || !(kind == CredentialKind.ClientToken ? ClientShape(value) : OpaqueShape(value, pattern)))
             throw new PolymorfaConfigurationException("Invalid credential.");
-        if (kind == CredentialKind.OrganizationApiKey && new[] { "pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_" }.Any(prefix => value.StartsWith(prefix, StringComparison.Ordinal)))
+        if (kind == CredentialKind.TeamApiKey && new[] { "pmfa_pt_", "pmfa_ct_", "pmfa_ls_", "pmfa_at_", "pmfa_wst_", "pmfa_sd_" }.Any(prefix => value.StartsWith(prefix, StringComparison.Ordinal)))
             throw new PolymorfaConfigurationException("Special-purpose credentials cannot be used as team keys.");
         if (kind != CredentialKind.ClientToken && OperatingSystem.IsBrowser())
             throw new PolymorfaConfigurationException("Server credentials cannot be used in browser/WASM applications.");

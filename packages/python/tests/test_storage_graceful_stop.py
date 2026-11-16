@@ -491,7 +491,7 @@ async def test_native_platform_sse_storage_held_manual_ack_and_idle_headers(mode
                         "cursor": "cursor",
                         "event": {
                             "id": "graceful-event",
-                            "organizationId": "fixture-org",
+                            "teamId": "fixture-team",
                             "projectId": project,
                             "type": "history.sync",
                             "source": "runtime",

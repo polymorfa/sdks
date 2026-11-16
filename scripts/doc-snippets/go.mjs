@@ -47,7 +47,7 @@ export function render(id, { client, request }) {
       ? "NewMessagingClient"
       : client === "project"
         ? "NewProjectClient"
-        : "NewOrganizationClient";
+        : "NewTeamClient";
   const project = client === "project" ? `, ${p("projectId")}` : "";
-  return `package main\n\nimport (\n  "context"\n  "fmt"\n  "log"\n  sdk "github.com/polymorfa/sdks/packages/go"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.${ctor}(sdk.Config{Credential: sdk.Credential{Kind: sdk.OrganizationAPIKey, Value: ${key}}}${project})\n  if err != nil { log.Fatal(err) }\n${id === "sendMessage" ? `  text := ${quote(b.content.text)}\n` : ""}  result, err := ${calls[id]}\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n`;
+  return `package main\n\nimport (\n  "context"\n  "fmt"\n  "log"\n  sdk "github.com/polymorfa/sdks/packages/go"\n)\n\nfunc main() {\n  ctx := context.Background()\n  api, err := sdk.${ctor}(sdk.Config{Credential: sdk.Credential{Kind: sdk.TeamAPIKey, Value: ${key}}}${project})\n  if err != nil { log.Fatal(err) }\n${id === "sendMessage" ? `  text := ${quote(b.content.text)}\n` : ""}  result, err := ${calls[id]}\n  if err != nil { log.Fatal(err) }\n  fmt.Println(result)\n}\n`;
 }

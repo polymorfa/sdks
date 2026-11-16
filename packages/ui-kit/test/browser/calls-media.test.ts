@@ -1350,3 +1350,53 @@ describe("display capture on the owned outgoing video stream", () => {
     expect(f.getDisplayMedia).toHaveBeenCalledTimes(1);
   });
 });
+
+it("sends waiting-room effects through authenticated signaling, never the data channel", async () => {
+  const peer = peerConnection();
+  const moderate = vi.fn(
+    async (
+      _callId: string,
+      _connectionId: string,
+      request: { requestId: string },
+    ) => ({
+      type: "waiting_room_result" as const,
+      requestId: request.requestId,
+      ok: true,
+    }),
+  );
+  const session = await factoryFor({
+    peer,
+    signaling: signaling({ moderateWaitingRoom: moderate }),
+  }).open("call-1", false, callbacks, new AbortController().signal, {
+    connectionId: "owner_connection",
+  });
+  try {
+    await session.moderateWaitingRoom!({
+      operation: "admit",
+      participantId: "123",
+    });
+    expect(moderate).toHaveBeenCalledOnce();
+    expect(moderate).toHaveBeenCalledWith(
+      "call-1",
+      "owner_connection",
+      expect.objectContaining({
+        type: "waiting_room_control",
+        operation: "admit",
+        participantId: "123",
+      }),
+      expect.any(AbortSignal),
+    );
+    expect(
+      peer.channels
+        .flatMap((channel) => channel.send.mock.calls)
+        .some((args) => String(args[0]).includes("waiting_room_control")),
+    ).toBe(false);
+    moderate.mockRejectedValueOnce(new Error("revoked credential"));
+    await expect(
+      session.moderateWaitingRoom!({ operation: "deny", participantId: "123" }),
+    ).rejects.toMatchObject({ code: "waiting_room_control_unknown" });
+    expect(moderate).toHaveBeenCalledTimes(2);
+  } finally {
+    await session.close({ leave: false });
+  }
+});

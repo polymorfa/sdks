@@ -1,3 +1,4 @@
+import type { WaitingRoomState, WaitingRoomAction } from "./waiting-room.js";
 import type { MediaState, MediaStateUpdate } from "./media-state.js";
 import type { CallsApi } from "./api.js";
 import { CallReporter, type CallReportClient } from "./diagnostics.js";
@@ -82,7 +83,7 @@ export interface AnswerOptions {
  */
 export interface CallVideoSource {
   readonly id: number;
-  /** Display label: the participant's number or ID, or the other connection's participant reference. */
+  /** Display label: the participant's name, number or ID, or the other connection's participant reference. */
   readonly label: string;
   /** The WhatsApp participant sending this video. */
   readonly participant?: Participant;
@@ -127,7 +128,10 @@ function videoSource(source: MediaVideoSource): CallVideoSource {
   if (source.participant !== undefined)
     return {
       id: source.source,
-      label: source.participant.phoneNumber ?? source.participant.id,
+      label:
+        source.participant.name ||
+        source.participant.phoneNumber ||
+        source.participant.id,
       participant: source.participant,
     };
   return {
@@ -237,6 +241,7 @@ export class VideoTrack extends Emitter<VideoEvents> {
 }
 
 type CallEvents = {
+  waitingRoom: [WaitingRoomState];
   remoteMute: [boolean | null];
   state: [CallState, previous: CallState];
   connected: [];
@@ -392,6 +397,35 @@ export class Call extends Emitter<CallEvents> {
   #socialSupported = false;
   #state: CallState;
   #media: MediaSocket | undefined;
+  #waitingRoom: WaitingRoomState | undefined;
+  get waitingRoom(): WaitingRoomState | undefined {
+    return this.#waitingRoom;
+  }
+  /** @internal Validated state from the active external media connection. */
+  _remoteWaitingRoom(state: WaitingRoomState | undefined): void {
+    if (this.ended) return;
+    this.#waitingRoom = state;
+    if (state !== undefined) this.emit("waitingRoom", state);
+  }
+  setApprovalRequired(enabled: boolean): Promise<void> {
+    return this.#moderate({ operation: "toggle", enabled });
+  }
+  admitParticipant(participantId: string): Promise<void> {
+    return this.#moderate({ operation: "admit", participantId });
+  }
+  denyParticipant(participantId: string): Promise<void> {
+    return this.#moderate({ operation: "deny", participantId });
+  }
+  #moderate(action: WaitingRoomAction): Promise<void> {
+    if (!this.#media || !this.#waitingRoom?.isAdmin)
+      return Promise.reject(
+        new CallsError(
+          "waiting_room_admin_required",
+          "Waiting-room administrator authority is required.",
+        ),
+      );
+    return this.#media.moderateWaitingRoom(action);
+  }
   #endReason: CallEndReason | undefined;
   #startedAt: number;
   #connectedAt: number | undefined;
@@ -973,6 +1007,10 @@ export class Call extends Emitter<CallEvents> {
     this.#media = media;
     if (this.#remoteAudioMuted !== null) this.emit("remoteMute", null);
     this.#remoteAudioMuted = null;
+    this.#waitingRoom = undefined;
+    media.on("waitingRoom", (state) => {
+      this._remoteWaitingRoom(state);
+    });
     media.on("remoteMute", (muted) => {
       this.#remoteAudioMuted = muted;
       this.emit("remoteMute", muted);
@@ -1019,6 +1057,7 @@ export class Call extends Emitter<CallEvents> {
         await media.setMediaState(this.#mediaPreferences);
     } catch (cause) {
       if (this.#media === media) this.#media = undefined;
+      this.#waitingRoom = undefined;
       media.close();
       throw cause;
     }
@@ -1029,6 +1068,7 @@ export class Call extends Emitter<CallEvents> {
     if (!media.connected) {
       // Closed between `ready` and this continuation.
       this.#media = undefined;
+      this.#waitingRoom = undefined;
       throw new CallsError("media_closed", "Media connection closed.");
     }
     attached = true;
@@ -1041,6 +1081,7 @@ export class Call extends Emitter<CallEvents> {
   #mediaClosed(media: MediaSocket, close: MediaClose): void {
     if (this.#media !== media || this.ended) return;
     this.#media = undefined;
+    this.#waitingRoom = undefined;
     this.audio._attach(undefined);
     this.video._attach(undefined);
     this.video._clearSources();
@@ -1203,6 +1244,7 @@ export class Call extends Emitter<CallEvents> {
     this.#reporter?.stop();
     const media = this.#media;
     this.#media = undefined;
+    this.#waitingRoom = undefined;
     media?.close();
     this.audio._detach();
     this.video._detach();
@@ -1242,6 +1284,8 @@ function sameParticipant(a: Participant, b: Participant): boolean {
     a.phoneNumber === b.phoneNumber &&
     a.bsuid === b.bsuid &&
     a.username === b.username &&
+    a.guest === b.guest &&
+    a.name === b.name &&
     a.handRaised === b.handRaised &&
     a.audioMuted === b.audioMuted &&
     a.video === b.video &&

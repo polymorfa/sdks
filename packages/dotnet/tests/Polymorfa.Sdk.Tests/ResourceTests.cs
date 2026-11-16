@@ -55,7 +55,7 @@ internal static class ResourceTests
     {
         using var fixture = new WireFixture { Authorization = "Bearer " + Key };
         var serving = fixture.ServeAsync(method, path, body, response);
-        using var client = new MessagingClient(Credential.OrganizationApiKey(Key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });
+        using var client = new MessagingClient(Credential.TeamApiKey(Key), new() { BaseUrl = fixture.Url, MaxNetworkRetries = 0, Timeout = TimeSpan.FromSeconds(3) });
         try { await invoke(client); await serving; }
         catch { await serving; throw; }
     }

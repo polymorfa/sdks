@@ -1,6 +1,6 @@
 import type { CustomerSummary } from "@polymorfa/sdk";
 
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import {
   action,
@@ -15,7 +15,7 @@ import {
 // 1,000 per request. A non-null `nextCursor` means more remain: pass it back
 // as `?cursor=` to continue.
 export const GET = route("admin", async ({ url }) => {
-  const customers = organization().customers;
+  const customers = team().customers;
   const projectId = env.projectId();
   const search = url.searchParams.get("search") ?? undefined;
   const all: CustomerSummary[] = [];
@@ -36,7 +36,7 @@ export const GET = route("admin", async ({ url }) => {
 });
 
 export const POST = route("admin", async ({ body, request }) => {
-  const customers = organization().customers;
+  const customers = team().customers;
   const projectId = env.projectId();
   const name = action(body);
   switch (name) {

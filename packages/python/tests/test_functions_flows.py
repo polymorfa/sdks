@@ -303,7 +303,7 @@ KEY = {
 CUSTODY = {"custody": "managed", "activeKeyId": "key_1", "keys": [KEY]}
 ENDPOINT = {
     "id": "endpoint_1",
-    "orgId": "org_1",
+    "teamId": "team_1",
     "projectId": PROJECT,
     "flowId": FLOW,
     "sessionId": "number_1",
@@ -538,7 +538,7 @@ async def test_public_function_flow_methods_bound_identity_and_typed_response(pr
         )
         if project_token
         else Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         )
     )
@@ -571,7 +571,7 @@ async def test_all_function_flow_writes_and_deletes_never_retry(case):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -594,7 +594,7 @@ async def test_function_validation_and_flow_endpoint_boundaries():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -679,7 +679,7 @@ async def test_endpoint_variants_and_once_only_response(body):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

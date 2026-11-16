@@ -24,7 +24,7 @@ try {
             headers: ['x-polymorfa-fixture' => $id],
             cancellation: isset($outcome['cancelAfterMs']) ? Polymorfa\CancellationToken::after($outcome['cancelAfterMs'] / 1000) : null,
         );
-        $client = new Polymorfa\MessagingClient(Polymorfa\Credential::organizationApiKey($fixtures['organizationCredential']), baseUrl: $url);
+        $client = new Polymorfa\MessagingClient(Polymorfa\Credential::teamApiKey($fixtures['teamCredential']), baseUrl: $url);
         $run = static function () use ($client, $scenario, $request, $options) {
             if ($scenario['id'] === 'sessions-list') {
                 $result = $client->sessions->list($options);

@@ -16,7 +16,7 @@ import {
   type SendMessageRequest,
   type VoipCallCheck,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 const OPT_OUT_ID = "0b0e5b1e-0000-4000-8000-000000000010";
 
@@ -81,7 +81,7 @@ function request(fetch: ReturnType<typeof vi.fn>, index = 0) {
 
 function teamClient(fetch: typeof globalThis.fetch) {
   return new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: "https://api.example.com",
     maxNetworkRetries: 0,
     fetch,
@@ -95,7 +95,7 @@ function messagingClient(
   return new MessagingClient({
     credential:
       credential === "apiKey"
-        ? { type: "apiKey", value: ORGANIZATION_API_KEY }
+        ? { type: "apiKey", value: TEAM_API_KEY }
         : { type: "clientToken", value: `pmfa_ct_${"A".repeat(94)}` },
     baseUrl: "https://api.example.com",
     maxNetworkRetries: 0,
@@ -128,9 +128,7 @@ describe("team call policy", () => {
     const sent = request(fetch);
     expect(sent.method).toBe("GET");
     expect(sent.url.pathname).toBe("/platform/call-policy");
-    expect(sent.headers.get("authorization")).toBe(
-      `Bearer ${ORGANIZATION_API_KEY}`,
-    );
+    expect(sent.headers.get("authorization")).toBe(`Bearer ${TEAM_API_KEY}`);
   });
 
   it("replaces the whole list and forwards expectedRevision", async () => {

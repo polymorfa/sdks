@@ -6,7 +6,7 @@ import {
   PolymorfaConfigurationError,
   type EventStreamItem,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 const PROJECT = "018f0000-0000-7000-8000-000000000077";
 
@@ -39,7 +39,7 @@ function eventFrame(
       cursor,
       event: {
         id,
-        organizationId: "o",
+        teamId: "o",
         projectId: PROJECT,
         type: body.event,
         source: "runtime",
@@ -175,10 +175,10 @@ describe("events.stream", () => {
     });
   });
 
-  it("requires projectId on organization clients and builds that project's path", async () => {
+  it("requires projectId on team clients and builds that project's path", async () => {
     const requests: string[] = [];
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       fetch: (async (input: RequestInfo | URL) => {
         requests.push(String(input));
         return sse([ready, eventFrame(2, "e1", "c1")]);

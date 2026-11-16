@@ -15,6 +15,9 @@ public sealed record CallVideoFrame(byte Codec, bool Keyframe, uint Source, ulon
 public sealed record CallMediaState(bool AudioMuted, bool VideoEnabled, bool ScreenSharing = false);
 public sealed record CallMediaStateReply(string RequestId, bool AudioMuted, bool VideoEnabled, bool ScreenSharing = false) : CallSocketFrame;
 public sealed record CallMediaStateError(string RequestId, string Code) : CallSocketFrame;
+public sealed record CallWaitingRoomState(bool Enabled, bool IsAdmin, bool InWaitingRoom, IReadOnlyList<CallParticipant> Users);
+public sealed record CallWaitingRoom(CallWaitingRoomState State) : CallSocketFrame;
+public sealed record CallWaitingRoomResult(string RequestId, bool Ok, string? Code) : CallSocketFrame;
 public sealed record CallRemoteMedia(bool? AudioMuted) : CallSocketFrame;
 public sealed record CallReaction(string Emoji, bool? Self, string? ParticipantId) : CallSocketFrame;
 public sealed record CallHandState(bool Raised, bool Supported) : CallSocketFrame;
@@ -58,13 +61,26 @@ public static class CallsProtocol
                 if (type == "candidate" && S("callId") is { } callId && (S("connectionId") is null || Connection(S("connectionId"))) && f.TryGetProperty("candidate", out var candidate) && candidate.ValueKind == JsonValueKind.Object && candidate.TryGetProperty("candidate", out var text) && text.ValueKind == JsonValueKind.String) return new CallCandidate(callId, S("connectionId"), candidate.Deserialize<CallTrickleCandidate>(HttpTransport.Json)!);
                 return null;
             }
+            if (type == "waiting_room_result" && Connection(id) && B("ok") is { } ok && OptionalString("code") && (ok || S("code") is not null)) return new CallWaitingRoomResult(id!, ok, S("code"));
+            if (type == "waiting_room" && f.TryGetProperty("state", out var room) && room.ValueKind == JsonValueKind.Object)
+            {
+                bool IsBool(string key) => room.TryGetProperty(key, out var field) && field.ValueKind is JsonValueKind.True or JsonValueKind.False;
+                if (!IsBool("enabled") || !IsBool("isAdmin") || !IsBool("inWaitingRoom") || !room.TryGetProperty("users", out var users) || users.ValueKind != JsonValueKind.Array) return null;
+                var people = new List<CallParticipant>();
+                foreach (var user in users.EnumerateArray())
+                {
+                    if (ParseText(JsonSerializer.SerializeToUtf8Bytes(new { type = "participant_state", participant = user }), true) is not CallParticipantFrame person) return null;
+                    people.Add(person.Participant);
+                }
+                return new CallWaitingRoom(new(room.GetProperty("enabled").GetBoolean(), room.GetProperty("isAdmin").GetBoolean(), room.GetProperty("inWaitingRoom").GetBoolean(), people.AsReadOnly()));
+            }
             if (type == "media_state" && Connection(id) && B("audioMuted") is { } muted && B("videoEnabled") is { } enabled && OptionalBool("screenSharing")) return new CallMediaStateReply(id!, muted, enabled, B("screenSharing") == true);
             if (type == "media_error" && Connection(id) && S("code") is { } error) return new CallMediaStateError(id!, error);
             if (type == "remote_media" && f.TryGetProperty("audioMuted", out var remote) && remote.ValueKind is JsonValueKind.True or JsonValueKind.False or JsonValueKind.Null) return new CallRemoteMedia(B("audioMuted"));
             if (type == "reaction" && S("emoji") is { } emoji && new[] { "", "👍", "❤️", "😂", "😮", "😢", "🙏" }.Contains(emoji) && (B("self") == true && !f.TryGetProperty("participantId", out _) || !f.TryGetProperty("self", out _) && S("participantId") is { } participantId && System.Text.RegularExpressions.Regex.IsMatch(participantId, "^[1-9][0-9]{0,18}$"))) return new CallReaction(emoji, B("self"), S("participantId"));
             if (type == "hand_state" && B("raised") is { } raised && B("supported") is { } supported) return new CallHandState(raised, supported);
             if (type == "participant_left" && S("participantId") is { } left && OptionalString("reason")) return new CallParticipantLeft(left, S("reason"));
-            CallParticipant? ParticipantValue() { if (!f.TryGetProperty("participant", out var p) || p.ValueKind != JsonValueKind.Object) return null; if (p.TryGetProperty("handle", out _) || !p.TryGetProperty("audioMuted", out var audio) || audio.ValueKind is not (JsonValueKind.True or JsonValueKind.False) || !p.TryGetProperty("video", out var video) || video.ValueKind is not (JsonValueKind.True or JsonValueKind.False) || new[] { "phoneNumber", "bsuid", "username" }.Any(key => p.TryGetProperty(key, out var v) && v.ValueKind != JsonValueKind.String) || p.TryGetProperty("handRaised", out var hand) && hand.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return null; var value = p.Deserialize<CallParticipant>(HttpTransport.Json); return value is { Id.Length: > 0, State: "invited" or "ringing" or "connected" or "left" } ? value : null; }
+            CallParticipant? ParticipantValue() { if (!f.TryGetProperty("participant", out var p) || p.ValueKind != JsonValueKind.Object) return null; if (p.TryGetProperty("handle", out _) || !p.TryGetProperty("audioMuted", out var audio) || audio.ValueKind is not (JsonValueKind.True or JsonValueKind.False) || !p.TryGetProperty("video", out var video) || video.ValueKind is not (JsonValueKind.True or JsonValueKind.False) || new[] { "phoneNumber", "bsuid", "username", "name" }.Any(key => p.TryGetProperty(key, out var v) && v.ValueKind != JsonValueKind.String) || p.TryGetProperty("handRaised", out var hand) && hand.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return null; if (p.TryGetProperty("guest", out var guest) && guest.ValueKind is not (JsonValueKind.True or JsonValueKind.False)) return null; var value = p.Deserialize<CallParticipant>(HttpTransport.Json); return value is { Id.Length: > 0, State: "invited" or "ringing" or "connected" or "left" } ? value : null; }
             if (type is "participant_joined" or "participant_state" && ParticipantValue() is { } participant) return new CallParticipantFrame(type, participant);
             if (type == "video_source" && U("source") > 0) { var owner = ParticipantValue(); var connection = S("connectionId"); if (owner is not null && !f.TryGetProperty("connectionId", out _) && !f.TryGetProperty("connectionParticipant", out _) || !f.TryGetProperty("participant", out _) && Connection(connection) && OptionalString("connectionParticipant")) return new CallVideoSource(U("source"), owner, connection, S("connectionParticipant")); }
             if (type == "video_source_removed" && U("source") > 0) return new CallVideoSourceRemoved(U("source"));
