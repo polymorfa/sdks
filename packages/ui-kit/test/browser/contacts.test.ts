@@ -517,6 +517,22 @@ describe("GroupController", () => {
     expect(await group.leave()).toBe(true);
     expect(group.getSnapshot().status).toBe("left");
   });
+
+  it("stays left when a read that started before leaving finishes", async () => {
+    const read = deferred<BrowserGroup>();
+    const source = fakeGroups();
+    source.retrieve = vi.fn(() => read.promise);
+    const group = new GroupController(source, "120363");
+    const loading = group.load();
+    expect(await group.leave()).toBe(true);
+    read.resolve(source.current);
+    await loading;
+    expect(group.getSnapshot()).toMatchObject({
+      status: "left",
+      done: "leave",
+    });
+    expect(group.getSnapshot().group).toBeUndefined();
+  });
 });
 
 describe("NewChatController", () => {

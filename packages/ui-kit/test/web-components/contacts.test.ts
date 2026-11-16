@@ -177,6 +177,77 @@ describe("<pmfa-new-chat>", () => {
     expect(shadowButton(element, "New group")).toBeUndefined();
   });
 
+  it("offers New group once a later grant allows groups_manage", async () => {
+    let allow: PolymorfaPermission[] = ["read_contact"];
+    const api = new PolymorfaClient({
+      fetch: vi.fn(async () =>
+        Response.json({
+          value: "pmfa_ct_Zml4dHVyZQ",
+          audience: "browser",
+          expiresAt: Date.now() + 600_000,
+          grant: { session: "support", conversations: "all", allow },
+        }),
+      ),
+    });
+    await api.refresh();
+    defineUiKit({ client: api });
+    const element = document.createElement(
+      "pmfa-new-chat",
+    ) as PolymorfaNewChatElement;
+    element.contacts = contactSource();
+    document.body.append(element);
+    await vi.waitFor(() =>
+      expect(
+        element.shadowRoot!.querySelectorAll("[data-contact-id]"),
+      ).toHaveLength(2),
+    );
+    expect(shadowButton(element, "New group")).toBeUndefined();
+    allow = ["read_contact", "groups_manage"];
+    await api.refresh();
+    await vi.waitFor(() =>
+      expect(shadowButton(element, "New group")).toBeDefined(),
+    );
+  });
+
+  it("honours no-groups for a host controller that can create groups", async () => {
+    defineUiKit({ client: client([]) });
+    const { NewChatController } = await import("@polymorfa/ui-kit/internal");
+    const controller = new NewChatController({
+      contacts: contactSource(),
+      groups: groupSource(),
+    });
+    const element = document.createElement(
+      "pmfa-new-chat",
+    ) as PolymorfaNewChatElement;
+    element.controller = controller;
+    document.body.append(element);
+    await vi.waitFor(() =>
+      expect(shadowButton(element, "New group")).toBeDefined(),
+    );
+    controller.startGroup();
+    element.setAttribute("no-groups", "");
+    await vi.waitFor(() =>
+      expect(
+        element.shadowRoot!.querySelector("[data-contact-id='1']"),
+      ).not.toBeNull(),
+    );
+    expect(shadowButton(element, "New group")).toBeUndefined();
+    expect(controller.getSnapshot().view).toBe("contacts");
+    expect(
+      element
+        .shadowRoot!.querySelector("[data-contact-id='1']")!
+        .getAttribute("role"),
+    ).toBeNull();
+    // A later startGroup() from the host does not bring the flow back.
+    controller.startGroup();
+    expect(element.shadowRoot!.textContent).not.toContain("Add members");
+    expect(
+      element
+        .shadowRoot!.querySelector("[data-contact-id='1']")!
+        .getAttribute("role"),
+    ).toBeNull();
+  });
+
   it("closes from its back button when closable", async () => {
     defineUiKit({ client: client([]) });
     const element = document.createElement(
@@ -233,6 +304,100 @@ describe("<pmfa-group-details>", () => {
       )!
       .click();
     await vi.waitFor(() => expect(left).toHaveBeenCalledOnce());
+  });
+
+  it("keeps an unsaved name while contacts finish loading", async () => {
+    defineUiKit({ client: client([]) });
+    const element = document.createElement(
+      "pmfa-group-details",
+    ) as PolymorfaGroupDetailsElement;
+    let finish: (value: DirectoryContact[]) => void = () => undefined;
+    element.contacts = {
+      list: vi.fn(
+        () =>
+          new Promise<DirectoryContact[]>((resolve) => {
+            finish = resolve;
+          }),
+      ),
+      lookup: vi.fn(async () => null),
+    };
+    element.source = groupSource();
+    element.setAttribute("group-id", "120363");
+    document.body.append(element);
+    await vi.waitFor(() =>
+      expect(element.shadowRoot!.textContent).toContain("Launch"),
+    );
+    element
+      .shadowRoot!.querySelector<HTMLButtonElement>(
+        "[data-focus-key='edit-button:name']",
+      )!
+      .click();
+    const input = element.shadowRoot!.querySelector<HTMLInputElement>(
+      "[data-focus-key='edit:name']",
+    )!;
+    expect(input.value).toBe("Launch");
+    input.value = "Launch party";
+    input.dispatchEvent(new Event("input"));
+    finish(contacts);
+    await vi.waitFor(() =>
+      expect(element.shadowRoot!.textContent).toContain("Ada Lovelace"),
+    );
+    expect(
+      element.shadowRoot!.querySelector<HTMLInputElement>(
+        "[data-focus-key='edit:name']",
+      )!.value,
+    ).toBe("Launch party");
+  });
+
+  it("can be moved: disconnecting and reconnecting reloads the group", async () => {
+    defineUiKit({ client: client([]) });
+    const element = document.createElement(
+      "pmfa-group-details",
+    ) as PolymorfaGroupDetailsElement;
+    const list = vi.fn(async () => contacts);
+    element.contacts = { list, lookup: vi.fn(async () => null) };
+    element.source = groupSource();
+    element.setAttribute("group-id", "120363");
+    document.body.append(element);
+    await vi.waitFor(() =>
+      expect(element.shadowRoot!.textContent).toContain("Ada Lovelace"),
+    );
+    const other = document.createElement("div");
+    document.body.append(other);
+    expect(() => other.append(element)).not.toThrow();
+    await vi.waitFor(() =>
+      expect(element.shadowRoot!.textContent).toContain("Ada Lovelace"),
+    );
+    expect(list).toHaveBeenCalledTimes(2);
+  });
+
+  it("loads replacement contacts while Add members is open", async () => {
+    defineUiKit({ client: client([]) });
+    const element = document.createElement(
+      "pmfa-group-details",
+    ) as PolymorfaGroupDetailsElement;
+    element.contacts = contactSource();
+    element.source = groupSource();
+    element.setAttribute("group-id", "120363");
+    document.body.append(element);
+    await vi.waitFor(() =>
+      expect(shadowButton(element, "Add members")).toBeDefined(),
+    );
+    shadowButton(element, "Add members")!.click();
+    const replacement: ContactDirectorySource = {
+      list: vi.fn(async () => [
+        ...contacts,
+        { id: "3", name: "Katherine Johnson", phoneNumber: "+15550003" },
+      ]),
+      lookup: vi.fn(async () => null),
+    };
+    element.contacts = replacement;
+    await vi.waitFor(() =>
+      expect(
+        element.shadowRoot!.querySelector("[data-contact-id='3']"),
+      ).not.toBeNull(),
+    );
+    expect(replacement.list).toHaveBeenCalledOnce();
   });
 
   it("is read-only when the grant lacks groups_manage", async () => {

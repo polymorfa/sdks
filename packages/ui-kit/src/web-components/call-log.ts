@@ -5,6 +5,7 @@ import {
   type CallLogSnapshot,
   type CallLogSource,
   type InboxConversation,
+  type PolymorfaClient,
 } from "../browser/index.js";
 import {
   formatDayLabel,
@@ -39,6 +40,16 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
   }
   #source: CallLogSource | undefined;
   #owned: CallLogController | undefined;
+  /** The client the owned API source reads with; unset for a custom source. */
+  #ownedClient: PolymorfaClient | undefined;
+
+  override get client(): PolymorfaClient | undefined {
+    return super.client;
+  }
+  override set client(value: PolymorfaClient | undefined) {
+    super.client = value;
+    if (this.isConnected) this.#ensure();
+  }
 
   get source(): CallLogSource | undefined {
     return this.#source;
@@ -71,14 +82,19 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
       if (external.getSnapshot().status === "idle") void external.load();
       return;
     }
-    if (this.#owned !== undefined) return;
     const client = this.client;
+    if (this.#owned !== undefined) {
+      if (this.#ownedClient === undefined || this.#ownedClient === client)
+        return;
+      this.#dispose();
+    }
     const source =
       this.#source ??
       (client?.can("read_calls") === true
         ? createApiCallLogSource(client)
         : undefined);
     if (source === undefined) return;
+    this.#ownedClient = this.#source === undefined ? client : undefined;
     this.#owned = new CallLogController(source);
     this.controller = this.#owned;
     void this.#owned.load();
@@ -87,6 +103,7 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
     if (this.#owned === undefined) return;
     const owned = this.#owned;
     this.#owned = undefined;
+    this.#ownedClient = undefined;
     if (this.controller === owned) this.controller = undefined;
     owned.dispose();
   }
@@ -226,6 +243,12 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
         more.textContent = this.text("callLog.loadMore");
         more.addEventListener("click", () => void controller?.loadMore());
         const item = element("li");
+        if (snapshot.error !== undefined) {
+          const failed = textElement("p", this.text("callLog.loadError"));
+          failed.className = "pmfa-newchat-state";
+          failed.setAttribute("role", "alert");
+          item.append(failed);
+        }
         item.append(more);
         list.append(item);
       }

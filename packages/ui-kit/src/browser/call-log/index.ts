@@ -101,7 +101,7 @@ export function groupCallLog(entries: readonly CallLogEntry[]): CallLogGroup[] {
       peerKey(head) === peerKey(entry) &&
       head.direction === entry.direction &&
       head.video === entry.video &&
-      (head.outcome === "missed") === (entry.outcome === "missed") &&
+      head.outcome === entry.outcome &&
       dayKey(head.startedAt) === dayKey(entry.startedAt);
     if (same) last!.entries.push(entry);
     else groups.push({ key: entry.id, entries: [entry] });
@@ -118,6 +118,8 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
   readonly source: CallLogSource;
   #abort = new AbortController();
   #unsubscribe: (() => void) | undefined;
+  /** Live updates that arrive while a reload is in flight; newer than its page. */
+  #pending: Map<string, CallLogEntry> | undefined;
 
   constructor(
     source: CallLogSource,
@@ -142,6 +144,7 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
     const abort = new AbortController();
     this.#abort = abort;
     const filter = this.getSnapshot().filter;
+    this.#pending ??= new Map();
     this.transition({
       status: "loading",
       entries: [],
@@ -152,21 +155,24 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
     try {
       const page = await this.source.list(undefined, abort.signal);
       if (abort.signal.aborted) return;
-      this.#set(page.entries, "ready", page.nextCursor);
+      const pending = [...(this.#pending?.values() ?? [])];
+      this.#pending = undefined;
+      this.#set([...pending, ...page.entries], "ready", page.nextCursor);
       this.#unsubscribe?.();
       this.#unsubscribe = this.source.subscribe?.((entry) =>
         this.#upsert(entry),
       );
     } catch (cause) {
-      if (!abort.signal.aborted)
-        this.transition({
-          status: "error",
-          entries: [],
-          filter: this.getSnapshot().filter,
-          groups: [],
-          hasMore: false,
-          error: cause instanceof Error ? cause.message : String(cause),
-        });
+      if (abort.signal.aborted) return;
+      this.#pending = undefined;
+      this.transition({
+        status: "error",
+        entries: [],
+        filter: this.getSnapshot().filter,
+        groups: [],
+        hasMore: false,
+        error: cause instanceof Error ? cause.message : String(cause),
+      });
     }
   }
 
@@ -213,6 +219,10 @@ export class CallLogController extends ObservableController<CallLogSnapshot> {
   }
 
   #upsert(entry: CallLogEntry): void {
+    if (this.#pending !== undefined) {
+      this.#pending.set(entry.id, entry);
+      return;
+    }
     const current = this.getSnapshot();
     if (current.status !== "ready" && current.status !== "loading_more") return;
     this.#set(

@@ -40,6 +40,17 @@ describe("groupCallLog", () => {
       [["a", "b"], ["c"], ["d"], ["e"], ["f"], ["g"], ["h"]],
     );
   });
+
+  it("keeps calls with different outcomes on separate rows", () => {
+    const groups = groupCallLog([
+      entry("a", day, { outcome: "answered" }),
+      entry("b", day - 60_000, { outcome: "failed" }),
+      entry("c", day - 120_000, { outcome: "failed" }),
+    ]);
+    expect(groups.map((group) => group.entries.map((item) => item.id))).toEqual(
+      [["a"], ["b", "c"]],
+    );
+  });
 });
 
 describe("CallLogController", () => {
@@ -89,6 +100,36 @@ describe("CallLogController", () => {
       "new",
     ]);
     expect(log.getSnapshot().entries).toHaveLength(3);
+  });
+
+  it("keeps a live update that arrives while a reload is in flight", async () => {
+    let push: ((entry: CallLogEntry) => void) | undefined;
+    let release: (() => void) | undefined;
+    const ongoing = entry("c1", day, { outcome: "ongoing" });
+    const source: CallLogSource = {
+      list: vi
+        .fn()
+        .mockResolvedValueOnce({ entries: [] })
+        .mockImplementationOnce(
+          () =>
+            new Promise((resolve) => {
+              release = () => resolve({ entries: [ongoing] });
+            }),
+        ),
+      subscribe: (listener) => {
+        push = listener;
+        return () => undefined;
+      },
+    };
+    const log = new CallLogController(source);
+    await log.load();
+    const reload = log.load();
+    push!({ ...ongoing, outcome: "answered", durationSeconds: 30 });
+    release!();
+    await reload;
+    expect(log.getSnapshot().entries).toEqual([
+      expect.objectContaining({ id: "c1", outcome: "answered" }),
+    ]);
   });
 
   it("reports a failed load and appends the next page", async () => {

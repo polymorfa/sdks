@@ -6,6 +6,8 @@ import {
   isQuickLinkUrl,
   createHandlerInboxSource,
   type EventSourceLike,
+  type InboxConversationPage,
+  type InboxDataSource,
   type PolymorfaGrant,
 } from "../../src/browser/index.js";
 
@@ -402,6 +404,114 @@ describe("createHandlerInboxSource", () => {
     }
     send.mockRestore();
     client.dispose();
+  });
+
+  it("keeps a direct message with a sender as direct when isGroup is false", async () => {
+    const { client } = await readyClient({});
+    const source = createHandlerInboxSource(client, {
+      EventSource: FakeEventSource,
+    });
+    const inboxChanges: unknown[] = [];
+    const threadChanges: unknown[] = [];
+    source.subscribe!((change) => inboxChanges.push(change));
+    source.conversation({ id: "chat_1", lastActivity: 0, unreadCount: 0 })
+      .subscribe!((change) => threadChanges.push(change));
+    FakeEventSource.instances[0]!.emit({
+      id: "e1",
+      session: "support",
+      event: "message.received",
+      timestamp: "2026-09-19T10:00:00.000Z",
+      payload: {
+        id: "m1",
+        text: "Hi",
+        fromMe: false,
+        isGroup: false,
+        pushName: "Ada",
+        conversation: {
+          id: "chat_1",
+          phoneNumber: "+15550001",
+          sender: { id: "contact_1" },
+        },
+      },
+    });
+    expect(inboxChanges[0]).toMatchObject({
+      type: "activity",
+      conversationId: "chat_1",
+      name: "Ada",
+      phoneNumber: "+15550001",
+    });
+    expect(inboxChanges[0]).not.toHaveProperty("kind");
+    expect(threadChanges[0]).toMatchObject({ type: "upsert" });
+    expect(
+      (threadChanges[0] as { message: object }).message,
+    ).not.toHaveProperty("sender");
+    source.close!();
+    client.dispose();
+  });
+});
+
+describe("InboxController.load", () => {
+  function deferredSource() {
+    let settle: {
+      resolve: (page: InboxConversationPage) => void;
+      reject: (cause: unknown) => void;
+    };
+    const source: InboxDataSource = {
+      listConversations: () =>
+        new Promise<InboxConversationPage>((resolve, reject) => {
+          settle = { resolve, reject };
+        }),
+      conversation: () => ({
+        load: async () => ({ messages: [] }),
+        subscribe: () => () => undefined,
+        send: vi.fn(),
+      }),
+    };
+    return { source, settle: () => settle };
+  }
+  const grace = { id: "2", name: "Grace", lastActivity: 0, unreadCount: 0 };
+  const ada = { id: "1", name: "Ada", lastActivity: 5, unreadCount: 0 };
+
+  it("keeps a chat opened while the list was loading", async () => {
+    const { source, settle } = deferredSource();
+    const inbox = new InboxController(source);
+    const loading = inbox.load();
+    inbox.open(grace);
+    settle().resolve({ conversations: [ada] });
+    await loading;
+    expect(inbox.getSnapshot()).toMatchObject({
+      status: "ready",
+      selectedId: "2",
+      draft: { id: "2", name: "Grace" },
+    });
+    inbox.dispose();
+  });
+
+  it("drops a draft opened while loading once the list contains it", async () => {
+    const { source, settle } = deferredSource();
+    const inbox = new InboxController(source);
+    const loading = inbox.load();
+    inbox.open(grace);
+    settle().resolve({ conversations: [ada, { ...grace, unreadCount: 2 }] });
+    await loading;
+    expect(inbox.getSnapshot().draft).toBeUndefined();
+    expect(inbox.selected).toMatchObject({ id: "2", unreadCount: 0 });
+    inbox.dispose();
+  });
+
+  it("keeps a chat opened while a failing load was pending", async () => {
+    const { source, settle } = deferredSource();
+    const inbox = new InboxController(source);
+    const loading = inbox.load();
+    inbox.open(grace);
+    settle().reject(new Error("offline"));
+    await loading;
+    expect(inbox.getSnapshot()).toMatchObject({
+      status: "error",
+      selectedId: "2",
+      draft: { id: "2" },
+    });
+    inbox.dispose();
   });
 });
 

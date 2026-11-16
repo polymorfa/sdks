@@ -301,12 +301,24 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     this.#dispose();
   }
   protected override onClientChange(): void {
-    this.#ensure();
+    // A grant that adds or drops `groups_manage` needs a new controller.
+    if (
+      this.#owned !== undefined &&
+      this.#owned.canCreateGroup !== this.#groupsAllowed()
+    )
+      this.#reset();
+    else this.#ensure();
     this.render();
   }
 
   #controller(): NewChatController | undefined {
     return this.configuredController<NewChatController>();
+  }
+  #groupsAllowed(): boolean {
+    return (
+      !this.hasAttribute("no-groups") &&
+      (this.#groups !== undefined || this.client?.can("groups_manage") === true)
+    );
   }
 
   #reset(): void {
@@ -325,6 +337,11 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
     const external = this.#controller();
     if (external !== undefined && external !== this.#owned) {
       this.watchDirectory(external.directory);
+      if (
+        this.hasAttribute("no-groups") &&
+        external.getSnapshot().view !== "contacts"
+      )
+        external.reset();
       external.start();
       return;
     }
@@ -336,12 +353,10 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
         ? createApiContactSource(client)
         : undefined);
     if (contacts === undefined) return;
-    const groups = this.hasAttribute("no-groups")
+    const groups = !this.#groupsAllowed()
       ? undefined
       : (this.#groups ??
-        (client?.can("groups_manage") === true
-          ? createApiGroupSource(client)
-          : undefined));
+        (client === undefined ? undefined : createApiGroupSource(client)));
     this.#owned = new NewChatController({
       contacts,
       ...(groups === undefined ? {} : { groups }),
@@ -366,15 +381,21 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
   }
 
   protected renderContent(
-    snapshot: NewChatSnapshot | undefined,
+    current: NewChatSnapshot | undefined,
   ): readonly Node[] {
     const controller = this.#controller();
     const root = this.decorate(element("section"), "newChat");
     root.className = this.rootClass("pmfa-newchat");
-    if (controller === undefined || snapshot === undefined) {
+    if (controller === undefined || current === undefined) {
       root.setAttribute("aria-busy", "true");
       return [root];
     }
+    // `no-groups` also holds for a host controller that can create groups.
+    const groups = controller.canCreateGroup && !this.hasAttribute("no-groups");
+    const snapshot: NewChatSnapshot =
+      groups || current.view === "contacts"
+        ? current
+        : { ...current, view: "contacts", selected: [] };
     const focused = focusKey(this.root);
     const viewChanged = this.#view !== snapshot.view;
     this.#view = snapshot.view;
@@ -446,7 +467,7 @@ export class PolymorfaNewChatElement extends DirectoryElement<NewChatSnapshot> {
       const body = element("div");
       body.className = "pmfa-newchat-body";
       body.setAttribute("aria-busy", String(directory.status === "loading"));
-      if (snapshot.view === "contacts" && controller.canCreateGroup) {
+      if (snapshot.view === "contacts" && groups) {
         const action = this.decorate(
           document.createElement("button"),
           "newChatAction",
@@ -902,6 +923,8 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
   #directory: ContactDirectoryController | undefined;
   #owned: GroupController | undefined;
   #editing: "name" | "description" | undefined;
+  /** The unsaved value of the field being edited. */
+  #draft = "";
   #adding = false;
   #picked = new Set<string>();
   #confirmLeave = false;
@@ -927,6 +950,11 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
     this.#directory?.dispose();
     this.#directory = undefined;
     this.watchDirectory(undefined);
+    // Load the replacement for participant names and an open picker.
+    if (this.isConnected && this.#controller() !== undefined) {
+      const directory = this.#directoryController();
+      if (directory?.getSnapshot().status === "idle") void directory.load();
+    }
     this.render();
   }
 
@@ -945,6 +973,9 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
   override disconnectedCallback(): void {
     super.disconnectedCallback();
     this.#dispose();
+    // Stop watching before disposing, so reconnecting does not resubscribe to
+    // a disposed directory; #ensure() builds a fresh one on reconnect.
+    this.watchDirectory(undefined);
     this.#directory?.dispose();
     this.#directory = undefined;
   }
@@ -1187,7 +1218,10 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
       input.id = id;
       input.className = "pmfa-input";
       input.dataset.focusKey = `edit:${kind}`;
-      input.value = value;
+      input.value = this.#draft;
+      input.addEventListener("input", () => {
+        this.#draft = input.value;
+      });
       input.maxLength = kind === "name" ? 100 : 2048;
       if (input instanceof HTMLTextAreaElement) input.rows = 3;
       else input.required = true;
@@ -1245,6 +1279,7 @@ export class PolymorfaGroupDetailsElement extends DirectoryElement<GroupSnapshot
         "pmfa-btn pmfa-btn-ghost",
         () => {
           this.#editing = kind;
+          this.#draft = value;
           this.render();
         },
       );

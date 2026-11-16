@@ -88,6 +88,106 @@ describe("<pmfa-call-log>", () => {
     expect(log.shadowRoot!.querySelector(".pmfa-call-more")).toBeNull();
   });
 
+  it("shows a failed page beside the loaded calls", async () => {
+    defineUiKit({ client: client() });
+    const log = document.createElement(
+      "pmfa-call-log",
+    ) as PolymorfaCallLogElement;
+    log.source = {
+      list: async (cursor?: string) => {
+        if (cursor !== undefined) throw new Error("offline");
+        return { entries: [entries[1]!], nextCursor: "older" };
+      },
+    };
+    document.body.append(log);
+    await vi.waitFor(() =>
+      expect(
+        log.shadowRoot!.querySelector("[data-call-id='c']"),
+      ).not.toBeNull(),
+    );
+    expect(log.shadowRoot!.querySelector("[role=alert]")).toBeNull();
+    log
+      .shadowRoot!.querySelector<HTMLButtonElement>(".pmfa-call-more")!
+      .click();
+    await vi.waitFor(() =>
+      expect(log.shadowRoot!.querySelector("[role=alert]")?.textContent).toBe(
+        "Unable to load calls",
+      ),
+    );
+    expect(log.shadowRoot!.querySelector("[data-call-id='c']")).not.toBeNull();
+    expect(log.shadowRoot!.querySelector(".pmfa-call-more")).not.toBeNull();
+  });
+
+  it("reads with the replacement client when the client changes", async () => {
+    const callsClient = (callId: string) => {
+      const fetch = vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input instanceof Request ? input.url : input);
+        if (url === "/api/polymorfa/token")
+          return Response.json({
+            value: "pmfa_ct_Zml4dHVyZQ",
+            audience: "browser",
+            expiresAt: Date.now() + 600_000,
+            grant: {
+              session: "support",
+              conversations: "all",
+              allow: ["read_calls"],
+            },
+          });
+        return Response.json({
+          success: true,
+          data: [
+            {
+              callId,
+              projectId: null,
+              sessionId: "support",
+              direction: "inbound",
+              upstream: "linked_device",
+              outcome: "missed",
+              state: "ended",
+              hasVideo: false,
+              peer: { id: callId, phoneNumber: "+15550100" },
+              startedAt: new Date(now).toISOString(),
+              connectedAt: null,
+              endedAt: null,
+              durationSeconds: null,
+              endReason: null,
+            },
+          ],
+          nextCursor: null,
+        });
+      });
+      return {
+        fetch,
+        client: new PolymorfaClient({ fetch, baseUrl: "https://api.example" }),
+      };
+    };
+    const first = callsClient("first");
+    const second = callsClient("second");
+    await first.client.refresh();
+    await second.client.refresh();
+    const log = document.createElement(
+      "pmfa-call-log",
+    ) as PolymorfaCallLogElement;
+    log.client = first.client;
+    document.body.append(log);
+    await vi.waitFor(() =>
+      expect(
+        log.shadowRoot!.querySelector("[data-call-id='first']"),
+      ).not.toBeNull(),
+    );
+    const replaced = log.controller;
+    log.client = second.client;
+    await vi.waitFor(() =>
+      expect(
+        log.shadowRoot!.querySelector("[data-call-id='second']"),
+      ).not.toBeNull(),
+    );
+    expect(log.controller).not.toBe(replaced);
+    expect(log.shadowRoot!.querySelector("[data-call-id='first']")).toBeNull();
+    expect(second.fetch).toHaveBeenCalledTimes(2);
+    expect(first.fetch).toHaveBeenCalledTimes(2);
+  });
+
   it("renders calls and fires pmfa-open and pmfa-call", async () => {
     defineUiKit({ client: client() });
     const log = document.createElement(

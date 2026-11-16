@@ -909,7 +909,61 @@ const SETTINGS: readonly {
  * decides whether this account may make each change; a refusal shows as an
  * error and the group reloads after every change that succeeds.
  */
-export function GroupDetails({
+export function GroupDetails(props: GroupDetailsProps) {
+  const client = useOptionalPolymorfaClient();
+  const permissions = usePermissions();
+  const configuration = usePolymorfa();
+  const slots = useSlots(props.classNames);
+  const root = useShell(slots, "groupDetails", "pmfa-group", props.className);
+  if (props.controller === undefined && props.groupId === undefined)
+    throw new Error("<GroupDetails/> needs a controller or a groupId.");
+  if (
+    props.controller === undefined &&
+    props.source === undefined &&
+    client === undefined
+  )
+    throw new Error(
+      '<GroupDetails/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a source.',
+    );
+  // An API-backed group is created only once the grant is known, so whether
+  // changes are offered follows the token's `groups_manage`.
+  const needsApi = props.controller === undefined && props.source === undefined;
+  if (needsApi && permissions.snapshot?.grant === undefined) {
+    const failed =
+      permissions.status === "error" ||
+      permissions.status === "unauthenticated";
+    return (
+      <section {...root} data-pmfa="group-details" aria-busy={!failed}>
+        <p className="pmfa-newchat-state" role={failed ? "alert" : "status"}>
+          {text(configuration, failed ? "group.loadError" : "group.loading")}
+        </p>
+        {failed && (
+          <button
+            type="button"
+            className="pmfa-btn"
+            onClick={() => void client!.refresh().catch(() => undefined)}
+          >
+            {text(configuration, "common.retry")}
+          </button>
+        )}
+        {props.onClose !== undefined && (
+          <button type="button" className="pmfa-btn" onClick={props.onClose}>
+            {text(configuration, "common.close")}
+          </button>
+        )}
+      </section>
+    );
+  }
+  // An owned controller belongs to one group: a new groupId remounts it.
+  return (
+    <GroupDetailsPanel
+      key={props.controller === undefined ? props.groupId : undefined}
+      {...props}
+    />
+  );
+}
+
+function GroupDetailsPanel({
   controller,
   groupId,
   source,
@@ -923,12 +977,6 @@ export function GroupDetails({
 }: GroupDetailsProps) {
   const client = useOptionalPolymorfaClient();
   const permissions = usePermissions();
-  if (controller === undefined && groupId === undefined)
-    throw new Error("<GroupDetails/> needs a controller or a groupId.");
-  if (controller === undefined && source === undefined && client === undefined)
-    throw new Error(
-      '<GroupDetails/> needs <PolymorfaProvider tokenEndpoint="/api/polymorfa/token"> or a source.',
-    );
   const canManage =
     source !== undefined ||
     (client !== undefined && permissions.can("groups_manage"));

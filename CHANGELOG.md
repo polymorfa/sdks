@@ -55,6 +55,20 @@
   caches backend history, so later local reads still name each sender, without
   ever using an author's name as the group's name.
   `MessageInput` gains optional `senderId` and `pushName`.
+- UI Kit: `<CallLog/>` and `<GroupDetails/>` also wait for the first grant
+  before loading, so manage controls appear once `groups_manage` arrives.
+  `<GroupDetails/>` follows a new `groupId` instead of changing the first
+  group. The call log keeps calls with different outcomes on separate rows,
+  keeps live updates that arrive during a reload, shows a failed page beside
+  the loaded calls, and `<pmfa-call-log>` reads with a replacement client.
+  The Inbox keeps a chat opened while its list loads, keeps a direct message
+  with `isGroup: false` direct, opens chats from cached panels in the current
+  controller, gives open panels a new configuration and resets the group-info
+  toggle when the panel closes. `<pmfa-new-chat>` offers New group once a
+  later grant allows it and honours `no-groups` for host controllers.
+  `<pmfa-group-details>` keeps an unsaved edit across renders, loads
+  replacement contacts at once and can be moved in the document. A group read
+  that finishes after leaving no longer marks the group ready again.
 
 - Breaking: Test number phone and event methods use the Number-scoped routes
   in API contract revision `f180dc1ee2`. `testing.getPhone`, `sendPhoneMessage`

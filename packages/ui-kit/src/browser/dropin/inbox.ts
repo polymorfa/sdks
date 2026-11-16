@@ -130,17 +130,21 @@ export class InboxController extends ObservableController<InboxSnapshot> {
     this.#abort.abort();
     this.#abort = new AbortController();
     const signal = this.#abort.signal;
-    const { selectedId, draft } = this.getSnapshot();
+    const before = this.getSnapshot();
     this.transition({
       status: "loading",
       conversations: [],
       hasMore: false,
-      ...(selectedId === undefined ? {} : { selectedId }),
-      ...(draft === undefined ? {} : { draft }),
+      ...(before.selectedId === undefined
+        ? {}
+        : { selectedId: before.selectedId }),
+      ...(before.draft === undefined ? {} : { draft: before.draft }),
     });
     try {
       const page = await this.source.listConversations(undefined, signal);
       if (signal.aborted) return;
+      // `open()` or `select()` may have run while the list was loading.
+      const { selectedId, draft } = this.getSnapshot();
       const listed =
         draft !== undefined &&
         page.conversations.some((row) => row.id === draft.id);
@@ -162,15 +166,16 @@ export class InboxController extends ObservableController<InboxSnapshot> {
         this.#apply(change),
       );
     } catch (cause) {
-      if (!signal.aborted)
-        this.transition({
-          ...(draft === undefined ? {} : { draft }),
-          status: "error",
-          conversations: [],
-          hasMore: false,
-          error: message(cause),
-          ...(selectedId === undefined ? {} : { selectedId }),
-        });
+      if (signal.aborted) return;
+      const { selectedId, draft } = this.getSnapshot();
+      this.transition({
+        ...(draft === undefined ? {} : { draft }),
+        status: "error",
+        conversations: [],
+        hasMore: false,
+        error: message(cause),
+        ...(selectedId === undefined ? {} : { selectedId }),
+      });
     }
   }
 
@@ -604,7 +609,8 @@ function messageFromEvent(
 function isGroupPayload(payload: Record<string, unknown> | undefined): boolean {
   return (
     payload?.isGroup === true ||
-    record(record(payload?.conversation)?.sender) !== undefined
+    (payload?.isGroup !== false &&
+      record(record(payload?.conversation)?.sender) !== undefined)
   );
 }
 

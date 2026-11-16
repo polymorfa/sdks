@@ -58,6 +58,7 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   host.remove();
+  vi.unstubAllGlobals();
 });
 
 async function render(node: React.ReactNode) {
@@ -88,6 +89,87 @@ describe("<CallLog/>", () => {
     expect(list).toHaveBeenLastCalledWith("older", expect.any(AbortSignal));
     expect(host.querySelector("[data-call-id='a']")).not.toBeNull();
     expect(host.querySelector(".pmfa-call-more")).toBeNull();
+  });
+
+  it("shows a failed page beside the loaded calls", async () => {
+    const list = vi.fn(async (cursor?: string) => {
+      if (cursor !== undefined) throw new Error("offline");
+      return { entries: [entries[2]!], nextCursor: "older" };
+    });
+    await render(<CallLog source={{ list }} />);
+    expect(host.querySelector("[role=alert]")).toBeNull();
+    await act(async () =>
+      host.querySelector<HTMLButtonElement>(".pmfa-call-more")!.click(),
+    );
+    expect(host.querySelector("[role=alert]")?.textContent).toBe(
+      "Unable to load calls",
+    );
+    expect(host.querySelector("[data-call-id='c']")).not.toBeNull();
+    expect(host.querySelector(".pmfa-call-more")).not.toBeNull();
+  });
+
+  it("waits for the initial grant before loading calls", async () => {
+    let finish!: (response: Response) => void;
+    const token = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input) === "/api/polymorfa/token") return token;
+      expect(new URL(String(input)).pathname).toBe("/messaging/support/calls");
+      return Response.json({
+        success: true,
+        data: [
+          {
+            callId: "c1",
+            projectId: null,
+            sessionId: "support",
+            direction: "inbound",
+            upstream: "linked_device",
+            outcome: "missed",
+            state: "ended",
+            hasVideo: false,
+            peer: { id: "15550100", phoneNumber: "+15550100" },
+            startedAt: new Date(now).toISOString(),
+            connectedAt: null,
+            endedAt: null,
+            durationSeconds: null,
+            endReason: null,
+          },
+        ],
+        nextCursor: null,
+      });
+    });
+    vi.stubGlobal("fetch", fetch);
+    await act(async () =>
+      root.render(
+        <PolymorfaProvider tokenEndpoint="/api/polymorfa/token">
+          <CallLog />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(host.querySelector("[role=alert]")).toBeNull();
+    expect(host.querySelector("[role=status]")?.textContent).toContain(
+      "Loading",
+    );
+    await act(async () =>
+      finish(
+        Response.json({
+          value: "pmfa_ct_Zml4dHVyZQ",
+          audience: "browser",
+          expiresAt: Date.now() + 600_000,
+          grant: {
+            session: "support",
+            conversations: "all",
+            allow: ["read_calls"],
+          },
+        }),
+      ),
+    );
+    for (let index = 0; index < 4; index += 1) await act(async () => undefined);
+    expect(host.querySelector("[data-call-id='c1']")).not.toBeNull();
+    expect(host.querySelector("[role=alert]")).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(2);
   });
 
   it("merges repeat calls, marks missed ones and opens the chat", async () => {

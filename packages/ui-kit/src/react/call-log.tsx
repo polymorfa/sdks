@@ -129,7 +129,67 @@ export interface CallLogProps {
  * person merged with a count, missed incoming calls in red, an All/Missed
  * filter and call back.
  */
-export function CallLog({
+export function CallLog(props: CallLogProps) {
+  const client = useOptionalPolymorfaClient();
+  const permissions = usePermissions();
+  const configuration = usePolymorfa();
+  const slots = useSlots(props.classNames);
+  const root = useShell(
+    slots,
+    "callLog",
+    "pmfa-inbox-list pmfa-call-log",
+    props.className,
+  );
+  const headingId = useId();
+  // An API-backed log is created only once the grant is known, so its first
+  // load is not refused for a permission the token is about to carry.
+  const needsApi =
+    props.controller === undefined &&
+    props.source === undefined &&
+    client !== undefined;
+  if (needsApi && permissions.snapshot?.grant === undefined) {
+    const failed =
+      permissions.status === "error" ||
+      permissions.status === "unauthenticated";
+    return (
+      <section
+        {...root}
+        aria-labelledby={headingId}
+        aria-busy={!failed}
+        data-pmfa="call-log"
+      >
+        <div className="pmfa-inbox-head">
+          <div className="pmfa-inbox-heading">
+            <h2 className="pmfa-inbox-title" id={headingId}>
+              {props.title ?? text(configuration, "callLog.title")}
+            </h2>
+            {props.headerActions}
+          </div>
+        </div>
+        <div className="pmfa-newchat-state" role={failed ? "alert" : "status"}>
+          <p>
+            {text(
+              configuration,
+              failed ? "callLog.loadError" : "callLog.loading",
+            )}
+          </p>
+          {failed && (
+            <button
+              type="button"
+              className="pmfa-btn"
+              onClick={() => void client.refresh().catch(() => undefined)}
+            >
+              {text(configuration, "common.retry")}
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  }
+  return <CallLogPanel {...props} />;
+}
+
+function CallLogPanel({
   controller,
   source,
   onOpen,
@@ -254,6 +314,11 @@ export function CallLog({
           ))}
           {snapshot.hasMore && (
             <li>
+              {snapshot.error !== undefined && (
+                <p className="pmfa-newchat-state" role="alert">
+                  {text(configuration, "callLog.loadError")}
+                </p>
+              )}
               <button
                 type="button"
                 className="pmfa-btn pmfa-btn-ghost pmfa-call-more"

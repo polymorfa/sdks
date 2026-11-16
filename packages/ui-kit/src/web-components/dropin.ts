@@ -162,6 +162,7 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
   #composing = false;
   #newChat: PolymorfaNewChatElement | undefined;
   #infoOpen = false;
+  #syncInfoToggle: (() => void) | undefined;
   #info: PolymorfaGroupDetailsElement | undefined;
   #callLogSource: CallLogSource | undefined;
   #view: "chats" | "calls" = "chats";
@@ -285,6 +286,11 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       this.#list = element("section");
       this.#thread = undefined;
       this.#threadFor = undefined;
+      // Panels read configuration only when created, and moving them to the
+      // new shell remounts them anyway, so build them again.
+      this.#calls = undefined;
+      this.#newChat = undefined;
+      this.#info = undefined;
     }
     const shell = this.#shell;
     shell.className = this.rootClass("pmfa-inbox");
@@ -302,11 +308,11 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     const children: Node[] = [];
     const newChat =
       this.#composing && controller !== undefined
-        ? this.#renderNewChat(controller)
+        ? this.#renderNewChat()
         : undefined;
     const calls =
       this.#view === "calls" && controller !== undefined
-        ? this.#renderCalls(controller)
+        ? this.#renderCalls()
         : undefined;
     if (calls !== undefined) children.push(calls);
     else if (newChat !== undefined) children.push(newChat);
@@ -669,7 +675,7 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     return group;
   }
 
-  #renderCalls(controller: InboxController): HTMLElement | undefined {
+  #renderCalls(): HTMLElement | undefined {
     if (!this.#canCalls()) return undefined;
     if (this.#calls === undefined) {
       const log = document.createElement(
@@ -682,7 +688,8 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       log.addEventListener("pmfa-open", (event) => {
         event.stopPropagation();
         const conversation = (event as CustomEvent<InboxConversation>).detail;
-        controller.open(conversation);
+        // The panel outlives a replaced controller, so resolve it now.
+        this.configuredController<InboxController>()?.open(conversation);
         this.#infoOpen = false;
         this.render();
         this.dispatchEvent(
@@ -708,7 +715,7 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     );
   }
 
-  #renderNewChat(controller: InboxController): HTMLElement | undefined {
+  #renderNewChat(): HTMLElement | undefined {
     if (!this.#canNewChat()) return undefined;
     if (this.#newChat === undefined) {
       const panel = document.createElement(
@@ -723,7 +730,8 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
       panel.addEventListener("pmfa-open", (event) => {
         event.stopPropagation();
         const conversation = (event as CustomEvent<InboxConversation>).detail;
-        controller.open(conversation);
+        // The panel outlives a replaced controller, so resolve it now.
+        this.configuredController<InboxController>()?.open(conversation);
         this.#composing = false;
         this.#infoOpen = false;
         this.render();
@@ -802,9 +810,12 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
     }
     const canSend = this.#can("send_message", "composer");
     const key = `${conversation.id}:${canSend}:${conversation.kind ?? ""}:${this.#canGroups()}`;
-    if (this.#thread !== undefined && this.#threadFor === key)
+    if (this.#thread !== undefined && this.#threadFor === key) {
+      this.#syncInfoToggle?.();
       return this.#thread;
+    }
     this.#threadFor = key;
+    this.#syncInfoToggle = undefined;
     this.#composerController?.dispose();
     this.#composerController = undefined;
     const conversationController = controller.conversation(conversation);
@@ -852,6 +863,7 @@ export class PolymorfaInboxElement extends ClientElement<InboxSnapshot> {
         );
       };
       sync();
+      this.#syncInfoToggle = sync;
       toggle.append(icon("info"));
       toggle.addEventListener("click", () => {
         this.#infoOpen = !this.#infoOpen;

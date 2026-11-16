@@ -405,6 +405,71 @@ describe("<GroupDetails/>", () => {
     expect(host.textContent).toContain("You exited this group.");
   });
 
+  it("waits for the initial grant before offering API-backed changes", async () => {
+    let finish!: (response: Response) => void;
+    const token = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    const group = groupSource().current;
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input) === "/api/polymorfa/token") return token;
+      expect(new URL(String(input)).pathname).toContain("/groups/120363");
+      return Response.json({ success: true, data: group });
+    });
+    vi.stubGlobal("fetch", fetch);
+    await act(async () =>
+      root.render(
+        <PolymorfaProvider tokenEndpoint="/api/polymorfa/token">
+          <GroupDetails groupId="120363" />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(host.querySelector("[role=status]")?.textContent).toContain(
+      "Loading group",
+    );
+    await act(async () =>
+      finish(
+        Response.json({
+          value: "pmfa_ct_Zml4dHVyZQ",
+          audience: "browser",
+          expiresAt: Date.now() + 600_000,
+          grant: {
+            session: "support",
+            conversations: "all",
+            allow: ["groups_read", "groups_manage"],
+          },
+        }),
+      ),
+    );
+    await settle();
+    expect(host.textContent).toContain("Launch");
+    expect(host.querySelector("[role=alert]")).toBeNull();
+    expect(byLabel("Edit: Group name")).not.toBeNull();
+    expect(buttonText("Exit group")).not.toBeUndefined();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
+  it("follows a new groupId instead of changing the first group", async () => {
+    const source = groupSource();
+    const other: BrowserGroup = { ...source.current, id: "777", name: "Ops" };
+    source.retrieve = vi.fn(async (id: string) =>
+      id === "777" ? other : source.current,
+    );
+    await render(<GroupDetails groupId="120363" source={source} />);
+    expect(host.textContent).toContain("Launch");
+    await render(<GroupDetails groupId="777" source={source} />);
+    expect(source.retrieve).toHaveBeenLastCalledWith("777", expect.anything());
+    expect(host.textContent).toContain("Ops");
+    expect(host.textContent).not.toContain("Launch");
+    await act(async () => buttonText("Remove from group")!.click());
+    expect(source.participants).toHaveBeenCalledWith(
+      "777",
+      "remove",
+      expect.anything(),
+    );
+  });
+
   it("shows a refusal from WhatsApp without losing the group", async () => {
     const source = groupSource();
     source.participants = vi.fn(async () => {

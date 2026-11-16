@@ -196,12 +196,16 @@ export class GroupController extends ObservableController<GroupSnapshot> {
       () => this.source.leave(this.groupId),
       false,
     );
-    if (ok)
+    if (ok) {
+      // A read still in flight must not bring the group back as ready.
+      this.#abort.abort();
+      this.#generation += 1;
       this.transition({
         ...base(this.getSnapshot()),
         status: "left",
         done: "leave",
       });
+    }
     return ok;
   }
 
