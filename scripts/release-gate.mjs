@@ -274,12 +274,7 @@ export function previewProvenance(env = process.env) {
   };
   return validatePreview(preview);
 }
-export function releaseSource(env = process.env) {
-  assert.equal(
-    env.GITHUB_REF,
-    "refs/heads/main",
-    "SDK publication runs only from main",
-  );
+function sourceRevision() {
   assert.equal(
     execFileSync("git", ["status", "--porcelain"], {
       cwd: root,
@@ -292,6 +287,28 @@ export function releaseSource(env = process.env) {
     cwd: root,
     encoding: "utf8",
   }).trim();
+  return sha;
+}
+export function verifySourceProvenance(provenance) {
+  assert.equal(
+    provenance.sourceSha,
+    sourceRevision(),
+    "Package provenance source differs from checkout",
+  );
+  assert.equal(
+    provenance.fingerprint,
+    publicationFingerprint(),
+    "Package provenance fingerprint differs from checkout",
+  );
+  return provenance;
+}
+export function releaseSource(env = process.env) {
+  assert.equal(
+    env.GITHUB_REF,
+    "refs/heads/main",
+    "SDK publication runs only from main",
+  );
+  const sha = sourceRevision();
   assert.equal(
     sha,
     env.GITHUB_SHA,

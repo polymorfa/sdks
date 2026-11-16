@@ -3,6 +3,7 @@ import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { dotnetPackages } from "./native-packages.mjs";
 import { validateReleaseAuthorization } from "./release-policy.mjs";
+import { verifySourceProvenance } from "./release-gate.mjs";
 const root = resolve(import.meta.dirname, "..");
 const language = process.argv[2];
 assert.ok(["go", "python", "php", "dotnet", "rust"].includes(language));
@@ -12,6 +13,7 @@ const receiptPath = resolve(
 );
 const provenance = JSON.parse(readFileSync(receiptPath));
 validateReleaseAuthorization(provenance);
+verifySourceProvenance(provenance);
 const version = provenance.versions.semver;
 const pkg = join(root, "packages", language);
 function replace(file, pattern, replacement) {

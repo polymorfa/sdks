@@ -27,6 +27,7 @@ import {
   validateReleaseAuthorization,
   validateReleaseVersion,
 } from "./release-policy.mjs";
+import { verifySourceProvenance } from "./release-gate.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const rootManifest = JSON.parse(
@@ -163,6 +164,7 @@ function pack(version, out) {
   validateReleaseVersion(provenance.channel, version);
   if (provenance.packageVersion !== version)
     fail("Package provenance mismatch");
+  verifySourceProvenance(provenance);
   const { pub, pubNames } = loadPackages();
   const order = publishOrder(pub, pubNames);
   const sourceVersions = new Set(order.map((p) => p.json.version));

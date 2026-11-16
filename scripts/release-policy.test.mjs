@@ -1,7 +1,14 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { readFileSync, mkdirSync, mkdtempSync, copyFileSync } from "node:fs";
-import { execFileSync } from "node:child_process";
+import {
+  readFileSync,
+  mkdirSync,
+  mkdtempSync,
+  copyFileSync,
+  writeFileSync,
+  existsSync,
+} from "node:fs";
+import { execFileSync, spawnSync } from "node:child_process";
 import { join } from "node:path";
 import { homedir } from "node:os";
 import { pathToFileURL } from "node:url";
@@ -192,5 +199,134 @@ test("release source refuses a dirty, mismatched or unmerged revision", async ()
   assert.throws(
     () => releaseSource({ ...manual, GITHUB_SHA: unmerged }),
     /must be clean/,
+  );
+});
+
+test("pack rejects foreign source and fingerprints before changing package inputs", async () => {
+  const parent = join(homedir(), ".polymorfa-agent-work/sdk-preview-tests");
+  mkdirSync(parent, { recursive: true });
+  const dir = mkdtempSync(join(parent, "pack-binding-"));
+  const source = join(dir, "source");
+  mkdirSync(join(source, "scripts"), { recursive: true });
+  mkdirSync(join(source, "packages/example/dist"), { recursive: true });
+  for (const name of [
+    "dev-release.mjs",
+    "release-gate.mjs",
+    "release-policy.mjs",
+    "check-coverage.mjs",
+    "interactive-supplement.mjs",
+    "native-supplements.mjs",
+  ])
+    copyFileSync(
+      new URL(`./${name}`, import.meta.url),
+      join(source, "scripts", name),
+    );
+  writeFileSync(join(source, ".gitignore"), "dist/\n");
+  writeFileSync(
+    join(source, "package.json"),
+    JSON.stringify({
+      name: "synthetic-release-fixture",
+      private: true,
+      workspaces: ["packages/example"],
+    }),
+  );
+  const manifest = {
+    name: "@polymorfa/example",
+    version: "0.1.0-dev.0",
+    type: "module",
+    files: ["dist"],
+    exports: { ".": "./dist/index.js" },
+    repository: {
+      url: "git+https://github.com/polymorfa/sdks.git",
+      directory: "packages/example",
+    },
+  };
+  writeFileSync(
+    join(source, "packages/example/package.json"),
+    JSON.stringify(manifest),
+  );
+  const code = 'export const version = "0.1.0-dev.0";\n';
+  writeFileSync(join(source, "packages/example/dist/index.js"), code);
+  const git = (...args) =>
+    execFileSync("git", args, {
+      cwd: source,
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "pipe"],
+    }).trim();
+  git("init", "-q", "-b", "main");
+  git("add", ".");
+  git(
+    "-c",
+    "user.name=SDK test",
+    "-c",
+    "user.email=sdk-test@example.invalid",
+    "commit",
+    "-qm",
+    "Synthetic package source",
+  );
+  const tools = await import(
+    pathToFileURL(join(source, "scripts/release-gate.mjs")).href
+  );
+  const receipt = {
+    ...fixture(),
+    sourceSha: git("rev-parse", "HEAD"),
+    fingerprint: tools.publicationFingerprint(),
+  };
+  tools.verifySourceProvenance(receipt);
+  const path = join(dir, "receipt.json"),
+    output = join(dir, "packs");
+  for (const delta of [
+    { sourceSha: "f".repeat(40) },
+    { fingerprint: "f".repeat(64) },
+  ]) {
+    writeFileSync(path, JSON.stringify({ ...receipt, ...delta }));
+    const result = spawnSync(
+      process.execPath,
+      [
+        "scripts/dev-release.mjs",
+        "pack",
+        "--version",
+        receipt.packageVersion,
+        "--out",
+        output,
+        "--provenance",
+        path,
+      ],
+      { cwd: source, encoding: "utf8" },
+    );
+    assert.notEqual(result.status, 0);
+    assert.match(
+      result.stderr,
+      /provenance (source|fingerprint) differs from checkout/,
+    );
+    assert.deepEqual(
+      JSON.parse(readFileSync(join(source, "packages/example/package.json"))),
+      manifest,
+    );
+    assert.equal(
+      readFileSync(join(source, "packages/example/dist/index.js"), "utf8"),
+      code,
+    );
+    assert.equal(existsSync(output), false);
+  }
+  writeFileSync(path, JSON.stringify(receipt));
+  const result = spawnSync(
+    process.execPath,
+    [
+      "scripts/dev-release.mjs",
+      "pack",
+      "--version",
+      receipt.packageVersion,
+      "--out",
+      output,
+      "--provenance",
+      path,
+    ],
+    { cwd: source, encoding: "utf8" },
+  );
+  assert.equal(result.status, 0, result.stdout + result.stderr);
+  assert.equal(
+    JSON.parse(readFileSync(join(output, "manifest.json")))[0].version,
+    receipt.packageVersion,
   );
 });
