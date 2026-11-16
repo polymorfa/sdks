@@ -185,6 +185,10 @@ export interface MessageInput {
   readonly replyTo?: string;
   readonly status?: StoredMessageStatus;
   readonly attachments?: readonly StoredAttachment[];
+  /** Author of an inbound group message, when it differs from the chat. */
+  readonly senderId?: string;
+  /** The author's WhatsApp display name. Sealed like other message content. */
+  readonly pushName?: string;
 }
 
 export interface ListOptions {
@@ -833,6 +837,8 @@ export async function createPolymorfaStore(
                 clientId: message.clientId,
                 replyTo: message.replyTo,
                 attachments: message.attachments,
+                senderId: message.senderId,
+                pushName: message.pushName,
               }),
               // History reads are older than any live event for the message.
               message.createdAt,

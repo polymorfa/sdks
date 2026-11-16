@@ -49,6 +49,11 @@
   action label ("Turn camera on", pressed).
 - UI Kit Inbox: with a custom `source` and no provider client, opening a
   conversation with a phone number no longer throws from the call button.
+- UI Kit: `<ContactList/>` without a custom source waits for the token's
+  first grant before loading, as `<NewChat/>` does, instead of failing with a
+  permission error. The browser store keeps a group message's author when it
+  caches backend history, so later local reads still name each sender.
+  `MessageInput` gains optional `senderId` and `pushName`.
 
 - UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
   styling slots. It supports `classNames` and unstyled mode without a host

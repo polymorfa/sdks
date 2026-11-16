@@ -79,6 +79,15 @@ function toInput(
     ...(message.attachments === undefined
       ? {}
       : { attachments: message.attachments }),
+    // Keep group authors so later local reads still name each message's sender.
+    ...(message.sender === undefined
+      ? {}
+      : {
+          senderId: message.sender.id,
+          ...(message.sender.name === undefined
+            ? {}
+            : { pushName: message.sender.name }),
+        }),
   };
 }
 

@@ -582,6 +582,54 @@ describe("public contact lists", () => {
     expect(onSelect).toHaveBeenCalledWith(contacts[0]);
   });
 
+  it("ContactList waits for the initial grant before loading contacts", async () => {
+    let finish!: (response: Response) => void;
+    const token = new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+    const fetch = vi.fn(async (input: RequestInfo | URL) => {
+      if (String(input) === "/api/polymorfa/token") return token;
+      expect(new URL(String(input)).pathname).toContain("/contacts");
+      return Response.json({
+        success: true,
+        data: [{ id: "1", name: "Ada Lovelace", phoneNumber: "+15550001" }],
+      });
+    });
+    vi.stubGlobal("fetch", fetch);
+    await act(async () =>
+      root.render(
+        <PolymorfaProvider tokenEndpoint="/api/polymorfa/token">
+          <ContactList onSelect={() => undefined} />
+        </PolymorfaProvider>,
+      ),
+    );
+    expect(fetch).toHaveBeenCalledTimes(1);
+    expect(host.querySelector("[role=alert]")).toBeNull();
+    expect(host.querySelector("[role=status]")?.textContent).toContain(
+      "Loading",
+    );
+    await act(async () =>
+      finish(
+        Response.json({
+          value: "pmfa_ct_Zml4dHVyZQ",
+          audience: "browser",
+          expiresAt: Date.now() + 600_000,
+          grant: {
+            session: "support",
+            conversations: "all",
+            allow: ["read_contact"],
+          },
+        }),
+      ),
+    );
+    await settle();
+    expect(host.querySelector("[data-contact-id='1']")?.textContent).toContain(
+      "Ada Lovelace",
+    );
+    expect(host.querySelector("[role=alert]")).toBeNull();
+    expect(fetch).toHaveBeenCalledTimes(2);
+  });
+
   it("ContactList loads, searches and selects", async () => {
     const onSelect = vi.fn();
     await render(

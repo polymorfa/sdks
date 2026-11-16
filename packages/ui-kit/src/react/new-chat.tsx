@@ -214,7 +214,51 @@ export interface ContactListProps {
  * The account's Contacts list on its own: searchable by name (case and
  * accents folded) or number, with loading, empty, error and retry states.
  */
-export function ContactList({
+export function ContactList(props: ContactListProps) {
+  const client = useOptionalPolymorfaClient();
+  const permissions = usePermissions();
+  const configuration = usePolymorfa();
+  const slots = useSlots(props.classNames);
+  const root = useShell(
+    slots,
+    "contactDirectory",
+    "pmfa-newchat pmfa-contacts",
+    props.className,
+  );
+  // An API-backed directory is created only once the grant is known, so its
+  // first load is not refused for a permission the token is about to carry.
+  const needsApi =
+    props.controller === undefined &&
+    props.contacts === undefined &&
+    client !== undefined;
+  if (needsApi && permissions.snapshot?.grant === undefined) {
+    const failed =
+      permissions.status === "error" ||
+      permissions.status === "unauthenticated";
+    return (
+      <section {...root} data-pmfa="contact-list" aria-busy={!failed}>
+        <p className="pmfa-newchat-state" role={failed ? "alert" : "status"}>
+          {text(
+            configuration,
+            failed ? "newChat.loadError" : "newChat.loading",
+          )}
+        </p>
+        {failed && (
+          <button
+            type="button"
+            className="pmfa-btn"
+            onClick={() => void client.refresh().catch(() => undefined)}
+          >
+            {text(configuration, "common.retry")}
+          </button>
+        )}
+      </section>
+    );
+  }
+  return <ContactListPanel {...props} />;
+}
+
+function ContactListPanel({
   controller,
   contacts,
   onSelect,
