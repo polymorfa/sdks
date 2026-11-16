@@ -179,7 +179,7 @@ it("preserves partial drip PATCH on both APIs and idempotent enrollment response
   expect(campaign.enrollmentOpen).toBe(false);
   expect(campaign.segmentSnapshot?.revision).toBe(3);
 });
-it("pins PATCH defaults, four-range step windows, and segment bounds to merged dev", () => {
+it("pins PATCH defaults, four-range step windows, and segment bounds to the checked source", () => {
   const contract = JSON.parse(
     readFileSync(
       new URL(
@@ -189,7 +189,7 @@ it("pins PATCH defaults, four-range step windows, and segment bounds to merged d
       "utf8",
     ),
   );
-  expect(contract.commit).toBe("8354399b827d9127210b9759cd055586e967449e");
+  expect(contract.commit).toBe("23f91923668cdbb832642e471103568648254fc4");
   for (const source of Object.values(contract.sources) as {
     sourceSha256: string;
     schemas: Record<string, { properties: Record<string, unknown> }>;
