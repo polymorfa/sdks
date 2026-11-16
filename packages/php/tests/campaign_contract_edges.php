@@ -87,21 +87,21 @@ ccCheck($ccQueryProject === $ccCustomer && count($ccObservations()) === 2, 'Flat
 
 foreach ([null, new Polymorfa\RequestOptions(idempotencyKey: 'caller-key')] as $ccUnsafeOptions) {
     $ccConfigure(['method' => 'POST', 'path' => '/platform/campaign-reply-flows', 'body' => ['projectId' => $ccProject, ...$ccFlowInput], 'response' => $ccJson($ccFlowData), 'statuses' => [503, 200], 'headers' => ['Retry-After' => '0']]);
-    ccThrows(fn () => $ccOrg->campaigns->createReplyFlow(['projectId' => $ccProject, ...$ccFlowInput], $ccUnsafeOptions), Polymorfa\ServerException::class);
+    ccThrows(fn () => $ccTeam->campaigns->createReplyFlow(['projectId' => $ccProject, ...$ccFlowInput], $ccUnsafeOptions), Polymorfa\ServerException::class);
     ccCheck(count($ccObservations()) === 1, 'Unsafe default admits one attempt even when caller supplies a key');
 }
 $ccConfigure(['method' => 'POST', 'path' => '/platform/campaign-reply-flows', 'body' => ['projectId' => $ccProject, ...$ccFlowInput], 'response' => $ccJson($ccFlowData), 'statuses' => [503, 200], 'headers' => ['Retry-After' => '0']]);
-$ccOrg->campaigns->createReplyFlow(['projectId' => $ccProject, ...$ccFlowInput], new Polymorfa\RequestOptions(maxNetworkRetries: 1, idempotencyKey: 'explicit-retry'));
+$ccTeam->campaigns->createReplyFlow(['projectId' => $ccProject, ...$ccFlowInput], new Polymorfa\RequestOptions(maxNetworkRetries: 1, idempotencyKey: 'explicit-retry'));
 ccCheck(count($ccObservations()) === 2, 'Explicit unsafe retry override survives');
 foreach ([['X-Polymorfa-Operation-Id' => 'accepted'], ['Idempotent-Replayed' => 'true']] as $ccAdmission) {
     $ccConfigure(['method' => 'GET', 'path' => '/platform/campaign-settings', 'response' => '{"error":{"code":"result_unknown","param":"revision"}}', 'statuses' => [503, 200], 'headers' => ['Retry-After' => '0', ...$ccAdmission]]);
-    ccThrows(fn () => $ccOrg->campaigns->getSettings(new Polymorfa\RequestOptions(maxNetworkRetries: 1)), Polymorfa\ServerException::class);
+    ccThrows(fn () => $ccTeam->campaigns->getSettings(new Polymorfa\RequestOptions(maxNetworkRetries: 1)), Polymorfa\ServerException::class);
     ccCheck(count($ccObservations()) === 1, 'Admitted/replayed outcomes are never automatically replaced');
 }
 
 foreach ([400, 401, 402, 403, 404, 409, 413, 422, 429, 500, 599] as $ccStatus) {
     $ccConfigure(['method' => 'GET', 'path' => '/platform/campaign-settings', 'response' => '{"error":{"code":"future_campaign_code","message":"Denied","param":"body.revision","request_id":"body_request"}}', 'status' => $ccStatus, 'headers' => ['X-Trace-Id' => 'trace', 'Idempotent-Replayed' => 'true', 'Content-Disposition' => 'attachment', 'Set-Cookie' => 'never-export']]);
-    $ccError = ccThrows(fn () => $ccOrg->campaigns->getSettings(new Polymorfa\RequestOptions(maxNetworkRetries: 0)), Polymorfa\PolymorfaException::class);
+    $ccError = ccThrows(fn () => $ccTeam->campaigns->getSettings(new Polymorfa\RequestOptions(maxNetworkRetries: 0)), Polymorfa\PolymorfaException::class);
     ccCheck($ccError->errorCode === 'future_campaign_code' && $ccError->param === 'body.revision' && $ccError->requestId === 'body_request' && $ccError->status === $ccStatus && $ccError->metadata->headers['x-trace-id'] === 'trace' && $ccError->metadata->headers['idempotent-replayed'] === 'true' && $ccError->metadata->headers['content-disposition'] === 'attachment' && !isset($ccError->metadata->headers['set-cookie']), 'Error param and safe metadata survive HTTP'.$ccStatus);
 }
 foreach (['campaign_approval_required', 'campaign_approval_stale', 'campaign_variables_missing', 'zero_knowledge_session'] as $ccCode) {

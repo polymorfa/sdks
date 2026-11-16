@@ -6,10 +6,10 @@ use crate::{
 use reqwest::Method;
 
 #[derive(Clone)]
-pub struct OrganizationClient {
+pub struct TeamClient {
     pub(crate) http: HttpTransport,
 }
-impl OrganizationClient {
+impl TeamClient {
     pub fn request_logs(&self) -> crate::request_logs::RequestLogs {
         crate::request_logs::RequestLogs {
             http: self.http.clone(),
@@ -18,15 +18,15 @@ impl OrganizationClient {
     }
 
     pub fn new(credential: Credential, options: ClientOptions) -> Result<Self> {
-        if !matches!(credential, Credential::OrganizationApiKey(_)) {
+        if !matches!(credential, Credential::TeamApiKey(_)) {
             return Err(configuration("credential: team key required"));
         }
         Ok(Self {
             http: HttpTransport::new(credential, options)?,
         })
     }
-    pub fn sip_trunks(&self) -> crate::sip::OrganizationSipTrunks<'_> {
-        crate::sip::OrganizationSipTrunks(crate::sip::SipTrunks {
+    pub fn sip_trunks(&self) -> crate::sip::TeamSipTrunks<'_> {
+        crate::sip::TeamSipTrunks(crate::sip::SipTrunks {
             http: &self.http,
             project_id: None,
         })
@@ -43,11 +43,11 @@ impl OrganizationClient {
     pub fn audiences(&self) -> crate::audiences::Audiences<'_> {
         crate::audiences::Audiences(&self.http)
     }
-    pub fn opt_outs(&self) -> crate::organization_controls::OptOuts<'_> {
-        crate::organization_controls::OptOuts(&self.http)
+    pub fn opt_outs(&self) -> crate::team_controls::OptOuts<'_> {
+        crate::team_controls::OptOuts(&self.http)
     }
-    pub fn media(&self) -> crate::organization_controls::PlatformMedia<'_> {
-        crate::organization_controls::PlatformMedia(&self.http)
+    pub fn media(&self) -> crate::team_controls::PlatformMedia<'_> {
+        crate::team_controls::PlatformMedia(&self.http)
     }
     pub fn analytics(&self) -> crate::analytics::Analytics<'_> {
         crate::analytics::Analytics {
@@ -61,35 +61,35 @@ impl OrganizationClient {
             project_id: None,
         }
     }
-    pub fn voice(&self) -> crate::voice::OrganizationVoice<'_> {
-        crate::voice::OrganizationVoice(&self.http)
+    pub fn voice(&self) -> crate::voice::TeamVoice<'_> {
+        crate::voice::TeamVoice(&self.http)
     }
     pub fn ban_safe(&self) -> crate::bansafe::BanSafe<'_> {
         crate::bansafe::BanSafe(&self.http)
     }
-    pub fn session_bans(&self) -> crate::organization_controls::SessionBans<'_> {
-        crate::organization_controls::SessionBans(&self.http)
+    pub fn session_bans(&self) -> crate::team_controls::SessionBans<'_> {
+        crate::team_controls::SessionBans(&self.http)
     }
     pub fn campaigns(&self) -> crate::campaigns::PlatformCampaigns<'_> {
         crate::campaigns::PlatformCampaigns(&self.http)
     }
-    pub fn organizations(&self) -> crate::organization::Organizations<'_> {
-        crate::organization::Organizations(&self.http)
+    pub fn teams(&self) -> crate::team::Teams<'_> {
+        crate::team::Teams(&self.http)
     }
-    pub fn members(&self) -> crate::organization::Members<'_> {
-        crate::organization::Members(&self.http)
+    pub fn members(&self) -> crate::team::Members<'_> {
+        crate::team::Members(&self.http)
     }
-    pub fn api_keys(&self) -> crate::organization::ApiKeys<'_> {
-        crate::organization::ApiKeys(&self.http)
+    pub fn api_keys(&self) -> crate::team::ApiKeys<'_> {
+        crate::team::ApiKeys(&self.http)
     }
-    pub fn project_tokens(&self) -> crate::organization::ProjectTokens<'_> {
-        crate::organization::ProjectTokens(&self.http)
+    pub fn project_tokens(&self) -> crate::team::ProjectTokens<'_> {
+        crate::team::ProjectTokens(&self.http)
     }
-    pub fn audit_logs(&self) -> crate::organization::AuditLogs<'_> {
-        crate::organization::AuditLogs(&self.http)
+    pub fn audit_logs(&self) -> crate::team::AuditLogs<'_> {
+        crate::team::AuditLogs(&self.http)
     }
-    pub fn security_incidents(&self) -> crate::organization::SecurityIncidents<'_> {
-        crate::organization::SecurityIncidents(&self.http)
+    pub fn security_incidents(&self) -> crate::team::SecurityIncidents<'_> {
+        crate::team::SecurityIncidents(&self.http)
     }
     pub fn billing(&self) -> crate::billing::Billing<'_> {
         crate::billing::Billing(&self.http)

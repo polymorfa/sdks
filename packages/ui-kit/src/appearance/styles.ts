@@ -163,10 +163,6 @@ a.pmfa-btn { text-decoration: none; }
 .pmfa-btn-ghost { border-color: transparent; background: transparent; color: var(--pmfa-c-muted); }
 .pmfa-btn-ghost:hover:not(:disabled) { color: var(--pmfa-c-fg); }
 .pmfa-btn-icon { width: 40px; padding: 0; border-radius: 999px; }
-.pmfa-number-picker { display: grid; gap: 6px; min-width: 0; }
-.pmfa-number-picker-label { color: var(--pmfa-c-muted); font-size: 0.8125em; font-weight: 600; }
-.pmfa-number-picker-select { appearance: auto; cursor: pointer; text-overflow: ellipsis; }
-.pmfa-number-picker-select:disabled { opacity: 0.55; cursor: not-allowed; }
 .pmfa-msg-sender {
   display: block;
   margin-bottom: 2px;
@@ -195,6 +191,12 @@ a.pmfa-btn { text-decoration: none; }
 textarea.pmfa-input { min-height: 72px; resize: vertical; }
 .pmfa-input::placeholder { color: var(--pmfa-c-muted); opacity: 1; }
 .pmfa-error { margin: 0; color: var(--pmfa-c-danger); font-size: 0.875em; }
+
+/* Outgoing Number picker */
+.pmfa-call-number-picker { display: grid; gap: 6px; min-width: 0; max-width: 320px; }
+.pmfa-call-number-label { font-size: 0.8125em; font-weight: 600; }
+.pmfa-call-number-select { min-width: 0; min-height: 44px; padding: 8px 12px; line-height: 1.4; }
+.pmfa-call-number-select:disabled { cursor: not-allowed; opacity: 0.55; }
 
 /* Inline chat window: the host supplies a bounded height. */
 .pmfa-chat-window { position: relative; display: flex; flex-direction: column; min-height: 0; min-width: 0; height: 100%; background: var(--pmfa-c-chat); color: var(--pmfa-c-fg); container-type: inline-size; }
@@ -726,6 +728,7 @@ button.pmfa-hd:disabled { cursor: default; opacity: 0.75; }
 
 /* Composer */
 .pmfa-composer {
+  --pmfa-composer-control-size: 40px;
   position: relative;
   display: flex;
   flex-direction: column;
@@ -748,30 +751,22 @@ button.pmfa-hd:disabled { cursor: default; opacity: 0.75; }
 .pmfa-chip-preview { width: 56px; height: 56px; border-radius: 6px; object-fit: cover; }
 .pmfa-chip-player { display: block; width: 220px; max-width: 100%; }
 video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
-/*
- * One control size for the whole composer row. The field's vertical padding
- * comes from that size and the field's own line height, so a single line is
- * exactly as tall as the buttons beside it at any text size, and more lines
- * grow upward from the same bottom edge.
- */
-.pmfa-composer { --pmfa-composer-control: 40px; --pmfa-composer-line: 1.45; }
-@media (max-width: 600px) { .pmfa-composer { --pmfa-composer-control: 44px; } }
 .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;
-  min-height: var(--pmfa-composer-control);
-  border-radius: calc(var(--pmfa-composer-control) / 2);
-  padding: max(4px, calc((var(--pmfa-composer-control) - var(--pmfa-composer-line) * 1em - 2px) / 2)) 16px;
+  min-height: var(--pmfa-composer-control-size);
+  border-radius: 20px;
+  padding: max(4px, calc((var(--pmfa-composer-control-size) - 1lh - 2px) / 2)) 16px;
   background: var(--pmfa-c-surface);
   border-color: transparent;
-  line-height: var(--pmfa-composer-line);
+  line-height: 1.45;
   resize: none;
   field-sizing: content;
 }
-.pmfa-composer-row .pmfa-btn-icon { width: var(--pmfa-composer-control); min-width: var(--pmfa-composer-control); min-height: var(--pmfa-composer-control); }
 .pmfa-composer .pmfa-input:hover { border-color: var(--pmfa-c-border); }
 .pmfa-composer .pmfa-input:focus-visible { outline-offset: 0; background: var(--pmfa-c-bg); border-color: var(--pmfa-c-border); }
 .pmfa-composer .pmfa-btn { flex: none; }
+.pmfa-composer .pmfa-btn-icon { width: var(--pmfa-composer-control-size); min-height: var(--pmfa-composer-control-size); }
 .pmfa-send .pmfa-icon { width: 20px; height: 20px; stroke-width: 2.4; }
 .pmfa-composer-standalone {
   border: 1px solid var(--pmfa-c-border);
@@ -848,13 +843,12 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 }
 .pmfa-composer > .pmfa-error { padding-inline: 8px; }
 .pmfa-composer-row { align-items: flex-end; gap: 2px; }
-.pmfa-composer-actions { display: flex; flex: none; align-items: center; gap: 2px; min-height: var(--pmfa-composer-control); }
+.pmfa-composer-actions { display: flex; flex: none; align-items: center; gap: 2px; min-height: var(--pmfa-composer-control-size); }
 .pmfa-composer-actions:empty { display: none; }
 .pmfa-composer-actions > * { flex: none; }
 .pmfa-composer .pmfa-input {
   margin-inline: 4px;
-  /* The rows of text plus the single-line padding and border. */
-  max-height: calc((var(--pmfa-composer-max-rows, 8) - 1) * var(--pmfa-composer-line) * 1em + var(--pmfa-composer-control));
+  max-height: calc((var(--pmfa-composer-max-rows, 8) - 1) * 1lh + var(--pmfa-composer-control-size));
   overflow-y: auto;
 }
 .pmfa-composer .pmfa-btn-ghost[aria-expanded="true"] { color: var(--pmfa-c-primary); background: var(--pmfa-c-surface); }
@@ -868,22 +862,26 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
  */
 .pmfa-chat-window .pmfa-chat-footer, .pmfa-chat-window .pmfa-drawer-footer { padding: 8px clamp(8px, 2cqi, 16px) max(8px, env(safe-area-inset-bottom)); border-top: 0; }
 .pmfa-chat-window .pmfa-chat-footer > fieldset + * { margin-top: 6px; }
-.pmfa-chat-window .pmfa-composer { --pmfa-composer-control: 44px; --pmfa-composer-line: 1.4; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
+.pmfa-chat-window .pmfa-composer { --pmfa-composer-control-size: 44px; gap: 6px; padding: 0; border: 0; border-radius: 0; background: transparent; }
 .pmfa-chat-window .pmfa-composer-row { flex-wrap: nowrap; gap: 4px; align-items: flex-end; }
-.pmfa-chat-window .pmfa-composer-actions { gap: 0; }
-.pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon { color: var(--pmfa-c-muted); }
+.pmfa-chat-window .pmfa-composer-actions { min-height: var(--pmfa-composer-control-size); gap: 0; }
+.pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon { width: var(--pmfa-composer-control-size); min-height: var(--pmfa-composer-control-size); margin-block: 0; color: var(--pmfa-c-muted); }
 .pmfa-chat-window .pmfa-composer-actions .pmfa-btn-icon .pmfa-icon { width: 22px; height: 22px; }
 .pmfa-chat-window .pmfa-composer .pmfa-input {
   flex: 1;
   min-width: 0;
+  min-height: var(--pmfa-composer-control-size);
   margin: 0;
+  padding: max(4px, calc((var(--pmfa-composer-control-size) - 1lh - 2px) / 2)) 16px;
   border: 1px solid transparent;
+  border-radius: 22px;
   background: var(--pmfa-c-field);
   font-size: var(--pmfa-message-font-size, 0.9375em);
+  line-height: 1.4;
 }
 .pmfa-chat-window .pmfa-composer .pmfa-input:hover { border-color: transparent; }
 .pmfa-chat-window .pmfa-composer .pmfa-input:focus-visible { outline: none; border-color: color-mix(in srgb, var(--pmfa-c-fg) 22%, transparent); background: var(--pmfa-c-field); }
-.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { flex: none; width: var(--pmfa-composer-control); min-height: var(--pmfa-composer-control); border-radius: 999px; }
+.pmfa-chat-window .pmfa-send, .pmfa-chat-window .pmfa-voice { flex: none; width: var(--pmfa-composer-control-size); min-height: var(--pmfa-composer-control-size); border-radius: 999px; }
 .pmfa-chat-window .pmfa-send { border-color: transparent; background: var(--pmfa-c-primary); color: var(--pmfa-c-on-primary); }
 .pmfa-chat-window .pmfa-send:hover:not(:disabled) { background: color-mix(in srgb, var(--pmfa-c-primary) 88%, #000000); }
 .pmfa-chat-window .pmfa-voice .pmfa-icon { width: 22px; height: 22px; }
@@ -1180,7 +1178,7 @@ video.pmfa-chip-player { max-height: 120px; border-radius: 6px; }
 }
 
 .pmfa-drawer.pmfa-chat-window { position: static; inset: auto; z-index: auto; width: 100%; border: 0; border-radius: 0; box-shadow: none; animation: none; }
-@media (max-width: 600px) { .pmfa-btn-icon { min-width: 44px; min-height: 44px; } }
+@media (max-width: 600px) { .pmfa-composer { --pmfa-composer-control-size: 44px; } .pmfa-btn-icon { min-width: 44px; min-height: 44px; } }
 /* Template builder */
 .pmfa-tb {
   container-type: inline-size;
@@ -1792,30 +1790,8 @@ button.pmfa-call:disabled:hover { background: transparent; }
 .pmfa-call-more { width: 100%; margin-top: 4px; }
 @media (pointer: coarse) { .pmfa-inbox-views button { min-height: 40px; } }
 
-/* Connect, status, call */
+/* QuickLink button */
 .pmfa-connect .pmfa-icon { width: 18px; height: 18px; }
-.pmfa-connect[aria-busy="true"] { cursor: progress; }
-.pmfa-session {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 28px;
-  padding: 0 12px 0 10px;
-  border: 1px solid var(--pmfa-c-border);
-  border-radius: 999px;
-  background: var(--pmfa-c-bg);
-  color: var(--pmfa-c-fg);
-  font-size: 0.8125em;
-  font-weight: 600;
-  white-space: nowrap;
-}
-.pmfa-session-dot { flex: none; width: 8px; height: 8px; border-radius: 999px; background: var(--pmfa-c-muted); }
-.pmfa-session[data-status="ready"] .pmfa-session-dot, .pmfa-session[data-status="refreshing"] .pmfa-session-dot { background: var(--pmfa-c-success); box-shadow: 0 0 0 3px color-mix(in srgb, var(--pmfa-c-success) 22%, transparent); }
-.pmfa-session[data-status="loading"] .pmfa-session-dot, .pmfa-session[data-status="retrying"] .pmfa-session-dot { background: #d9a400; animation: pmfa-pulse 1.2s ease-in-out infinite; }
-.pmfa-session[data-status="error"] .pmfa-session-dot, .pmfa-session[data-status="unauthenticated"] .pmfa-session-dot { background: var(--pmfa-c-danger); }
-.pmfa-session .pmfa-btn { min-height: 22px; margin-inline-end: -8px; padding: 0 8px; border-radius: 999px; font-size: 0.9em; }
-@keyframes pmfa-pulse { 50% { opacity: 0.35; } }
-
 /* Loaded-message search, received carts and customer details */
 .pmfa-message-toolbar { container-type: inline-size; display: flex; flex-direction: column; gap: 10px; padding: 10px 16px; background: var(--pmfa-c-panel); border-block-end: 1px solid var(--pmfa-c-border); }
 .pmfa-message-toolbar-actions { display: flex; flex-wrap: wrap; gap: 4px; }
@@ -1851,66 +1827,6 @@ button.pmfa-call:disabled:hover { background: transparent; }
 .pmfa-chat-details > dl { display: grid; gap: 16px; margin: 0; }
 .pmfa-chat-details-field dt { color: var(--pmfa-c-muted); font-size: 0.75em; }
 .pmfa-chat-details-field dd { margin: 4px 0 0; overflow-wrap: anywhere; font-size: 0.8125em; }
-
-/* Template manager */
-.pmfa-tm {
-  container-type: inline-size;
-  display: flex;
-  flex-direction: column;
-  gap: var(--pmfa-s-m);
-}
-.pmfa-tm-head { display: flex; align-items: center; justify-content: space-between; gap: var(--pmfa-s-s); }
-.pmfa-tm-head h2 { margin: 0; font-size: 1.25em; font-weight: 700; }
-.pmfa-tm-list {
-  display: grid;
-  gap: var(--pmfa-s-s);
-  grid-template-columns: repeat(auto-fill, minmax(min(100%, 240px), 1fr));
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-.pmfa-tm-item {
-  appearance: none;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 6px;
-  width: 100%;
-  height: 100%;
-  padding: var(--pmfa-s-m);
-  border: 1px solid var(--pmfa-c-border);
-  border-radius: var(--pmfa-r-m);
-  background: var(--pmfa-c-bg);
-  color: inherit;
-  font: inherit;
-  text-align: start;
-  cursor: pointer;
-  transition: border-color 120ms ease, box-shadow 120ms ease;
-}
-.pmfa-tm-item:hover { border-color: color-mix(in srgb, var(--pmfa-c-primary) 45%, var(--pmfa-c-border)); }
-.pmfa-tm-item:focus-visible { outline: 2px solid var(--pmfa-c-primary); outline-offset: 2px; }
-.pmfa-tm-name { font-weight: 650; overflow-wrap: anywhere; }
-.pmfa-tm-body {
-  display: -webkit-box;
-  overflow: hidden;
-  color: var(--pmfa-c-muted);
-  font-size: 0.875em;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-.pmfa-tm-meta { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; }
-.pmfa-tag {
-  padding: 2px 8px;
-  border-radius: 999px;
-  background: var(--pmfa-c-surface);
-  color: var(--pmfa-c-muted);
-  font-size: 0.6875em;
-  font-weight: 650;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
-}
-.pmfa-tag[data-status="APPROVED"], .pmfa-tag[data-status="approved"] { background: color-mix(in srgb, var(--pmfa-c-success) 15%, var(--pmfa-c-bg)); color: var(--pmfa-c-success); }
-.pmfa-tag[data-status="REJECTED"], .pmfa-tag[data-status="rejected"] { background: color-mix(in srgb, var(--pmfa-c-danger) 13%, var(--pmfa-c-bg)); color: var(--pmfa-c-danger); }
 
 @media (prefers-reduced-motion: reduce) {
   .pmfa *, .pmfa *::before, .pmfa *::after, .pmfa-drawer, .pmfa-popover {

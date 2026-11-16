@@ -147,7 +147,7 @@ async def test_typed_sip_methods(method, path, body, query, data, invoke):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -158,7 +158,7 @@ async def test_typed_sip_methods(method, path, body, query, data, invoke):
 
 
 @pytest.mark.parametrize("action", ["retrieve", "update", "delete", "rotate"])
-async def test_project_org_key_confines_before_mutation(action):
+async def test_project_team_key_confines_before_mutation(action):
     requests = []
 
     def handler(request):
@@ -170,7 +170,7 @@ async def test_project_org_key_confines_before_mutation(action):
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -203,7 +203,7 @@ async def test_project_binding_preflight_and_project_token_write():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -230,7 +230,7 @@ async def test_project_binding_preflight_and_project_token_write():
     assert [r.method for r in requests] == ["GET", "PATCH"]
 
 
-async def test_project_org_key_checks_ownership_then_keeps_write_key():
+async def test_project_team_key_checks_ownership_then_keeps_write_key():
     requests = []
 
     def handler(request):
@@ -245,7 +245,7 @@ async def test_project_org_key_checks_ownership_then_keeps_write_key():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

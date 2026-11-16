@@ -13,7 +13,7 @@ var session = builder.Configuration["POLYMORFA_SESSION"] ?? throw new InvalidOpe
 var peer = builder.Configuration["POLYMORFA_RECIPIENT"] ?? throw new InvalidOperationException("POLYMORFA_RECIPIENT is required.");
 if (string.IsNullOrWhiteSpace(peer)) throw new InvalidOperationException("An assigned recipient is required.");
 var conversation = new NativeConversation(session, peer, builder.Configuration["POLYMORFA_EXAMPLE_TRANSPORT"] == "local-test-number");
-builder.Services.AddSingleton(new MessagingClient(builder.Configuration["POLYMORFA_PROJECT_TOKEN"] is { Length: > 0 } projectToken ? Credential.ProjectToken(projectToken) : Credential.OrganizationApiKey(builder.Configuration["POLYMORFA_API_KEY"] ?? throw new InvalidOperationException("Configure a server project token or organization API key.")), new() { BaseUrl = new(builder.Configuration["POLYMORFA_API_BASE_URL"] ?? "https://api.polymorfa.com") }));
+builder.Services.AddSingleton(new MessagingClient(builder.Configuration["POLYMORFA_PROJECT_TOKEN"] is { Length: > 0 } projectToken ? Credential.ProjectToken(projectToken) : Credential.TeamApiKey(builder.Configuration["POLYMORFA_API_KEY"] ?? throw new InvalidOperationException("Configure a server project token or team API key.")), new() { BaseUrl = new(builder.Configuration["POLYMORFA_API_BASE_URL"] ?? "https://api.polymorfa.com") }));
 // Replace this application's cookie sign-in with your own identity provider.
 builder.Services.AddDataProtection().UseEphemeralDataProtectionProvider();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options =>

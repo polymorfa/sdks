@@ -80,14 +80,12 @@ export const COMPONENT_SLOTS = [
   "groupDetails",
   "groupParticipants",
   "connectButton",
-  "sessionStatus",
   "callButton",
   "callNumberPicker",
   "callLog",
   "callLogItem",
-  "templateManager",
-  "templateList",
-  "templateItem",
+  "callNumberLabel",
+  "callNumberSelect",
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

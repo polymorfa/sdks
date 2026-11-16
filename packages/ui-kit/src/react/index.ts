@@ -67,22 +67,16 @@ export {
   type PolymorfaPermissions,
 } from "./context.js";
 export {
-  ConnectWhatsAppButton,
   ContactPanel,
   ConversationList,
   ConversationListView,
   Inbox,
   QuickLinkButton,
-  SessionStatus,
-  TemplateManager,
-  type ConnectWhatsAppButtonProps,
   type ContactPanelProps,
   type ConversationListProps,
   type ConversationListViewProps,
   type InboxProps,
   type QuickLinkButtonProps,
-  type SessionStatusProps,
-  type TemplateManagerProps,
 } from "./dropin.js";
 export { CallButton, type CallButtonProps } from "./call-button.js";
 export {

@@ -30,12 +30,12 @@ type UpdateCallRetentionRequest struct {
 }
 type CallRetentionResource struct{ t *transport }
 
-func (c *OrganizationClient) CallRetention() *CallRetentionResource {
+func (c *TeamClient) CallRetention() *CallRetentionResource {
 	return &CallRetentionResource{c.t}
 }
 func (c *ProjectClient) CallRetention() *CallRetentionResource { return &CallRetentionResource{c.t} }
 
-// NewTeamCallRetentionClient accepts an organization or project credential
+// NewTeamCallRetentionClient accepts a team or project credential
 // without requiring a project ID for the team-wide setting.
 func NewTeamCallRetentionClient(c Config) (*CallRetentionResource, error) {
 	if err := validateCredential(c.Credential, false); err != nil {
@@ -66,7 +66,7 @@ type UpdateCallPolicyRequest struct {
 }
 type CallPolicyResource struct{ t *transport }
 
-func (c *OrganizationClient) CallPolicy() *CallPolicyResource { return &CallPolicyResource{c.t} }
+func (c *TeamClient) CallPolicy() *CallPolicyResource { return &CallPolicyResource{c.t} }
 func (r *CallPolicyResource) Retrieve(ctx context.Context, o ...RequestOptions) (Response[CallPolicy], error) {
 	return unwrapped[CallPolicy](ctx, r.t, "GET", "/platform/call-policy", nil, nil, options(o))
 }
@@ -124,7 +124,7 @@ type CallOptOutDeleted struct {
 }
 type CallOptOuts struct{ t *transport }
 
-func (c *OrganizationClient) CallOptOuts() *CallOptOuts { return &CallOptOuts{c.t} }
+func (c *TeamClient) CallOptOuts() *CallOptOuts { return &CallOptOuts{c.t} }
 func (r *CallOptOuts) List(ctx context.Context, p ListCallOptOutsParams, o ...RequestOptions) (*CursorPage[CallOptOut], error) {
 	if p.PhoneNumber != "" && p.BSUID != "" {
 		return nil, validation("Filter by phoneNumber or bsuid, not both.")

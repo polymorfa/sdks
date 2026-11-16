@@ -26,10 +26,8 @@ export {
   defineContactElements,
 } from "./contacts.js";
 export {
-  PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
   PolymorfaQuickLinkButtonElement,
-  PolymorfaSessionStatusElement,
   defineDropInElements,
   defineUiKit,
   type DefineUiKitOptions,

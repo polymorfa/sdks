@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import {
   action,
   flag,
@@ -9,10 +9,10 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-export const GET = route("admin", () => organization().projects.list());
+export const GET = route("admin", () => team().projects.list());
 
 export const POST = route("admin", async ({ body, request }) => {
-  const projects = organization().projects;
+  const projects = team().projects;
   const name = action(body);
   if (name === "create") {
     return projects.create(

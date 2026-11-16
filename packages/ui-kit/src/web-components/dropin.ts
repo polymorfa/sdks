@@ -2,7 +2,6 @@ import {
   InboxController,
   MessageComposerController,
   PolymorfaClient,
-  connectWhatsApp,
   createConversationComposerActions,
   isQuickLinkUrl,
   warnInvalidQuickLink,
@@ -54,8 +53,7 @@ export interface DefineUiKitOptions {
 /**
  * The Web Components equivalent of `<PolymorfaProvider tokenEndpoint>`:
  * creates one client that fetches and refreshes client tokens, then defines
- * every element. `<pmfa-inbox>`, `<pmfa-connect-whatsapp>` and
- * `<pmfa-session-status>` use that client unless given their own.
+ * every element. `<pmfa-inbox>` uses that client unless given its own.
  */
 export function defineUiKit(options: DefineUiKitOptions = {}): PolymorfaClient {
   defaults.client?.dispose();
@@ -87,92 +85,10 @@ export function defineDropInElements(
 ): void {
   if (registry.get("pmfa-inbox") === undefined)
     registry.define("pmfa-inbox", PolymorfaInboxElement);
-  if (registry.get("pmfa-connect-whatsapp") === undefined)
-    registry.define("pmfa-connect-whatsapp", PolymorfaConnectWhatsAppElement);
-  if (registry.get("pmfa-session-status") === undefined)
-    registry.define("pmfa-session-status", PolymorfaSessionStatusElement);
   if (registry.get("pmfa-quicklink-button") === undefined)
     registry.define("pmfa-quicklink-button", PolymorfaQuickLinkButtonElement);
   defineContactElements(registry);
   defineCallLogElements(registry);
-}
-
-/** `<pmfa-connect-whatsapp>`: opens Polymorfa's hosted QuickLink page. */
-export class PolymorfaConnectWhatsAppElement extends ClientElement<object> {
-  static readonly observedAttributes = ["target", "label"];
-  #busy = false;
-  #failed = false;
-
-  attributeChangedCallback(): void {
-    if (this.isConnected) this.render();
-  }
-
-  protected renderContent(): readonly Node[] {
-    if (!this.allowed("pmfa-connect-whatsapp", "button", "connect_whatsapp"))
-      return [];
-    const wrapper = element("span");
-    wrapper.className = this.rootClass("");
-    const control = this.decorate(
-      document.createElement("button"),
-      "connectButton",
-    );
-    control.type = "button";
-    control.className = "pmfa-btn pmfa-btn-primary pmfa-connect";
-    control.disabled = this.#busy;
-    if (this.#busy) control.setAttribute("aria-busy", "true");
-    control.append(
-      icon("link"),
-      document.createTextNode(
-        this.#busy
-          ? this.text("connect.opening")
-          : (this.getAttribute("label") ?? this.text("connect.button")),
-      ),
-    );
-    control.addEventListener("click", () => this.#connect());
-    wrapper.append(control);
-    if (this.#failed) {
-      const error = textElement("p", this.text("connect.failed"));
-      error.className = "pmfa-error";
-      error.setAttribute("role", "alert");
-      wrapper.append(this.decorate(error, "error"));
-    }
-    return [wrapper];
-  }
-
-  #connect(): void {
-    const client = this.client;
-    if (client === undefined || this.#busy) return;
-    this.#busy = true;
-    this.#failed = false;
-    this.render();
-    connectWhatsApp(client, {
-      target: this.getAttribute("target") === "popup" ? "popup" : "redirect",
-    }).then(
-      (result) => {
-        this.#busy = false;
-        this.render();
-        this.dispatchEvent(
-          new CustomEvent("pmfa-connect", {
-            detail: result,
-            bubbles: true,
-            composed: true,
-          }),
-        );
-      },
-      (error: unknown) => {
-        this.#busy = false;
-        this.#failed = true;
-        this.render();
-        this.dispatchEvent(
-          new CustomEvent("pmfa-error", {
-            detail: error,
-            bubbles: true,
-            composed: true,
-          }),
-        );
-      },
-    );
-  }
 }
 
 /**
@@ -222,41 +138,6 @@ export class PolymorfaQuickLinkButtonElement extends PolymorfaElement<object> {
       ),
     );
     return [link];
-  }
-}
-
-/** `<pmfa-session-status>`: the client's connection state. */
-export class PolymorfaSessionStatusElement extends ClientElement<object> {
-  protected renderContent(): readonly Node[] {
-    const status = this.clientSnapshot()?.status ?? "idle";
-    const badge = this.decorate(element("span"), "sessionStatus");
-    badge.className = this.rootClass("pmfa-session");
-    badge.dataset.status = status;
-    badge.setAttribute("role", "status");
-    const label = this.text(`status.${status}`);
-    badge.setAttribute(
-      "aria-label",
-      this.text("status.label", { status: label }),
-    );
-    const dot = element("span");
-    dot.className = "pmfa-session-dot";
-    const words = textElement("span", label);
-    words.setAttribute("aria-hidden", "true");
-    badge.append(dot, words);
-    if (
-      status === "error" ||
-      status === "retrying" ||
-      status === "unauthenticated"
-    ) {
-      const retry = textElement("button", this.text("common.retry"));
-      (retry as HTMLButtonElement).type = "button";
-      retry.className = "pmfa-btn pmfa-btn-ghost";
-      retry.addEventListener("click", () => {
-        void this.client?.refresh().catch(() => undefined);
-      });
-      badge.append(retry);
-    }
-    return [badge];
   }
 }
 

@@ -38,7 +38,7 @@
             },
             "code": {
               "type": "string",
-              "description": "Stable code for an automatic pause: campaigns_not_entitled, bansafe_org_suspended, bansafe_suspended, campaign_throughput_capped, invalid_parameter, hybrid_campaign_unsupported, blocked_by_safety, number_quality_dropped, or messaging_limit_dropped. Present only on an automatic pause.",
+              "description": "Stable code for an automatic pause: campaigns_not_entitled, bansafe_team_suspended, bansafe_suspended, campaign_throughput_capped, invalid_parameter, hybrid_campaign_unsupported, blocked_by_safety, number_quality_dropped, or messaging_limit_dropped. Present only on an automatic pause.",
               "example": "messaging_limit_dropped"
             }
           },

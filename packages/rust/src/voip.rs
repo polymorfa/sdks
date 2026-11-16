@@ -9,6 +9,35 @@ use reqwest::Method;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(tag = "type")]
+pub enum WaitingRoomControl {
+    #[serde(rename = "waiting_room_control")]
+    Command {
+        #[serde(rename = "requestId")]
+        request_id: String,
+        #[serde(flatten)]
+        action: crate::calls_protocol::WaitingRoomAction,
+    },
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WaitingRoomControlRequest {
+    pub connection_id: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub participant: Option<String>,
+    pub control: WaitingRoomControl,
+}
+#[derive(Clone, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WaitingRoomControlResult {
+    #[serde(rename = "type")]
+    pub control_type: String,
+    pub request_id: String,
+    pub ok: bool,
+    pub code: Option<String>,
+}
+
+#[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(untagged)]
 pub enum CallDestination {
     To {
@@ -417,6 +446,31 @@ impl Voip<'_> {
             .request(
                 Method::POST,
                 &path(call_id, "reaction"),
+                &[],
+                Some(body),
+                options,
+            )
+            .await
+    }
+    /// Reauthorizes through the API; inspect data.ok and never replay unknown outcomes.
+    pub async fn moderate_waiting_room(
+        &self,
+        call_id: &str,
+        body: &WaitingRoomControlRequest,
+        mut options: RequestOptions,
+    ) -> Result<ApiResponse<SuccessEnvelope<WaitingRoomControlResult>>> {
+        connection(&body.connection_id)?;
+        self.participant(body.participant.as_deref())?;
+        let WaitingRoomControl::Command { request_id, action } = &body.control;
+        connection(request_id)?;
+        if !action.is_valid() {
+            return Err(configuration("waiting_room_control"));
+        }
+        options.max_network_retries = Some(0);
+        self.0
+            .request(
+                Method::POST,
+                &path(call_id, "waiting-room"),
                 &[],
                 Some(body),
                 options,

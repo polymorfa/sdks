@@ -1,9 +1,9 @@
 import type { CallsController } from "../browser/index.js";
 import { useCallback, useId, useSyncExternalStore } from "react";
-import type { SlotClassNames } from "../appearance/index.js";
-import { useShell, useSlots } from "./components.js";
 import { usePolymorfa } from "./context.js";
 import { safeSubscribe } from "./hooks.js";
+import { useShell, useSlots } from "./components.js";
+import type { SlotClassNames } from "../appearance/index.js";
 
 /** A Number authorized by the application, with its own fixed Calls client. */
 export interface CallNumberOption {
@@ -18,7 +18,6 @@ export interface CallNumberPickerProps {
   readonly onChange: (id: string) => void;
   readonly disabled?: boolean;
   readonly className?: string;
-  /** Classes for the `callNumberPicker`, `label` and `input` slots. */
   readonly classNames?: SlotClassNames;
 }
 
@@ -57,7 +56,7 @@ export function CallNumberPicker({
   const root = useShell(
     slots,
     "callNumberPicker",
-    "pmfa-number-picker",
+    "pmfa-call-number-picker",
     className,
   );
   const id = useId();
@@ -84,12 +83,15 @@ export function CallNumberPicker({
   const selected = numbers.find((number) => number.id === value);
   return (
     <div {...root} data-pmfa="call-number-picker">
-      <label htmlFor={id} {...slots("label", "pmfa-number-picker-label")}>
+      <label
+        {...slots("callNumberLabel", "pmfa-call-number-label")}
+        htmlFor={id}
+      >
         {locale.messages["calls.outgoingNumber"]}
       </label>
       <select
+        {...slots("callNumberSelect", "pmfa-input pmfa-call-number-select")}
         id={id}
-        {...slots("input", "pmfa-input pmfa-number-picker-select")}
         value={selected?.id ?? ""}
         disabled={disabled === true || active || numbers.length === 0}
         onChange={(event) => {

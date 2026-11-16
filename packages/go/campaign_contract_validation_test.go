@@ -258,7 +258,7 @@ func TestCampaignContractInvalidInputsDoNotReachNetwork(t *testing.T) {
 	calls := 0
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { calls++ }))
 	defer s.Close()
-	c, _ := NewOrganizationClient(orgConfig(s.URL))
+	c, _ := NewTeamClient(teamConfig(s.URL))
 	ctx := context.Background()
 	_, e := c.Projects().UpdateSignalCustody(ctx, contractProject, ProjectSignalCustodyUpdate{})
 	if e == nil {

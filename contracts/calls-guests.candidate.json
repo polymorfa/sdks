@@ -1,0 +1,188 @@
+{
+  "schemaVersion": 1,
+  "sourceAccepted": false,
+  "published": false,
+  "apiVersion": "2026-09-22",
+  "candidateSource": {
+    "repository": "polymorfa/polymorfa",
+    "commit": "97fce0e939b41a8b9b4d280d3a033921d248f358",
+    "branch": "rajeh/pol-172-calling-guests",
+    "files": [
+      {
+        "path": "apps/api/docs/openapi.json",
+        "sha256": "98bebc01bff84474a03b54d6857fd6200aff9542cfbd6851331918537b2aadaf"
+      },
+      {
+        "path": "apps/api/docs/selfhost/openapi.json",
+        "sha256": "543d6fbd8a589f9bad62e62f982e4f64db4af1b2e8c6ecaa6d2271be818be393"
+      },
+      {
+        "path": "apps/api/docs/calls-media-socket.md",
+        "sha256": "640924355678b1e84d2038f010f30774d8b3d8c255572c9efeeb731c043bdb3d"
+      },
+      {
+        "path": "apps/api/internal/voip/waiting_room_controls.go",
+        "sha256": "9a3422c6b02c724ce0065be96844352e01ceb087e936627048436e1cb78756c1"
+      },
+      {
+        "path": "apps/api/packages/shared/src/voip.ts",
+        "sha256": "5c0f9743cc0d3d61964d31b01540ce971d5e20fbf95295a1c83e6bc6af4535e6"
+      },
+      {
+        "path": "docs/api-reference/openapi.json",
+        "sha256": "c300ccac35a9c7560254cbfc1705852686dcdb56c6d0cacc0d0e9a3bf5f52007"
+      },
+      {
+        "path": "docs/api-reference/features/webhook-events.json",
+        "sha256": "9938168eafcfdf8e2fbc81711ac7c13c0847cc0375cc751927006fbc18e6ae9a"
+      },
+      {
+        "path": "docs/openapi.json",
+        "sha256": "91a3783567c6b1399655186fa0c93ea89646fb452b42c7c4f7f490b685de0e39"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/calls-socket-auth.ts",
+        "sha256": "499e55b250b559b8a0d380cba859cf0e483f7cbccc6d191be22e0747d13970da"
+      },
+      {
+        "path": "apps/api/packages/api/src/lib/credential-capabilities.ts",
+        "sha256": "6183fc521043e488e905799b73476c6984f424b97596ef2f6c1c08464a8ea9aa"
+      },
+      {
+        "path": "apps/api/packages/api/src/routes/voip.ts",
+        "sha256": "981919321cce03dd3e9e93db7beb1c142009f162eeb52221d0af2591c4526fa1"
+      },
+      {
+        "path": "apps/api/packages/api/src/routes/voip-media-socket.ts",
+        "sha256": "29890171e38ac41408221424eb195368f5c16752f56bb881765d680676c11fb5"
+      },
+      {
+        "path": "apps/api/docs/security.md",
+        "sha256": "ebb08f330cd3a71f9c544f0f46c12042ce822a0da2f581fbebb357fef75cc3c7"
+      }
+    ]
+  },
+  "participantFields": {
+    "guest": {
+      "optional": true,
+      "type": "boolean"
+    },
+    "name": {
+      "optional": true,
+      "type": "string",
+      "authority": "self-reported display only"
+    }
+  },
+  "mediaTransports": ["WebSocket", "WebRTC data channel"],
+  "frames": ["waiting_room", "waiting_room_control", "waiting_room_result"],
+  "operations": ["toggle", "admit", "deny"],
+  "authority": [
+    "live signaling permission on each command",
+    "authenticated tenant and Number",
+    "current call owner",
+    "exact media connection generation",
+    "current provider administrator",
+    "current pending roster public participant ID"
+  ],
+  "commands": {
+    "pendingLimit": 16,
+    "timeoutMilliseconds": 5000,
+    "automaticReplay": false,
+    "uncertainOutcomeCode": "waiting_room_control_unknown"
+  },
+  "nativeEvidence": {
+    "typescript": [
+      "packages/calls/test/waiting-room.test.ts",
+      "packages/ui-kit/test/browser/calls-client.test.ts",
+      "packages/ui-kit/test/browser/calls-media.test.ts",
+      "packages/ui-kit/test/browser/calls.test.ts",
+      "packages/typescript/test/voip.test.ts"
+    ],
+    "go": ["packages/go/calls_socket_test.go"],
+    "python": ["packages/python/tests/test_calls_runtime.py"],
+    "php": [
+      "packages/php/tests/calls_runtime.php",
+      "packages/php/tests/calls-runtime-server.php"
+    ],
+    "dotnet": ["packages/dotnet/tests/Polymorfa.Sdk.Tests/CallsClientTests.cs"],
+    "rust": ["packages/rust/tests/calls_runtime.rs"]
+  },
+  "releaseGates": [
+    "accepted API source and contract",
+    "matching staging acceptance before nightly",
+    "matching production acceptance before stable",
+    "registry publication and physical package consumption",
+    "native paired-host waiting-room moderation acceptance",
+    "final provider-ACK library composition and backend pin",
+    "per-request browser moderation authority and six native HTTP wire/package acceptance"
+  ],
+  "limits": [
+    "Does not create anonymous Polymorfa accounts or credentials",
+    "Guest chat is excluded",
+    "Synthetic local wire acceptance is not WhatsApp production acceptance",
+    "Baseline coverage ledgers and API version remain unchanged"
+  ],
+  "simulatorAcceptance": {
+    "barback": "0c0d2a1461c836fc801604e1d2e178ccfc803793",
+    "meowcaller": "92df4d737ba638bc3942dc07fe9cc0130d61ed82",
+    "hypermeow": "7f135a812f07bbbe41fe7559d946d6667bf6a998",
+    "evidence": "group-owner receipt: HTTP guest registration, Noise, Signal bootstrap/rekey, converged rosters, six-direction decoded MLow tone and H264 identity/SSRC/color",
+    "pairedHostModeration": false,
+    "productionAcceptance": false
+  },
+  "controlTransports": {
+    "programmatic": "authenticated media WebSocket with per-command API credential and voip_signal rechecks",
+    "browser": "per-request authenticated Messaging HTTP; WebRTC data channel is snapshots only"
+  },
+  "httpControl": {
+    "method": "POST",
+    "path": "/messaging/voip/calls/{id}/waiting-room",
+    "operationId": "controlCallWaitingRoom",
+    "sourceAccepted": false,
+    "published": false,
+    "nativeMethods": {
+      "typescript": {
+        "method": "MessagingClient.voip.moderateWaitingRoom",
+        "testFile": "packages/typescript/test/voip.test.ts"
+      },
+      "go": {
+        "method": "MessagingClient.VoIP.ModerateWaitingRoom",
+        "testFile": "packages/go/voip_test.go"
+      },
+      "python": {
+        "method": "AsyncMessagingClient.voip.moderate_waiting_room",
+        "testFile": "packages/python/tests/test_voip.py"
+      },
+      "php": {
+        "method": "MessagingClient::$voip->moderateWaitingRoom",
+        "testFile": "packages/php/tests/voip.php"
+      },
+      "dotnet": {
+        "method": "MessagingClient.Calls.ModerateWaitingRoomAsync",
+        "testFile": "packages/dotnet/tests/Polymorfa.Sdk.Tests/CallsTests.cs"
+      },
+      "rust": {
+        "method": "MessagingClient.voip.moderate_waiting_room",
+        "testFile": "packages/rust/tests/voip.rs"
+      }
+    },
+    "publicSnippetCatalog": "Not emitted for this unaccepted operation. Rebind the accepted API/spec and six native ledgers before public generation or release."
+  },
+  "currentLibraryDependencies": {
+    "hypermeow": "v0.0.0-20261111155532-1125ead7b3f1",
+    "meowcaller": "v0.0.0-20261111155748-de181382a60a"
+  },
+  "documentationSnippets": {
+    "newHttpOperation": "withheld pending accepted API source/spec binding; cURL fallback remains",
+    "baselineRecipes": "revalidated against current SDK source without advancing accepted API contract"
+  },
+  "apiAdmissionEvidence": {
+    "sourceFiles": [
+      "apps/api/packages/api/src/lib/__tests__/calls-socket-auth.test.ts",
+      "apps/api/packages/api/src/routes/__tests__/voip-media-socket.test.ts",
+      "apps/api/packages/api/scripts/smoke-voip-media-proxy.ts"
+    ],
+    "credentialChain": "Real API credential/client-rule middleware with synthetic authority stores; rejects under-permitted/revoked clients and scope changes before forwarding.",
+    "transport": "Actual loopback WebSocket with recording authority and upstream; denied/authorized control delivery and binary media. No live WhatsApp or deployed acceptance."
+  }
+}

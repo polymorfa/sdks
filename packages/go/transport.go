@@ -29,9 +29,9 @@ const APIVersion = "2026-09-22"
 type CredentialKind string
 
 const (
-	OrganizationAPIKey CredentialKind = "organizationApiKey"
-	ProjectToken       CredentialKind = "projectToken"
-	ClientToken        CredentialKind = "clientToken"
+	TeamAPIKey   CredentialKind = "teamApiKey"
+	ProjectToken CredentialKind = "projectToken"
+	ClientToken  CredentialKind = "clientToken"
 )
 
 type Credential struct {
@@ -157,7 +157,7 @@ func validateCredential(c Credential, messaging bool) error {
 		return configuration("runtime", "Server credentials cannot be used in browser or WASM runtimes.")
 	}
 	switch c.Kind {
-	case OrganizationAPIKey:
+	case TeamAPIKey:
 		if !opaqueShape(c.Value, "pmfa_") || strings.HasPrefix(c.Value, "pmfa_pt_") || strings.HasPrefix(c.Value, "pmfa_ct_") || strings.HasPrefix(c.Value, "pmfa_ls_") || strings.HasPrefix(c.Value, "pmfa_at_") || strings.HasPrefix(c.Value, "pmfa_wst_") || strings.HasPrefix(c.Value, "pmfa_sd_") {
 			return configuration("credential", "Team keys require the canonical pmfa_ opaque format.")
 		}

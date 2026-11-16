@@ -13,7 +13,7 @@ import {
   type HistoryMessage,
   type WebhookPayloadMap,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const servers: TestServer[] = [];
@@ -100,11 +100,9 @@ describe("round-2 customer routes", () => {
       baseUrl: server.url,
       credential: { type: "clientToken", value: `pmfa_ct_${"A".repeat(94)}` },
     });
-    expect(() => browser.catalogs.list("support")).toThrow(
-      "organization API key",
-    );
+    expect(() => browser.catalogs.list("support")).toThrow("team API key");
     expect(() => browser.cloudMarketing.getStatus("support")).toThrow(
-      "organization API key",
+      "team API key",
     );
     expect(server.requests).toHaveLength(0);
   });
@@ -220,7 +218,7 @@ describe("round-2 customer routes", () => {
     });
     const client = new Client({
       baseUrl: server.url,
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
     });
     const input = { enabled: true, maxEvents: 2, windowMs: 100 };
     await expect(

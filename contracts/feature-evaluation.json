@@ -1,20 +1,20 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "2e38a3342b0692e62c3fa62f432d98b8d681c5bb",
+  "commit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
   "branch": "dev",
   "note": "Feature availability operations from API dev. The full snapshots and coverage.json stay pinned to contracts/source.json until the next repin.",
   "extraction": "Feature availability operations and their transitive component references; operation objects unchanged",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "d23ef72bfba7c27f22953d16beb93c01eedc064e6e506118d20644b906a2c8e4",
+      "sourceSha256": "0c66f1ee93923cf57425ac29c01a84c5c140b703ace2160e1b899ee6dad0b071",
       "paths": {
         "/messaging/features/evaluate": {
           "post": {
             "operationId": "evaluateFeatures",
             "tags": ["Features"],
             "summary": "Evaluate feature availability",
-            "description": "Returns feature decisions for the authenticated organization or project. Client credentials cannot access this operation. Machine requests do not record experiment exposure.",
+            "description": "Returns feature decisions for the authenticated team or project. Client credentials cannot access this operation. Machine requests do not record experiment exposure.",
             "security": [{ "BearerAuth": [] }],
             "requestBody": {
               "required": true,
@@ -166,6 +166,46 @@
                                 "enum": ["customer", "staff", null],
                                 "description": "Who enabled an opt-in feature for the team: a team owner or admin, or Polymorfa. Null when not enrolled."
                               },
+                              "changedAt": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time",
+                                "description": "When the team last joined or left this opt-in feature. Null when the team has never enrolled or the authenticated principal cannot read team enrollment attribution."
+                              },
+                              "changedBy": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": ["member"]
+                                      },
+                                      "name": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "Display name of the team member who made the change. Null when they have no display name or are no longer a member."
+                                      }
+                                    },
+                                    "required": ["kind", "name"],
+                                    "nullable": true
+                                  },
+                                  {
+                                    "type": "object",
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": ["staff"]
+                                      }
+                                    },
+                                    "required": ["kind"],
+                                    "description": "The change was made by Polymorfa. Staff identity is never returned.",
+                                    "nullable": true
+                                  }
+                                ],
+                                "description": "Who last joined or left this opt-in feature for the team. Null when the team has never enrolled or the authenticated principal cannot read team enrollment attribution.",
+                                "nullable": true
+                              },
                               "exposureToken": {
                                 "type": "string",
                                 "description": "Deprecated. Always null.",
@@ -184,6 +224,8 @@
                               "terms",
                               "withdrawal",
                               "enrollmentSource",
+                              "changedAt",
+                              "changedBy",
                               "exposureToken"
                             ]
                           }
@@ -343,6 +385,7 @@
                       "invalid_request_error",
                       "authentication_error",
                       "permission_error",
+                      "billing_error",
                       "conflict_error",
                       "rate_limit_error",
                       "api_error",
@@ -352,11 +395,16 @@
                   "code": {
                     "type": "string",
                     "enum": [
+                      "zero_knowledge_session",
                       "invalid_parameter",
                       "invalid_credential",
                       "entitlement_required",
                       "cloud_template_authority_restricted",
                       "gate_limit_reached",
+                      "billing_credit_required",
+                      "addon_required",
+                      "safe_mode_not_entitled",
+                      "warmup_plan_not_entitled",
                       "method_not_allowed",
                       "permission_denied",
                       "missing_scope",
@@ -378,10 +426,12 @@
                       "hybrid_transport_unavailable",
                       "hybrid_target_reference_unavailable",
                       "send_outcome_unknown",
+                      "terms_acceptance_required",
+                      "terms_activation_blocked",
                       "idempotency_conflict",
                       "idempotency_in_progress",
-                      "idempotency_completed",
                       "idempotency_outcome_unknown",
+                      "idempotency_replay_unavailable",
                       "call_claimed",
                       "call_not_ringing",
                       "connection_limit",
@@ -436,7 +486,7 @@
                       "whatsapp_group_suspended",
                       "whatsapp_group_has_no_participants",
                       "bansafe_suspended",
-                      "bansafe_org_suspended",
+                      "bansafe_team_suspended",
                       "bansafe_cold_blocked",
                       "bansafe_cold_held",
                       "bansafe_throttled",
@@ -459,7 +509,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 },
                 "required": ["type", "code", "message", "param", "request_id"]
@@ -493,18 +543,18 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "528f6fa56c0044519ff0f3c12412eae3bbcad18485175daf82fc7b73046bf6b5",
+      "sourceSha256": "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485",
       "paths": {
         "/api/account/features/evaluate": {
           "post": {
             "operationId": "evaluateAccountFeatures",
             "tags": ["Feature availability"],
             "summary": "Evaluate feature availability",
-            "description": "Evaluate feature decisions for the live dashboard organization from each feature's published setting. No permission is granted by a decision. Features not offered to the team are omitted unless the team is enrolled; opt-in features include their terms before enrollment, and enrolled features stay visible for withdrawal.\n\nRequires a verified dashboard bearer and current organization authorization. Team keys and project tokens are not accepted.",
+            "description": "Evaluate feature decisions for the live dashboard team from each feature's published setting. No permission is granted by a decision. Features not offered to the team are omitted unless the team is enrolled; opt-in features include their terms before enrollment, and enrolled features stay visible for withdrawal.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
-            "x-exclusion-reason": "Private dashboard feature discovery; requires live organization membership.",
+            "x-exclusion-reason": "Private dashboard feature discovery; requires live team membership.",
             "security": [{ "ConsoleSession": [] }],
             "requestBody": {
               "required": true,
@@ -592,6 +642,8 @@
                               "terms",
                               "withdrawal",
                               "enrollmentSource",
+                              "changedAt",
+                              "changedBy",
                               "exposureToken"
                             ],
                             "properties": {
@@ -690,6 +742,46 @@
                                 "enum": ["customer", "staff", null],
                                 "description": "Who enabled an opt-in feature for the team: a team owner or admin, or Polymorfa. Null when not enrolled."
                               },
+                              "changedAt": {
+                                "type": "string",
+                                "nullable": true,
+                                "format": "date-time",
+                                "description": "When the team last joined or left this opt-in feature. Null when the team has never enrolled."
+                              },
+                              "changedBy": {
+                                "anyOf": [
+                                  {
+                                    "type": "object",
+                                    "nullable": true,
+                                    "required": ["kind", "name"],
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": ["member"]
+                                      },
+                                      "name": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "description": "Display name of the team member who made the change. Null when they have no display name or are no longer a member."
+                                      }
+                                    }
+                                  },
+                                  {
+                                    "type": "object",
+                                    "nullable": true,
+                                    "required": ["kind"],
+                                    "properties": {
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": ["staff"]
+                                      }
+                                    },
+                                    "description": "The change was made by Polymorfa. Staff identity is never returned."
+                                  }
+                                ],
+                                "nullable": true,
+                                "description": "Who last joined or left this opt-in feature for the team. Null when the team has never enrolled."
+                              },
                               "exposureToken": {
                                 "type": "string",
                                 "nullable": true,
@@ -719,12 +811,12 @@
             "operationId": "setFeatureEnrollment",
             "tags": ["Feature availability"],
             "summary": "setFeatureEnrollment",
-            "description": "Live organization owner/admin only. Enabling requires the feature's published opt-in setting, its current terms revision, entitlement, release eligibility and no operational disable; a terms change during the request returns 409. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current organization authorization. The signed-in member must be an organization owner or admin. Team keys and project tokens are not accepted.",
+            "description": "Live team owner/admin only. Enabling requires the feature's published opt-in setting, its current terms revision, entitlement, release eligibility and no operational disable; a terms change during the request returns 409. Withdrawal does not delete resources.\n\nRequires a verified dashboard bearer and current team authorization. The signed-in member must be a team owner or admin. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
-            "x-exclusion-reason": "Private beta enrollment; requires live organization owner or admin authority.",
-            "x-required-organization-role": "owner_or_admin",
+            "x-exclusion-reason": "Private beta enrollment; requires live team owner or admin authority.",
+            "x-required-team-role": "owner_or_admin",
             "security": [{ "ConsoleSession": [] }],
             "requestBody": {
               "required": true,
@@ -745,13 +837,24 @@
                         "nullable": true,
                         "maxLength": 100
                       },
+                      "acceptTerms": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 100,
+                        "description": "Published terms version to accept inline; termsRevision remains supported."
+                      },
+                      "locale": {
+                        "type": "string",
+                        "enum": ["en", "pt-BR"],
+                        "default": "en"
+                      },
                       "projectId": {
                         "type": "string",
                         "format": "uuid",
                         "description": "Optional active project in the signed-in team for a project-targeted release."
                       }
                     },
-                    "required": ["key", "enabled", "termsRevision"]
+                    "required": ["key", "enabled"]
                   }
                 }
               }
@@ -821,7 +924,7 @@
             "operationId": "recordFeatureExposure",
             "tags": ["Feature availability"],
             "summary": "recordFeatureExposure",
-            "description": "Deprecated. Exposure measurement is not recorded through this route; it always returns 403.\n\nRequires a verified dashboard bearer and current organization authorization. Team keys and project tokens are not accepted.",
+            "description": "Deprecated. Exposure measurement is not recorded through this route; it always returns 403.\n\nRequires a verified dashboard bearer and current team authorization. Team keys and project tokens are not accepted.",
             "x-audience": "console",
             "x-polymorfa-resource-boundary": "human_only",
             "x-excluded-from-public": true,
@@ -1056,6 +1159,7 @@
                       "invalid_request_error",
                       "authentication_error",
                       "permission_error",
+                      "billing_error",
                       "conflict_error",
                       "rate_limit_error",
                       "api_error",
@@ -1082,7 +1186,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 }
               },
@@ -1109,7 +1213,7 @@
       "method": "POST",
       "path": "/messaging/features/evaluate",
       "operationId": "evaluateFeatures",
-      "fingerprint": "994b893419de21c7916d3eeaaffec43bf3a70663c874412761b682a4a554889f",
+      "fingerprint": "61621e29c51c05cff49be39184ab44b75d8470b8f9264c4af7ae44a22f96c51d",
       "typescript": {
         "status": "excluded",
         "reason": "Host-runtime feature evaluation is not a customer messaging operation in this SDK."
@@ -1120,7 +1224,7 @@
       "method": "POST",
       "path": "/api/account/features/enrollment",
       "operationId": "setFeatureEnrollment",
-      "fingerprint": "133a1b23185bf582331a499556a4a7d9b5b83aa6c8770d020b144c646594c1c4",
+      "fingerprint": "e1151c397687075ee4658eda4b0e4f3a1f27003449aeeb127d2f425fd8f1ebc8",
       "typescript": {
         "status": "excluded",
         "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
@@ -1131,7 +1235,7 @@
       "method": "POST",
       "path": "/api/account/features/evaluate",
       "operationId": "evaluateAccountFeatures",
-      "fingerprint": "385101196190ec9994946f0ddb1545bcdd248e304f9910257e2f733e27c069f4",
+      "fingerprint": "4afc782993ccafa41dd2a0c346902e113b33b5275c92feb21bc595c1bcea92e0",
       "typescript": {
         "status": "excluded",
         "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
@@ -1142,7 +1246,7 @@
       "method": "POST",
       "path": "/api/account/features/exposure",
       "operationId": "recordFeatureExposure",
-      "fingerprint": "484abe6e496a9f2eb8776b749cc1c0b2b9b5f0aa54fb1d8d87f5fc9d7caa262f",
+      "fingerprint": "465a9cd6ab3b8e697bea2dc3bdafd0cea7ae817ad092757b7465fd5b1faf69f2",
       "typescript": {
         "status": "excluded",
         "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."

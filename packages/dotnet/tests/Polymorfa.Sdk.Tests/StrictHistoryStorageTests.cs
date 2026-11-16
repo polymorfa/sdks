@@ -12,7 +12,7 @@ internal static class StrictHistoryStorageTests
         {
             StrictHistoryTests.Check(options.ManualAcknowledgement && options.Since is null, "storage source uses manual ACK");
             await Task.CompletedTask;
-            yield return new(new("signed-archive", "fixture-org", null, "history.sync", "fixture", "testing", "2026-10-17T00:00:00Z", "available", null, null, "2026-10-18T00:00:00Z"), "fixture-stream", 1, webhook, "cursor-after-archive");
+            yield return new(new("signed-archive", "fixture-team", null, "history.sync", "fixture", "testing", "2026-10-17T00:00:00Z", "available", null, null, "2026-10-18T00:00:00Z"), "fixture-stream", 1, webhook, "cursor-after-archive");
         }
         public Task AcknowledgeAsync(string streamId, EventStreamAcknowledgement input) { Acknowledgements++; return Task.CompletedTask; }
     }

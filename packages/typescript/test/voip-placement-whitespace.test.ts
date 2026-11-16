@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { MessagingClient, PolymorfaValidationError } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 describe("placement recipient serialization", () => {
   it.each([
@@ -12,7 +12,7 @@ describe("placement recipient serialization", () => {
   ])("refuses surrounding whitespace before any transport: %j", (targets) => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const client = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
       fetch,
     });
     expect(() => client.voip.place({ session: "support", ...targets })).toThrow(

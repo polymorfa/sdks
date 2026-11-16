@@ -43,7 +43,7 @@ async fn request(socket: &mut TcpStream) -> (String, Value) {
 }
 fn event_frame() -> String {
     let envelope = json!({"id":"webhook-one","session":"wire-session","timestamp":"2026-10-01T12:00:00Z","event":"session.connected","payload":{"pushName":"fixture"}});
-    let record = json!({"id":"retained","organizationId":"org","projectId":"project","type":"session.connected","source":"runtime","environment":"development","createdAt":"2026-10-01T12:00:00Z","payloadAvailability":"retained","payload":{"contentType":"application/json","encoding":"base64","data":STANDARD.encode(envelope.to_string())},"metadataExpiresAt":"2026-11-01T12:00:00Z"});
+    let record = json!({"id":"retained","teamId":"team","projectId":"project","type":"session.connected","source":"runtime","environment":"development","createdAt":"2026-10-01T12:00:00Z","payloadAvailability":"retained","payload":{"contentType":"application/json","encoding":"base64","data":STANDARD.encode(envelope.to_string())},"metadataExpiresAt":"2026-11-01T12:00:00Z"});
     format!(
         "data: {}\n\n",
         json!({"type":"event","streamId":"stream/one","sequence":7,"cursor":"cursor-new","event":record})
@@ -125,8 +125,8 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
             0
         );
     });
-    let org = support::organization(base);
-    let project = org.project("project").unwrap();
+    let team = support::team(base);
+    let project = team.project("project").unwrap();
     let events = project.events();
     let source = NativeStorageEventSource::new(
         &events,
@@ -186,8 +186,8 @@ async fn native_retention_gap_in_same_packet_prevents_content_checkpoint_and_ack
                 .is_err()
         );
     });
-    let org = support::organization(base);
-    let project = org.project("project").unwrap();
+    let team = support::team(base);
+    let project = team.project("project").unwrap();
     let events = project.events();
     let source = NativeStorageEventSource::new(
         &events,
@@ -267,8 +267,8 @@ async fn malformed_project_payload_never_advances_storage_or_explicit_resume() {
             let body = "data: {\"type\":\"revoked\"}\n\n";
             resumed.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: text/event-stream\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
         });
-        let org = support::organization(base);
-        let project = org.project("project").unwrap();
+        let team = support::team(base);
+        let project = team.project("project").unwrap();
         let events = project.events();
         let source = NativeStorageEventSource::new(
             &events,

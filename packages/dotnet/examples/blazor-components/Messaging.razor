@@ -2,8 +2,6 @@
 @using Microsoft.JSInterop
 @implements IAsyncDisposable
 @inject IJSRuntime JavaScript
-<pmfa-session-status></pmfa-session-status>
-<pmfa-connect-whatsapp></pmfa-connect-whatsapp>
 <pmfa-inbox style="height:640px"></pmfa-inbox>
 @code {
     [Microsoft.AspNetCore.Components.Parameter] public string TokenEndpoint { get; set; } = "/api/polymorfa/token";

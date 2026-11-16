@@ -438,7 +438,7 @@ func TestCallsOutboundEarlyAcceptedAndLateDisconnect(t *testing.T) {
 			defer server.Close()
 			ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 			defer cancel()
-			c, _ := NewCallsClient(CallsClientConfig{Config: orgConfig(server.URL), Session: "s", Participant: "worker"})
+			c, _ := NewCallsClient(CallsClientConfig{Config: teamConfig(server.URL), Session: "s", Participant: "worker"})
 			session, e := c.Follow(ctx, CallsFollowOptions{})
 			if e != nil {
 				t.Fatal(e)
@@ -528,4 +528,19 @@ func TestCallReporterBoundsAndRefusal(t *testing.T) {
 		time.Sleep(time.Millisecond)
 	}
 	r2.Error("other")
+}
+
+func TestGuestVideoSourceLabels(t *testing.T) {
+	for _, test := range []struct{ name, phone, want string }{
+		{"Ada Guest", "+15550001", "Ada Guest"},
+		{"", "+15550001", "+15550001"},
+		{"", "", "123"},
+	} {
+		call := &Call{ctx: context.Background(), events: make(chan CallEvent, 1), snapshot: CallSnapshot{VideoSources: map[uint32]CallVideoSource{}}}
+		participant := &CallParticipant{ID: "123", Name: test.name, PhoneNumber: test.phone, Video: true, State: "connected"}
+		call.control(MediaControlFrame{Type: "video_source", Source: 1, Participant: participant})
+		if got := call.Snapshot().VideoSources[1].Label; got != test.want {
+			t.Errorf("label=%q, want %q", got, test.want)
+		}
+	}
 }

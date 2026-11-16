@@ -3,12 +3,12 @@ internal static class Fixture
 {
     private static void Variable(CampaignVariableValue value) { }
     private static void Attribute(AudienceProfileAttributeValue value) { }
-    internal static async Task Check(ProjectClient project, OrganizationClient organization)
+    internal static async Task Check(ProjectClient project, TeamClient team)
     {
-        _ = organization.AudienceProfiles;
-        _ = organization.Audiences;
-        _ = organization.OptOuts;
-        _ = await organization.Campaigns.GetSettingsAsync();
+        _ = team.AudienceProfiles;
+        _ = team.Audiences;
+        _ = team.OptOuts;
+        _ = await team.Campaigns.GetSettingsAsync();
         _ = await project.Campaigns.GetReplyFlowAsync("11111111-1111-4111-8111-111111111111");
         _ = new CreateCampaignReplyFlowRequest("name", new("entry", []));
         _ = project.ProjectId;

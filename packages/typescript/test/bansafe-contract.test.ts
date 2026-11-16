@@ -3,7 +3,7 @@ import { resolve } from "node:path";
 import { describe, expect, it } from "vitest";
 
 import { Client, MessagingClient } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 
 const root = resolve(import.meta.dirname, "../../..");
 
@@ -67,6 +67,14 @@ describe("BanSafe canonical contract coverage", () => {
     expect(
       bansafeRows.filter(({ typescript }) => typescript.status === "covered"),
     ).toHaveLength(35);
+    // Claim evidence gained linkedDeviceInteractive in contract revision
+    // f180dc1ee2; the ledger lists it as an untyped response field.
+    expect(
+      bansafeRows
+        .filter(({ typescript }) => "untypedResponseFields" in typescript)
+        .map(({ operationId }) => operationId)
+        .sort(),
+    ).toEqual(["getBanSafeClaim", "listBanSafeClaims"]);
     expect(
       bansafeRows.filter(({ typescript }) => typescript.status === "missing"),
     ).toEqual([]);
@@ -95,7 +103,7 @@ describe("BanSafe canonical contract coverage", () => {
       },
     ]);
     const client = new Client({
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       baseUrl: "https://example.invalid",
     });
     expect(client.banSafe).not.toHaveProperty("acknowledgeFinding");
@@ -105,11 +113,11 @@ describe("BanSafe canonical contract coverage", () => {
   it("maps covered BanSafe operations to server client methods", () => {
     const roots: Record<string, unknown> = {
       Client: new Client({
-        credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "teamApiKey", value: TEAM_API_KEY },
         baseUrl: "https://example.invalid",
       }),
       MessagingClient: new MessagingClient({
-        credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+        credential: { type: "apiKey", value: TEAM_API_KEY },
         baseUrl: "https://example.invalid",
       }),
     };

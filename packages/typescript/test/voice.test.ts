@@ -21,7 +21,7 @@ import {
   type VoiceAudioStatus,
   type VoiceProviderCredential,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 const PROJECT = "018f0000-0000-7000-8000-00000000000a";
 const OTHER_PROJECT = "018f0000-0000-7000-8000-00000000000b";
@@ -95,9 +95,9 @@ function sent(fetch: ReturnType<typeof vi.fn>, index: number) {
   };
 }
 
-function organizationClient(fetch: typeof globalThis.fetch) {
+function teamClient(fetch: typeof globalThis.fetch) {
   return new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     fetch,
     maxNetworkRetries: 0,
   });
@@ -157,7 +157,7 @@ describe("voice audio library", () => {
             page: { nextCursor: null, hasMore: false },
           });
     });
-    const page = await organizationClient(fetch).voice.audio.list(PROJECT, {
+    const page = await teamClient(fetch).voice.audio.list(PROJECT, {
       status: "ready",
       limit: 10,
     });
@@ -178,7 +178,7 @@ describe("voice audio library", () => {
   });
 
   it("requires a project for team clients", () => {
-    const audio = organizationClient(vi.fn()).voice.audio;
+    const audio = teamClient(vi.fn()).voice.audio;
     // @ts-expect-error team clients must name the project
     expect(() => audio.list()).toThrow(PolymorfaConfigurationError);
     expect(() =>
@@ -193,7 +193,7 @@ describe("voice audio library", () => {
 
   it("creates an upload and completes it", async () => {
     const fetch = uploadFlow();
-    const audio = organizationClient(fetch).voice.audio;
+    const audio = teamClient(fetch).voice.audio;
     const created = await audio.createUpload(
       PROJECT,
       {
@@ -275,7 +275,7 @@ describe("voice audio library", () => {
 
   it("takes the content type and size from a Blob", async () => {
     const fetch = uploadFlow();
-    await organizationClient(fetch).voice.audio.upload(PROJECT, {
+    await teamClient(fetch).voice.audio.upload(PROJECT, {
       name: "Greeting",
       body: new Blob([new Uint8Array([1, 2, 3])], { type: "audio/ogg" }),
     });
@@ -546,10 +546,12 @@ describe("voice audio library", () => {
         201,
       ),
     );
-    const created = await organizationClient(fetch).voice.audio.synthesize(
-      PROJECT,
-      { name: "Hello", text: "Hello", provider: "openai", voiceId: "coral" },
-    );
+    const created = await teamClient(fetch).voice.audio.synthesize(PROJECT, {
+      name: "Hello",
+      text: "Hello",
+      provider: "openai",
+      voiceId: "coral",
+    });
     expect(created.data.tts?.keySource).toBe("managed");
     const request = sent(fetch, 0);
     expect(request.method).toBe("POST");
@@ -625,7 +627,7 @@ describe("voice audio library", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       ok(asset({ projectId: OTHER_PROJECT })),
     );
-    const scoped = organizationClient(fetch).project(PROJECT).voice.audio;
+    const scoped = teamClient(fetch).project(PROJECT).voice.audio;
     for (const attempt of [
       () => scoped.retrieve(ASSET_ID),
       () => scoped.update(ASSET_ID, { name: "x" }),
@@ -784,7 +786,7 @@ describe("voice provider credentials", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       ok([credential({ projectId: null }), credential()]),
     );
-    const client = organizationClient(fetch);
+    const client = teamClient(fetch);
     const listed = await client.voice.providerCredentials.list();
     expect(listed.data).toHaveLength(2);
     expect(sent(fetch, 0).url.pathname).toBe(
@@ -801,9 +803,7 @@ describe("voice provider credentials", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       ok(credential({ projectId: null }), 201),
     );
-    const created = await organizationClient(
-      fetch,
-    ).voice.providerCredentials.create({
+    const created = await teamClient(fetch).voice.providerCredentials.create({
       provider: "elevenlabs",
       label: "Production",
       apiKey: PROVIDER_KEY,
@@ -818,7 +818,7 @@ describe("voice provider credentials", () => {
       projectId: null,
     });
 
-    await organizationClient(fetch).voice.providerCredentials.create({
+    await teamClient(fetch).voice.providerCredentials.create({
       provider: "openai",
       label: "Team",
       apiKey: PROVIDER_KEY,
@@ -860,8 +860,7 @@ describe("voice provider credentials", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       ok(credential({ projectId: null })),
     );
-    const scoped =
-      organizationClient(fetch).project(PROJECT).voice.providerCredentials;
+    const scoped = teamClient(fetch).project(PROJECT).voice.providerCredentials;
     await expect(scoped.retrieve(CREDENTIAL_ID)).resolves.toBeDefined();
     await expect(scoped.verify(CREDENTIAL_ID)).rejects.toBeInstanceOf(
       PolymorfaAuthorizationError,
@@ -892,7 +891,7 @@ describe("voice provider credentials", () => {
         "The provider rejected the key.",
       ),
     );
-    const error = await organizationClient(fetch)
+    const error = await teamClient(fetch)
       .voice.providerCredentials.create({
         provider: "openai",
         label: "Bad",
@@ -910,7 +909,7 @@ describe("voice provider credentials", () => {
     const offline = vi.fn<typeof globalThis.fetch>(async () => {
       throw new TypeError("fetch failed");
     });
-    const connection = await organizationClient(offline)
+    const connection = await teamClient(offline)
       .voice.providerCredentials.create({
         provider: "openai",
         label: "Bad",
@@ -920,7 +919,7 @@ describe("voice provider credentials", () => {
     expect(inspect(connection, { depth: 20 })).not.toContain(PROVIDER_KEY);
 
     expect(() =>
-      organizationClient(vi.fn()).voice.providerCredentials.create({
+      teamClient(vi.fn()).voice.providerCredentials.create({
         provider: "openai",
         label: "Empty",
         apiKey: "",
@@ -982,7 +981,7 @@ describe("voice webhooks", () => {
   const base = {
     eventId: "8c0e2a1b-7f3d-4e5a-9b6c-1d2e3f4a5b6c",
     occurredAt: "2026-09-19T10:00:05.000Z",
-    organizationId: "018f0000-0000-7000-8000-000000000001",
+    teamId: "018f0000-0000-7000-8000-000000000001",
     projectId: PROJECT,
     assetId: ASSET_ID,
     name: "Greeting",

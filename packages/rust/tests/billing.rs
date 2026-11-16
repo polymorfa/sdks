@@ -11,7 +11,7 @@ fn priorities() -> serde_json::Value {
 }
 #[tokio::test]
 async fn balances_transactions_and_tier_pricing_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing",
@@ -19,7 +19,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         json!({"data":{"balanceCents":250.123456,"preferredCurrency":"USD"}}),
         client.billing().retrieve(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing/usage",
@@ -27,7 +27,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         json!({"data":{"activeNumbers":2,"totalChargedCents":50.123456}}),
         client.billing().usage(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing/transactions",
@@ -37,7 +37,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
             .billing()
             .list_transactions(RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing/pricing",
@@ -48,7 +48,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
 }
 #[tokio::test]
 async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing/controls/project/abcdefab-1234-5678-9012-123456789abc",
@@ -60,7 +60,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/controls/customer/abcdefab-1234-5678-9012-123456789abc",
@@ -84,7 +84,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
         project_id: Some(ID.to_uppercase()),
         project_scope: true,
     };
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing/limits?projectId=abcdefab-1234-5678-9012-123456789abc&scope=project",
@@ -94,7 +94,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             .billing()
             .get_limits(&params, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/limits/number/abcdefab-1234-5678-9012-123456789abc",
@@ -110,7 +110,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/billing/priorities?projectId=abcdefab-1234-5678-9012-123456789abc&scope=project",
@@ -120,7 +120,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             .billing()
             .get_priorities(&params, RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/priorities/project/abcdefab-1234-5678-9012-123456789abc",
@@ -136,7 +136,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/priorities",
@@ -156,7 +156,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/priorities",
@@ -170,7 +170,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/priorities",
@@ -185,7 +185,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/billing/priorities",
@@ -203,7 +203,7 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
 }
 #[tokio::test]
 async fn invalid_billing_controls_fail_before_network() {
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     let bad = [
         SetResourceBillingControlsRequest {
             limit_credits: Some(0.0000001),

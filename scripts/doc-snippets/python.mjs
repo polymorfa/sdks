@@ -47,5 +47,5 @@ export function render(id, { client, request }) {
         ? "AsyncProjectClient"
         : "AsyncClient";
   const project = client === "project" ? `, ${p("projectId")}` : "";
-  return `import asyncio\nfrom polymorfa import ${type}, Credential\n\n\nasync def main() -> None:\n    async with ${type}(Credential("organization_api_key", ${key})${project}) as sdk:\n        result = await ${calls[id]}\n        print(result)\n\n\nif __name__ == "__main__":\n    asyncio.run(main())\n`;
+  return `import asyncio\nfrom polymorfa import ${type}, Credential\n\n\nasync def main() -> None:\n    async with ${type}(Credential("team_api_key", ${key})${project}) as sdk:\n        result = await ${calls[id]}\n        print(result)\n\n\nif __name__ == "__main__":\n    asyncio.run(main())\n`;
 }

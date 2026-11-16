@@ -25,7 +25,7 @@ fn opaque_fixture(ch: char) -> String {
 }
 fn token(value: char, expiry: Option<SystemTime>) -> CallsToken {
     CallsToken {
-        credential: Credential::organization_api_key(opaque_fixture(value)).unwrap(),
+        credential: Credential::team_api_key(opaque_fixture(value)).unwrap(),
         expires_at: expiry,
     }
 }
@@ -64,9 +64,7 @@ async fn provider_singleflight_expiry_and_explicit_refresh() {
         source.get(Default::default()),
         source.get(Default::default())
     );
-    assert!(
-        matches!(a.unwrap().credential,Credential::OrganizationApiKey(v) if v == opaque_fixture('a'))
-    );
+    assert!(matches!(a.unwrap().credential,Credential::TeamApiKey(v) if v == opaque_fixture('a')));
     assert!(b.is_ok());
     assert_eq!(hits.load(Ordering::SeqCst), 1);
     source.get(Default::default()).await.unwrap();
@@ -186,12 +184,10 @@ async fn refresh_overtakes_old_fetch_and_invalidation_prevents_stale_cache() {
         })
         .await
         .unwrap();
-    assert!(
-        matches!(fresh.credential,Credential::OrganizationApiKey(v) if v == opaque_fixture('b'))
-    );
+    assert!(matches!(fresh.credential,Credential::TeamApiKey(v) if v == opaque_fixture('b')));
     old.await.unwrap().unwrap();
     assert!(
-        matches!(source.get(Default::default()).await.unwrap().credential,Credential::OrganizationApiKey(v) if v == opaque_fixture('b'))
+        matches!(source.get(Default::default()).await.unwrap().credential,Credential::TeamApiKey(v) if v == opaque_fixture('b'))
     );
     assert_eq!(requests.load(Ordering::SeqCst), 2);
     source.invalidate().await;

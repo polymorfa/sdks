@@ -1,4 +1,4 @@
-use polymorfa_sdk::{ClientOptions, Credential, OrganizationClient, RequestOptions};
+use polymorfa_sdk::{ClientOptions, Credential, RequestOptions, TeamClient};
 use serde_json::json;
 use tokio::{
     io::{AsyncReadExt, AsyncWriteExt},
@@ -15,9 +15,8 @@ async fn safe_contract_error_metadata_is_preserved() {
         let body=json!({"error":{"code":"state_conflict","param":"body.revision","message":"Stale revision"}}).to_string();
         s.write_all(format!("HTTP/1.1 409 Conflict\r\ncontent-type: application/json\r\nx-trace-id: trace-contract\r\nx-ratelimit-limit: 100\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{}",body.len(),body).as_bytes()).await.unwrap();
     });
-    let client = OrganizationClient::new(
-        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
-            .unwrap(),
+    let client = TeamClient::new(
+        Credential::team_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap(),
         ClientOptions {
             base_url: base,
             max_network_retries: 0,
@@ -159,18 +158,17 @@ impl Wire {
         let result = self.requests.lock().unwrap().clone();
         result
     }
-    fn clients(&self) -> (MessagingClient, OrganizationClient, ProjectClient) {
+    fn clients(&self) -> (MessagingClient, TeamClient, ProjectClient) {
         let c =
-            Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
-                .unwrap();
+            Credential::team_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap();
         let o = ClientOptions {
             base_url: self.base.clone(),
             max_network_retries: 0,
             ..Default::default()
         };
-        let org = OrganizationClient::new(c.clone(), o.clone()).unwrap();
-        let p = org.project(PROJECT).unwrap();
-        (MessagingClient::new(c, o).unwrap(), org, p)
+        let team = TeamClient::new(c.clone(), o.clone()).unwrap();
+        let p = team.project(PROJECT).unwrap();
+        (MessagingClient::new(c, o).unwrap(), team, p)
     }
 }
 fn graph() -> CreateCampaignReplyFlowRequest {
@@ -277,7 +275,7 @@ fn fixture(kind: &str) -> Value {
 async fn call(
     id: &str,
     m: &MessagingClient,
-    c: &OrganizationClient,
+    c: &TeamClient,
     p: &ProjectClient,
     bound: bool,
     o: RequestOptions,
@@ -945,9 +943,8 @@ async fn server_credentials_and_validation_refuse_before_http() {
         opts.clone(),
     )
     .unwrap();
-    let c = OrganizationClient::new(
-        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
-            .unwrap(),
+    let c = TeamClient::new(
+        Credential::team_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap(),
         opts,
     )
     .unwrap();
@@ -1430,9 +1427,8 @@ async fn cancellation_settles_csv_body_without_a_second_request() {
         start_tx.send(()).unwrap();
         let _ = release_rx.await;
     });
-    let c = OrganizationClient::new(
-        Credential::organization_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string())
-            .unwrap(),
+    let c = TeamClient::new(
+        Credential::team_api_key("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string()).unwrap(),
         ClientOptions {
             base_url: base,
             max_network_retries: 0,

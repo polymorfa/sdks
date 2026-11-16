@@ -9,7 +9,8 @@ later tooling or documentation commit does not create a self-reference.
 
 The current source includes main's separately pinned webhook phone-offline
 supplement. The baseline stays at `Polymorfa-Version: 2026-09-22`, with API source
-`171a9683ff45d11a4b5d3917dc428ad2722b0d99` and the two hashes in `specs`.
+`f180dc1ee2bd45dbecf01702f73bdd75c664634b` (polymorfa/polymorfa#887) and the two
+hashes in `specs`.
 Separately pinned supplements retain their own versions. The generator rejects
 changed source files, coverage pins and OpenAPI snapshots until the source is
 rebound and the catalog is verified again.
@@ -24,8 +25,8 @@ reference being rendered. A newer or mismatched page uses cURL, even if its
 operation ID has the same spelling. Do not rewrite an older SDK call to fit it.
 
 Replace `{{POLYMORFA_API_KEY}}` with a credential of the explicit
-`credentialKind`. These recipes use an **organization API key** and the matching
-client principal. A project Test key does not authorize organization operations.
+`credentialKind`. These recipes use an **team API key** and the matching
+client principal. A project Test key does not authorize team operations.
 The docs renderer owns key selection and retrieval; this catalog never retrieves,
 stores or logs a reader's key. It must escape substituted values as string
 literals in the selected language. Plain text replacement of untrusted values is
@@ -40,9 +41,9 @@ The `request` metadata records the minimal body and required query used by the
 recipe. Its schemas and union branches are validated against the pinned OpenAPI.
 No optional request fields are included in this initial catalog.
 
-There are **31 operations per language**, 186 complete programs. Each language's
-coverage ledger contains 442 covered operations, leaving **411 omitted per
-language**. The initial recipes cover text sends, message actions, session
+There are **31 operations per language**, 186 complete programs. The TypeScript
+coverage ledger contains 451 covered operations (**420 omitted**) and each
+native ledger 445 (**414 omitted**). The initial recipes cover text sends, message actions, session
 lifecycle, business profiles/catalogs/collections and project event listing.
 The remaining operations have no verified recipe in this catalog and retain
 cURL fallback. Coverage of a method does not imply a verified documentation

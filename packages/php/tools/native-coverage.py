@@ -50,7 +50,7 @@ evidence = [
  ('GET','/platform/customers/{customerId}/pairing-links','customers.listPairingLinks','customers'),
  ('DELETE','/platform/customers/{customerId}/pairing-links/{pairingLinkId}','customers.revokePairingLink','customers'),
  ('POST','/platform/customers/{customerId}/numbers/{sessionId}/transfer','customers.transferNumber','customers'),
- ('GET','/platform/team','organizations.retrieve','accounts'),
+ ('GET','/platform/team','teams.retrieve','accounts'),
  ('GET','/platform/members','members.list','accounts'),
  ('GET','/platform/keys','apiKeys.list','accounts'),
  ('DELETE','/platform/keys/{keyId}','apiKeys.deactivate','accounts'),

@@ -2,13 +2,13 @@
 
 Handwritten server SDK for .NET 8 and later. This package is in development and has not been published to NuGet. It uses the API contract revision `2026-09-22` pinned in this repository.
 
-Create a messaging client with an team key or a project token. Keep server credentials in your server process.
+Create a messaging client with a team key or a project token. Keep server credentials in your server process.
 
 ```csharp
 using Polymorfa.Sdk;
 
 using var client = new MessagingClient(
-    Credential.OrganizationApiKey(Environment.GetEnvironmentVariable("POLYMORFA_API_KEY")!));
+    Credential.TeamApiKey(Environment.GetEnvironmentVariable("POLYMORFA_API_KEY")!));
 var response = await client.Messages.SendAsync(
     "support",
     new SendMessageRequest(
@@ -17,7 +17,7 @@ var response = await client.Messages.SendAsync(
 Console.WriteLine(response.Data.Data.Id);
 ```
 
-Organization and project clients provide immutable project views. A project token requires an explicit project ID and cannot be rebound to another project. Messaging client tokens cannot call server administration methods.
+Team and project clients provide immutable project views. A project token requires an explicit project ID and cannot be rebound to another project. Messaging client tokens cannot call server administration methods.
 
 Every response includes status, API version, request ID, attempt count, and safe response headers. Request options support cancellation, timeout, API version, custom headers, and an explicit idempotency key. Safe reads and keyed writes retry transient failures; ordinary writes do not. Message sends use a stable key throughout retries. Call links and transient call reactions never retry automatically.
 
@@ -33,7 +33,7 @@ retry limits and replay behavior still apply.
 
 `Webhooks.ConstructEvent` verifies native HMAC signatures against the exact raw request bytes before parsing. `ConstructLocalEvent` separately verifies timestamped CLI forwarding signatures. Unknown event names retain their envelope and payload. Deduplicate processed event IDs in your application. `Webhooks.CreateFixture` signs exact JSON bytes for application tests.
 
-Typed resources include sessions, all 20 message content kinds, QuickLinks, webhooks, Business, Channels, contacts, groups, hosted history, profile, presence, labels, privacy, identities, client token rules, organization metadata, billing, customer management, project settings, BanSafe, Flows, Functions, Voice, usage, SIP, and call controls. Native HTTP tests check the methods recorded in `coverage.json`.
+Typed resources include sessions, all 20 message content kinds, QuickLinks, webhooks, Business, Channels, contacts, groups, hosted history, profile, presence, labels, privacy, identities, client token rules, team metadata, billing, customer management, project settings, BanSafe, Flows, Functions, Voice, usage, SIP, and call controls. Native HTTP tests check the methods recorded in `coverage.json`.
 
 Known webhooks have typed payloads for all 84 names in the pinned TypeScript contract. Unknown events retain their envelope and payload. Event streams provide asynchronous enumeration and resume from a saved cursor. `MessagingMedia.SignedUrlExpiry` reads a previously received URL's expiry without a request. Media helpers verify SHA-256 and HMAC before releasing decrypted content; API downloads use a separate credential-free storage client. Voice upload sends bytes over that independent storage transport, then completes the asset through the API.
 
@@ -59,7 +59,7 @@ The 30-operation campaign/custody supplement follows API source
 An explicit override is preserved. Existing helpers retain their `2026-09-22`
 default. This is unpublished source; the supplement remains held for release.
 
-`OrganizationClient.AudienceProfiles` provides `ListAsync`, `RetrieveAsync`,
+`TeamClient.AudienceProfiles` provides `ListAsync`, `RetrieveAsync`,
 `PutAsync`, `DeleteAsync` and `ListConsentAsync`. Its `Imports` resource provides
 `CreateAsync`, `RetrieveAsync` and `CancelAsync`. Profiles contain customer-supplied
 campaign data. They do not import WhatsApp contacts, and consent assertions do
@@ -67,7 +67,7 @@ not authorize a send. Attribute values use `AudienceProfileAttributeValue`,
 including its explicit `Null`; campaign test variables use
 `CampaignVariableValue` and admit string, finite number or boolean values.
 
-`OrganizationClient.Campaigns` provides `GetReplyFlowAsync`,
+`TeamClient.Campaigns` provides `GetReplyFlowAsync`,
 `CreateReplyFlowAsync`, `SetReplyFlowAsync`, `TestSendAsync`,
 `ListLaunchApprovalsAsync`, `LinksAsync`, `ExportRecipientsAsync` and
 `GetSettingsAsync`. `Audiences.CreateFromCampaignAsync` creates an outcome-based
@@ -75,8 +75,8 @@ audience. `OptOuts` provides `GetConfirmationSettingsAsync`,
 `UpdateConfirmationSettingsAsync` and `GetConfirmationSummaryAsync`.
 
 A retained `platform.Project(projectId).Campaigns` view exposes the same seven
-campaign methods with its captured project. Settings and organization profile,
-import, retarget and STOP resources remain on the organization client. The six
+campaign methods with its captured project. Settings and team profile,
+import, retarget and STOP resources remain on the team client. The six
 Messaging campaign methods use a project slug and keep `SuccessEnvelope<T>`;
 all require a server principal. Platform campaign responses retain
 `DataEnvelope<T>`. Reply flows use the closed `CampaignReplyText`,
@@ -88,7 +88,7 @@ bounds. Responses preserve required nulls and reject malformed successful
 responses, unknown variants and missing fields.
 
 ```csharp
-using var platform = new OrganizationClient(Credential.OrganizationApiKey(apiKey));
+using var platform = new TeamClient(Credential.TeamApiKey(apiKey));
 using var project = platform.Project(projectId);
 await project.Campaigns.SetReplyFlowAsync(campaignId, new(null));
 await project.SignalCustody.UpdateCustomerAsync(customerId, new(0, null));
@@ -100,7 +100,7 @@ A null reply-flow ID detaches the flow. Customer custody null restores Project
 inheritance. Project updates require a concrete `SignalCustodyMode`; these
 settings affect future defaults and do not move existing Number keys. The four
 bound `SignalCustody` methods unwrap the data envelope once and retain metadata.
-The equivalent organization `Projects` and `Customers` aliases retain
+The equivalent team `Projects` and `Customers` aliases retain
 `DataEnvelope<SignalCustodyDefault>`. Disposing a borrowed Project view does not
 close its owner's transport. Project tokens cannot rebind to another project;
 team keys retain their existing rebind behavior.
@@ -142,7 +142,7 @@ relative to its bound project.
 Voice synthesis uses provider-specific inputs:
 
 ```csharp
-using var platform = new OrganizationClient(Credential.OrganizationApiKey(
+using var platform = new TeamClient(Credential.TeamApiKey(
     Environment.GetEnvironmentVariable("POLYMORFA_API_KEY")!));
 var speech = new OpenAiVoiceAudioInput(
     "Greeting", "Hello", OpenAiTtsVoice.Alloy, OpenAiTtsModel.Gpt4oMiniTts);
@@ -181,7 +181,7 @@ and reconcile. Campaign create and update take `FrequencyCap`
 recipients report `CampaignRecipientFailureReason.FrequencyCap`, and analytics
 add `FrequencyCap.SkippedRecipientCount`.
 
-`OrganizationClient.AudienceSegments` lists, retrieves, creates, updates and
+`TeamClient.AudienceSegments` lists, retrieves, creates, updates and
 deletes saved segments, and previews a saved segment or unsaved rules.
 `ProjectClient` has no segment resource. Conditions are records such as
 `AudienceSegmentTagContains` and `AudienceSegmentAttributeCompare`;
@@ -771,7 +771,7 @@ The adapter borrows the runtime and owns its module reference and database
 connection. Dispose it when the component or application owner ends. Disposal
 closes the connection and retains the stored data. No Polymorfa API client,
 credential, hosted retention setting or network storage service is involved.
-The SDK's browser prohibition on organization and project credentials remains
+The SDK's browser prohibition on team and project credentials remains
 in force; browser API calls still require an authorized client principal.
 
 Choose a stable, separate namespace and database for each application owner.
@@ -1131,3 +1131,43 @@ The response contains `data` and a nullable `nextCursor` (`Data` and
 next request. Filters include direction, outcome and ISO 8601 start-time
 bounds `since`/`until`. `peer` may be null; its user ID, phone number and
 username may each be absent. Platform call records keep `peerRef`.
+
+## Guest participants and waiting rooms (unreleased)
+
+Call participants and participant webhooks can include optional `guest` and
+`name` fields. A guest can have an opaque public ID without a phone number.
+The name is self-reported; display it as text and never use it for authorization.
+A name change updates the existing participant ID.
+
+`call.WaitingRoom` exposes the latest waiting-room state and pending public
+identities. Host controls are `await call.SetApprovalRequiredAsync(true)`,
+`await call.AdmitParticipantAsync("739182640518203")` and
+`await call.DenyParticipantAsync("739182640518203")`.
+They require the current media connection, call-owner authority and current
+provider administrator state. Pass a pending participant's public ID, never a
+provider address. Commands wait for a matching acknowledgement and do not
+change the roster optimistically. A timeout or connection loss leaves the
+outcome unknown. Inspect fresh state before trying again; reconnect does not
+replay moderation commands.
+
+These methods require the matching unreleased backend. Source and local package
+builds do not establish registry publication or deployed availability. They do
+not enable anonymous Polymorfa access or guest messaging.
+
+
+### Authenticated HTTP moderation (unreleased)
+
+`client.Calls.ModerateWaitingRoomAsync` sends a correlated action to
+`POST /messaging/voip/calls/{id}/waiting-room`. Supply the held connection ID and
+an action with `type: waiting_room_control`, `requestId`, and either `toggle`
+with `enabled`, or `admit`/`deny` with the pending participant's public ID.
+Server credentials may name their connection's participant; client tokens omit
+that field and need `voip_signal`.
+
+The API checks current credential and Number/project authority per request. Read
+`data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
+The SDK disables automatic network retries for this operation. A missing reply
+or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
+path; programmatic media WebSocket controls retain their credential rechecks.
+This source requires the matching unreleased backend. It does not enable a
+customer environment or advance package/API availability.

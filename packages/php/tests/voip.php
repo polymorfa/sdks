@@ -8,6 +8,7 @@ $settings = $vectors['settings'] + ['simultaneousCalls' => false];
 $quality = $vectors['quality'];
 $ok = ['success' => true];
 $cases = [
+ ['POST','/messaging/voip/calls/call_1/waiting-room',['connectionId'=>'connection_1','control'=>['type'=>'waiting_room_control','requestId'=>'request_123','operation'=>'deny','participantId'=>'123']],['success'=>true,'data'=>['type'=>'waiting_room_result','requestId'=>'request_123','ok'=>true]],false,fn($r)=>$r->moderateWaitingRoom('call_1',['connectionId'=>'connection_1','control'=>['type'=>'waiting_room_control','requestId'=>'request_123','operation'=>'deny','participantId'=>'123']])],
  ['PUT','/platform/sessions/support/call-settings',['simultaneousCalls' => true,'acknowledgeRisk' => true],['success' => true,'data' => array_replace($settings,['simultaneousCalls' => true])],true,fn ($r) => $r->updateCallSettings('support',['simultaneousCalls' => true,'acknowledgeRisk' => true])],
  ['PUT','/platform/sessions/support/call-settings',['simultaneousCalls' => false],['success' => true,'data' => $settings],true,fn ($r) => $r->updateCallSettings('support',['simultaneousCalls' => false])],
  ['PUT','/platform/sessions/support/call-settings',['simultaneousCalls' => true],['success' => true,'data' => array_replace($settings,['simultaneousCalls' => true])],true,fn ($r) => $r->updateCallSettings('support',['simultaneousCalls' => true])],
@@ -49,7 +50,7 @@ foreach ([fn () => $client->voip->updateCallSettings('support', ['acknowledgeRis
     raises($invalid, Polymorfa\ValidationException::class);
 }
 check($history === [], 'Call guards before transport');
-foreach ([fn ($r) => $r->createCallLink(['session' => 'support']),fn ($r) => $r->sendReaction('call_1', ['connectionId' => 'connection_1','emoji' => '👍'], new Polymorfa\RequestOptions(idempotencyKey:'key', maxNetworkRetries:3)),fn ($r) => $r->setHandRaised('call_1', ['connectionId' => 'connection_1','raised' => true], new Polymorfa\RequestOptions(idempotencyKey:'key', maxNetworkRetries:3))] as $invoke) {
+foreach ([fn ($r) => $r->createCallLink(['session' => 'support']),fn ($r) => $r->moderateWaitingRoom('call_1', ['connectionId'=>'connection_1','control'=>['type'=>'waiting_room_control','requestId'=>'request_123','operation'=>'deny','participantId'=>'123']], new Polymorfa\RequestOptions(idempotencyKey:'key', maxNetworkRetries:3)),fn ($r) => $r->sendReaction('call_1', ['connectionId' => 'connection_1','emoji' => '👍'], new Polymorfa\RequestOptions(idempotencyKey:'key', maxNetworkRetries:3)),fn ($r) => $r->setHandRaised('call_1', ['connectionId' => 'connection_1','raised' => true], new Polymorfa\RequestOptions(idempotencyKey:'key', maxNetworkRetries:3))] as $invoke) {
     $history = [];
     $client = new Polymorfa\MessagingClient($credential, http:mocked([jsonResponse(['error' => ['code' => 'service_unavailable']], 503)], $history));
     raises(fn () => $invoke($client->voip), Polymorfa\ServerException::class);

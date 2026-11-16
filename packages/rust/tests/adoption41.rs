@@ -4,7 +4,7 @@ use polymorfa_sdk::{campaigns::*, ErrorKind, RequestOptions};
 use serde_json::json;
 #[tokio::test]
 async fn platform_patch_selectors_are_refused_by_presence_before_io() {
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     for key in ["projectId", "id"] {
         for value in [json!(null), json!("project"), json!(false), json!(0)] {
             let body = UpdatePlatformCampaignRequest {
@@ -127,7 +127,7 @@ fn configuration41() -> serde_json::Value {
     json!({"effective":{"observation":{"presenceMode":"off","typingMode":"off","labelMode":"off","quickReplyMode":"off"},"historySync":{"mode":"metadata_only","requestFull":false,"delivery":"archive"},"hms":{"enabled":false}},"overrides":{"historySync":{"delivery":"descriptor"}},"sources":{"historySync.mode":"consent","historySync.requestFull":"consent","historySync.delivery":"platform","hms":"platform","observation.presenceMode":"platform","observation.typingMode":"platform","observation.labelMode":"platform","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":false,"delivery":"descriptor"},"historyConsent":"pending","revisions":{"team":0,"project":0,"session":0},"application":null})
 }
 fn session41() -> serde_json::Value {
-    json!({"sessionId":"sid","name":"s","tenantId":"org","type":"linked_devices","testMode":false,"status":"connected","createdAt":"2026-10-14T00:00:00Z","updatedAt":"2026-10-14T00:00:00Z","signalMode":"zero_knowledge","configuration":configuration41()})
+    json!({"sessionId":"sid","name":"s","tenantId":"team","type":"linked_devices","testMode":false,"status":"connected","createdAt":"2026-10-14T00:00:00Z","updatedAt":"2026-10-14T00:00:00Z","signalMode":"zero_knowledge","configuration":configuration41()})
 }
 #[tokio::test]
 async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_results() {
@@ -179,7 +179,7 @@ async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_result
     assert_eq!(result.data.data.id, "1234567890123456789");
     assert_eq!(result.data.data.messages, Some(json!({"stored":"opaque"})));
     assert_eq!(result.data.data.extensions["future"], false);
-    let org = support::organization(wire.base.clone());
+    let team = support::team(wire.base.clone());
     let params = PlatformCampaignParameters {
         project_id: PROJECT41.into(),
     };
@@ -213,11 +213,11 @@ async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_result
         ]),
         extensions: [("future".into(), json!(false))].into(),
     };
-    org.campaigns()
+    team.campaigns()
         .update("c /", Some(&patch), &params, Default::default())
         .await
         .unwrap();
-    org.campaigns()
+    team.campaigns()
         .update(
             "c /",
             Some(&UpdatePlatformCampaignRequest::default()),
@@ -226,11 +226,11 @@ async fn campaign_typed_mapping_null_patches_open_messages_and_normalized_result
         )
         .await
         .unwrap();
-    org.campaigns()
+    team.campaigns()
         .update("c /", None, &params, Default::default())
         .await
         .unwrap();
-    assert!(org
+    assert!(team
         .campaigns()
         .retrieve("c /", &params, Default::default())
         .await
@@ -398,9 +398,9 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         (200, json!({"data":configuration41()})),
     ])
     .await;
-    let org = support::organization(wire.base.clone());
-    let bound = org.project(PROJECT41).unwrap();
-    let view = org
+    let team = support::team(wire.base.clone());
+    let bound = team.project(PROJECT41).unwrap();
+    let view = team
         .session_configuration()
         .retrieve(Default::default())
         .await
@@ -437,7 +437,7 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         }),
         reset: None,
     };
-    org.session_configuration()
+    team.session_configuration()
         .update(
             &polymorfa_sdk::settings::UpdateSessionDefaults {
                 configuration: patch.clone(),
@@ -447,7 +447,7 @@ async fn configuration_versions_preserve_legacy_reads_resets_and_explicit_overri
         )
         .await
         .unwrap();
-    let result = org
+    let result = team
         .sessions()
         .update(
             "s /",
@@ -1008,7 +1008,7 @@ async fn recipient_filters_and_campaign_reports_keep_required_null_and_fractiona
         r.data.data[0].last_error.as_deref(),
         Some("missing_variable")
     );
-    let o = support::organization(wire.base.clone());
+    let o = support::team(wire.base.clone());
     o.campaigns()
         .recipients(
             "c",
@@ -1083,7 +1083,7 @@ async fn recipient_filters_and_campaign_reports_keep_required_null_and_fractiona
 #[tokio::test]
 async fn platform_launch_is_closed_typed_preserves_false_and_open_receipt() {
     let wire=Wire::new(vec![(200,json!({"data":{"id":"c","status":"scheduled","operationId":"op","recipientCount":0,"future":false}})),(409,json!({"error":{"code":"campaign_approval_required","param":"campaign","message":"Synthetic approval refusal"}}))]).await;
-    let o = support::organization(wire.base.clone());
+    let o = support::team(wire.base.clone());
     let body = LaunchPlatformCampaignRequest {
         project_id: PROJECT41.into(),
         scheduled_at: Some(0.5),
@@ -1145,7 +1145,7 @@ async fn four_replay_routes_preserve_explicit_key_exact_body_and_default_single_
             ),
         ])
         .await;
-        let o = support::organization(wire.base.clone());
+        let o = support::team(wire.base.clone());
         let m = support::messaging(wire.base.clone());
         let options = RequestOptions {
             idempotency_key: Some("caller-exact".into()),
@@ -1215,7 +1215,7 @@ async fn four_replay_routes_preserve_explicit_key_exact_body_and_default_single_
         assert_eq!(metadata.headers["idempotent-replayed"], "false");
         assert!(!metadata.headers.contains_key("set-cookie"));
         let w=Wire::new(vec![(409,json!({"error":{"code":"future_conflict_code","param":"body","message":"Synthetic conflict"}}))]).await;
-        let o = support::organization(w.base.clone());
+        let o = support::team(w.base.clone());
         let m = support::messaging(w.base.clone());
         let e = match kind {
             0 => m
@@ -1379,7 +1379,7 @@ async fn group_testing_and_request_log_actual_public_seams_keep_principals_and_e
     let log = json!({"id":"1234567890123456789","projectId":"A","createdAt":"2026-10-14T00:00:00Z","method":"POST","route":"/messaging/:session/messages/send","status":null,"durationMs":null,"result":"failure","source":"api","requestId":null,"traceId":null,"errorCode":null,"mcpTool":null,"credential":null});
     let page = json!({"data":[log],"page":{"nextCursor":null,"hasMore":false,"followCursor":""}});
     let w = Wire::new(vec![(200, page.clone()), (200, page.clone()), (200, page)]).await;
-    let o = support::organization(w.base.clone());
+    let o = support::team(w.base.clone());
     let a = o.project("A / ").unwrap();
     let b = o.project("B").unwrap();
     let retained = a.request_logs();
@@ -1496,7 +1496,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
         ..Default::default()
     };
     let m = support::messaging("http://127.0.0.1:1".into());
-    let org = support::organization("http://127.0.0.1:1".into());
+    let team = support::team("http://127.0.0.1:1".into());
     assert_eq!(
         m.groups()
             .get_capabilities("s", "g", options.clone())
@@ -1538,7 +1538,7 @@ async fn public_seam_malformed_errors_and_cancel_are_not_successes() {
         ErrorKind::Cancelled
     );
     assert_eq!(
-        org.request_logs()
+        team.request_logs()
             .list(
                 &ListRequestLogs {
                     project_id: Some("p".into()),
@@ -1612,7 +1612,7 @@ async fn capability_false_success_is_a_malformed_outcome() {
 #[tokio::test]
 async fn request_bounds_flatten_collisions_and_supplementary_controls() {
     let m = support::messaging("http://127.0.0.1:1".into());
-    let o = support::organization("http://127.0.0.1:1".into());
+    let o = support::team("http://127.0.0.1:1".into());
     for mapping in [
         (0..51)
             .map(|i| (format!("k{i}"), CampaignVariableBinding::default()))
@@ -1743,8 +1743,8 @@ async fn request_bounds_flatten_collisions_and_supplementary_controls() {
         .retrieve("s", Default::default())
         .await
         .unwrap();
-    let org = support::organization(wire.base.clone());
-    let fact = org
+    let team = support::team(wire.base.clone());
+    let fact = team
         .sessions()
         .retrieve(
             "s",
@@ -1861,7 +1861,7 @@ async fn regression41_group_nullable_facts_require_presence() {
 #[tokio::test]
 async fn regression41_platform_retrieve_requires_its_nullable_data_property() {
     let w = Wire::new(vec![(200, json!({}))]).await;
-    assert!(support::organization(w.base.clone())
+    assert!(support::team(w.base.clone())
         .campaigns()
         .retrieve(
             "c",

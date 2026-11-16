@@ -44,7 +44,7 @@ fn credential() -> Credential {
         .as_str()
         .unwrap()
         .to_owned();
-    Credential::organization_api_key(token).unwrap()
+    Credential::team_api_key(token).unwrap()
 }
 
 async fn scenario() {

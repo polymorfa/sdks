@@ -38,7 +38,7 @@ const call = await client.place("+15550100", { video: false });
 - Browser and other untrusted clients use a client token. Your server mints it
   with `POST /platform/client-tokens` and grants `voip_place`, `voip_answer`,
   and `voip_signal`. The token decides the session and the participant.
-- Server applications use an team key or project token. They may
+- Server applications use a team key or project token. They may
   set `participant` (`[A-Za-z0-9._:@-]{1,128}`, default `default`); the
   platform refers to them as `server:<participant>`.
 
@@ -72,7 +72,7 @@ promise: it resolves once media connects and rejects if media fails.
 - **`CallsClient`** — one per session. `connect()` starts receiving the
   session's calls and resolves once the first attempt settles.
   `participantReference` names this client once known. A replacement token
-  must belong to the same organization, project, session and participant.
+  must belong to the same team, project, session and participant.
   The client replaces the token before it expires, reconnects with backoff, and detects dead connections. When the token stops
   working it emits a `CallsAuthError` (`code: "unauthorized"`) and asks the
   provider for a fresh token. An invalid session or participant stops
@@ -245,3 +245,31 @@ Browser microphone updates affect microphone state only. A failed microphone
 control reports an error without stopping an already publishing camera or
 display. A refused or unconfirmed full video-publishing state stops display
 capture and leaves the saved camera off; the screen-sharing state is cleared.
+
+## Guest participants and waiting rooms (unreleased)
+
+`Participant.guest` and `Participant.name` are optional provider metadata. A
+guest can have an opaque public ID without `phoneNumber`. Names are self-reported;
+render them as text and use the public ID to track name/state changes. Default video-source
+labels use the first nonempty name, phone number or public ID.
+
+`call.waitingRoom` and the `waitingRoom` event expose approval state and pending
+participants. The current host administrator can call
+`await call.setApprovalRequired(true)`, `await call.admitParticipant(id)` or
+`await call.denyParticipant(id)`. The ID must come from the current pending
+roster. The backend checks live connection ownership and provider administrator
+authority. Commands wait up to five seconds for their matching acknowledgement;
+timeout leaves the outcome unknown. Reconnect never replays these commands.
+The pending roster changes only when the provider reports new state.
+
+Browsers use the matching methods on the UI Kit Calls controller. React's
+`ParticipantList` and the `<pmfa-call>` Web Component show guest labels and
+pending-participant controls when the current connection is an administrator.
+The browser receives snapshots on WebRTC and sends moderation through the
+Messaging API so every command rechecks its credential and Number/project
+authority. The credential-less data channel refuses moderation effects.
+Programmatic processes keep the authenticated media WebSocket and its credential
+rechecks. Both paths use the same public identities and provider acknowledgements.
+
+These additions require the matching unreleased backend and SDK. They do not
+provide anonymous Polymorfa accounts or enable guest messaging.

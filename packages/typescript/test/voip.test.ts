@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import { afterEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import {
@@ -54,7 +54,7 @@ function client(
   server: TestServer,
   credential: ConstructorParameters<typeof MessagingClient>[0]["credential"] = {
     type: "apiKey",
-    value: ORGANIZATION_API_KEY,
+    value: TEAM_API_KEY,
   },
 ) {
   return new MessagingClient({
@@ -377,9 +377,7 @@ describe("VoipResource", () => {
     expect(server.requests[0]?.headers["idempotency-key"]).toBe("place-1");
     expect(server.requests[4]?.headers["content-type"]).toBeUndefined();
     for (const request of server.requests) {
-      expect(request.headers.authorization).toBe(
-        `Bearer ${ORGANIZATION_API_KEY}`,
-      );
+      expect(request.headers.authorization).toBe(`Bearer ${TEAM_API_KEY}`);
     }
   });
 
@@ -874,4 +872,45 @@ describe("VoipResource", () => {
     };
     expect(update.maxConcurrency).toBe(rules.maxConcurrency);
   });
+});
+
+it("reauthorizes waiting-room moderation over HTTP without automatic replay", async () => {
+  const control = {
+    type: "waiting_room_control" as const,
+    requestId: "request_123",
+    operation: "deny" as const,
+    participantId: "123",
+  };
+  const server = await serve([
+    json({
+      success: true,
+      data: { type: "waiting_room_result", requestId: "request_123", ok: true },
+    }),
+    json({ error: "unavailable" }, 503),
+  ]);
+  const resource = client(server).voip;
+  const reply = await resource.moderateWaitingRoom("call-1", {
+    connectionId: "owner_connection",
+    control,
+  });
+  expect(reply.data.data.ok).toBe(true);
+  await expect(
+    resource.moderateWaitingRoom(
+      "call-1",
+      { connectionId: "owner_connection", control },
+      { idempotencyKey: "waiting-room-test", maxNetworkRetries: 3 },
+    ),
+  ).rejects.toBeDefined();
+  expect(server.requests).toHaveLength(2);
+  expect(server.requests[0]).toMatchObject({
+    method: "POST",
+    path: "/messaging/voip/calls/call-1/waiting-room",
+  });
+  expect(() =>
+    resource.moderateWaitingRoom("call-1", {
+      connectionId: "owner_connection",
+      control: { ...control, participantId: "222@lid" },
+    }),
+  ).toThrow(PolymorfaValidationError);
+  expect(server.requests).toHaveLength(2);
 });

@@ -38,7 +38,7 @@ func uploadFixture(t *testing.T, handler http.HandlerFunc) *MessagingClient {
 	u, _ := url.Parse("https://cdn.whatsapp.net")
 	jar.SetCookies(u, []*http.Cookie{{Name: "must_not_replay", Value: "private_fixture"}})
 	client.Jar = jar
-	config := orgConfig(server.URL)
+	config := teamConfig(server.URL)
 	config.HTTPClient = client
 	sdk, err := NewMessagingClient(config)
 	if err != nil {
@@ -295,7 +295,7 @@ func TestNativeDirectBodyEOFStillPreservesCancellation(t *testing.T) {
 			if !deadline {
 				body.cancel = cancel
 			}
-			config := orgConfig("https://api.example.invalid")
+			config := teamConfig("https://api.example.invalid")
 			config.HTTPClient = &http.Client{Transport: mediaRoundTripper(func(req *http.Request) (*http.Response, error) {
 				return &http.Response{StatusCode: 200, Header: make(http.Header), Body: io.NopCloser(body), Request: req}, nil
 			})}

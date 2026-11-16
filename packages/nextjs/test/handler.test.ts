@@ -1,4 +1,4 @@
-import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
+import { TEAM_API_KEY } from "../../typescript/test/support/credentials.js";
 import { createServer, type Server } from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -83,7 +83,7 @@ const get = (path: string, init: RequestInit = {}) =>
 describe("createPolymorfaHandler options", () => {
   it("accepts the server MessagingClient", () => {
     const polymorfa = new MessagingClient({
-      credential: { type: "apiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "apiKey", value: TEAM_API_KEY },
     });
     expect(
       createPolymorfaHandler({

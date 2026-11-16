@@ -1,4 +1,4 @@
-//! Organization-managed Customers and one-time customer pairing links.
+//! Team-managed Customers and one-time customer pairing links.
 use crate::{
     models::DataEnvelope,
     transport::{encode, HttpTransport},
@@ -15,7 +15,7 @@ wire_enum!(CustomerPairingLocale{En="en",PtBr="pt-BR"});
 wire_enum!(CustomerPairingTheme{Light="light",Dark="dark",System="system"});
 wire_enum!(CustomerPairingLinkStatus{Active="active",Opened="opened",Connecting="connecting",Connected="connected",Failed="failed",Expired="expired",Revoked="revoked"});
 wire_enum!(CustomerEventField{Name="name",Phone="phone",ExternalCustomerId="externalCustomerId"});
-model!(Customer{id:String,org_id:String,project_id:String,name:Option<String>,external_customer_id:Option<String>,status:CustomerStatus,is_default:bool,archived_at:Option<u64>,created_at:u64,updated_at:u64;});
+model!(Customer{id:String,team_id:String,project_id:String,name:Option<String>,external_customer_id:Option<String>,status:CustomerStatus,is_default:bool,archived_at:Option<u64>,created_at:u64,updated_at:u64;});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CustomerSummary {
@@ -66,7 +66,7 @@ model!(CustomerListEnvelope{data:Vec<CustomerSummary>,page:CustomerListPage;});
 model!(CustomerNumber{id:String,customer_id:String,session_id:String,name:Option<String>,phone_masked:Option<String>,status:String,backend:Option<String>,created_at:u64;});
 model!(CustomerEventMetadata{;fields:Vec<CustomerEventField>});
 model!(CustomerEvent{id:String,action:String,from_status:Option<String>,to_status:Option<String>,session_id:Option<String>,pairing_link_id:Option<String>,metadata:CustomerEventMetadata,occurred_at:u64;});
-model!(CustomerPairingLink{id:String,org_id:String,project_id:String,customer_id:String,expected_phone_masked:Option<String>,methods:Vec<CustomerPairingMethod>,locale:Option<CustomerPairingLocale>,theme:Option<CustomerPairingTheme>,expires_at:u64,status:CustomerPairingLinkStatus,attempt_count:u32,max_attempts:u32,pending_session_id:Option<String>,created_by:Option<String>,reserved_at:Option<u64>,opened_at:Option<u64>,connecting_at:Option<u64>,connected_at:Option<u64>,failed_at:Option<u64>,expired_at:Option<u64>,revoked_at:Option<u64>,last_error_code:Option<String>,failed_exchange_count:u32,phone_mismatch_count:u32,created_at:u64,updated_at:u64;});
+model!(CustomerPairingLink{id:String,team_id:String,project_id:String,customer_id:String,expected_phone_masked:Option<String>,methods:Vec<CustomerPairingMethod>,locale:Option<CustomerPairingLocale>,theme:Option<CustomerPairingTheme>,expires_at:u64,status:CustomerPairingLinkStatus,attempt_count:u32,max_attempts:u32,pending_session_id:Option<String>,created_by:Option<String>,reserved_at:Option<u64>,opened_at:Option<u64>,connecting_at:Option<u64>,connected_at:Option<u64>,failed_at:Option<u64>,expired_at:Option<u64>,revoked_at:Option<u64>,last_error_code:Option<String>,failed_exchange_count:u32,phone_mismatch_count:u32,created_at:u64,updated_at:u64;});
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CreatedCustomerPairingLink {
     #[serde(flatten)]

@@ -228,7 +228,18 @@ func CreateConnectionID() (string, error) {
 	return base64.RawURLEncoding.EncodeToString(b[:]), nil
 }
 
+type CallWaitingRoom struct {
+	Enabled       bool              `json:"enabled"`
+	IsAdmin       bool              `json:"isAdmin"`
+	InWaitingRoom bool              `json:"inWaitingRoom"`
+	Users         []CallParticipant `json:"users"`
+}
+
 type MediaControlFrame struct {
+	WaitingRoom           *CallWaitingRoom `json:"state,omitempty"`
+	OK                    *bool            `json:"ok,omitempty"`
+	Operation             string           `json:"operation,omitempty"`
+	Enabled               *bool            `json:"enabled,omitempty"`
 	Type                  string           `json:"type"`
 	CallID                string           `json:"callId,omitempty"`
 	ConnectionID          string           `json:"connectionId,omitempty"`
@@ -408,7 +419,7 @@ func (m *CallsMediaSocket) startReader() {
 						continue
 					}
 					frame.Control = &v
-					if v.Type == "media_state" || v.Type == "media_error" {
+					if v.Type == "media_state" || v.Type == "media_error" || v.Type == "waiting_room_result" {
 						m.ackMu.Lock()
 						pending := m.ack[v.RequestID]
 						if pending != nil {
@@ -523,6 +534,58 @@ func (m *CallsMediaSocket) UpdateMediaState(ctx context.Context, a, v, screen *b
 		return f, nil
 	}
 }
+
+// ModerateWaitingRoom sends one command without automatic replay. The public
+// target ID must come from the latest authoritative pending roster.
+func (m *CallsMediaSocket) ModerateWaitingRoom(ctx context.Context, operation, target string, enabled *bool) error {
+	if operation == "toggle" {
+		if enabled == nil || target != "" {
+			return validation("Specify enabled.")
+		}
+	} else if (operation != "admit" && operation != "deny") || !groupPattern.MatchString(target) || enabled != nil {
+		return validation("Specify a public pending participant ID.")
+	}
+	m.startReader()
+	m.ackMu.Lock()
+	if m.queueCount >= 16 {
+		m.ackMu.Unlock()
+		return &Error{Kind: ConflictError, Code: "waiting_room_unavailable", Message: "Control queue is full."}
+	}
+	m.queueCount++
+	m.ackMu.Unlock()
+	defer func() { m.ackMu.Lock(); m.queueCount--; m.ackMu.Unlock() }()
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	if ctx.Err() != nil {
+		return contextError(ctx, ctx.Err())
+	}
+	id, err := CreateConnectionID()
+	if err != nil {
+		return err
+	}
+	reply := make(chan MediaControlFrame, 1)
+	m.ackMu.Lock()
+	m.ack[id] = reply
+	m.ackMu.Unlock()
+	defer func() { m.ackMu.Lock(); delete(m.ack, id); m.ackMu.Unlock() }()
+	budget, cancel := context.WithTimeout(ctx, 5*time.Second)
+	defer cancel()
+	if err = wsjson.Write(budget, m.conn, MediaControlFrame{Type: "waiting_room_control", RequestID: id, Operation: operation, ParticipantID: target, Enabled: enabled}); err != nil {
+		return callSocketError(err)
+	}
+	select {
+	case <-budget.Done():
+		return &Error{Kind: TimeoutError, Code: "waiting_room_control_unknown", Message: "Waiting-room control was not confirmed."}
+	case <-m.readerDone:
+		return &Error{Kind: ConnectionError, Code: "waiting_room_control_unknown", Message: "Media connection closed."}
+	case result := <-reply:
+		if result.Type != "waiting_room_result" || result.OK == nil || !*result.OK {
+			return &Error{Kind: ConflictError, Code: result.Code, Message: "Waiting-room control was refused."}
+		}
+		return nil
+	}
+}
+
 func (l *CallsLifecycle) sendAuth(ctx context.Context, token string) error {
 	return wsjson.Write(ctx, l.conn, struct {
 		Type  string `json:"type"`

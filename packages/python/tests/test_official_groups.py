@@ -178,7 +178,7 @@ async def test_typed_official_group_methods(method, path, body, query, data, inv
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -209,7 +209,7 @@ async def test_every_official_group_mutation_is_single_attempt(
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

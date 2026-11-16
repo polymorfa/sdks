@@ -131,7 +131,7 @@ const sent = await messaging.messages.send(
 console.log(sent.data.data.id, sent.metadata.attempts);
 ```
 
-Messaging credentials use an explicit discriminator. Organization server keys
+Messaging credentials use an explicit discriminator. Team server keys
 use `{ type: "apiKey", value }`, project tokens use
 `{ type: "projectToken", value }`, and short-lived client tokens use
 `{ type: "clientToken", value }`. A discriminator/prefix mismatch fails before
@@ -141,7 +141,7 @@ The handwritten Messaging resources in this milestone are:
 
 - `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
   evidence, and Health policy settings, and one number's Safe Mode override,
-  with an team key or project token
+  with a team key or project token
 - `sessions`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
 - `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
@@ -202,7 +202,7 @@ import { Client } from "@polymorfa/sdk";
 
 const client = new Client({
   credential: {
-    type: "organizationApiKey",
+    type: "teamApiKey",
     value: process.env.POLYMORFA_PLATFORM_API_KEY!,
   },
 });
@@ -220,10 +220,10 @@ const indexed = await project.events.list({ afterOffset: "0" });
 console.log(indexed.highWatermark, indexed.nextOffset);
 ```
 
-`Client` binds its ownership context when you construct it. An organization
-API key without `projectId` creates an organization client. Call
+`Client` binds its ownership context when you construct it. A team
+API key without `projectId` creates a team client. Call
 `client.project(projectId)` to create an immutable project view, or construct a
-project view directly with an team key or a `pmfa_pt_` project token:
+project view directly with a team key or a `pmfa_pt_` project token:
 
 ```ts
 const project = new Client({
@@ -238,13 +238,13 @@ const project = new Client({
 Project tokens require an explicit project ID. The server verifies the initial
 token-to-project binding. A later attempt to bind that client to another
 project fails before transport. `Client` also rejects browser client tokens and
-the CLI-only `pmfa_ls_` listener credential before transport. Organization
+the CLI-only `pmfa_ls_` listener credential before transport. Team
 keys must use the single v1 form `pmfa_` plus 72 unpadded base64url characters;
 project tokens must use `pmfa_pt_` plus 94. The SDK validates that grammar
 without decoding the credential. Retired call-agent and socket tickets and
 simulated-device capabilities are also rejected before transport.
 
-Both organization and project views expose owner-bound resources:
+Both team and project views expose owner-bound resources:
 
 - `events`: list, retrieve, and replay durable events
 - `webhooks`: list, create, retrieve, update, delete, test, and rotate secrets
@@ -278,16 +278,16 @@ operation succeeds, fails, or is cancelled, its `sequence` passes
 state, so check `status`. `operations.get(id, { wait })` makes one long-poll
 read. `operations.cancel(id)` works only while `capabilities.cancellable` is
 true and sends a generated `Idempotency-Key` unless you pass one. Reads need
-`operations:read`; cancellation needs `operations:cancel`. Organization
+`operations:read`; cancellation needs `operations:cancel`. Team
 clients see team and project operations and accept a `projectId` filter;
 project clients see only their project.
 
-The organization view also exposes these management resources:
+The team view also exposes these management resources:
 
-- `organizations`: retrieve the organization visible to the API key
-- `apiKeys`: list key metadata and deactivate an team key
-- `members`: list organization members
-- `auditLogs`: list the organization audit trail with live action, resource,
+- `teams`: retrieve the team visible to the API key
+- `apiKeys`: list key metadata and deactivate a team key
+- `members`: list team members
+- `auditLogs`: list the team audit trail with live action, resource,
   and limit filters
 - `sessionBans`: list all or active session bans
 - `securityIncidents`: list and acknowledge leaked-credential incidents
@@ -305,7 +305,7 @@ The organization view also exposes these management resources:
   transactions and tier pricing
 - `usage`: read metered call usage for a month, list or iterate usage records
   for a call or number (also on project clients), and read usage gate modes,
-  limits and decisions (organization clients only). Usage is measured, not
+  limits and decisions (team clients only). Usage is measured, not
   charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
   restrictions, incidents, claims, and Health action history; report and retract
@@ -320,7 +320,7 @@ The organization view also exposes these management resources:
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
-  on organization clients. `create` requires `CreatePlatformCampaignRequest`
+  on team clients. `create` requires `CreatePlatformCampaignRequest`
   with `name` and `projectId`; its named JSON fields pass through unchanged.
   `update` accepts `recipientListId` to point an unlaunched draft at another
   audience, or null to detach it
@@ -330,7 +330,7 @@ The organization view also exposes these management resources:
 - `audiences`: list, create from inline members or a spreadsheet import,
   retrieve, delete, create an upload URL, and add, page, or remove members
 - `optOuts`: list, create one, create a batch, delete by phone number, and read
-  or replace the organization's STOP/START keyword settings
+  or replace the team's STOP/START keyword settings
 - `callPolicy`: retrieve and replace the team's blocked country codes for calls
 - `callOptOuts`: list, add one, import up to 5,000, and remove entries on the
   team's do-not-call list
@@ -369,7 +369,7 @@ Appending recipients or audience members accepts partial success: the result
 reports `added`, `duplicateCount`, `invalidCount` and up to 20 `invalidRows`.
 
 Platform template and Flow endpoints require a live dashboard bearer and reject
-organization server keys. They are intentionally absent from `Client`;
+team server keys. They are intentionally absent from `Client`;
 browser template tooling must reach them through an application-owned server
 adapter that authorizes the signed-in user.
 
@@ -480,7 +480,7 @@ request ID and the W3C trace ID returned in `X-Trace-Id`. See
 ## Call consent
 
 Polymorfa checks every call against the team's call policy before the
-destination rings. The policy is team-wide and needs an team key;
+destination rings. The policy is team-wide and needs a team key;
 project tokens and client tokens receive `403`.
 
 ```ts
@@ -488,8 +488,8 @@ import { Client, MessagingClient } from "@polymorfa/sdk";
 
 const client = new Client({
   credential: {
-    type: "organizationApiKey",
-    value: process.env.POLYMORFA_ORG_KEY!,
+    type: "teamApiKey",
+    value: process.env.POLYMORFA_TEAM_KEY!,
   },
 });
 
@@ -711,7 +711,7 @@ const response = await client.raw.request<{ data: unknown }>({
 });
 ```
 
-Organization raw paths remain relative API paths. Project raw paths are
+Team raw paths remain relative API paths. Project raw paths are
 relative to the bound project and receive the encoded
 `/platform/projects/{projectId}` prefix automatically. Project raw requests reject
 absolute URLs, traversal, explicit project prefixes, backslashes, and
@@ -757,7 +757,7 @@ migration release.
 
 Messaging server credentials can manage webhook registrations through
 `MessagingClient.webhooks`. The management `Client` owns the separate durable
-organization and project event, webhook, delivery, attempt, and operation
+team and project event, webhook, delivery, attempt, and operation
 resources described above. Dashboard and staff routes retain their separate
 credential requirements.
 
@@ -770,7 +770,7 @@ used by `Client`, `MessagingClient`, or their raw request helpers.
 ## QuickLink lifecycle and settings
 
 `MessagingClient.quickLinks.create()`, `retrieve()`, and `cancel()` map the
-authenticated hosted lifecycle at `/messaging/quicklinks`. They accept organization
+authenticated hosted lifecycle at `/messaging/quicklinks`. They accept team
 API keys or project tokens with `quicklink:manage`; browser client tokens fail
 before transport. Team keys can set `projectId` on creation, while a
 project token remains bound by the server.

@@ -11,7 +11,7 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import { withIdempotencyKey } from "../transport/idempotency.js";
 import type {
   ClientOwner,
-  CreateOrganizationWebhookInput,
+  CreateTeamWebhookInput,
   CreateProjectWebhookInput,
   ListDeliveryAttemptsParams,
   ListEventsParams,
@@ -19,29 +19,29 @@ import type {
   IndexedEventPage as IndexedEventRead,
   ListOperationsParams,
   ListOperationTransitionsParams,
-  ListOrganizationOperationsParams,
+  ListTeamOperationsParams,
   ManagementOperation,
   OperationTransition,
-  OrganizationOperationCancellationReceipt,
+  TeamOperationCancellationReceipt,
   ProjectOperation,
   ProjectOperationCancellationReceipt,
   RetrieveOperationParams,
-  RetrieveOrganizationOperationParams,
+  RetrieveTeamOperationParams,
   WaitForOperationOptions,
-  WaitForOrganizationOperationOptions,
+  WaitForTeamOperationOptions,
   ListWebhookDeliveriesParams,
   ListWebhooksParams,
-  OrganizationEvent,
-  OrganizationEventReplayReceipt,
-  OrganizationWebhook,
-  OrganizationWebhookCreationReceipt,
-  OrganizationWebhookDeletionReceipt,
-  OrganizationWebhookDelivery,
-  OrganizationWebhookDeliveryAttempt,
-  OrganizationWebhookDeliveryRetryReceipt,
-  OrganizationWebhookMutationReceipt,
-  OrganizationWebhookSecretRotationReceipt,
-  OrganizationWebhookTestReceipt,
+  TeamEvent,
+  TeamEventReplayReceipt,
+  TeamWebhook,
+  TeamWebhookCreationReceipt,
+  TeamWebhookDeletionReceipt,
+  TeamWebhookDelivery,
+  TeamWebhookDeliveryAttempt,
+  TeamWebhookDeliveryRetryReceipt,
+  TeamWebhookMutationReceipt,
+  TeamWebhookSecretRotationReceipt,
+  TeamWebhookTestReceipt,
   ProjectEvent,
   ProjectEventReplayReceipt,
   ProjectWebhook,
@@ -57,9 +57,9 @@ import type {
   RetryWebhookDeliveryInput,
   RetrieveEventParams,
   RotateWebhookSecretInput,
-  TestOrganizationWebhookInput,
+  TestTeamWebhookInput,
   TestProjectWebhookInput,
-  UpdateOrganizationWebhookInput,
+  UpdateTeamWebhookInput,
   UpdateProjectWebhookInput,
 } from "./developer-types.js";
 import {
@@ -69,7 +69,7 @@ import {
   type EventStreamAcknowledgementReceipt,
   type EventStreamParams,
   type LiveEventSourceAdapter,
-  type OrganizationEventStreamParams,
+  type TeamEventStreamParams,
 } from "./event-stream.js";
 import {
   decodeCursorPage,
@@ -83,49 +83,49 @@ import {
 
 type EventFor<O extends ClientOwner> = O extends "project"
   ? ProjectEvent
-  : OrganizationEvent;
+  : TeamEvent;
 type EventStreamParamsFor<O extends ClientOwner> = O extends "project"
   ? EventStreamParams
-  : OrganizationEventStreamParams;
+  : TeamEventStreamParams;
 type EventReplayFor<O extends ClientOwner> = O extends "project"
   ? ProjectEventReplayReceipt
-  : OrganizationEventReplayReceipt;
+  : TeamEventReplayReceipt;
 type WebhookFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhook
-  : OrganizationWebhook;
+  : TeamWebhook;
 type CreateWebhookFor<O extends ClientOwner> = O extends "project"
   ? CreateProjectWebhookInput
-  : CreateOrganizationWebhookInput;
+  : CreateTeamWebhookInput;
 type UpdateWebhookFor<O extends ClientOwner> = O extends "project"
   ? UpdateProjectWebhookInput
-  : UpdateOrganizationWebhookInput;
+  : UpdateTeamWebhookInput;
 type WebhookCreationFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookCreationReceipt
-  : OrganizationWebhookCreationReceipt;
+  : TeamWebhookCreationReceipt;
 type WebhookMutationFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookMutationReceipt
-  : OrganizationWebhookMutationReceipt;
+  : TeamWebhookMutationReceipt;
 type WebhookDeletionFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDeletionReceipt
-  : OrganizationWebhookDeletionReceipt;
+  : TeamWebhookDeletionReceipt;
 type WebhookRotationFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookSecretRotationReceipt
-  : OrganizationWebhookSecretRotationReceipt;
+  : TeamWebhookSecretRotationReceipt;
 type WebhookTestFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookTestReceipt
-  : OrganizationWebhookTestReceipt;
+  : TeamWebhookTestReceipt;
 type WebhookTestInputFor<O extends ClientOwner> = O extends "project"
   ? TestProjectWebhookInput
-  : TestOrganizationWebhookInput;
+  : TestTeamWebhookInput;
 type DeliveryFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDelivery
-  : OrganizationWebhookDelivery;
+  : TeamWebhookDelivery;
 type AttemptFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDeliveryAttempt
-  : OrganizationWebhookDeliveryAttempt;
+  : TeamWebhookDeliveryAttempt;
 type DeliveryRetryFor<O extends ClientOwner> = O extends "project"
   ? ProjectWebhookDeliveryRetryReceipt
-  : OrganizationWebhookDeliveryRetryReceipt;
+  : TeamWebhookDeliveryRetryReceipt;
 
 class ResourceBase {
   protected readonly raw: RawClient;
@@ -323,7 +323,7 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
   /**
    * Streams a project's events over server-sent events with automatic
    * reconnect and resume. Requires `events:listen` and the Event streams
-   * beta. Organization clients pass `projectId`.
+   * beta. Team clients pass `projectId`.
    */
   stream(
     params: EventStreamParamsFor<O> = {} as EventStreamParamsFor<O>,
@@ -364,15 +364,14 @@ export class EventsResource<O extends ClientOwner> extends ResourceBase {
     );
   }
   private streamPath(
-    params: EventStreamParams | OrganizationEventStreamParams,
+    params: EventStreamParams | TeamEventStreamParams,
   ): string {
     if (this.prefix.startsWith("/platform/projects/"))
       return this.path("/events/stream");
-    const projectId = (params as Partial<OrganizationEventStreamParams>)
-      .projectId;
+    const projectId = (params as Partial<TeamEventStreamParams>).projectId;
     if (typeof projectId !== "string" || projectId.trim() === "") {
       throw new PolymorfaConfigurationError(
-        "Organization clients must pass projectId to stream events.",
+        "Team clients must pass projectId to stream events.",
         "projectId",
       );
     }
@@ -438,7 +437,7 @@ export class WebhooksResource<O extends ClientOwner> extends ResourceBase {
     ) {
       return Promise.reject(
         new PolymorfaValidationError(
-          "Organization webhook tests do not accept body or sessionId.",
+          "Team webhook tests do not accept body or sessionId.",
         ),
       );
     }
@@ -525,16 +524,16 @@ type OperationFor<O extends ClientOwner> = O extends "project"
   : ManagementOperation;
 type ListOperationsFor<O extends ClientOwner> = O extends "project"
   ? ListOperationsParams
-  : ListOrganizationOperationsParams;
+  : ListTeamOperationsParams;
 type RetrieveOperationParamsFor<O extends ClientOwner> = O extends "project"
   ? RetrieveOperationParams
-  : RetrieveOrganizationOperationParams;
+  : RetrieveTeamOperationParams;
 type WaitOptionsFor<O extends ClientOwner> = O extends "project"
   ? WaitForOperationOptions
-  : WaitForOrganizationOperationOptions;
+  : WaitForTeamOperationOptions;
 type OperationCancellationFor<O extends ClientOwner> = O extends "project"
   ? ProjectOperationCancellationReceipt
-  : OrganizationOperationCancellationReceipt;
+  : TeamOperationCancellationReceipt;
 
 const TERMINAL_OPERATION_STATUSES = new Set([
   "succeeded",
@@ -546,7 +545,7 @@ export const OPERATION_WAIT_MAX_SECONDS = 30;
 
 /**
  * Asynchronous operations (campaign sends, production enrollments, and other
- * durable work). Organization clients see team and project operations;
+ * durable work). Team clients see team and project operations;
  * project clients see only their project. Requires `operations:read`;
  * `cancel` requires `operations:cancel`.
  */
@@ -658,12 +657,10 @@ export class OperationsResource<O extends ClientOwner> extends ResourceBase {
           operationId,
           {
             wait,
-            ...((options as WaitForOrganizationOperationOptions).projectId ===
-            undefined
+            ...((options as WaitForTeamOperationOptions).projectId === undefined
               ? {}
               : {
-                  projectId: (options as WaitForOrganizationOperationOptions)
-                    .projectId,
+                  projectId: (options as WaitForTeamOperationOptions).projectId,
                 }),
             ...(options.afterSequence === undefined
               ? {}
