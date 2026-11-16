@@ -1,6 +1,6 @@
 {
   "schemaVersion": 2,
-  "sourceCommit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
+  "sourceCommit": "23f91923668cdbb832642e471103568648254fc4",
   "excludedContracts": [
     {
       "family": "graph",
@@ -11199,7 +11199,7 @@
         "method": "Client.analytics.get"
       },
       "sourceContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
-      "sourceCommit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
+      "sourceCommit": "23f91923668cdbb832642e471103568648254fc4",
       "sdkContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
       "go": {
         "status": "covered",
@@ -11234,7 +11234,7 @@
       "fingerprint": "f72d53a45f5203425f79948424a3c247cdc5f7c581acee91ac3a2d42c17c18ee",
       "sourceContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
       "sdkContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
-      "sourceCommit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
+      "sourceCommit": "23f91923668cdbb832642e471103568648254fc4",
       "go": {
         "status": "covered",
         "method": "TeamClient.Analytics.Metrics"
@@ -14277,7 +14277,7 @@
         "method": "Client.analytics.get"
       },
       "sourceContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
-      "sourceCommit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
+      "sourceCommit": "23f91923668cdbb832642e471103568648254fc4",
       "sdkContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
       "go": {
         "status": "covered",
@@ -14312,7 +14312,7 @@
       "fingerprint": "7884e3c2c3c7cb07bc04a96e188019435ecfef5d66f72ff0684d15d8c0adb781",
       "sourceContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
       "sdkContractSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
-      "sourceCommit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
+      "sourceCommit": "23f91923668cdbb832642e471103568648254fc4",
       "go": {
         "status": "covered",
         "method": "ProjectClient.Analytics.Metrics"

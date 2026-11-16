@@ -54,7 +54,7 @@ Signal cryptography and key custody remain in the customer-operated Signal servi
 ### Campaign, audience profiles and custody defaults
 
 The 30-operation campaign/custody supplement follows API source
-`56dab15a078b0bd56eb1f7088e0bf6f380eaf22c`. These helpers use
+`23f91923668cdbb832642e471103568648254fc4`. These helpers use
 `Polymorfa-Version: 2026-10-14` when `RequestOptions.ApiVersion` is absent.
 An explicit override is preserved. Existing helpers retain their `2026-09-22`
 default. This is unpublished source; the supplement remains held for release.

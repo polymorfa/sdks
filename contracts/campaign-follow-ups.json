@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
+  "commit": "23f91923668cdbb832642e471103568648254fc4",
   "note": "Connection source projection at the exact candidate revision in contracts/source.json. This is not deployment or package acceptance.",
   "sources": {
     "messaging": {

@@ -528,7 +528,7 @@ only after its encrypted-body read succeeds.
 ## Additional campaign and custody contracts (development source)
 
 This checkout adds 30 handwritten operations from API source
-`56dab15a078b0bd56eb1f7088e0bf6f380eaf22c`, using TypeScript reference
+`23f91923668cdbb832642e471103568648254fc4`, using TypeScript reference
 `44d5426f90bf376940a5198edac5da4cd893cbe9`. The additive contract remains
 unpublished. The primary coverage snapshots and global API default stay at their
 existing revisions. These methods select `2026-10-14` per request when
