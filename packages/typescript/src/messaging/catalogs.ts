@@ -136,7 +136,7 @@ export class CatalogsResource {
         "credential",
       );
     if (!connection.trim())
-      throw new PolymorfaValidationError("Provide a Number ID.");
+      throw new PolymorfaValidationError("Provide a Connection ID.");
     if (catalogId !== undefined && !/^[0-9]{1,32}$/.test(catalogId))
       throw new PolymorfaValidationError(
         "catalogId must contain 1 to 32 digits.",

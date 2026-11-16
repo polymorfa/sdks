@@ -66,7 +66,7 @@ export class CloudMarketingResource {
       );
     if (!connection.trim() || connection.length > 128)
       throw new PolymorfaValidationError(
-        "Provide a Number ID of 1 to 128 characters.",
+        "Provide a Connection ID of 1 to 128 characters.",
       );
     return this.transport.request({
       method: "GET",
@@ -75,7 +75,7 @@ export class CloudMarketingResource {
     });
   }
 
-  /** Read raw WABA status fields through a project-owned Official API Number. */
+  /** Read raw WABA status fields through a project-owned Official API Connection. */
   status(
     wabaId: string,
     params: GetCloudMarketingStatusParams,

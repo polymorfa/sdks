@@ -95,7 +95,7 @@ describe("round-2 customer routes", () => {
     expect(() =>
       client.catalogs.listProducts("support", "123", { cursor: "../" }),
     ).toThrow("nextCursor");
-    expect(() => client.cloudMarketing.getStatus("")).toThrow("Number ID");
+    expect(() => client.cloudMarketing.getStatus("")).toThrow("Connection ID");
     const browser = new MessagingClient({
       baseUrl: server.url,
       credential: { type: "clientToken", value: `pmfa_ct_${"A".repeat(94)}` },

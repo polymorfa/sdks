@@ -1,4 +1,4 @@
-"""Beta Number catalog cache and readiness, distinct from raw Graph resources."""
+"""Beta Connection catalog cache and readiness, distinct from raw Graph resources."""
 
 from __future__ import annotations
 
@@ -57,7 +57,7 @@ class Catalogs(Resource):
     def _path(self, connection: str, catalog_id: str | None = None) -> str:
         self._server()
         if not connection.strip():
-            raise ValidationError("Provide a Number ID.")
+            raise ValidationError("Provide a Connection ID.")
         if catalog_id is not None and re.fullmatch(r"[0-9]{1,32}", catalog_id) is None:
             raise ValidationError("catalogId must contain 1 to 32 digits.")
         return f"/messaging/{segment(connection)}/catalogs" + (

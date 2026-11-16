@@ -102,7 +102,7 @@ export interface TriggerTestEventRequest {
   overrides?: TestEventOverrides;
   /**
    * message.received only: deliver a real simulated message from this other
-   * Test number in the same project instead of a generated event.
+   * Test connection in the same project instead of a generated event.
    */
   fromConnection?: string;
 }
@@ -124,10 +124,10 @@ export interface TestEventFixtureInfo {
   overrides: Array<keyof TestEventOverrides>;
 }
 
-/** A Test number's simulated phone, which acts as its main device. */
+/** A Test connection's simulated phone, which acts as its main device. */
 export interface TestingPhone {
   connection: string;
-  /** The Test number, in E.164 format. */
+  /** The simulated phone number, in E.164 format. */
   phone: string;
   /** True while the simulated phone is running. */
   online: boolean;
@@ -136,7 +136,7 @@ export interface TestingPhone {
 }
 
 export interface SendTestingPhoneMessageRequest {
-  /** Another connected Test number in the same project, in E.164 format. */
+  /** Phone number of another connected Test connection in the same project, in E.164 format. */
   to: string;
   /** Message text, 1 to 4096 characters. */
   text: string;

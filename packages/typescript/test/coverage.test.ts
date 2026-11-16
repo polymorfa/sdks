@@ -175,9 +175,9 @@ describe("coverage checker", () => {
     expect(result.report).toMatchObject({
       sourceCommit: "8354399b827d9127210b9759cd055586e967449e",
       total: 672,
-      covered: 452,
-      partial: 2,
-      missing: 58,
+      covered: 459,
+      partial: 1,
+      missing: 52,
       excluded: 160,
       changed: 0,
     });
@@ -720,12 +720,9 @@ describe("coverage checker", () => {
       ({ operationId }) => operationId,
     );
     expect(retired.sort()).toEqual([
-      "createTestingHistoryFixture",
       "deactivateApiKey",
       "listApiKeys",
       "listPolymorfaTokens",
-      "listTestEventFixtures",
-      "triggerTestEvent",
     ]);
     expect(
       ledger.operations.some(

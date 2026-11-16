@@ -117,7 +117,7 @@ class CloudMarketing(Resource):
     ) -> ApiResponse[Envelope[MarketingMessagesStatus]]:
         self._server()
         if not connection.strip() or len(connection) > 128:
-            raise ValidationError("Provide a Number ID of 1 to 128 characters.")
+            raise ValidationError("Provide a Connection ID of 1 to 128 characters.")
         return await self._request(
             "GET", f"/messaging/{segment(connection)}/marketing-messages/status", options=options
         )

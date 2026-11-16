@@ -20,7 +20,7 @@ type ProjectSetting =
   "safe-mode" | "warmup-plan" | "insurance-evidence" | "health-policy";
 
 /**
- * BanSafe project settings and per-number Safe Mode on the Messaging API.
+ * BanSafe project settings and per-connection Safe Mode on the Messaging API.
  * Team keys and project tokens are accepted; browser client
  * tokens fail before transport.
  */

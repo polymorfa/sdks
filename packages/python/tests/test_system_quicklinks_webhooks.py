@@ -330,7 +330,8 @@ async def test_quicklink_testing_configuration_shape():
                 "country": "US",
                 "configuration": {
                     "profile": {"name": "Ada", "status": "Available"},
-                    "accountType": "business",
+                    "accountType": "business_app",
+                    "primaryPlatform": "ios",
                     "replyBehavior": "echo",
                     "failureScenario": "none",
                     "historyFixtureId": "fixture_1",

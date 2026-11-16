@@ -160,10 +160,10 @@ export class ProjectsResource {
   }
 
   /**
-   * Lists same-number pairs (one Linked Devices Number and one Official API
-   * coexistence Number) that can merge into one Hybrid Link Number. Merge an
+   * Lists same-number pairs (one Linked Devices Connection and one Official API
+   * coexistence Connection) that can merge into one Hybrid Link Connection. Merge an
    * eligible pair with `connections.quoteTierChange(keepId, { tierOverride: "pro",
-   * hybridMerge: { absorbConnectionId } })`; the absorbed Number must have
+   * hybridMerge: { absorbConnectionId } })`; the absorbed Connection must have
    * `canBeAbsorbed: true`. Requires `connections:read` and live Hybrid Link
    * access (otherwise `403 feature_unavailable`).
    */

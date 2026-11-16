@@ -27,7 +27,7 @@ internal static class ConnectionContractsTests
                 throw new Exception("Old account shape accepted.");
             });
         }
-        await Messaging("POST", "/messaging/quicklinks", """{"configuration":{"testing":{"configuration":{"accountType":"business_app","primaryPlatform":"ios"}}}}""", """{"success":true,"data":{"purpose":"create","connectionGoal":"standalone","id":"link","url":"https://example.invalid/link","connection":"stable-session-id","expiresAt":null}}""", async client =>
+        await Messaging("POST", "/messaging/quicklinks", """{"configuration":{"testing":{"configuration":{"accountType":"business_app","primaryPlatform":"ios"}}}}""", """{"success":true,"data":{"purpose":"initial","connectionGoal":"single","id":"link","url":"https://example.invalid/link","connection":"stable-session-id","expiresAt":null}}""", async client =>
         {
             var result = await client.QuickLinks.CreateAsync(new(Configuration: new(Testing: new(Configuration: new(AccountType: TestingAccountType.BusinessApp, PrimaryPlatform: TestingPrimaryPlatform.Ios)))));
             ResourceTests.Equal(result.Data.Data.Connection, "stable-session-id");

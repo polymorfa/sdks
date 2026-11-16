@@ -143,6 +143,32 @@ CASES = [
 ]
 
 
+TESTING_LINK = {
+    "configuration": {
+        "testing": {"configuration": {"accountType": "business_app", "primaryPlatform": "ios"}}
+    }
+}
+CASES.append(
+    (
+        "POST",
+        "/messaging/quicklinks",
+        TESTING_LINK,
+        {
+            "success": True,
+            "data": {
+                "purpose": "initial",
+                "connectionGoal": "single",
+                "id": "ql_testing",
+                "url": "https://example.invalid/testing",
+                "connection": "stable-session-id",
+                "expiresAt": None,
+            },
+        },
+        lambda c: c.quick_links.create(TESTING_LINK),
+    )
+)
+
+
 @pytest.mark.parametrize("method,path,body,fixture,invoke", CASES)
 async def test_typed_onboarding_methods(method, path, body, fixture, invoke):
     def handler(request):
@@ -216,3 +242,50 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
         )
         assert result.data["eventId"] == "event_2" and result.metadata.attempts == 2
     assert len(requests) == 2
+
+
+@pytest.mark.parametrize("method,path,body,fixture,invoke", CASES)
+async def test_onboarding_methods_over_native_http(method, path, body, fixture, invoke):
+    import asyncio
+
+    receipt = asyncio.get_running_loop().create_future()
+
+    async def serve(reader, writer):
+        try:
+            head = (await reader.readuntil(b"\r\n\r\n")).decode("ascii").split("\r\n")
+            headers = {
+                k.lower(): v.strip()
+                for line in head[1:]
+                if ":" in line
+                for k, v in [line.split(":", 1)]
+            }
+            assert head[0] == f"{method} {path} HTTP/1.1"
+            assert headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
+            assert headers["polymorfa-version"] == "2026-09-22"
+            raw = await reader.readexactly(int(headers.get("content-length", "0")))
+            assert (json.loads(raw) if raw else None) == body
+            payload = json.dumps(fixture).encode()
+            status = 202 if path.endswith("/phone/messages") else 200
+            writer.write(
+                f"HTTP/1.1 {status} Fixture\r\nContent-Type: application/json\r\nx-request-id: native-onboarding\r\nContent-Length: {len(payload)}\r\nConnection: close\r\n\r\n".encode()
+                + payload
+            )
+            await writer.drain()
+            receipt.set_result(True)
+        except Exception as error:
+            receipt.set_exception(error)
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    server = await asyncio.start_server(serve, "127.0.0.1", 0)
+    async with server:
+        port = server.sockets[0].getsockname()[1]
+        async with AsyncMessagingClient(
+            Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+            base_url=f"http://127.0.0.1:{port}",
+            max_network_retries=0,
+        ) as client:
+            response = await invoke(client)
+            assert response.metadata.request_id == "native-onboarding"
+            assert await asyncio.wait_for(receipt, 5)

@@ -1777,7 +1777,7 @@ export type GetGroupParticipantsResponse = SuccessEnvelope<
   readonly GroupParticipant[]
 >;
 
-/** Hybrid Link requires server-authorized availability on the Number. */
+/** Hybrid Link requires server-authorized availability on the Connection. */
 export type MessageTransport = "auto" | "linked_devices" | "official_api";
 export type MessageRoutingReason =
   | "explicit_transport"
@@ -2040,7 +2040,7 @@ export interface VoipPreviewedCallLink {
   readonly video: boolean;
   readonly creator: ConversationIdentity;
   readonly approvalRequired: boolean;
-  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  /** WhatsApp-reported role for this Connection, not an API permission grant. */
   readonly isAdmin: boolean;
 }
 
@@ -2207,9 +2207,9 @@ export interface ConnectionCallSettings {
    */
   readonly hostCloudApiCalls: boolean;
   /**
-   * Simultaneous calls, `false` by default. When `true`, this Number holds
+   * Simultaneous calls, `false` by default. When `true`, this Connection holds
    * unlimited concurrent calls (incoming, placed and campaign calls).
-   * Linked-device Numbers only; Cloud API Numbers ignore it. WhatsApp's own
+   * Linked-device Connections only; Cloud API Connections ignore it. WhatsApp's own
    * apps never hold two calls at once, so this behavior is unusual for a
    * WhatsApp account. It voids Ban Insurance: a ban whose 30-day window
    * overlaps any period this setting was on is not refunded.
@@ -2249,7 +2249,7 @@ export interface UpdateConnectionCallSettingsRequest {
   /** `true` has Polymorfa Calls answer a Cloud API connection's incoming calls. */
   readonly hostCloudApiCalls?: boolean;
   /**
-   * `true` lets this linked-device Number hold unlimited concurrent calls;
+   * `true` lets this linked-device Connection hold unlimited concurrent calls;
    * `false` returns it to one call at a time. Applies to calls that start
    * after the change. Turning it on requires `acknowledgeRisk: true` and a
    * team API key (a project token is refused with `permission_denied`). It
@@ -2260,7 +2260,7 @@ export interface UpdateConnectionCallSettingsRequest {
   /**
    * Required as `true` when the update turns `simultaneousCalls` on: confirms
    * that you accept the unusual-behavior risk and the loss of Ban Insurance
-   * for this Number. Sent alone, it is not a change. Later updates to other
+   * for this Connection. Sent alone, it is not a change. Later updates to other
    * settings need no new acknowledgment.
    */
   readonly acknowledgeRisk?: boolean;
@@ -2758,7 +2758,7 @@ export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
 
 /**
  * A Brazil order with payment instructions (payment orders beta, Official API
- * Numbers only). Polymorfa validates and relays the order; it does not
+ * Connections only). Polymorfa validates and relays the order; it does not
  * collect, hold or confirm funds. Use a new `referenceId` for every order.
  */
 export interface PixDynamicCodePayment {
@@ -2809,7 +2809,7 @@ export interface OrderDetailsItemization {
 
 /**
  * A Brazil order with payment instructions (payment orders beta, Official API
- * Numbers only). Polymorfa validates and relays the order; it does not
+ * Connections only). Polymorfa validates and relays the order; it does not
  * collect, hold or confirm funds. Use a new `referenceId` for every order.
  */
 export type OrderDetailsMessageContent = {
@@ -2948,7 +2948,7 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
-  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  /** Required on Official Connections: an inbound message to mark read while showing typing. */
   readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }

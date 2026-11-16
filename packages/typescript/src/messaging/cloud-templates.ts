@@ -64,7 +64,7 @@ export type ListCloudTemplatesResponse = SuccessEnvelope<
   readonly CloudTemplate[]
 >;
 
-/** Meta templates for a Number created on an Official API connection, separate from project drafts. */
+/** Meta templates for a Connection created on an Official API connection, separate from project drafts. */
 export class CloudTemplatesResource {
   constructor(
     private readonly transport: HttpTransport,

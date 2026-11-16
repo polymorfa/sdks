@@ -104,7 +104,7 @@ func (c *ProjectClient) ConnectionConfiguration() *ConnectionConfigurationResour
 func (r *ConnectionConfigurationResource) Retrieve(ctx context.Context, o ...RequestOptions) (Response[ConnectionConfigurationView], error) {
 	q := url.Values{}
 	setString(q, "projectId", r.projectID)
-	return unwrapped[ConnectionConfigurationView](ctx, r.t, "GET", "/platform/session-configuration", q, nil, options(o))
+	return unwrapped[ConnectionConfigurationView](ctx, r.t, "GET", "/platform/connection-configuration", q, nil, options(o))
 }
 func (r *ConnectionConfigurationResource) Update(ctx context.Context, b UpdateConnectionRequest, o ...RequestOptions) (Response[ConnectionConfigurationView], error) {
 	intent, err := configurationIntent(b)
@@ -115,7 +115,7 @@ func (r *ConnectionConfigurationResource) Update(ctx context.Context, b UpdateCo
 		UpdateConnectionRequest
 		ProjectID string `json:"projectId,omitempty"`
 	}{b, r.projectID}
-	return unwrapped[ConnectionConfigurationView](ctx, r.t, "PUT", "/platform/session-configuration", nil, body, deliveryOptions(options(o), intent))
+	return unwrapped[ConnectionConfigurationView](ctx, r.t, "PUT", "/platform/connection-configuration", nil, body, deliveryOptions(options(o), intent))
 }
 
 // PlatformPayload is intentionally open in the pinned TypeScript contract.

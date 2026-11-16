@@ -90,7 +90,7 @@ export class TemplatesResource {
     });
   }
 
-  /** Submit once. If the response is lost, read the Number's template catalog before another attempt. */
+  /** Submit once. If the response is lost, read the Connection's template catalog before another attempt. */
   submit(
     projectSlug: string,
     templateId: string,

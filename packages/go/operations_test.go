@@ -59,9 +59,9 @@ var operationFixtures = []operationFixture{
 	{"MessagingClient.Connections.RequestPairingCode", "POST", "/messaging/s/pair/code", "", `{"phone":"+15551234567"}`, `{"success":true,"data":{"code":"12345678"}}`, "data.code", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.Connections().RequestPairingCode(ctx, "s", PairingCodeRequest{Phone: "+15551234567"}))
 	}},
-	{"MessagingClient.QuickLinks.Create", "POST", "/messaging/quicklinks", "", `{"projectId":"p","configuration":{"allowPhoneChange":false}}`, `{"success":true,"data":{"id":"ql","url":"https://connect.polymorfa.com/ql","connection":"s","purpose":"initial","connectionGoal":"single","expiresAt":null}}`, "data.id", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.QuickLinks.Create", "POST", "/messaging/quicklinks", "", `{"projectId":"p","configuration":{"allowPhoneChange":false,"testing":{"configuration":{"accountType":"business_app","primaryPlatform":"ios"}}}}`, `{"success":true,"data":{"id":"ql","url":"https://connect.polymorfa.com/ql","connection":"s","purpose":"initial","connectionGoal":"single","expiresAt":null}}`, "data.id", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := false
-		return wireData(m.QuickLinks().Create(ctx, CreateQuickLinkRequest{ProjectID: "p", Configuration: &QuickLinkConfiguration{AllowPhoneChange: &v}}))
+		return wireData(m.QuickLinks().Create(ctx, CreateQuickLinkRequest{ProjectID: "p", Configuration: &QuickLinkConfiguration{AllowPhoneChange: &v, Testing: &QuickLinkTesting{Configuration: &TestingConfiguration{AccountType: "business_app", PrimaryPlatform: "ios"}}}}))
 	}},
 	{"MessagingClient.QuickLinks.Availability", "GET", "/messaging/quicklinks/availability", "connection=s&projectId=p", "", `{"success":true,"data":{"allowed":true,"addMethod":"official_api","methods":[],"resumeQuickLinkId":null}}`, "data.allowed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.QuickLinks().Availability(ctx, "p", "s"))

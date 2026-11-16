@@ -8,11 +8,11 @@ import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type { ConversationIdentity, SuccessEnvelope } from "./types.js";
 
 /**
- * Beta: WhatsApp groups created through the Official API on a Number whose
+ * Beta: WhatsApp groups created through the Official API on a Connection whose
  * WhatsApp Business Account is an Official Business Account. Linked Devices
  * groups use `groups`. Participants join with the invite link; they cannot be
  * added. A group holds at most 8 participants besides your business, and a
- * Number can create at most 10,000 groups. Requires team enrollment.
+ * Connection can create at most 10,000 groups. Requires team enrollment.
  */
 export interface OfficialGroupCursors {
   readonly before?: string;
@@ -296,7 +296,7 @@ export class OfficialGroupsResource {
     );
   }
 
-  /** Beta. Official-only; Hybrid Numbers must use groups.setPicture on Linked Devices.
+  /** Beta. Official-only; Hybrid Connections must use groups.setPicture on Linked Devices.
    * Upload a square JPEG, at least 192 x 192 pixels, at most 5 MB. The server
    * validates image bytes and dimensions. An event confirms the applied change.
    */

@@ -60,7 +60,7 @@ GATES = {
         {
             "key": "calls.outbound_monthly",
             "kind": "quota",
-            "subject": "number",
+            "subject": "connection",
             "mode": "record",
             "active": True,
             "limit": None,

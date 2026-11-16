@@ -38,7 +38,7 @@ export interface FlowValidationIssue extends Omit<
 }
 export interface FlowConnectionLink {
   readonly connection: string;
-  /** Number connection UUID, when the API reports it. */
+  /** Connection connection UUID, when the API reports it. */
   readonly connectionId?: string;
   readonly wabaId: string;
   readonly metaFlowId: string;
@@ -110,7 +110,7 @@ export interface FlowProviderResult {
   readonly flow: FlowDraft;
 }
 
-/** How WhatsApp reaches a dynamic Flow's data endpoint on one Number. */
+/** How WhatsApp reaches a dynamic Flow's data endpoint on one Connection. */
 export type FlowEndpointMode = "forward" | "function" | "direct";
 export interface FlowEndpoint {
   readonly id: string;
@@ -146,7 +146,7 @@ export interface ManagedFlowEncryptionKey {
   readonly retireAfter: number | null;
 }
 export interface FlowEncryptionCustody {
-  /** `managed`: Polymorfa holds the Number's active key. `customer`: it does not. */
+  /** `managed`: Polymorfa holds the Connection's active key. `customer`: it does not. */
   readonly custody: "managed" | "customer";
   readonly activeKeyId: string | null;
   readonly keys: readonly ManagedFlowEncryptionKey[];
@@ -165,7 +165,7 @@ export interface FlowEndpointSetResult {
   readonly encryption: FlowEncryptionCustody;
 }
 interface FlowEndpointCommon {
-  /** Number (connection) name or id in the Flow's project. */
+  /** Connection (connection) name or id in the Flow's project. */
   readonly connectionId: string;
   readonly enabled?: boolean;
   /** Replace only when the stored revision matches. */
@@ -194,7 +194,7 @@ export type SetFlowEndpointRequest =
   | FunctionFlowEndpointRequest
   | DirectFlowEndpointRequest;
 export interface FlowConnectionRequest {
-  /** Number (connection) name or id in the Flow's project. */
+  /** Connection (connection) name or id in the Flow's project. */
   readonly connectionId: string;
 }
 export interface ListFlowEndpointReceiptsRequest {
@@ -223,7 +223,7 @@ export interface FlowEndpointReceipt {
   readonly completedAt: number | null;
 }
 
-/** Project Flow drafts and their Number-bound provider lifecycle. */
+/** Project Flow drafts and their Connection-bound provider lifecycle. */
 export class FlowsResource {
   constructor(
     private readonly transport: HttpTransport,
@@ -323,7 +323,7 @@ export class FlowsResource {
       options,
     );
   }
-  /** The Flow's data endpoint on one Number and the Number's encryption custody. */
+  /** The Flow's data endpoint on one Connection and the Connection's encryption custody. */
   endpoint(
     flowId: string,
     params: FlowConnectionRequest,
@@ -337,7 +337,7 @@ export class FlowsResource {
     );
   }
   /**
-   * Create or replace the Flow's data endpoint on one Number. Sent once:
+   * Create or replace the Flow's data endpoint on one Connection. Sent once:
    * `signingSecret` is returned only in this response.
    */
   setEndpoint(
@@ -382,7 +382,7 @@ export class FlowsResource {
       options,
     );
   }
-  /** The Number's Flow encryption custody and recent managed keys. */
+  /** The Connection's Flow encryption custody and recent managed keys. */
   encryptionKey(
     params: FlowConnectionRequest,
     options: RequestOptions = {},
@@ -396,7 +396,7 @@ export class FlowsResource {
     );
   }
   /**
-   * Generate and register a new managed key for the Number. Sent once; the
+   * Generate and register a new managed key for the Connection. Sent once; the
    * previous managed key keeps decrypting for 24 hours.
    */
   rotateEncryptionKey(

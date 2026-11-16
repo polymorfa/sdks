@@ -39,7 +39,7 @@ Known webhooks have typed payloads for all 84 names in the pinned TypeScript con
 
 `Events.LiveSource` and `EventStreamSource` feed decoded webhook bodies to an application-owned store. Each subscription resumes from its saved cursor and skips events whose body was not retained. Dispose the subscription to stop delivery; await `DisposeAsync` or `Completion` to wait for stream cleanup. `OnError` receives terminal stream or listener failures.
 
-The existing coverage ledger records 442 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
+The existing coverage ledger records 453 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
 
 `CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames retain timestamps. Outgoing H.264 uses the protocol's reserved source zero; received source ownership is exposed separately.
 
@@ -54,7 +54,7 @@ Signal cryptography and key custody remain in the customer-operated Signal servi
 ### Campaign, audience profiles and custody defaults
 
 The 30-operation campaign/custody supplement follows API source
-`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. These helpers use
+`8354399b827d9127210b9759cd055586e967449e`. These helpers use
 `Polymorfa-Version: 2026-10-14` when `RequestOptions.ApiVersion` is absent.
 An explicit override is preserved. Existing helpers retain their `2026-09-22`
 default. This is unpublished source; the supplement remains held for release.

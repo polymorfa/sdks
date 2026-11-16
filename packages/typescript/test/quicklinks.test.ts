@@ -317,3 +317,40 @@ it("applies initial financial controls in the create request and rejects test-nu
   ).toThrow(PolymorfaValidationError);
   expect(server.requests).toHaveLength(1);
 });
+
+it("sends the current Testing account and primary platform configuration over HTTP", async () => {
+  const server = await startTestServer(() => ({
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({
+      success: true,
+      data: {
+        purpose: "initial",
+        connectionGoal: "single",
+        id: "ql_testing",
+        url: "https://example.test/testing",
+        connection: "stable-session-id",
+        expiresAt: null,
+      },
+    }),
+  }));
+  servers.push(server);
+  const client = new MessagingClient({
+    baseUrl: server.url,
+    credential: { type: "apiKey", value: TEAM_API_KEY },
+    maxNetworkRetries: 0,
+  });
+  await client.quickLinks.create({
+    configuration: {
+      testing: {
+        configuration: { accountType: "business_app", primaryPlatform: "ios" },
+      },
+    },
+  });
+  expect(JSON.parse(server.requests[0]!.body)).toEqual({
+    configuration: {
+      testing: {
+        configuration: { accountType: "business_app", primaryPlatform: "ios" },
+      },
+    },
+  });
+});

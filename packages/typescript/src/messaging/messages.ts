@@ -85,7 +85,7 @@ export class MessagesResource {
     return this.post(connection, "seen", body, options);
   }
 
-  /** Official Numbers require an inbound id and state typing; marks it read for an indicator lasting at most 25 seconds. */
+  /** Official Connections require an inbound id and state typing; marks it read for an indicator lasting at most 25 seconds. */
   setTyping(
     connection: string,
     body: TypingRequest,

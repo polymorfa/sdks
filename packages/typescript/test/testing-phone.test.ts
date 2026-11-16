@@ -31,7 +31,7 @@ function client(response: Response, type: "apiKey" | "clientToken" = "apiKey") {
   };
 }
 
-it("reads a Test number's phone", async () => {
+it("reads a Test connection's phone", async () => {
   const phone: TestingPhone = {
     connection: "test a",
     phone: "+15550100001",
@@ -42,20 +42,19 @@ it("reads a Test number's phone", async () => {
   const result = await messaging.testing.getPhone("test a");
   expect(result.data).toEqual(phone);
   const [url, init] = fetcher.mock.calls[0]!;
-  expect(String(url)).toBe(
-    "https://api.example/messaging/test%20a/phone",
-  );
+  expect(String(url)).toBe("https://api.example/messaging/test%20a/phone");
   expect(init?.method).toBe("GET");
 });
 
 it("sends a message from the phone", async () => {
-  const sent = { connection: "test-a", to: "+15550100002", messageId: "3EB0AA" };
+  const sent = {
+    connection: "test-a",
+    to: "+15550100002",
+    messageId: "3EB0AA",
+  };
   const { client: messaging, fetcher } = client(json(sent, 202));
   const input = { to: "+15550100002", text: "hello" };
-  const result = await messaging.testing.sendPhoneMessage(
-    "test-a",
-    input,
-  );
+  const result = await messaging.testing.sendPhoneMessage("test-a", input);
   expect(result.data).toEqual(sent);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
@@ -68,10 +67,7 @@ it("sends a message from the phone", async () => {
 it("unlinks a companion", async () => {
   const unlinked = { connection: "test-a", deviceId: 74, unlinked: true };
   const { client: messaging, fetcher } = client(json(unlinked));
-  const result = await messaging.testing.unlinkPhoneDevice(
-    "test-a",
-    74,
-  );
+  const result = await messaging.testing.unlinkPhoneDevice("test-a", 74);
   expect(result.data).toEqual(unlinked);
   const [url, init] = fetcher.mock.calls[0]!;
   expect(String(url)).toBe(
@@ -82,9 +78,9 @@ it("unlinks a companion", async () => {
 
 it.each([0, 100, 1.5])("refuses device ID %s before sending", (deviceId) => {
   const { client: messaging, fetcher } = client(json({}));
-  expect(() =>
-    messaging.testing.unlinkPhoneDevice("test-a", deviceId),
-  ).toThrow(PolymorfaValidationError);
+  expect(() => messaging.testing.unlinkPhoneDevice("test-a", deviceId)).toThrow(
+    PolymorfaValidationError,
+  );
   expect(fetcher).not.toHaveBeenCalled();
 });
 
@@ -102,7 +98,7 @@ it("surfaces an offline phone as a validation error", async () => {
       {
         error: "bad_request",
         message:
-          "The Test number's phone is offline. Start the Test number first.",
+          "The Test connection's phone is offline. Start the Test number first.",
       },
       400,
     ),
@@ -152,7 +148,11 @@ it("matches the pinned Testing phone contract", () => {
   };
   expect(fields("TestingPhoneState")).toEqual(Object.keys(phone).sort());
   expect(fields("TestingPhoneMessageRequest")).toEqual(["text", "to"]);
-  expect(fields("TestingPhoneMessage")).toEqual(["connection", "messageId", "to"]);
+  expect(fields("TestingPhoneMessage")).toEqual([
+    "connection",
+    "messageId",
+    "to",
+  ]);
   expect(fields("TestingPhoneUnlink")).toEqual([
     "connection",
     "deviceId",

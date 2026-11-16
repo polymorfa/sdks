@@ -861,19 +861,19 @@ export interface ConnectionTierOverrideRequest {
   readonly quoteId: string;
 }
 
-/** The two connections of a Hybrid Link Number. */
+/** The two connections of a Hybrid Link Connection. */
 export type HybridTransport = "linked_devices" | "official_api";
 
-/** Keep one connection of a Hybrid Link Number and retire the other. */
+/** Keep one connection of a Hybrid Link Connection and retire the other. */
 export interface HybridKeepResolution {
   readonly action: "keep";
   readonly transport: HybridTransport;
 }
 
 /**
- * Split a Hybrid Link Number into two Standard Numbers. The Number being
+ * Split a Hybrid Link Connection into two Standard Connections. The Connection being
  * quoted keeps `existingConnectionTransport`; the other connection moves to a new
- * Number named `newConnectionName` without pairing or signing up again.
+ * Connection named `newConnectionName` without pairing or signing up again.
  */
 export interface HybridSplitResolution {
   readonly action: "split";
@@ -882,12 +882,12 @@ export interface HybridSplitResolution {
   readonly newConnectionName: string;
 }
 
-/** Required when a Hybrid Link Number moves to a tier without Hybrid Link. */
+/** Required when a Hybrid Link Connection moves to a tier without Hybrid Link. */
 export type HybridResolution = HybridKeepResolution | HybridSplitResolution;
 
 /**
- * Merges another same-number Number into the quoted Number as a Hybrid Link
- * Number. The quoted Number keeps its ID; `absorbConnectionId` is removed after its
+ * Merges another same-number Connection into the quoted Connection as a Hybrid Link
+ * Connection. The quoted Connection keeps its ID; `absorbConnectionId` is removed after its
  * connection moves.
  */
 export interface HybridMerge {
@@ -900,7 +900,7 @@ interface ConnectionTierQuoteBase {
 }
 
 /**
- * A tier quote. Send `hybridResolution` when a Hybrid Link Number leaves Pro
+ * A tier quote. Send `hybridResolution` when a Hybrid Link Connection leaves Pro
  * (otherwise the API returns `hybrid_choice_required`), or `hybridMerge`
  * to merge a same-number pair on an upgrade to Pro. Never both.
  */
@@ -923,7 +923,7 @@ export type ConnectionHybridTransitionStatus =
   "scheduled" | "running" | "completed" | "failed" | "cancelled";
 
 interface ConnectionHybridTransitionBase {
-  /** The Number that keeps its ID. */
+  /** The Connection that keeps its ID. */
   readonly survivingConnectionId: string;
   /** Present once the change has been confirmed. */
   readonly status?: ConnectionHybridTransitionStatus;
@@ -946,7 +946,7 @@ export interface ConnectionHybridSplitTransition extends ConnectionHybridTransit
   readonly action: "split";
   readonly existingConnectionTransport: HybridTransport;
   readonly newConnectionName: string;
-  /** The Number created by a completed split. */
+  /** The Connection created by a completed split. */
   readonly newConnectionId?: string;
 }
 
@@ -977,8 +977,8 @@ export interface HybridMergeCandidateConnection {
   readonly transport: HybridTransport;
   readonly status: string;
   /**
-   * False when this Number uses hosted message storage. It cannot be the
-   * absorbed Number; quote the merge on it so it keeps its ID.
+   * False when this Connection uses hosted message storage. It cannot be the
+   * absorbed Connection; quote the merge on it so it keeps its ID.
    */
   readonly canBeAbsorbed: boolean;
 }
@@ -988,7 +988,7 @@ export interface HybridMergeCandidateConnection {
  * `ineligibleReason` explains a pair that cannot merge now.
  */
 export interface HybridMergeCandidate {
-  /** One Linked Devices Number and one Official API Number. */
+  /** One Linked Devices Connection and one Official API Connection. */
   readonly connections: readonly [
     HybridMergeCandidateConnection,
     HybridMergeCandidateConnection,
@@ -1002,7 +1002,7 @@ export interface ConnectionTierChange {
   readonly status: "quoted" | "queued" | "applied" | "rejected";
   /**
    * Why a queued change was rejected, for example `hybrid_choice_required`
-   * when a Hybrid Link Number would leave Pro without a recorded choice, or
+   * when a Hybrid Link Connection would leave Pro without a recorded choice, or
    * `hybrid_transition_ineligible`. Quote again with a choice.
    */
   readonly failureReason: string | null;
@@ -1016,7 +1016,7 @@ export interface ConnectionTierChange {
     readonly action: "upgrade" | "downgrade" | "configure";
     readonly effectiveAtMs: number;
     readonly replacesWindowId: string | null;
-    /** Present when the change resolves or merges a Hybrid Link Number. */
+    /** Present when the change resolves or merges a Hybrid Link Connection. */
     readonly hybridTransition?: ConnectionHybridTransition;
   };
 }

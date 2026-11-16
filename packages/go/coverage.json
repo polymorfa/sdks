@@ -566,9 +566,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/{connection}/phone",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.GetPhone",
+      "testFile": "supplements_test.go"
     },
     {
       "family": "messaging",
@@ -822,9 +822,9 @@
       "family": "messaging",
       "method": "GET",
       "path": "/messaging/test-events/fixtures",
-      "status": "missing",
-      "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient.Testing.ListEventFixtures) is not yet updated.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.ListEventFixtures",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1354,17 +1354,17 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{connection}/phone/devices/{deviceId}/unlink",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDevice",
+      "testFile": "supplements_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{connection}/phone/messages",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessage",
+      "testFile": "supplements_test.go"
     },
     {
       "family": "messaging",
@@ -1418,9 +1418,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/{connection}/test-events",
-      "status": "missing",
-      "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{connection}/test-events; the SDK method for the old path (MessagingClient.Testing.TriggerEvent) is not yet updated.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.TriggerEvent",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1457,9 +1457,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/projects/{projectId}/test-history-fixtures",
-      "status": "missing",
-      "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient.Testing.CreateHistoryFixture) is not yet updated.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.CreateHistoryFixture",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1577,9 +1577,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/quicklinks",
-      "status": "partial",
-      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (primaryPlatform) that this SDK does not yet type.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.Create",
+      "testFile": "operations_test.go"
     },
     {
       "family": "messaging",

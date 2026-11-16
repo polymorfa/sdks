@@ -10,6 +10,7 @@ $envelope = fn ($data) => ['success' => true,'data' => $data];
 $trigger = ['event' => 'message.received','connection' => 'connection','delivery' => 'simulated','eventId' => null,'source' => 'runtime'];
 $fixtures = ['fixtures' => [['name' => 'message.received','description' => 'Receive a test message','overrides' => ['text','from']]]];
 nativeCases([
+ ['POST','/messaging/quicklinks',['configuration' => ['testing' => ['configuration' => ['accountType' => 'business_app','primaryPlatform' => 'ios']]]],$envelope(['purpose' => 'initial','connectionGoal' => 'single','id' => 'ql_testing','url' => 'https://example.invalid/testing','connection' => 'stable-session-id','expiresAt' => null]),fn ($c) => $c->quickLinks->create(['configuration' => ['testing' => ['configuration' => ['accountType' => 'business_app','primaryPlatform' => 'ios']]]])],
  ['GET','/messaging/routing/hybrid?scope=connection&projectId=project&connection=connection',null,$envelope($policy),fn ($c) => $c->hybridLink->getPolicy(['scope' => 'connection','projectId' => 'project','connection' => 'connection'])],
  ['PUT','/messaging/routing/hybrid?scope=team',['expectedRevision' => 'r1','prefer' => null,'allowedTransports' => []],$envelope($policy),fn ($c) => $c->hybridLink->setPolicy(['scope' => 'team'], ['expectedRevision' => 'r1','prefer' => null,'allowedTransports' => []])],
  ['GET','/messaging/connection/hybrid-link',null,$envelope($link),fn ($c) => $c->hybridLink->state('connection')],

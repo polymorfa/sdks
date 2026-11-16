@@ -11,6 +11,7 @@ if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsyn
 
 await ConnectionContractsTests.RunAsync();
 if (args.Contains("--connection-contracts-only")) return;
+if (args.Contains("--connection-wire-only")) { await UsageTests.RunAsync(); await OnboardingTests.RunAsync(); await ConnectionTests.RunAsync(); return; }
 
 OpaqueCredentialTests.Run();
 await OpaqueCredentialTests.WireAsync();

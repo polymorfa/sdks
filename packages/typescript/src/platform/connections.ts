@@ -109,7 +109,7 @@ export class PlatformConnectionsResource {
     });
   }
 
-  /** Removes a testing Number. Production Numbers return HTTP 409. */
+  /** Removes a testing Connection. Production Connections return HTTP 409. */
   delete(
     connectionId: string,
     options: RequestOptions = {},
@@ -122,8 +122,8 @@ export class PlatformConnectionsResource {
   }
 
   /**
-   * Removes matching testing Numbers. If any matched Number is production,
-   * the API returns HTTP 409 before removing any Number in the batch.
+   * Removes matching testing Connections. If any matched Connection is production,
+   * the API returns HTTP 409 before removing any Connection in the batch.
    */
   deleteMany(
     body: ConnectionBatchRequest,
@@ -140,8 +140,8 @@ export class PlatformConnectionsResource {
   /**
    * Review the returned charge and effective time before confirming this quote.
    *
-   * A Hybrid Link Number leaving Pro needs `hybridResolution` (keep one
-   * connection or split the Number); without it the API returns
+   * A Hybrid Link Connection leaving Pro needs `hybridResolution` (keep one
+   * connection or split the Connection); without it the API returns
    * `hybrid_choice_required`. An upgrade to Pro can merge a same-number
    * pair with `hybridMerge`; `connectionId` keeps its ID. The quote echoes the
    * plan in `quote.hybridTransition`.
@@ -187,7 +187,7 @@ export class PlatformConnectionsResource {
   ): Promise<ApiResponse<DataEnvelope<ConnectionTierChange>>> {
     if (typeof body?.quoteId !== "string" || !body.quoteId.trim()) {
       throw new PolymorfaValidationError(
-        "Review a tier quote and supply its quoteId before confirming a number tier change.",
+        "Review a tier quote and supply its quoteId before confirming a connection tier change.",
       );
     }
     return this.transport.request({

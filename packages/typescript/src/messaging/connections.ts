@@ -65,7 +65,7 @@ export class ConnectionsResource {
     });
   }
 
-  /** Create one reauthorization link for a stopped standalone Official API Number. Never stops it. */
+  /** Create one reauthorization link for a stopped standalone Official API Connection. Never stops it. */
   reauthorizeCloudCredentials(
     connection: string,
     options: RequestOptions = {},

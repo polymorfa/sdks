@@ -88,7 +88,7 @@ release availability changes: the API continues enforcing permission, funding,
 enrollment and feature eligibility.
 
 The source also includes 30 campaign, customer-supplied audience profile and
-custody-default operations from API source `f97ad78b172e80788c33bdc0fcf28f75db9283ec`.
+custody-default operations from API source `8354399b827d9127210b9759cd055586e967449e`.
 These additions use `2026-10-14` when a call omits its API version; an explicit
 `RequestOptions::api_version` wins. Existing methods keep their baseline version.
 The supplement remains unpublished and does not establish deployed availability.
@@ -143,7 +143,7 @@ checkpoint observed no numeric spelling counterexample.
 
 ### Campaign and descriptor contracts
 
-The existing campaign methods consume the same `f97ad78` API source. Named
+The existing campaign methods consume the same `8354399b82` API source. Named
 `CampaignVariableBinding`, `CampaignVariableMapping` and `CampaignTrackedLink`
 types preserve empty maps, numeric keys and `__proto__`. Create mappings omit
 `None`; PATCH mappings and template/link fields use `Option<Option<T>>` for

@@ -74,10 +74,10 @@ export class TestingResource {
   }
 
   /**
-   * Fire a named, signed test event for a Test number. Generated events reach
+   * Fire a named, signed test event for a Test connection. Generated events reach
    * webhooks and event history with `source: "test"`. With `fromConnection`, a
    * `message.received` request sends a simulated message from another Test
-   * number instead. Real numbers are refused with a 400 error. Pass
+   * connection instead. Real connections are refused with a 400 error. Pass
    * `options.idempotencyKey` to make retries safe: repeating the request with
    * the same key and body reuses the same event ID, and the SDK then retries
    * network and 5xx failures.
@@ -109,8 +109,8 @@ export class TestingResource {
   }
 
   /**
-   * Read a Test number's simulated phone: whether it is online and which
-   * companions are linked to it. Real numbers are refused with a 400 error.
+   * Read a Test connection's simulated phone: whether it is online and which
+   * companions are linked to it. Real connections are refused with a 400 error.
    */
   getPhone(
     connection: string,

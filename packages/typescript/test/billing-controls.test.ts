@@ -12,11 +12,11 @@ let server: TestServer;
 afterEach(async () => {
   await server?.close();
 });
-it("serializes limits and single/reordered project and number priorities using revision guards", async () => {
+it("serializes limits and single/reordered project and connection priorities using revision guards", async () => {
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 1, projects: [], customers: [], numbers: [] },
+      data: { revision: 1, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -160,7 +160,7 @@ it("filters project directories without loading customer and number lists", asyn
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 1, projects: [], customers: [], numbers: [] },
+      data: { revision: 1, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -180,7 +180,7 @@ it("serializes project-scoped mixed funding controls and rejects duplicate or in
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 5, projects: [], customers: [], numbers: [] },
+      data: { revision: 5, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -231,7 +231,7 @@ it("normalizes scoped IDs, preserves distinct resource kinds, and validates proj
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 5, projects: [], customers: [], numbers: [] },
+      data: { revision: 5, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({

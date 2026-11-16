@@ -97,7 +97,7 @@ export class VoipResource {
     });
   }
 
-  /** Reads a link through a Linked Device Number. The token stays in the POST body. */
+  /** Reads a link through a Linked Device Connection. The token stays in the POST body. */
   previewCallLink(
     body: VoipPreviewCallLinkRequest,
     options: RequestOptions = {},
@@ -283,7 +283,7 @@ export class VoipResource {
       maxNetworkRetries: 0,
     });
   }
-  /** Set the Number's shared hand state on an attached call connection. */
+  /** Set the Connection's shared hand state on an attached call connection. */
   /** Uses current API authority. Inspect data.ok; unknown outcomes must not be replayed. */
   moderateWaitingRoom(
     callId: string,
@@ -446,9 +446,9 @@ export class VoipResource {
   /**
    * Changes a connection's call settings; omitted settings keep their values.
    * Requires a server credential. Turning `simultaneousCalls` on (unlimited
-   * concurrent calls on a linked-device Number) requires
+   * concurrent calls on a linked-device Connection) requires
    * `acknowledgeRisk: true` and a team API key, and voids Ban Insurance for
-   * the Number.
+   * the Connection.
    */
   updateCallSettings(
     connection: string,
