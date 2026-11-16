@@ -119,7 +119,7 @@ export async function prepareNativeRelease() {
     ),
   );
   const expected = {
-    ...expectedContract(),
+    ...expectedContract(channel),
     environment: channel === "stable" ? "production" : "staging",
   };
   const acceptance = await acceptedContract(expected, output);

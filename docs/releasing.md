@@ -27,6 +27,12 @@ accepted. Repinning alone does not establish SDK coverage. Feature contract pins
 and Platform hash before publication. A newer intermediate feature pin blocks
 a nightly against an older acceptance record.
 
+Guest-call candidate acceptance is deferred for the first new nightly release.
+Its unaccepted and unpublished metadata stays intact. Other feature holds and
+the exact staging API acceptance requirement still apply. Stable publication
+continues to require guest-call acceptance. Publishing a package does not enable
+the guest-call API or establish its deployed availability.
+
 `Polymorfa-Version` advances for each published API contract batch. Nightly
 package timestamps do not change that date. Compatibility notes, upgrade
 instructions and customer changelogs belong to the corresponding contract

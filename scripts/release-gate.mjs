@@ -133,7 +133,8 @@ export function campaignSupplementPins(supplement) {
     sourceSha256: snapshot.sourceSha256,
   }));
 }
-export function expectedContract() {
+export function expectedContract(channel = "stable") {
+  assert.ok(["nightly", "stable"].includes(channel));
   // Campaign supplements carry separate Messaging and Platform source hashes.
   const source = JSON.parse(readFileSync(join(root, "contracts/source.json")));
   assert.equal(source.repository, "polymorfa/polymorfa");
@@ -142,13 +143,16 @@ export function expectedContract() {
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
   )?.[1];
   assert.ok(apiVersion);
-  validateGuestCallPublication(
-    source,
-    JSON.parse(
-      readFileSync(join(root, "contracts/calls-guests.candidate.json")),
-    ),
-    apiVersion,
-  );
+  // Guest-call acceptance is deferred for the first new nightly release.
+  // Preserve the candidate's holds and require them for stable publication.
+  if (channel === "stable")
+    validateGuestCallPublication(
+      source,
+      JSON.parse(
+        readFileSync(join(root, "contracts/calls-guests.candidate.json")),
+      ),
+      apiVersion,
+    );
   validateFeatureContractPins(source, [
     ...multiSourcePins(
       JSON.parse(
@@ -350,7 +354,7 @@ async function prepare() {
   const environment = channel === "stable" ? "production" : "staging";
   const output = resolve(process.env.RELEASE_OUTPUT);
   mkdirSync(output, { recursive: true, mode: 0o700 });
-  const expected = { ...expectedContract(), environment };
+  const expected = { ...expectedContract(channel), environment };
   const acceptance = await acceptedContract(expected, output);
   const fingerprint = publicationFingerprint();
   const previous = await publishedProvenance(

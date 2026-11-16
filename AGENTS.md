@@ -63,6 +63,12 @@ Nightlies require matching staging API acceptance; stable releases require
 matching production acceptance. Never publish or claim installability from a
 local package build alone.
 
+For the first new SDK nightly release, guest-call candidate acceptance is not
+a package-publication prerequisite. Preserve its unaccepted/unpublished metadata.
+Other feature holds and exact staging API acceptance still apply. Stable
+publication still requires guest-call acceptance. A package release does not
+activate or establish availability of the guest-call API.
+
 ## Documentation snippet maintenance
 
 Public signature, request, export, package or coverage changes must revisit

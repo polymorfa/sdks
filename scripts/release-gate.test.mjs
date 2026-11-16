@@ -307,7 +307,7 @@ test("A two-audience supplement is checked per family and honours its hold", () 
   );
 });
 
-test("guest-call hold blocks the real publisher after other supplements are reconciled", async () => {
+test("nightlies defer guest-call acceptance while stable and other feature holds remain enforced", async () => {
   const parent = join(
     homedir(),
     ".polymorfa-agent-work",
@@ -378,10 +378,23 @@ test("guest-call hold blocks the real publisher after other supplements are reco
   const publisher = await import(
     pathToFileURL(join(fixture, "scripts/release-gate.mjs")).href
   );
+  assert.equal(publisher.expectedContract("nightly").sourceSha, source.commit);
   assert.throws(
-    () => publisher.expectedContract(),
+    () => publisher.expectedContract("stable"),
     /Guest calls.*held from publication/,
   );
+  // The guest-call exception does not waive any other feature hold.
+  const heldPath = join(fixture, "contracts/request-logs.json");
+  const held = JSON.parse(readFileSync(heldPath));
+  writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /held from publication/,
+  );
+  writeFileSync(heldPath, JSON.stringify(held));
+  assert.equal(candidate.sourceAccepted, false);
+  assert.equal(candidate.published, false);
+  assert.deepEqual(JSON.parse(readFileSync(candidatePath)), candidate);
   candidate.sourceAccepted = candidate.published = true;
   candidate.httpControl.sourceAccepted = candidate.httpControl.published = true;
   candidate.candidateSource.repository = source.repository;
@@ -393,7 +406,7 @@ test("guest-call hold blocks the real publisher after other supplements are reco
     },
   ];
   writeFileSync(candidatePath, JSON.stringify(candidate));
-  assert.equal(publisher.expectedContract().sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("stable").sourceSha, source.commit);
 });
 
 test("guest-call publication binds both holds, version, repository, commit and Messaging hash", () => {
