@@ -20,7 +20,7 @@
   "languages": {
     "typescript": {
       "status": "covered",
-      "sdkMethod": "OrganizationClient.audienceProfiles.list",
+      "sdkMethod": "TeamClient.audienceProfiles.list",
       "method": "list",
       "sourceFiles": [
         "src/platform/audience-profiles.ts",
@@ -35,7 +35,7 @@
     },
     "go": {
       "status": "covered",
-      "sdkMethod": "OrganizationClient.AudienceProfiles().List",
+      "sdkMethod": "TeamClient.AudienceProfiles().List",
       "method": "List",
       "sourceFiles": [
         "audience_profiles.go",
@@ -80,7 +80,7 @@
     },
     "rust": {
       "status": "covered",
-      "sdkMethod": "OrganizationClient.audience_profiles().list",
+      "sdkMethod": "TeamClient.audience_profiles().list",
       "method": "list",
       "sourceFiles": [
         "src/campaign_contract_resources.rs",
@@ -95,7 +95,7 @@
     },
     "dotnet": {
       "status": "covered",
-      "sdkMethod": "OrganizationClient.AudienceProfiles.ListAsync",
+      "sdkMethod": "TeamClient.AudienceProfiles.ListAsync",
       "method": "ListAsync",
       "sourceFiles": [
         "src/Polymorfa.Sdk/AudienceProfiles.cs",

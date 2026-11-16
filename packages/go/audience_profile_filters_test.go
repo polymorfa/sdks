@@ -78,7 +78,7 @@ func TestAudienceProfileFilterPublicWire(t *testing.T) {
 		_, _ = w.Write([]byte(`{"data":[],"page":{"nextCursor":null,"hasMore":false}}`))
 	}))
 	defer server.Close()
-	client, err := NewOrganizationClient(Config{Credential: Credential{Kind: OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL})
+	client, err := NewTeamClient(Config{Credential: Credential{Kind: TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}, BaseURL: server.URL})
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -6,7 +6,7 @@ The supplement contains eight existing operations and their eight-component refe
 
 ## Compatibility and authority
 
-Preserve organization-only clients, nested imports/csvBase64, UUID cursor and integer limits, strict response/options validation, omission and mutation retries. Consent accepts cursor/limit only. Go unkeyed parameter literals and Rust exhaustive struct literals need named/default fields after adding the optional filters. .NET positional construction/deconstruction remains unchanged. Deprecated aliases are not restored.
+Preserve team-only clients, nested imports/csvBase64, UUID cursor and integer limits, strict response/options validation, omission and mutation retries. Consent accepts cursor/limit only. Go unkeyed parameter literals and Rust exhaustive struct literals need named/default fields after adding the optional filters. .NET positional construction/deconstruction remains unchanged. Deprecated aliases are not restored.
 
 Global API source 171a9683ff45d11a4b5d3917dc428ad2722b0d99 and Polymorfa-Version 2026-09-22 remain unchanged, as do Testing 2f1510 and all other supplement pins. The real documentation generator binds its exact committed SDK inputs through sourceCommit/sourceFilesSha256; existing recipe omissions retain cURL fallback.
 
