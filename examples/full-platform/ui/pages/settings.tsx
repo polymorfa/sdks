@@ -46,7 +46,8 @@ function ConnectionSettings() {
   );
   const [busy, setBusy] = useState(false);
   const project = ((
-    settings.data?.connectionConfiguration as Record<string, unknown> | undefined
+    settings.data?.connectionConfiguration as
+      Record<string, unknown> | undefined
   )?.project ?? {}) as { revision?: number; data?: { revision?: number } };
   const revision = project.revision ?? project.data?.revision ?? 0;
 
@@ -76,8 +77,8 @@ function ConnectionSettings() {
     <Card title="Connection configuration">
       <div className="form-stack">
         <p className="muted">
-          Controls what WhatsApp history the connection shares with this app when a
-          phone links.
+          Controls what WhatsApp history the connection shares with this app
+          when a phone links.
         </p>
         <Segmented
           label="History sync"
@@ -90,8 +91,9 @@ function ConnectionSettings() {
         />
         <div className="row-between">
           <span className="muted small">
-            Applies to {bootstrap.connections[0]?.name ?? "the default connection"}{" "}
-            · revision {revision}
+            Applies to{" "}
+            {bootstrap.connections[0]?.name ?? "the default connection"} ·
+            revision {revision}
           </span>
           <Button variant="primary" loading={busy} onClick={() => void save()}>
             Save

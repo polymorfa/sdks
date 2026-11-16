@@ -69,9 +69,13 @@ export const POST = route("admin", async ({ body, connectionOf }) => {
     case "deleteProduct":
       return business.deleteProduct(connection, text(body, "productId"));
     case "setProductVisibility":
-      return business.setProductVisibility(connection, text(body, "productId"), {
-        hidden: flag(body, "hidden"),
-      });
+      return business.setProductVisibility(
+        connection,
+        text(body, "productId"),
+        {
+          hidden: flag(body, "hidden"),
+        },
+      );
     case "appealProduct":
       return business.appealProduct(connection, text(body, "productId"), {
         reason: text(body, "reason"),

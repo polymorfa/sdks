@@ -16,7 +16,10 @@ import { createFixtureServer } from "../../../scripts/sdk-fixture-server.mjs";
 
 const fixture = JSON.parse(
   readFileSync(
-    new URL("../../../contracts/fixtures/connections/behavior.json", import.meta.url),
+    new URL(
+      "../../../contracts/fixtures/connections/behavior.json",
+      import.meta.url,
+    ),
     "utf8",
   ),
 );

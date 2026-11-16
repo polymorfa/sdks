@@ -92,7 +92,8 @@ describe("Official API operations", () => {
         ).data.data,
       ).toEqual(pricing);
       expect(
-        (await sdk.connections.getCloudCredentialHealth("support/eu")).data.data,
+        (await sdk.connections.getCloudCredentialHealth("support/eu")).data
+          .data,
       ).toEqual(health);
       expect(
         (await sdk.connections.reauthorizeCloudCredentials("support/eu")).data

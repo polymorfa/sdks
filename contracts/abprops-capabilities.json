@@ -10,9 +10,7 @@
     "/messaging/{connection}/groups/{id}/capabilities": {
       "get": {
         "operationId": "getGroupCapabilities",
-        "tags": [
-          "Groups"
-        ],
+        "tags": ["Groups"],
         "summary": "Read stored WhatsApp group capabilities",
         "security": [
           {
@@ -254,9 +252,7 @@
             }
           }
         },
-        "x-protocols": [
-          "Linked Device API"
-        ],
+        "x-protocols": ["Linked Device API"],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `groups:read`"
       }
     }
@@ -268,28 +264,20 @@
         "properties": {
           "success": {
             "type": "boolean",
-            "enum": [
-              true
-            ]
+            "enum": [true]
           },
           "data": {
             "$ref": "#/components/schemas/GroupCapabilities"
           }
         },
-        "required": [
-          "success",
-          "data"
-        ]
+        "required": ["success", "data"]
       },
       "GroupCapabilities": {
         "type": "object",
         "properties": {
           "status": {
             "type": "string",
-            "enum": [
-              "synced",
-              "unknown"
-            ]
+            "enum": ["synced", "unknown"]
           },
           "syncedAt": {
             "type": "string",
@@ -316,16 +304,12 @@
                 },
                 "kind": {
                   "type": "string",
-                  "enum": [
-                    "feature"
-                  ]
+                  "enum": ["feature"]
                 },
                 "unit": {
                   "nullable": true,
                   "type": "string",
-                  "enum": [
-                    null
-                  ]
+                  "enum": [null]
                 },
                 "value": {
                   "type": "boolean",
@@ -334,30 +318,15 @@
                 "source": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    "server",
-                    "client_default",
-                    null
-                  ]
+                  "enum": ["server", "client_default", null]
                 }
               },
-              "required": [
-                "key",
-                "kind",
-                "unit",
-                "value",
-                "source"
-              ],
+              "required": ["key", "kind", "unit", "value", "source"],
               "additionalProperties": false
             }
           }
         },
-        "required": [
-          "status",
-          "syncedAt",
-          "checkedAt",
-          "capabilities"
-        ],
+        "required": ["status", "syncedAt", "checkedAt", "capabilities"],
         "additionalProperties": false
       },
       "PublicError": {
@@ -504,20 +473,12 @@
                 "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
               }
             },
-            "required": [
-              "type",
-              "code",
-              "message",
-              "param",
-              "request_id"
-            ]
+            "required": ["type", "code", "message", "param", "request_id"]
           },
           "data": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              null
-            ],
+            "enum": [null],
             "description": "Always null for a failed request."
           },
           "docs": {
@@ -525,11 +486,7 @@
             "format": "uri"
           }
         },
-        "required": [
-          "error",
-          "data",
-          "docs"
-        ]
+        "required": ["error", "data", "docs"]
       },
       "ConnectionCapabilitiesUpdatedEvent": {
         "type": "object",
@@ -555,22 +512,14 @@
           },
           "event": {
             "type": "string",
-            "enum": [
-              "connection.capabilities_updated"
-            ],
+            "enum": ["connection.capabilities_updated"],
             "description": "Event type"
           },
           "payload": {
             "$ref": "#/components/schemas/ConnectionCapabilitiesUpdatedPayload"
           }
         },
-        "required": [
-          "id",
-          "connection",
-          "timestamp",
-          "event",
-          "payload"
-        ]
+        "required": ["id", "connection", "timestamp", "event", "payload"]
       },
       "ConnectionCapabilitiesUpdatedPayload": {
         "type": "object",
@@ -585,10 +534,7 @@
           },
           "status": {
             "type": "string",
-            "enum": [
-              "synced",
-              "unknown"
-            ]
+            "enum": ["synced", "unknown"]
           },
           "syncedAt": {
             "type": "string",
@@ -603,11 +549,7 @@
           "accountType": {
             "type": "string",
             "nullable": true,
-            "enum": [
-              "business",
-              "personal",
-              null
-            ]
+            "enum": ["business", "personal", null]
           },
           "capabilities": {
             "type": "array",
@@ -620,21 +562,12 @@
                 },
                 "kind": {
                   "type": "string",
-                  "enum": [
-                    "feature",
-                    "limit"
-                  ]
+                  "enum": ["feature", "limit"]
                 },
                 "unit": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    "seconds",
-                    "count",
-                    "characters",
-                    "members",
-                    null
-                  ]
+                  "enum": ["seconds", "count", "characters", "members", null]
                 },
                 "value": {
                   "anyOf": [
@@ -652,21 +585,10 @@
                 "source": {
                   "type": "string",
                   "nullable": true,
-                  "enum": [
-                    "server",
-                    "client_default",
-                    "account_type",
-                    null
-                  ]
+                  "enum": ["server", "client_default", "account_type", null]
                 }
               },
-              "required": [
-                "key",
-                "kind",
-                "unit",
-                "value",
-                "source"
-              ],
+              "required": ["key", "kind", "unit", "value", "source"],
               "additionalProperties": false
             },
             "maxItems": 100

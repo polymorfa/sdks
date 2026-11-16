@@ -115,7 +115,11 @@ function receiveMessage(
   const createdAt = toMilliseconds(payload.timestamp);
   const phone = payload.conversation.phoneNumber;
   // Customer messages open or update a help-desk ticket.
-  if (linked?.fromMe !== true && phone !== undefined && connection !== undefined) {
+  if (
+    linked?.fromMe !== true &&
+    phone !== undefined &&
+    connection !== undefined
+  ) {
     void desk()
       .then((data) => {
         data.ingestInbound?.({
@@ -131,7 +135,10 @@ function receiveMessage(
   }
   // The inbox reads and replies through POLYMORFA_CONNECTION, so only that
   // connection's messages go there; tickets above keep their own connection.
-  if (connection === undefined || connection !== optionalEnv("POLYMORFA_CONNECTION")) {
+  if (
+    connection === undefined ||
+    connection !== optionalEnv("POLYMORFA_CONNECTION")
+  ) {
     return;
   }
   emit("inbox.message", connection, {

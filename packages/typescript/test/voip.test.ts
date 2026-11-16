@@ -97,7 +97,8 @@ describe("VoipResource", () => {
       (await sdk.voip.createCallLink({ connection: "support" })).data.data,
     ).toEqual(created);
     expect(
-      (await sdk.voip.previewCallLink({ connection: "support", token })).data.data,
+      (await sdk.voip.previewCallLink({ connection: "support", token })).data
+        .data,
     ).toEqual(previewed);
     expect(
       server.requests.map(({ method, path, body }) => ({
@@ -192,7 +193,10 @@ describe("VoipResource", () => {
       {
         method: "POST",
         path: "/messaging/voip/calls",
-        body: { connection: "support", participants: ["+15550100", "+15550101"] },
+        body: {
+          connection: "support",
+          participants: ["+15550100", "+15550101"],
+        },
       },
       {
         method: "POST",

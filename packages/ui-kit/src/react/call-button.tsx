@@ -79,7 +79,8 @@ export function CallButton({
   const allowed = usePermission("CallButton", "button", "voip_place");
   const [calls, setCalls] = useState<BrowserCalls | undefined>();
   const [busy, setBusy] = useState(false);
-  const resolvedConnection = connection ?? client.getSnapshot().grant?.connection;
+  const resolvedConnection =
+    connection ?? client.getSnapshot().grant?.connection;
   if (!allowed || resolvedConnection === undefined) return null;
   const label = text(configuration, video ? "calls.videoCall" : "calls.call");
   return (

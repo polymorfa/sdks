@@ -12,9 +12,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/links": {
           "get": {
             "operationId": "getProjectCampaignLinks",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Get tracked link opens",
             "description": "**Required scope:** `campaigns:read`\n\nBeta. Opens of each tracked link, in the campaign's link order. An open is a request to the short link: a person, or an app or security scanner previewing the link. It is not proof of a click. Requires the campaign link tracking beta (`403 feature_unavailable` otherwise).",
             "security": [
@@ -229,9 +227,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/test-send": {
           "post": {
             "operationId": "testSendCampaign",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Send a test of a draft campaign",
             "description": "**Required scopes (all):** `campaigns:manage` \u00b7 `campaigns:read`\n\nRequires campaigns:manage and campaigns:read because the test can use stored recipient samples. Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending, and BanSafe checks as a launched campaign. The seed recipient must be the phone of a Connection connected to your team. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient.",
             "security": [
@@ -239,10 +235,7 @@
                 "BearerAuth": []
               }
             ],
-            "x-required-scopes": [
-              "campaigns:manage",
-              "campaigns:read"
-            ],
+            "x-required-scopes": ["campaigns:manage", "campaigns:read"],
             "x-required-scope-mode": "all",
             "parameters": [
               {
@@ -298,9 +291,7 @@
                     "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
                     "schema": {
                       "type": "string",
-                      "enum": [
-                        "true"
-                      ]
+                      "enum": ["true"]
                     }
                   },
                   "X-RateLimit-Limit": {
@@ -737,9 +728,7 @@
         "/messaging/projects/{projectSlug}/campaign-reply-flows": {
           "post": {
             "operationId": "createCampaignReplyFlow",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Create a reply flow revision",
             "description": "**Required scope:** `campaigns:manage`\n\nCreates an immutable reply flow revision: the steps a campaign runs when a recipient replies. Each step can send a text, reply buttons, a list, or a Flow form, and branches on the button or list row chosen, an exact keyword, or a Flow form submission. Beta.",
             "security": [
@@ -988,9 +977,7 @@
         "/messaging/projects/{projectSlug}/campaign-reply-flows/{id}": {
           "get": {
             "operationId": "getCampaignReplyFlow",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Get a reply flow revision",
             "security": [
               {
@@ -1206,9 +1193,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/reply-flow": {
           "put": {
             "operationId": "setCampaignReplyFlow",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Set a campaign's reply flow",
             "description": "**Required scope:** `campaigns:manage`\n\nAttaches a reply flow revision to a draft or scheduled campaign, or detaches it with `null`. The flow starts for each recipient once their message is sent.",
             "security": [
@@ -1466,9 +1451,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export": {
           "get": {
             "operationId": "exportProjectCampaignRecipients",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Export campaign recipients",
             "description": "**Required scope:** `campaigns:read`\n\nReturns recipients as CSV in queue order. Unfiltered exports page up to 1,000 recipients per request. Each page starts with a header row. When more recipients match, the `Polymorfa-Next-Cursor` response header carries the cursor for the next page; it is absent on the last page. Each page is read when it is requested, so a recipient appears once, with the outcome it had when its page was read. A filtered export is one atomic page of up to 1,000 recipients; larger filtered results return 409, so changing statuses cannot silently omit matches between pages. The export contains outcomes and `failureReason` codes only, never message content or template variables.",
             "security": [
@@ -1789,9 +1772,7 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [
-                  true
-                ]
+                "enum": [true]
               },
               "data": {
                 "type": "array",
@@ -1800,10 +1781,7 @@
                 }
               }
             },
-            "required": [
-              "success",
-              "data"
-            ]
+            "required": ["success", "data"]
           },
           "CampaignTrackedLinkReport": {
             "type": "object",
@@ -1829,12 +1807,7 @@
                 "description": "Every recorded open, including repeat opens."
               }
             },
-            "required": [
-              "key",
-              "url",
-              "uniqueOpens",
-              "totalOpens"
-            ]
+            "required": ["key", "url", "uniqueOpens", "totalOpens"]
           },
           "PublicError": {
             "type": "object",
@@ -1980,20 +1953,12 @@
                     "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 },
-                "required": [
-                  "type",
-                  "code",
-                  "message",
-                  "param",
-                  "request_id"
-                ]
+                "required": ["type", "code", "message", "param", "request_id"]
               },
               "data": {
                 "type": "string",
                 "nullable": true,
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "description": "Always null for a failed request."
               },
               "docs": {
@@ -2001,11 +1966,7 @@
                 "format": "uri"
               }
             },
-            "required": [
-              "error",
-              "data",
-              "docs"
-            ]
+            "required": ["error", "data", "docs"]
           },
           "CampaignTestSendRequest": {
             "type": "object",
@@ -2047,28 +2008,20 @@
                 "maxProperties": 50
               }
             },
-            "required": [
-              "connectionId",
-              "to"
-            ]
+            "required": ["connectionId", "to"]
           },
           "TestSendCampaignResponse": {
             "type": "object",
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [
-                  true
-                ]
+                "enum": [true]
               },
               "data": {
                 "$ref": "#/components/schemas/CampaignTestSend"
               }
             },
-            "required": [
-              "success",
-              "data"
-            ]
+            "required": ["success", "data"]
           },
           "CampaignTestSend": {
             "type": "object",
@@ -2084,9 +2037,7 @@
               },
               "status": {
                 "type": "string",
-                "enum": [
-                  "sent"
-                ]
+                "enum": ["sent"]
               },
               "from": {
                 "type": "object",
@@ -2099,10 +2050,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "connectionId",
-                  "phone"
-                ],
+                "required": ["connectionId", "phone"],
                 "description": "The connection the test was sent from."
               },
               "to": {
@@ -2160,10 +2108,7 @@
                 "$ref": "#/components/schemas/CampaignReplyFlowDefinition"
               }
             },
-            "required": [
-              "name",
-              "definition"
-            ],
+            "required": ["name", "definition"],
             "additionalProperties": false
           },
           "CampaignReplyFlowDefinition": {
@@ -2182,10 +2127,7 @@
                 "maxItems": 12
               }
             },
-            "required": [
-              "entryNodeId",
-              "nodes"
-            ],
+            "required": ["entryNodeId", "nodes"],
             "additionalProperties": false,
             "description": "An acyclic graph of 2 to 12 steps. The entry step waits for the first reply to the campaign message and sends nothing."
           },
@@ -2212,19 +2154,13 @@
                       "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,63}$"
                     }
                   },
-                  "required": [
-                    "match",
-                    "to"
-                  ],
+                  "required": ["match", "to"],
                   "additionalProperties": false
                 },
                 "maxItems": 3
               }
             },
-            "required": [
-              "id",
-              "edges"
-            ],
+            "required": ["id", "edges"],
             "additionalProperties": false
           },
           "CampaignReplyFlowSend": {
@@ -2234,9 +2170,7 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "text"
-                    ]
+                    "enum": ["text"]
                   },
                   "text": {
                     "type": "string",
@@ -2244,10 +2178,7 @@
                     "maxLength": 4096
                   }
                 },
-                "required": [
-                  "kind",
-                  "text"
-                ],
+                "required": ["kind", "text"],
                 "additionalProperties": false
               },
               {
@@ -2255,9 +2186,7 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "buttons"
-                    ]
+                    "enum": ["buttons"]
                   },
                   "body": {
                     "type": "string",
@@ -2284,21 +2213,14 @@
                           "maxLength": 20
                         }
                       },
-                      "required": [
-                        "id",
-                        "text"
-                      ],
+                      "required": ["id", "text"],
                       "additionalProperties": false
                     },
                     "minItems": 1,
                     "maxItems": 3
                   }
                 },
-                "required": [
-                  "kind",
-                  "body",
-                  "buttons"
-                ],
+                "required": ["kind", "body", "buttons"],
                 "additionalProperties": false
               },
               {
@@ -2306,9 +2228,7 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "list"
-                    ]
+                    "enum": ["list"]
                   },
                   "body": {
                     "type": "string",
@@ -2344,22 +2264,14 @@
                           "maxLength": 72
                         }
                       },
-                      "required": [
-                        "id",
-                        "title"
-                      ],
+                      "required": ["id", "title"],
                       "additionalProperties": false
                     },
                     "minItems": 1,
                     "maxItems": 10
                   }
                 },
-                "required": [
-                  "kind",
-                  "body",
-                  "buttonText",
-                  "rows"
-                ],
+                "required": ["kind", "body", "buttonText", "rows"],
                 "additionalProperties": false
               },
               {
@@ -2367,9 +2279,7 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "flow_form"
-                    ]
+                    "enum": ["flow_form"]
                   },
                   "flowId": {
                     "type": "string",
@@ -2394,13 +2304,7 @@
                     "pattern": "^[A-Za-z0-9_]{1,64}$"
                   }
                 },
-                "required": [
-                  "kind",
-                  "flowId",
-                  "body",
-                  "buttonText",
-                  "screen"
-                ],
+                "required": ["kind", "flowId", "body", "buttonText", "screen"],
                 "additionalProperties": false,
                 "description": "A published WhatsApp Flow form. Official connections only."
               }
@@ -2413,16 +2317,11 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "choice"
-                    ]
+                    "enum": ["choice"]
                   },
                   "replyKind": {
                     "type": "string",
-                    "enum": [
-                      "button",
-                      "list"
-                    ]
+                    "enum": ["button", "list"]
                   },
                   "id": {
                     "type": "string",
@@ -2430,11 +2329,7 @@
                     "description": "Choice ID, 1 to 64 letters, digits, `.`, `_`, `:` or `-`, starting with a letter or digit."
                   }
                 },
-                "required": [
-                  "kind",
-                  "replyKind",
-                  "id"
-                ],
+                "required": ["kind", "replyKind", "id"],
                 "additionalProperties": false
               },
               {
@@ -2442,9 +2337,7 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "keyword"
-                    ]
+                    "enum": ["keyword"]
                   },
                   "value": {
                     "type": "string",
@@ -2452,10 +2345,7 @@
                     "maxLength": 64
                   }
                 },
-                "required": [
-                  "kind",
-                  "value"
-                ],
+                "required": ["kind", "value"],
                 "additionalProperties": false
               },
               {
@@ -2463,14 +2353,10 @@
                 "properties": {
                   "kind": {
                     "type": "string",
-                    "enum": [
-                      "flow_submission"
-                    ]
+                    "enum": ["flow_submission"]
                   }
                 },
-                "required": [
-                  "kind"
-                ],
+                "required": ["kind"],
                 "additionalProperties": false
               }
             ]
@@ -2480,18 +2366,13 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [
-                  true
-                ]
+                "enum": [true]
               },
               "data": {
                 "$ref": "#/components/schemas/CampaignReplyFlow"
               }
             },
-            "required": [
-              "success",
-              "data"
-            ]
+            "required": ["success", "data"]
           },
           "CampaignReplyFlow": {
             "type": "object",
@@ -2532,18 +2413,13 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [
-                  true
-                ]
+                "enum": [true]
               },
               "data": {
                 "$ref": "#/components/schemas/CampaignReplyFlow"
               }
             },
-            "required": [
-              "success",
-              "data"
-            ]
+            "required": ["success", "data"]
           },
           "SetCampaignReplyFlowRequest": {
             "type": "object",
@@ -2555,9 +2431,7 @@
                 "description": "Reply flow revision to run after replies, or null to detach it."
               }
             },
-            "required": [
-              "replyFlowId"
-            ],
+            "required": ["replyFlowId"],
             "additionalProperties": false
           },
           "SetCampaignReplyFlowResponse": {
@@ -2565,9 +2439,7 @@
             "properties": {
               "success": {
                 "type": "boolean",
-                "enum": [
-                  true
-                ]
+                "enum": [true]
               },
               "data": {
                 "type": "object",
@@ -2582,16 +2454,10 @@
                     "format": "uuid"
                   }
                 },
-                "required": [
-                  "campaignId",
-                  "replyFlowId"
-                ]
+                "required": ["campaignId", "replyFlowId"]
               }
             },
-            "required": [
-              "success",
-              "data"
-            ]
+            "required": ["success", "data"]
           }
         },
         "headers": {
@@ -2626,9 +2492,7 @@
         "/platform/projects/{projectId}/signal-custody": {
           "get": {
             "operationId": "getProjectSignalCustody",
-            "tags": [
-              "signal-custody"
-            ],
+            "tags": ["signal-custody"],
             "summary": "Read Project Signal custody default",
             "description": "Returns the custody default for future Connection reservations. Existing Connection custody is immutable. Customer null defaults inherit the Project default.\n\nRequires `connections:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -2688,9 +2552,7 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2711,9 +2573,7 @@
           },
           "put": {
             "operationId": "updateProjectSignalCustody",
-            "tags": [
-              "signal-custody"
-            ],
+            "tags": ["signal-custody"],
             "summary": "Update Project Signal custody default",
             "description": "Changes the default for future Connection reservations with a revision check. Customer-owned custody requires beta admission and runtime availability. Existing Connections keep their custody. Dashboard writes require a team owner or admin. Setting a Customer default to null restores Project inheritance.\n\nRequires `connections:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -2783,9 +2643,7 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2811,9 +2669,7 @@
         "/platform/projects/{projectId}/customers/{customerId}/signal-custody": {
           "get": {
             "operationId": "getCustomerSignalCustody",
-            "tags": [
-              "signal-custody"
-            ],
+            "tags": ["signal-custody"],
             "summary": "Read Customer Signal custody default",
             "description": "Returns the custody default for future Connection reservations. Existing Connection custody is immutable. Customer null defaults inherit the Project default.\n\nRequires `connections:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -2882,9 +2738,7 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2905,9 +2759,7 @@
           },
           "put": {
             "operationId": "updateCustomerSignalCustody",
-            "tags": [
-              "signal-custody"
-            ],
+            "tags": ["signal-custody"],
             "summary": "Update Customer Signal custody default",
             "description": "Changes the default for future Connection reservations with a revision check. Customer-owned custody requires beta admission and runtime availability. Existing Connections keep their custody. Dashboard writes require a team owner or admin. Setting a Customer default to null restores Project inheritance.\n\nRequires `connections:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -2986,9 +2838,7 @@
                           "$ref": "#/components/schemas/SignalCustodyDefault"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3014,18 +2864,13 @@
         "/platform/campaigns/{campaignId}/test-send": {
           "post": {
             "operationId": "testSendPlatformCampaign",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Send a test of a draft campaign",
             "description": "Requires campaigns:manage and campaigns:read because the test can use stored recipient samples. Sends one copy of a draft campaign's content to a seed recipient, through the same rendering, sending and BanSafe checks as a launched campaign. The seed recipient must be the phone of a Connection connected to your team. The sending connection must be connected, on a plan that includes Campaigns and, when the campaign selects connections, one of them. A test is not a campaign recipient and is not counted in the campaign's statistics or webhooks. A team can send 20 tests an hour, and at most 5 an hour to one seed recipient. `429` means one of these limits was reached or BanSafe is pacing the sending connection; follow `Retry-After`. `409 bansafe_cold_held` means the seed recipient has never written to the sending connection and the campaign holds first messages. `409 state_conflict` means the campaign is not a draft or has A/B or weighted content alternatives, the sending connection is a Hybrid Link connection, or the seed recipient opted out. `504 result_unknown` means the outcome was not received in time and the test may still arrive. Send `projectId` in the body when using a team API key. `422 campaign_variables_missing` means the test's sample values, the mapped recipient value and the fallback all leave a variable in the campaign content empty.\n\nRequires `campaigns:manage` and `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
-            "x-required-scopes": [
-              "campaigns:manage",
-              "campaigns:read"
-            ],
+            "x-required-scopes": ["campaigns:manage", "campaigns:read"],
             "x-required-scope-mode": "all",
             "security": [
               {
@@ -3093,9 +2938,7 @@
                     "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
                     "schema": {
                       "type": "string",
-                      "enum": [
-                        "true"
-                      ]
+                      "enum": ["true"]
                     }
                   }
                 },
@@ -3109,9 +2952,7 @@
                           "$ref": "#/components/schemas/CampaignTestSend"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3224,9 +3065,7 @@
         "/platform/campaign-reply-flows": {
           "post": {
             "operationId": "createPlatformCampaignReplyFlow",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Create campaign reply flow",
             "description": "Creates an immutable reply flow revision: the steps a campaign runs when a recipient replies. Each step can send a text, reply buttons, a list, or a Flow form (Official connections only), and branches on the button or list row chosen, an exact keyword, or a Flow form submission. Beta: returns `403` unless campaign reply flows are enabled for the team. `409` means this flow key and revision already exist.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3285,9 +3124,7 @@
                           "$ref": "#/components/schemas/PlatformCampaignReplyFlow"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3313,9 +3150,7 @@
         "/platform/campaign-reply-flows/{replyFlowId}": {
           "get": {
             "operationId": "getPlatformCampaignReplyFlow",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Get campaign reply flow",
             "description": "Gets one reply flow revision in a project. Beta: returns `403` unless campaign reply flows are enabled for the team.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3382,9 +3217,7 @@
                           "$ref": "#/components/schemas/PlatformCampaignReplyFlow"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3407,9 +3240,7 @@
         "/platform/campaigns/{campaignId}/reply-flow": {
           "put": {
             "operationId": "setPlatformCampaignReplyFlow",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Set campaign reply flow",
             "description": "Attaches a reply flow revision to a draft or scheduled campaign, or detaches it with `null`. The flow starts for each recipient once their message is sent. `409` means the campaign has already launched. Beta: returns `403` unless campaign reply flows are enabled for the team.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3477,10 +3308,7 @@
                         "data": {
                           "type": "object",
                           "additionalProperties": false,
-                          "required": [
-                            "campaignId",
-                            "replyFlowId"
-                          ],
+                          "required": ["campaignId", "replyFlowId"],
                           "properties": {
                             "campaignId": {
                               "type": "string",
@@ -3494,9 +3322,7 @@
                           }
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3522,9 +3348,7 @@
         "/platform/campaigns/{campaignId}/recipients/export": {
           "get": {
             "operationId": "exportCampaignRecipients",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Export campaign recipients",
             "description": "Returns recipients as CSV in queue order. Unfiltered exports page up to 1,000 recipients per request, using the `Polymorfa-Next-Cursor` response header. Each page starts with a header row and reflects outcomes when requested. Filtered exports are one atomic page of up to 1,000 recipients; larger filtered results return 409, so changing statuses cannot silently omit matches between pages. The export contains outcomes and `failureReason` codes only, never message content or template variables.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3669,9 +3493,7 @@
         "/platform/campaigns/{campaignId}/links": {
           "get": {
             "operationId": "getCampaignLinks",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Get tracked link opens",
             "description": "Beta: requires team enrollment in campaign link tracking. Returns opens of each tracked link in the campaign's link order. An open is a request to the short link from a person, or from an app or security scanner previewing the link; it is not proof of a click. `uniqueOpens` counts recipients who opened the link at least once; `totalOpens` counts every open. A team without the beta answers `403 feature_unavailable`.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3742,9 +3564,7 @@
                           }
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3767,9 +3587,7 @@
         "/platform/campaigns/{campaignId}/approvals": {
           "get": {
             "operationId": "listCampaignLaunchApprovals",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "List campaign launch approvals",
             "description": "Lists a campaign's approval requests, newest first, at most 20. A request is created when a launch is held by the team's approval threshold, or when an AI agent asks through the hosted MCP server to launch, resume or move the start (`reasons` says which). `action` is the requested step. It records the frozen recipient count and the requested start time. `status` is `pending` until a team owner or admin approves or rejects it, `superseded` when a later launch request or a change to the campaign replaced it, and `expired` 72 hours after it was requested.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -3840,9 +3658,7 @@
                           }
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3865,9 +3681,7 @@
         "/platform/campaign-settings": {
           "get": {
             "operationId": "getCampaignSettings",
-            "tags": [
-              "campaign-settings"
-            ],
+            "tags": ["campaign-settings"],
             "summary": "Get campaign settings",
             "description": "Returns the team's campaign settings. `launchApproval.recipientThreshold` is the number of recipients above which a launch needs a team owner or admin; null means no launch needs approval. A team that never saved settings receives `launchApproval.recipientThreshold: null`.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -3916,9 +3730,7 @@
                           "$ref": "#/components/schemas/CampaignSettings"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -3938,9 +3750,7 @@
         "/platform/audiences/from-campaign": {
           "post": {
             "operationId": "createAudienceFromCampaign",
-            "tags": [
-              "audiences"
-            ],
+            "tags": ["audiences"],
             "summary": "Create an audience from a campaign",
             "description": "Creates an audience from the recipients of a previous campaign that had one `outcome`, to send them a follow-up campaign. The members are a snapshot taken when the request runs: later receipts, reads or replies on the source campaign do not change the audience. Phone numbers on the team's opt-out list are left out and counted in `optedOutCount`; each member keeps the template variables it had on the source campaign. Outcomes: `delivered` (the device confirmed delivery), `not_delivered` (sent, with no delivery confirmation), `read`, `not_read` (sent and not read, including sends never delivered), `replied`, `not_replied` (sent and no reply was attributed), and `failed` (confirmed failed sends; sends whose outcome is uncertain, such as a timeout waiting for WhatsApp, are excluded). Read outcomes depend on the recipient's read receipts. `404` means the campaign is not in your team (or not in `projectId` when given); `409` means no recipient that is not opted out has the outcome, and nothing is created.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -3991,11 +3801,7 @@
                         ]
                       }
                     },
-                    "required": [
-                      "name",
-                      "campaignId",
-                      "outcome"
-                    ]
+                    "required": ["name", "campaignId", "outcome"]
                   }
                 }
               }
@@ -4034,9 +3840,7 @@
                           "$ref": "#/components/schemas/AudienceFromCampaignResult"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -4062,9 +3866,7 @@
         "/platform/audience-profiles": {
           "get": {
             "operationId": "listAudienceProfiles",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "List audience profiles",
             "description": "Lists customer-supplied profiles for the team with cursor pagination. Deleted profiles are omitted.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -4206,21 +4008,14 @@
                                 "properties": {
                                   "source": {
                                     "type": "string",
-                                    "enum": [
-                                      "api",
-                                      "csv",
-                                      "form"
-                                    ]
+                                    "enum": ["api", "csv", "form"]
                                   },
                                   "reference": {
                                     "type": "string",
                                     "maxLength": 128
                                   }
                                 },
-                                "required": [
-                                  "source",
-                                  "reference"
-                                ]
+                                "required": ["source", "reference"]
                               },
                               "createdAt": {
                                 "type": "integer",
@@ -4247,10 +4042,7 @@
                           "$ref": "#/components/schemas/CursorPageMetadata"
                         }
                       },
-                      "required": [
-                        "data",
-                        "page"
-                      ]
+                      "required": ["data", "page"]
                     }
                   }
                 }
@@ -4270,9 +4062,7 @@
         "/platform/audience-profiles/{phone}": {
           "get": {
             "operationId": "getAudienceProfile",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "Get an audience profile",
             "description": "Gets one customer-supplied profile by its E.164 phone. Deleted profiles return 404.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -4376,21 +4166,14 @@
                               "properties": {
                                 "source": {
                                   "type": "string",
-                                  "enum": [
-                                    "api",
-                                    "csv",
-                                    "form"
-                                  ]
+                                  "enum": ["api", "csv", "form"]
                                 },
                                 "reference": {
                                   "type": "string",
                                   "maxLength": 128
                                 }
                               },
-                              "required": [
-                                "source",
-                                "reference"
-                              ]
+                              "required": ["source", "reference"]
                             },
                             "createdAt": {
                               "type": "integer",
@@ -4413,9 +4196,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -4436,9 +4217,7 @@
           },
           "put": {
             "operationId": "putAudienceProfile",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "Create or update an audience profile",
             "description": "Creates a bounded team profile, or replaces tags and attributes at the observed revision. A stale revision returns 409. To recreate a profile deleted in the last 30 days, send the `revision` the delete returned as `expectedRevision`; a put without it returns 409 with a message naming that revision. A consent assertion records the customer's statement; it does not clear an opt-out or authorize a send. This beta requires enrollment and release eligibility.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -4508,21 +4287,14 @@
                         "properties": {
                           "source": {
                             "type": "string",
-                            "enum": [
-                              "api",
-                              "csv",
-                              "form"
-                            ]
+                            "enum": ["api", "csv", "form"]
                           },
                           "reference": {
                             "type": "string",
                             "maxLength": 128
                           }
                         },
-                        "required": [
-                          "source",
-                          "reference"
-                        ]
+                        "required": ["source", "reference"]
                       },
                       "consent": {
                         "type": "object",
@@ -4530,17 +4302,11 @@
                         "properties": {
                           "purpose": {
                             "type": "string",
-                            "enum": [
-                              "campaigns"
-                            ]
+                            "enum": ["campaigns"]
                           },
                           "source": {
                             "type": "string",
-                            "enum": [
-                              "api",
-                              "csv",
-                              "form"
-                            ]
+                            "enum": ["api", "csv", "form"]
                           },
                           "reference": {
                             "type": "string",
@@ -4564,10 +4330,7 @@
                         ]
                       }
                     },
-                    "required": [
-                      "tags",
-                      "attributes"
-                    ]
+                    "required": ["tags", "attributes"]
                   }
                 }
               }
@@ -4651,21 +4414,14 @@
                               "properties": {
                                 "source": {
                                   "type": "string",
-                                  "enum": [
-                                    "api",
-                                    "csv",
-                                    "form"
-                                  ]
+                                  "enum": ["api", "csv", "form"]
                                 },
                                 "reference": {
                                   "type": "string",
                                   "maxLength": 128
                                 }
                               },
-                              "required": [
-                                "source",
-                                "reference"
-                              ]
+                              "required": ["source", "reference"]
                             },
                             "createdAt": {
                               "type": "integer",
@@ -4688,9 +4444,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -4714,9 +4468,7 @@
           },
           "delete": {
             "operationId": "deleteAudienceProfile",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "Delete an audience profile",
             "description": "Removes profile fields, consent assertions and reusable audience-list memberships at the observed revision, and clears the preview row of each audience the phone belonged to. Recipients already added to campaigns (including drafts), previously uploaded files and opt-outs are not changed. The phone's deletion record is kept for 30 days; `revision` is its revision. During that time, adding the phone to an audience returns 409, and recreating the profile requires `expectedRevision` set to this revision. Deletion remains available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -4786,9 +4538,7 @@
                           "properties": {
                             "deleted": {
                               "type": "boolean",
-                              "enum": [
-                                true
-                              ]
+                              "enum": [true]
                             },
                             "phone": {
                               "type": "string"
@@ -4798,16 +4548,10 @@
                               "minimum": 2
                             }
                           },
-                          "required": [
-                            "deleted",
-                            "phone",
-                            "revision"
-                          ]
+                          "required": ["deleted", "phone", "revision"]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -4833,9 +4577,7 @@
         "/platform/audience-profiles/{phone}/consent": {
           "get": {
             "operationId": "listAudienceProfileConsent",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "List audience consent assertions",
             "description": "Lists the customer's recorded campaign consent assertions for one profile. Assertions do not override opt-outs.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -4926,17 +4668,11 @@
                               },
                               "purpose": {
                                 "type": "string",
-                                "enum": [
-                                  "campaigns"
-                                ]
+                                "enum": ["campaigns"]
                               },
                               "source": {
                                 "type": "string",
-                                "enum": [
-                                  "api",
-                                  "csv",
-                                  "form"
-                                ]
+                                "enum": ["api", "csv", "form"]
                               },
                               "reference": {
                                 "type": "string"
@@ -4969,10 +4705,7 @@
                           "$ref": "#/components/schemas/CursorPageMetadata"
                         }
                       },
-                      "required": [
-                        "data",
-                        "page"
-                      ]
+                      "required": ["data", "page"]
                     }
                   }
                 }
@@ -4995,9 +4728,7 @@
         "/platform/audience-profile-imports": {
           "post": {
             "operationId": "createAudienceProfileImport",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "Start an audience profile CSV import",
             "description": "Queues a bounded CSV import of customer-supplied team profiles. Exact CSV header names can be mapped to profile fields. At most one import is active per team. Files contain at most 10 MiB and 10,000 rows; the CSV is removed after completion or cancellation. The same replay key, file and mapping return the existing job. Requires beta enrollment.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -5079,17 +4810,10 @@
                             "maxLength": 64
                           }
                         },
-                        "required": [
-                          "phone",
-                          "tags",
-                          "attributes"
-                        ]
+                        "required": ["phone", "tags", "attributes"]
                       }
                     },
-                    "required": [
-                      "replayKey",
-                      "csvBase64"
-                    ]
+                    "required": ["replayKey", "csvBase64"]
                   }
                 }
               }
@@ -5134,11 +4858,7 @@
                             },
                             "state": {
                               "type": "string",
-                              "enum": [
-                                "queued",
-                                "completed",
-                                "cancelled"
-                              ]
+                              "enum": ["queued", "completed", "cancelled"]
                             },
                             "totalValid": {
                               "type": "integer",
@@ -5165,10 +4885,7 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "row",
-                                  "reason"
-                                ]
+                                "required": ["row", "reason"]
                               }
                             },
                             "conflictSamples": {
@@ -5184,16 +4901,10 @@
                                   },
                                   "reason": {
                                     "type": "string",
-                                    "enum": [
-                                      "quota",
-                                      "revision_conflict"
-                                    ]
+                                    "enum": ["quota", "revision_conflict"]
                                   }
                                 },
-                                "required": [
-                                  "row",
-                                  "reason"
-                                ]
+                                "required": ["row", "reason"]
                               }
                             },
                             "processedValid": {
@@ -5247,9 +4958,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -5275,9 +4984,7 @@
         "/platform/audience-profile-imports/{jobId}": {
           "get": {
             "operationId": "getAudienceProfileImport",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "Get an audience profile import report",
             "description": "Returns aggregate counts and up to 20 row-number/reason samples. Raw phone numbers and custom values are not included. Reports expire 30 days after completion or cancellation.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -5342,11 +5049,7 @@
                             },
                             "state": {
                               "type": "string",
-                              "enum": [
-                                "queued",
-                                "completed",
-                                "cancelled"
-                              ]
+                              "enum": ["queued", "completed", "cancelled"]
                             },
                             "totalValid": {
                               "type": "integer",
@@ -5373,10 +5076,7 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "row",
-                                  "reason"
-                                ]
+                                "required": ["row", "reason"]
                               }
                             },
                             "conflictSamples": {
@@ -5392,16 +5092,10 @@
                                   },
                                   "reason": {
                                     "type": "string",
-                                    "enum": [
-                                      "quota",
-                                      "revision_conflict"
-                                    ]
+                                    "enum": ["quota", "revision_conflict"]
                                   }
                                 },
-                                "required": [
-                                  "row",
-                                  "reason"
-                                ]
+                                "required": ["row", "reason"]
                               }
                             },
                             "processedValid": {
@@ -5455,9 +5149,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -5478,9 +5170,7 @@
           },
           "delete": {
             "operationId": "cancelAudienceProfileImport",
-            "tags": [
-              "audience-profiles"
-            ],
+            "tags": ["audience-profiles"],
             "summary": "Cancel an audience profile import",
             "description": "Stops the next batch and removes the CSV. Already committed profile edits remain. Cancellation and report reads remain available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -5545,11 +5235,7 @@
                             },
                             "state": {
                               "type": "string",
-                              "enum": [
-                                "queued",
-                                "completed",
-                                "cancelled"
-                              ]
+                              "enum": ["queued", "completed", "cancelled"]
                             },
                             "totalValid": {
                               "type": "integer",
@@ -5576,10 +5262,7 @@
                                     "type": "string"
                                   }
                                 },
-                                "required": [
-                                  "row",
-                                  "reason"
-                                ]
+                                "required": ["row", "reason"]
                               }
                             },
                             "conflictSamples": {
@@ -5595,16 +5278,10 @@
                                   },
                                   "reason": {
                                     "type": "string",
-                                    "enum": [
-                                      "quota",
-                                      "revision_conflict"
-                                    ]
+                                    "enum": ["quota", "revision_conflict"]
                                   }
                                 },
-                                "required": [
-                                  "row",
-                                  "reason"
-                                ]
+                                "required": ["row", "reason"]
                               }
                             },
                             "processedValid": {
@@ -5658,9 +5335,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -5683,9 +5358,7 @@
         "/platform/optouts/confirmation-settings": {
           "get": {
             "operationId": "getStopConfirmationSettings",
-            "tags": [
-              "optouts"
-            ],
+            "tags": ["optouts"],
             "summary": "Get STOP confirmation settings",
             "description": "Returns the team's optional acknowledgement preference. Confirmations are disabled by default. A locale is explicitly selected from English, Brazilian Portuguese or Spanish; the response includes the reviewed acknowledgement text. Reads remain available after beta withdrawal.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -5734,9 +5407,7 @@
                           "$ref": "#/components/schemas/StopConfirmationSettings"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -5754,9 +5425,7 @@
           },
           "put": {
             "operationId": "updateStopConfirmationSettings",
-            "tags": [
-              "optouts"
-            ],
+            "tags": ["optouts"],
             "summary": "Update STOP confirmation settings",
             "description": "Replaces the team's preference using the observed revision. Enabling requires STOP confirmations beta access and a selected locale. A team owner or admin can also change it in the console. A new STOP opt-out queues at most one plain acknowledgement from the receiving method; manual opt-outs, repeated STOP while suppressed and START produce none. A confirmation cannot undo suppression. Disabling remains available after beta withdrawal and cancels queued acknowledgements. A changed revision returns 409. Unknown send outcomes are never resent with a new operation identity.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -5815,9 +5484,7 @@
                           "$ref": "#/components/schemas/StopConfirmationSettings"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -5840,9 +5507,7 @@
         "/platform/optouts/confirmation-summary": {
           "get": {
             "operationId": "getStopConfirmationSummary",
-            "tags": [
-              "optouts"
-            ],
+            "tags": ["optouts"],
             "summary": "Get STOP confirmation outcome counts",
             "description": "Returns aggregate acknowledgement outcomes from the last 30 days, without recipient phones or message content. Disabled is the preference state, queued is waiting, admitted may have been submitted, completed means the provider accepted the send rather than delivered it, failed is a proven skip or rejection, and unknown means the send outcome could not be established. All outcomes preserve the opt-out.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -5891,9 +5556,7 @@
                           "$ref": "#/components/schemas/StopConfirmationSummary"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -5919,48 +5582,27 @@
             "properties": {
               "signalModeDefault": {
                 "type": "string",
-                "enum": [
-                  "standard",
-                  "zero_knowledge",
-                  null
-                ],
+                "enum": ["standard", "zero_knowledge", null],
                 "nullable": true
               },
               "effectiveSignalMode": {
                 "type": "string",
-                "enum": [
-                  "standard",
-                  "zero_knowledge"
-                ]
+                "enum": ["standard", "zero_knowledge"]
               },
               "revision": {
                 "type": "integer",
                 "minimum": 0
               }
             },
-            "required": [
-              "signalModeDefault",
-              "effectiveSignalMode",
-              "revision"
-            ]
+            "required": ["signalModeDefault", "effectiveSignalMode", "revision"]
           },
           "ErrorEnvelope": {
             "type": "object",
-            "required": [
-              "error",
-              "data",
-              "docs"
-            ],
+            "required": ["error", "data", "docs"],
             "properties": {
               "error": {
                 "type": "object",
-                "required": [
-                  "type",
-                  "code",
-                  "message",
-                  "param",
-                  "request_id"
-                ],
+                "required": ["type", "code", "message", "param", "request_id"],
                 "properties": {
                   "type": {
                     "type": "string",
@@ -6002,9 +5644,7 @@
               "data": {
                 "type": "string",
                 "nullable": true,
-                "enum": [
-                  null
-                ],
+                "enum": [null],
                 "description": "Always null for a failed request."
               },
               "docs": {
@@ -6025,16 +5665,10 @@
               },
               "signalModeDefault": {
                 "type": "string",
-                "enum": [
-                  "standard",
-                  "zero_knowledge"
-                ]
+                "enum": ["standard", "zero_knowledge"]
               }
             },
-            "required": [
-              "expectedRevision",
-              "signalModeDefault"
-            ]
+            "required": ["expectedRevision", "signalModeDefault"]
           },
           "CustomerSignalCustodyUpdate": {
             "type": "object",
@@ -6047,18 +5681,11 @@
               },
               "signalModeDefault": {
                 "type": "string",
-                "enum": [
-                  "standard",
-                  "zero_knowledge",
-                  null
-                ],
+                "enum": ["standard", "zero_knowledge", null],
                 "nullable": true
               }
             },
-            "required": [
-              "expectedRevision",
-              "signalModeDefault"
-            ]
+            "required": ["expectedRevision", "signalModeDefault"]
           },
           "CampaignTestSendRequest": {
             "type": "object",
@@ -6106,10 +5733,7 @@
                 "description": "Variable values for the test. They override the sample recipient's values; without `sampleRecipientId`, only these values are used."
               }
             },
-            "required": [
-              "connectionId",
-              "to"
-            ]
+            "required": ["connectionId", "to"]
           },
           "CampaignTestSend": {
             "type": "object",
@@ -6126,9 +5750,7 @@
               },
               "status": {
                 "type": "string",
-                "enum": [
-                  "sent"
-                ]
+                "enum": ["sent"]
               },
               "from": {
                 "type": "object",
@@ -6142,10 +5764,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "connectionId",
-                  "phone"
-                ],
+                "required": ["connectionId", "phone"],
                 "description": "The connection the test was sent from."
               },
               "to": {
@@ -6183,10 +5802,7 @@
           "CreatePlatformCampaignReplyFlowRequest": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "name",
-              "definition"
-            ],
+            "required": ["name", "definition"],
             "properties": {
               "name": {
                 "type": "string",
@@ -6217,10 +5833,7 @@
           "PlatformCampaignReplyFlowDefinition": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "entryNodeId",
-              "nodes"
-            ],
+            "required": ["entryNodeId", "nodes"],
             "description": "An acyclic graph of 2 to 12 steps. The entry step waits for the first reply and sends nothing. See the reply flows guide for step and branch shapes.",
             "properties": {
               "entryNodeId": {
@@ -6234,10 +5847,7 @@
                 "items": {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "id",
-                    "edges"
-                  ],
+                  "required": ["id", "edges"],
                   "properties": {
                     "id": {
                       "type": "string",
@@ -6245,20 +5855,13 @@
                     },
                     "send": {
                       "type": "object",
-                      "required": [
-                        "kind"
-                      ],
+                      "required": ["kind"],
                       "additionalProperties": true,
                       "description": "`text` (`text`), `buttons` (`body`, up to 3 `buttons` with `id` and `text`), `list` (`body`, `buttonText`, up to 10 `rows`), or `flow_form` (`flowId`, `body`, `buttonText`, `screen`; Official connections only).",
                       "properties": {
                         "kind": {
                           "type": "string",
-                          "enum": [
-                            "text",
-                            "buttons",
-                            "list",
-                            "flow_form"
-                          ]
+                          "enum": ["text", "buttons", "list", "flow_form"]
                         }
                       }
                     },
@@ -6268,26 +5871,17 @@
                       "items": {
                         "type": "object",
                         "additionalProperties": false,
-                        "required": [
-                          "match",
-                          "to"
-                        ],
+                        "required": ["match", "to"],
                         "properties": {
                           "match": {
                             "type": "object",
-                            "required": [
-                              "kind"
-                            ],
+                            "required": ["kind"],
                             "additionalProperties": true,
                             "description": "`choice` (`replyKind` `button` or `list`, `id`), `keyword` (`value`), or `flow_submission`.",
                             "properties": {
                               "kind": {
                                 "type": "string",
-                                "enum": [
-                                  "choice",
-                                  "keyword",
-                                  "flow_submission"
-                                ]
+                                "enum": ["choice", "keyword", "flow_submission"]
                               }
                             }
                           },
@@ -6341,9 +5935,7 @@
           "SetPlatformCampaignReplyFlowRequest": {
             "type": "object",
             "additionalProperties": false,
-            "required": [
-              "replyFlowId"
-            ],
+            "required": ["replyFlowId"],
             "properties": {
               "replyFlowId": {
                 "type": "string",
@@ -6399,12 +5991,7 @@
                 "description": "Every recorded open, including repeat opens."
               }
             },
-            "required": [
-              "key",
-              "url",
-              "uniqueOpens",
-              "totalOpens"
-            ]
+            "required": ["key", "url", "uniqueOpens", "totalOpens"]
           },
           "CampaignLaunchApproval": {
             "type": "object",
@@ -6420,11 +6007,7 @@
               },
               "action": {
                 "type": "string",
-                "enum": [
-                  "launch",
-                  "resume",
-                  "reschedule"
-                ],
+                "enum": ["launch", "resume", "reschedule"],
                 "description": "The held command. Approving it runs that command."
               },
               "status": {
@@ -6441,10 +6024,7 @@
                 "type": "array",
                 "items": {
                   "type": "string",
-                  "enum": [
-                    "audience_threshold",
-                    "agent_request"
-                  ]
+                  "enum": ["audience_threshold", "agent_request"]
                 },
                 "description": "Why the command was held. `audience_threshold`: a launch would send to more recipients than the team's threshold. `agent_request`: an AI agent asked through the hosted MCP server."
               },
@@ -6470,10 +6050,7 @@
                     "type": "string"
                   }
                 },
-                "required": [
-                  "type",
-                  "id"
-                ]
+                "required": ["type", "id"]
               },
               "requestedAt": {
                 "type": "integer",
@@ -6532,14 +6109,10 @@
                     "description": "Launches that would send to more recipients than this need a team owner or admin. Null turns approval off."
                   }
                 },
-                "required": [
-                  "recipientThreshold"
-                ]
+                "required": ["recipientThreshold"]
               }
             },
-            "required": [
-              "launchApproval"
-            ]
+            "required": ["launchApproval"]
           },
           "AudienceFromCampaignResult": {
             "type": "object",
@@ -6554,9 +6127,7 @@
               },
               "source": {
                 "type": "string",
-                "enum": [
-                  "campaign"
-                ]
+                "enum": ["campaign"]
               },
               "recipientCount": {
                 "type": "integer",
@@ -6648,10 +6219,7 @@
                 "type": "boolean"
               }
             },
-            "required": [
-              "nextCursor",
-              "hasMore"
-            ]
+            "required": ["nextCursor", "hasMore"]
           },
           "StopConfirmationSettings": {
             "type": "object",
@@ -6666,12 +6234,7 @@
               },
               "locale": {
                 "type": "string",
-                "enum": [
-                  "en",
-                  "pt-BR",
-                  "es",
-                  null
-                ],
+                "enum": ["en", "pt-BR", "es", null],
                 "nullable": true
               },
               "revision": {
@@ -6680,9 +6243,7 @@
               },
               "textRevision": {
                 "type": "integer",
-                "enum": [
-                  1
-                ]
+                "enum": [1]
               },
               "acknowledgement": {
                 "type": "string",
@@ -6718,12 +6279,7 @@
               },
               "locale": {
                 "type": "string",
-                "enum": [
-                  "en",
-                  "pt-BR",
-                  "es",
-                  null
-                ],
+                "enum": ["en", "pt-BR", "es", null],
                 "nullable": true,
                 "description": "Required when enabled. Never inferred from a phone number."
               },
@@ -6733,12 +6289,7 @@
                 "maximum": 2147483646
               }
             },
-            "required": [
-              "teamId",
-              "enabled",
-              "locale",
-              "revision"
-            ]
+            "required": ["teamId", "enabled", "locale", "revision"]
           },
           "StopConfirmationSummary": {
             "type": "object",
@@ -6781,10 +6332,7 @@
                 ]
               }
             },
-            "required": [
-              "enabled",
-              "counts"
-            ]
+            "required": ["enabled", "counts"]
           }
         },
         "responses": {

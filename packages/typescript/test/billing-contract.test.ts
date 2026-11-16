@@ -16,21 +16,24 @@ it("keeps reviewed billing and connection administration in the canonical Platfo
     spec.components.schemas.PlatformConnection.properties.paidUntil,
   ).toMatchObject({ type: "number", nullable: true });
   expect(
-    spec.paths["/platform/connections/{connectionId}/start"].post.responses["402"],
+    spec.paths["/platform/connections/{connectionId}/start"].post.responses[
+      "402"
+    ],
   ).toBeDefined();
-  expect(spec.components.schemas.ConnectionTierOverrideRequest.required).toEqual([
-    "quoteId",
-  ]);
+  expect(
+    spec.components.schemas.ConnectionTierOverrideRequest.required,
+  ).toEqual(["quoteId"]);
   expect(spec.components.schemas.ConnectionTierQuoteRequest.required).toEqual([
     "tierOverride",
   ]);
-  expect(spec.paths["/platform/connections/{connectionId}"].get.operationId).toBe(
-    "getConnection",
-  );
-  expect(spec.paths["/platform/connections/{connectionId}"].put.operationId).toBe(
-    "updateConnection",
-  );
   expect(
-    spec.paths["/platform/connections/{connectionId}/tier-quotes"].post.operationId,
+    spec.paths["/platform/connections/{connectionId}"].get.operationId,
+  ).toBe("getConnection");
+  expect(
+    spec.paths["/platform/connections/{connectionId}"].put.operationId,
+  ).toBe("updateConnection");
+  expect(
+    spec.paths["/platform/connections/{connectionId}/tier-quotes"].post
+      .operationId,
   ).toBe("quoteConnectionTierChange");
 });

@@ -62,10 +62,7 @@
         "query": {
           "limit": "25",
           "active": "true",
-          "tag": [
-            "alpha",
-            "beta"
-          ],
+          "tag": ["alpha", "beta"],
           "search": "a & b"
         }
       },

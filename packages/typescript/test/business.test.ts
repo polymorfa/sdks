@@ -100,7 +100,11 @@ describe("MessagingClient business", () => {
       },
     } as const;
     await business.getMerchantCompliance(connection);
-    await business.setMerchantCompliance(connection, compliance, mutationOptions);
+    await business.setMerchantCompliance(
+      connection,
+      compliance,
+      mutationOptions,
+    );
     await business.getLinkedAccounts(connection);
     const eligibility = await business.getEligibility(connection);
 
@@ -176,7 +180,11 @@ describe("MessagingClient business", () => {
       height: 480,
     });
     await business.createCatalog(connection, mutationOptions);
-    await business.setCartEnabled(connection, { enabled: false }, mutationOptions);
+    await business.setCartEnabled(
+      connection,
+      { enabled: false },
+      mutationOptions,
+    );
     await business.getProduct(connection, productId, { id });
     await business.createProduct(
       connection,
@@ -383,7 +391,11 @@ describe("MessagingClient business", () => {
     );
     await business.deleteCoverPhoto(connection, "cover", mutationOptions);
     await business.createCatalog(connection, mutationOptions);
-    await business.setCartEnabled(connection, { enabled: true }, mutationOptions);
+    await business.setCartEnabled(
+      connection,
+      { enabled: true },
+      mutationOptions,
+    );
     await business.createProduct(
       connection,
       { name: "Tea", images: [{ base64: "aW1hZ2U=" }] },

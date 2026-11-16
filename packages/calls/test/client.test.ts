@@ -756,7 +756,9 @@ describe("CallsClient", () => {
   });
 
   it("refuses to construct without a credential or an api seam", () => {
-    expect(() => createInternalCallsClient({ connection: "s" })).toThrow(/token/);
+    expect(() => createInternalCallsClient({ connection: "s" })).toThrow(
+      /token/,
+    );
   });
 });
 

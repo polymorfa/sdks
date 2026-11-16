@@ -9,9 +9,7 @@
       "path": "/messaging/{connection}/phone",
       "operation": {
         "operationId": "getTestingPhone",
-        "tags": [
-          "Testing"
-        ],
+        "tags": ["Testing"],
         "security": [
           {
             "BearerAuth": []
@@ -151,9 +149,7 @@
             }
           }
         },
-        "x-protocols": [
-          "Linked Device API"
-        ],
+        "x-protocols": ["Linked Device API"],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:read`"
       }
     },
@@ -162,9 +158,7 @@
       "path": "/messaging/{connection}/phone/messages",
       "operation": {
         "operationId": "sendTestingPhoneMessage",
-        "tags": [
-          "Testing"
-        ],
+        "tags": ["Testing"],
         "security": [
           {
             "BearerAuth": []
@@ -378,9 +372,7 @@
             }
           }
         },
-        "x-protocols": [
-          "Linked Device API"
-        ],
+        "x-protocols": ["Linked Device API"],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
       }
     },
@@ -389,9 +381,7 @@
       "path": "/messaging/{connection}/phone/devices/{deviceId}/unlink",
       "operation": {
         "operationId": "unlinkTestingPhoneDevice",
-        "tags": [
-          "Testing"
-        ],
+        "tags": ["Testing"],
         "security": [
           {
             "BearerAuth": []
@@ -574,9 +564,7 @@
             }
           }
         },
-        "x-protocols": [
-          "Linked Device API"
-        ],
+        "x-protocols": ["Linked Device API"],
         "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`"
       }
     }
@@ -605,19 +593,12 @@
                 "type": "integer"
               }
             },
-            "required": [
-              "deviceId"
-            ]
+            "required": ["deviceId"]
           },
           "description": "Companions linked to the phone, such as Polymorfa's own connection and Inspector."
         }
       },
-      "required": [
-        "connection",
-        "phone",
-        "online",
-        "devices"
-      ]
+      "required": ["connection", "phone", "online", "devices"]
     },
     "PublicError": {
       "type": "object",
@@ -763,20 +744,12 @@
               "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
             }
           },
-          "required": [
-            "type",
-            "code",
-            "message",
-            "param",
-            "request_id"
-          ]
+          "required": ["type", "code", "message", "param", "request_id"]
         },
         "data": {
           "type": "string",
           "nullable": true,
-          "enum": [
-            null
-          ],
+          "enum": [null],
           "description": "Always null for a failed request."
         },
         "docs": {
@@ -784,11 +757,7 @@
           "format": "uri"
         }
       },
-      "required": [
-        "error",
-        "data",
-        "docs"
-      ]
+      "required": ["error", "data", "docs"]
     },
     "TestingPhoneMessageRequest": {
       "type": "object",
@@ -804,10 +773,7 @@
           "maxLength": 4096
         }
       },
-      "required": [
-        "to",
-        "text"
-      ],
+      "required": ["to", "text"],
       "additionalProperties": false
     },
     "TestingPhoneMessage": {
@@ -824,11 +790,7 @@
           "nullable": true
         }
       },
-      "required": [
-        "connection",
-        "to",
-        "messageId"
-      ]
+      "required": ["connection", "to", "messageId"]
     },
     "TestingPhoneUnlink": {
       "type": "object",
@@ -841,16 +803,10 @@
         },
         "unlinked": {
           "type": "boolean",
-          "enum": [
-            true
-          ]
+          "enum": [true]
         }
       },
-      "required": [
-        "connection",
-        "deviceId",
-        "unlinked"
-      ]
+      "required": ["connection", "deviceId", "unlinked"]
     }
   },
   "published": false,

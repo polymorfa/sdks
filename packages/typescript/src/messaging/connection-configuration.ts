@@ -43,7 +43,8 @@ export interface EffectiveConnectionConfiguration {
   hms: HmsConfiguration;
 }
 
-export type ConfigurationSource = "platform" | "team" | "project" | "connection";
+export type ConfigurationSource =
+  "platform" | "team" | "project" | "connection";
 export type ConfigurationValueSource = ConfigurationSource | "consent";
 export type ConnectionConfigurationReset =
   | "historySync"

@@ -60,7 +60,9 @@ export class FakeWebSocket {
     this.onerror?.({});
   }
   /** Open and answer the auth frame with `ready`, as the platform does. */
-  authenticate(ready: Record<string, unknown> = { connection: "support" }): void {
+  authenticate(
+    ready: Record<string, unknown> = { connection: "support" },
+  ): void {
     this.open();
     this.text({ type: "ready", ...ready });
   }

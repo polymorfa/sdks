@@ -2,7 +2,11 @@
 export class CallsExampleSetupError extends Error {}
 
 /** Check the Number and its client rules before minting the browser token. */
-export async function mintCallsExampleToken(messaging, connection, ephemeralId) {
+export async function mintCallsExampleToken(
+  messaging,
+  connection,
+  ephemeralId,
+) {
   let rules;
   try {
     rules = (await messaging.clientTokens.retrieveRules(connection)).data.data;
@@ -16,7 +20,8 @@ export async function mintCallsExampleToken(messaging, connection, ephemeralId) 
         "No client rules are configured for this Number. Configure the Calls actions before minting.",
       );
     } catch (connectionCause) {
-      if (connectionCause instanceof CallsExampleSetupError) throw connectionCause;
+      if (connectionCause instanceof CallsExampleSetupError)
+        throw connectionCause;
       if (connectionCause?.status === 404)
         throw new CallsExampleSetupError(
           "Number unavailable to this credential. Check the Number ID and project-token project.",

@@ -81,9 +81,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/recipients": {
           "get": {
             "operationId": "listProjectCampaignRecipients",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "List campaign recipients",
             "description": "**Required scope:** `campaigns:read`\n\nLists a campaign's recipients in queue order with cursor pagination. Filter by `status`, by `reason`, or both: for example `status=skipped&reason=opted_out` lists recipients skipped because they opted out. `failureReason` gives the stable reason a recipient was not sent.",
             "security": [
@@ -355,9 +353,7 @@
           },
           "post": {
             "operationId": "addProjectCampaignRecipients",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Add recipients to a draft campaign",
             "description": "**Required scope:** `campaigns:manage`\n\nAdds up to 1,000 recipients to a campaign that has not started sending. A phone already on the campaign is skipped. Invalid entries are reported and not added.",
             "security": [
@@ -412,9 +408,7 @@
                     "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
                     "schema": {
                       "type": "string",
-                      "enum": [
-                        "true"
-                      ]
+                      "enum": ["true"]
                     }
                   },
                   "X-RateLimit-Limit": {
@@ -758,11 +752,7 @@
               "description": "The `revision` from your last read."
             }
           },
-          "required": [
-            "maxPer24Hours",
-            "maxPer7Days",
-            "revision"
-          ]
+          "required": ["maxPer24Hours", "maxPer7Days", "revision"]
         }
       },
       "fields": {
@@ -795,10 +785,7 @@
               "description": "Most campaign messages one phone number receives from the team in any rolling 7 days, 1 to 200. `null` sets no 7-day limit. Must not be lower than `maxPer24Hours`."
             }
           },
-          "required": [
-            "maxPer24Hours",
-            "maxPer7Days"
-          ]
+          "required": ["maxPer24Hours", "maxPer7Days"]
         },
         "PlatformCampaignAnalytics.frequencyCap": {
           "type": "object",
@@ -811,9 +798,7 @@
               "description": "Recipients whose first, sequence or follow-up message was skipped by the cap."
             }
           },
-          "required": [
-            "skippedRecipientCount"
-          ]
+          "required": ["skippedRecipientCount"]
         },
         "UpdatePlatformCampaignRequest.frequencyCap": {
           "type": "object",
@@ -836,10 +821,7 @@
               "description": "Most campaign messages one phone number receives from the team in any rolling 7 days, 1 to 200. `null` sets no 7-day limit. Must not be lower than `maxPer24Hours`."
             }
           },
-          "required": [
-            "maxPer24Hours",
-            "maxPer7Days"
-          ]
+          "required": ["maxPer24Hours", "maxPer7Days"]
         },
         "PlatformCampaign.frequencyCap": {
           "type": "object",
@@ -862,10 +844,7 @@
               "description": "Most campaign messages one phone number receives from the team in any rolling 7 days, 1 to 200. `null` sets no 7-day limit. Must not be lower than `maxPer24Hours`."
             }
           },
-          "required": [
-            "maxPer24Hours",
-            "maxPer7Days"
-          ]
+          "required": ["maxPer24Hours", "maxPer7Days"]
         },
         "CampaignRecipient.failureReason": {
           "nullable": true,
@@ -883,9 +862,7 @@
         "/platform/campaigns/{campaignId}/recipients": {
           "get": {
             "operationId": "listCampaignRecipients",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "List campaign recipients",
             "description": "Lists a campaign's recipients in queue order with cursor pagination. Filter by `status`, by `reason`, or both: for example `status=skipped&reason=opted_out` lists recipients skipped because the number opted out. `failureReason` gives the stable reason a recipient was not sent.\n\nRequires `campaigns:read`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -1008,10 +985,7 @@
                           "$ref": "#/components/schemas/CursorPageMetadata"
                         }
                       },
-                      "required": [
-                        "data",
-                        "page"
-                      ]
+                      "required": ["data", "page"]
                     }
                   }
                 }
@@ -1032,9 +1006,7 @@
           },
           "post": {
             "operationId": "addCampaignRecipients",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Add recipients to a draft campaign",
             "description": "Adds up to 1,000 recipients to a campaign that has not been launched. A number already on the campaign is skipped. Invalid entries are reported, not added. A campaign that has been launched answers `409`. Send `projectId` in the body when using a team API key.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -1092,9 +1064,7 @@
                         }
                       }
                     },
-                    "required": [
-                      "recipients"
-                    ]
+                    "required": ["recipients"]
                   }
                 }
               }
@@ -1126,9 +1096,7 @@
                     "description": "`true` when this response replays the result of an earlier request with the same Idempotency-Key.",
                     "schema": {
                       "type": "string",
-                      "enum": [
-                        "true"
-                      ]
+                      "enum": ["true"]
                     }
                   }
                 },
@@ -1142,9 +1110,7 @@
                           "$ref": "#/components/schemas/CampaignRecipientAppendResult"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -1173,9 +1139,7 @@
         "/platform/campaign-settings/frequency-cap": {
           "get": {
             "operationId": "getCampaignFrequencyCap",
-            "tags": [
-              "campaign-settings"
-            ],
+            "tags": ["campaign-settings"],
             "summary": "Get the contact frequency cap",
             "description": "Returns the team's contact frequency cap: the most campaign messages one phone number receives from the team in any rolling 24 hours and any rolling 7 days. Every campaign message counts, first messages and later messages of a sequence, from every campaign, project and number in the team. Test sends and messages sent outside campaigns do not count. `null` means no limit for that window. A team that never saved a cap receives both limits `null` and `revision` 0. A campaign can set its own, stricter cap with `frequencyCap`. Accepts a team API key or a live signed-in team member.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -1224,9 +1188,7 @@
                           "$ref": "#/components/schemas/CampaignFrequencyCapSettings"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -1244,9 +1206,7 @@
           },
           "put": {
             "operationId": "updateCampaignFrequencyCap",
-            "tags": [
-              "campaign-settings"
-            ],
+            "tags": ["campaign-settings"],
             "summary": "Update the contact frequency cap",
             "description": "Replaces the team's contact frequency cap using the `revision` you read; a changed revision answers `409`. Send `null` for a window to remove its limit, or both `null` to remove the cap. Setting a limit requires the contact frequency caps beta and otherwise answers `403 feature_unavailable`; removing the cap does not. Requires a team API key or a signed-in team owner or admin; project tokens answer `403`. A message over the cap is skipped with `frequency_cap_exceeded`; a later sequence message stops that recipient's remaining sequence. Settled skips are never retried when a cap changes.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -1305,9 +1265,7 @@
                           "$ref": "#/components/schemas/CampaignFrequencyCapSettings"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }

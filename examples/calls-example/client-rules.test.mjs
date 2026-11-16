@@ -82,7 +82,10 @@ test("mint helper uses existing rules without requiring connections:read", async
   assert.equal(token, "pmfa_ct_ZXhhbXBsZQ");
   assert.deepEqual(messaging.calls, [
     "retrieve-rules",
-    ["mint", { connection: "support", ephemeralId: "local-1", ttlSeconds: 900 }],
+    [
+      "mint",
+      { connection: "support", ephemeralId: "local-1", ttlSeconds: 900 },
+    ],
   ]);
 });
 
@@ -129,7 +132,10 @@ test("configure helper validates the callee and project before writing", async (
   );
   assert.deepEqual(invalid.calls, []);
 
-  const hidden = fakeMessaging({ rulesError: missing, connectionError: missing });
+  const hidden = fakeMessaging({
+    rulesError: missing,
+    connectionError: missing,
+  });
   await assert.rejects(
     configureCallsExampleRules(hidden, "support", "+12025550123"),
     /Number unavailable/,

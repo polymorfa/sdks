@@ -435,9 +435,7 @@
           "id": "100200301",
           "phoneNumber": "+15550002222"
         },
-        "selectedHashes": [
-          "aa"
-        ],
+        "selectedHashes": ["aa"],
         "timestamp": 1790856035
       },
       "connection": "portable-fixture"
@@ -455,9 +453,7 @@
           "id": "100200301",
           "phoneNumber": "+15550002222"
         },
-        "selectedHashes": [
-          "bb"
-        ],
+        "selectedHashes": ["bb"],
         "timestamp": 1790856036
       },
       "connection": "portable-fixture"
@@ -732,9 +728,7 @@
         "messageId": "6001",
         "voterId": "100200301",
         "chatId": "900800700",
-        "selectedHashes": [
-          "bb"
-        ],
+        "selectedHashes": ["bb"],
         "timestamp": 1790856036000,
         "connectionId": "portable-fixture"
       }

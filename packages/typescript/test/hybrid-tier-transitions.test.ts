@@ -235,8 +235,8 @@ describe("Hybrid Link tier transitions", () => {
       }),
     }));
     const sdk = client(server);
-    const failed = (await sdk.connections.retrieveTierChange(SURVIVOR, "q")).data
-      .data.quote.hybridTransition!;
+    const failed = (await sdk.connections.retrieveTierChange(SURVIVOR, "q"))
+      .data.data.quote.hybridTransition!;
     expect(failed).toMatchObject({
       action: "keep",
       status: "failed",

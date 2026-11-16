@@ -1025,37 +1025,27 @@
       "go": {
         "status": "covered",
         "method": "MessagingClient.Channels.ListMessageUpdates",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.channels.list_message_updates",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "php": {
         "status": "covered",
         "method": "MessagingClient::$channels->listMessageUpdates",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "dotnet": {
         "status": "covered",
         "method": "MessagingClient.Channels.ListMessageUpdatesAsync",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.channels.list_message_updates",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       }
     },
     {
@@ -1071,37 +1061,27 @@
       "go": {
         "status": "covered",
         "method": "MessagingClient.Channels.ListMessages",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.channels.list_messages",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "php": {
         "status": "covered",
         "method": "MessagingClient::$channels->listMessages",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "dotnet": {
         "status": "covered",
         "method": "MessagingClient.Channels.ListMessagesAsync",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.channels.list_messages",
-        "untypedResponseFields": [
-          "forwards"
-        ]
+        "untypedResponseFields": ["forwards"]
       }
     },
     {
@@ -1189,10 +1169,7 @@
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.chats.list_messages",
-        "untypedResponseFields": [
-          "emojis",
-          "accessibilityLabel"
-        ]
+        "untypedResponseFields": ["emojis", "accessibilityLabel"]
       },
       "php": {
         "status": "covered",
@@ -1248,10 +1225,7 @@
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.chats.retrieve_message",
-        "untypedResponseFields": [
-          "emojis",
-          "accessibilityLabel"
-        ]
+        "untypedResponseFields": ["emojis", "accessibilityLabel"]
       },
       "php": {
         "status": "covered",
@@ -3389,41 +3363,31 @@
       "go": {
         "status": "covered",
         "method": "MessagingClient.Webhooks.List",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ],
+        "untypedResponseFields": ["phoneOfflineStartDay"],
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
       },
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ],
+        "untypedResponseFields": ["phoneOfflineStartDay"],
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
       },
       "php": {
         "status": "covered",
         "method": "MessagingClient::webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ],
+        "untypedResponseFields": ["phoneOfflineStartDay"],
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
       },
       "dotnet": {
         "status": "covered",
         "method": "MessagingClient.Webhooks.ListAsync",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ],
+        "untypedResponseFields": ["phoneOfflineStartDay"],
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ],
+        "untypedResponseFields": ["phoneOfflineStartDay"],
         "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
       }
     },
@@ -3440,37 +3404,27 @@
       "go": {
         "status": "covered",
         "method": "MessagingClient.Webhooks.Retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "php": {
         "status": "covered",
         "method": "MessagingClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "dotnet": {
         "status": "covered",
         "method": "MessagingClient.Webhooks.RetrieveAsync",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       }
     },
     {
@@ -5067,44 +5021,32 @@
       "typescript": {
         "status": "covered",
         "method": "MessagingClient.messages.send",
-        "untypedResponseFields": [
-          "hdMessageId"
-        ]
+        "untypedResponseFields": ["hdMessageId"]
       },
       "go": {
         "status": "covered",
         "method": "MessagingClient.Messages.Send",
-        "untypedResponseFields": [
-          "hdMessageId"
-        ]
+        "untypedResponseFields": ["hdMessageId"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncMessagingClient.messages.send",
-        "untypedResponseFields": [
-          "hdMessageId"
-        ]
+        "untypedResponseFields": ["hdMessageId"]
       },
       "php": {
         "status": "covered",
         "method": "MessagingClient::messages.send",
-        "untypedResponseFields": [
-          "hdMessageId"
-        ]
+        "untypedResponseFields": ["hdMessageId"]
       },
       "dotnet": {
         "status": "covered",
         "method": "MessagingClient.Messages.SendAsync",
-        "untypedResponseFields": [
-          "hdMessageId"
-        ]
+        "untypedResponseFields": ["hdMessageId"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.messages.send",
-        "untypedResponseFields": [
-          "hdMessageId"
-        ]
+        "untypedResponseFields": ["hdMessageId"]
       }
     },
     {
@@ -11750,44 +11692,32 @@
       "typescript": {
         "status": "covered",
         "method": "Client.banSafe.listClaims",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "go": {
         "status": "covered",
         "method": "TeamClient.BanSafe.ListClaims",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.ban_safe.list_claims",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "php": {
         "status": "covered",
         "method": "Client::banSafe.listClaims",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.BanSafe.ListClaimsAsync",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "rust": {
         "status": "covered",
         "method": "TeamClient.ban_safe.list_claims",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       }
     },
     {
@@ -11799,44 +11729,32 @@
       "typescript": {
         "status": "covered",
         "method": "Client.banSafe.getClaim",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "go": {
         "status": "covered",
         "method": "TeamClient.BanSafe.GetClaim",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.ban_safe.get_claim",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "php": {
         "status": "covered",
         "method": "Client::banSafe.getClaim",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.BanSafe.GetClaimAsync",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       },
       "rust": {
         "status": "covered",
         "method": "TeamClient.ban_safe.get_claim",
-        "untypedResponseFields": [
-          "linkedDeviceInteractive"
-        ]
+        "untypedResponseFields": ["linkedDeviceInteractive"]
       }
     },
     {
@@ -13056,44 +12974,32 @@
       "typescript": {
         "status": "covered",
         "method": "Client.connections.list",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "go": {
         "status": "covered",
         "method": "TeamClient.Connections.List",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.connections.list",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "php": {
         "status": "covered",
         "method": "Client::connections.list",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.Connections.ListAsync",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.connections.list",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       }
     },
     {
@@ -13167,44 +13073,32 @@
       "typescript": {
         "status": "covered",
         "method": "Client.connections.retrieve",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "go": {
         "status": "covered",
         "method": "TeamClient.Connections.Retrieve",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.connections.retrieve",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "php": {
         "status": "covered",
         "method": "Client::connections.retrieve",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.Connections.RetrieveAsync",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.connections.retrieve",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       }
     },
     {
@@ -15060,37 +14954,27 @@
       "go": {
         "status": "covered",
         "method": "ProjectClient.Webhooks.List",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncProjectClient.webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "php": {
         "status": "covered",
         "method": "Client::webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "dotnet": {
         "status": "covered",
         "method": "ProjectClient.Webhooks.ListAsync",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "rust": {
         "status": "covered",
         "method": "ProjectClient.webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       }
     },
     {
@@ -15106,37 +14990,27 @@
       "go": {
         "status": "covered",
         "method": "ProjectClient.Webhooks.Retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncProjectClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "php": {
         "status": "covered",
         "method": "Client::webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "dotnet": {
         "status": "covered",
         "method": "ProjectClient.Webhooks.RetrieveAsync",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "rust": {
         "status": "covered",
         "method": "ProjectClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       }
     },
     {
@@ -15718,37 +15592,27 @@
       "go": {
         "status": "covered",
         "method": "TeamClient.Webhooks.List",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "php": {
         "status": "covered",
         "method": "Client::webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.Webhooks.ListAsync",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "rust": {
         "status": "covered",
         "method": "TeamClient.webhooks.list",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       }
     },
     {
@@ -15764,37 +15628,27 @@
       "go": {
         "status": "covered",
         "method": "TeamClient.Webhooks.Retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "php": {
         "status": "covered",
         "method": "Client::webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.Webhooks.RetrieveAsync",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       },
       "rust": {
         "status": "covered",
         "method": "TeamClient.webhooks.retrieve",
-        "untypedResponseFields": [
-          "phoneOfflineStartDay"
-        ]
+        "untypedResponseFields": ["phoneOfflineStartDay"]
       }
     },
     {
@@ -21631,44 +21485,32 @@
       "typescript": {
         "status": "covered",
         "method": "Client.connections.update",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "go": {
         "status": "covered",
         "method": "TeamClient.Connections.Update",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "python": {
         "status": "covered",
         "method": "AsyncClient.connections.update",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "php": {
         "status": "covered",
         "method": "Client::connections.update",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "dotnet": {
         "status": "covered",
         "method": "TeamClient.Connections.UpdateAsync",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       },
       "rust": {
         "status": "covered",
         "method": "MessagingClient.connections.update",
-        "untypedResponseFields": [
-          "inspector"
-        ]
+        "untypedResponseFields": ["inspector"]
       }
     },
     {
@@ -22062,14 +21904,7 @@
       }
     }
   ],
-  "languages": [
-    "typescript",
-    "go",
-    "python",
-    "php",
-    "dotnet",
-    "rust"
-  ],
+  "languages": ["typescript", "go", "python", "php", "dotnet", "rust"],
   "supplements": {
     "officialApiRound2": {
       "inventory": "contracts/native-official-round2.json",

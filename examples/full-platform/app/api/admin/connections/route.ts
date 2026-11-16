@@ -20,9 +20,15 @@ export const POST = route("admin", async ({ body, request }) => {
   const name = action(body);
   switch (name) {
     case "stopMany":
-      return connections.stopMany({ projectId, connectionIds: texts(body, "ids") });
+      return connections.stopMany({
+        projectId,
+        connectionIds: texts(body, "ids"),
+      });
     case "deleteMany":
-      return connections.deleteMany({ projectId, connectionIds: texts(body, "ids") });
+      return connections.deleteMany({
+        projectId,
+        connectionIds: texts(body, "ids"),
+      });
   }
 
   const connectionId = text(body, "connectionId");
@@ -37,7 +43,8 @@ export const POST = route("admin", async ({ body, request }) => {
       return connections.delete(connectionId);
     case "resetConfiguration": {
       const current = await connections.retrieve(connectionId);
-      const revision = current.data.data.configuration?.revisions.connection ?? 0;
+      const revision =
+        current.data.data.configuration?.revisions.connection ?? 0;
       return connections.update(connectionId, {
         configuration: { reset: ["observation", "historySync"] },
         revision,
@@ -50,7 +57,10 @@ export const POST = route("admin", async ({ body, request }) => {
         tierOverride: oneOf(body, "tier", ["free", "standard", "pro"]),
       });
     case "tierQuote":
-      return connections.retrieveTierChange(connectionId, text(body, "quoteId"));
+      return connections.retrieveTierChange(
+        connectionId,
+        text(body, "quoteId"),
+      );
     case "applyTier":
       return connections.setTierOverride(
         connectionId,

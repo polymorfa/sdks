@@ -11,5 +11,8 @@ export const GET = route("admin", async ({ url }) => {
       url.searchParams.get("connection") ?? env.connection(),
     ),
   ]);
-  return { project: projectPolicy.data.data, connection: connectionPolicy.data.data };
+  return {
+    project: projectPolicy.data.data,
+    connection: connectionPolicy.data.data,
+  };
 });

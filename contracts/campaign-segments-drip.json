@@ -12,10 +12,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ],
+              "enum": ["audience", "continuous"],
               "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
             },
             "exitOnReply": {
@@ -27,11 +24,7 @@
               "description": "When true, a GET request to one of the campaign's tracked links stops the contact's remaining steps. HEAD requests do not count. GET requests from link previews and security scanners also count and do not prove that a person clicked."
             }
           },
-          "required": [
-            "enrollment",
-            "exitOnReply",
-            "exitOnLinkClick"
-          ],
+          "required": ["enrollment", "exitOnReply", "exitOnLinkClick"],
           "description": "Beta drip settings; null for a campaign that is not a drip."
         },
         "CampaignDripInput": {
@@ -40,10 +33,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ],
+              "enum": ["audience", "continuous"],
               "default": "audience",
               "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
             },
@@ -67,10 +57,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ],
+              "enum": ["audience", "continuous"],
               "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
             },
             "exitOnReply": {
@@ -91,10 +78,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ]
+              "enum": ["audience", "continuous"]
             },
             "enrolled": {
               "type": "integer",
@@ -251,9 +235,7 @@
               "maxProperties": 50
             }
           },
-          "required": [
-            "phone"
-          ],
+          "required": ["phone"],
           "additionalProperties": false
         },
         "EnrollCampaignContactResponse": {
@@ -261,18 +243,13 @@
           "properties": {
             "success": {
               "type": "boolean",
-              "enum": [
-                true
-              ]
+              "enum": [true]
             },
             "data": {
               "$ref": "#/components/schemas/CampaignEnrollment"
             }
           },
-          "required": [
-            "success",
-            "data"
-          ]
+          "required": ["success", "data"]
         }
       },
       "fields": {
@@ -311,11 +288,7 @@
               "description": "Profiles that matched at launch, before opt-outs and withheld consent were removed."
             }
           },
-          "required": [
-            "revision",
-            "evaluatedAt",
-            "matchedCount"
-          ],
+          "required": ["revision", "evaluatedAt", "matchedCount"],
           "additionalProperties": false,
           "description": "The segment revision, evaluation time (Unix milliseconds) and matching profile count launch froze; null before a segment launch."
         },
@@ -333,9 +306,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/enrollments": {
           "post": {
             "operationId": "enrollProjectCampaignContact",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Enroll a contact in a drip",
             "description": "**Required scope:** `campaigns:manage`\n\nBeta. Adds one contact to a running or paused drip whose `drip.enrollment` is `continuous`. The contact starts at the first step, subject to the drip's send window, pacing and caps. Idempotent per phone: a phone already in the drip, including one that finished or left, returns its existing enrollment with `created: false`. An opted-out phone is enrolled as `skipped` and never sent. A team without the drip sequences beta gets `403 feature_unavailable`; a campaign that is not a drip, or a drip that is not accepting enrollments, answers `409 state_conflict`.",
             "security": [
@@ -593,9 +564,7 @@
         "/messaging/projects/{projectSlug}/campaigns/{id}/launch": {
           "post": {
             "operationId": "launchCampaign",
-            "tags": [
-              "Campaigns"
-            ],
+            "tags": ["Campaigns"],
             "summary": "Launch a campaign",
             "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected connection is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.connectionIds` when a selected connection is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. Segment campaigns require a team API key; project tokens answer `403 permission_denied`, and unavailable audience betas answer `403 feature_unavailable`. An audience change during launch answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API connections, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. The template must be complete and approved on every Cloud API connection; every recipient needs a value or fallback for each variable unless `skipMissingVariables` is true. When the team requires approval above a recipient threshold and the launch would send to more recipients, it answers `409 campaign_approval_required`, sends nothing, and records a pending approval request for a team owner or admin. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold. The response returns the campaign as it was when the launch was accepted.",
             "security": [
@@ -657,9 +626,7 @@
                     "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
                     "schema": {
                       "type": "string",
-                      "enum": [
-                        "true"
-                      ]
+                      "enum": ["true"]
                     }
                   },
                   "X-RateLimit-Limit": {
@@ -1044,15 +1011,11 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "tag"
-                  ]
+                  "enum": ["tag"]
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "contains"
-                  ]
+                  "enum": ["contains"]
                 },
                 "value": {
                   "type": "string",
@@ -1061,11 +1024,7 @@
                   "description": "1-48 UTF-8 bytes without control characters. The byte limit can be reached before 48 Unicode characters."
                 }
               },
-              "required": [
-                "field",
-                "operator",
-                "value"
-              ]
+              "required": ["field", "operator", "value"]
             },
             {
               "type": "object",
@@ -1074,15 +1033,11 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "tag"
-                  ]
+                  "enum": ["tag"]
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "in"
-                  ]
+                  "enum": ["in"]
                 },
                 "values": {
                   "type": "array",
@@ -1096,11 +1051,7 @@
                   }
                 }
               },
-              "required": [
-                "field",
-                "operator",
-                "values"
-              ]
+              "required": ["field", "operator", "values"]
             },
             {
               "type": "object",
@@ -1109,21 +1060,14 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "tag"
-                  ]
+                  "enum": ["tag"]
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "exists"
-                  ]
+                  "enum": ["exists"]
                 }
               },
-              "required": [
-                "field",
-                "operator"
-              ]
+              "required": ["field", "operator"]
             },
             {
               "type": "object",
@@ -1132,9 +1076,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "attribute"
-                  ]
+                  "enum": ["attribute"]
                 },
                 "name": {
                   "type": "string",
@@ -1142,9 +1084,7 @@
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "equals"
-                  ]
+                  "enum": ["equals"]
                 },
                 "value": {
                   "anyOf": [
@@ -1163,12 +1103,7 @@
                   ]
                 }
               },
-              "required": [
-                "field",
-                "name",
-                "operator",
-                "value"
-              ]
+              "required": ["field", "name", "operator", "value"]
             },
             {
               "type": "object",
@@ -1177,9 +1112,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "attribute"
-                  ]
+                  "enum": ["attribute"]
                 },
                 "name": {
                   "type": "string",
@@ -1187,9 +1120,7 @@
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "contains"
-                  ]
+                  "enum": ["contains"]
                 },
                 "value": {
                   "type": "string",
@@ -1198,12 +1129,7 @@
                   "description": "1-256 UTF-8 bytes. The byte limit can be reached before 256 Unicode characters."
                 }
               },
-              "required": [
-                "field",
-                "name",
-                "operator",
-                "value"
-              ]
+              "required": ["field", "name", "operator", "value"]
             },
             {
               "type": "object",
@@ -1212,9 +1138,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "attribute"
-                  ]
+                  "enum": ["attribute"]
                 },
                 "name": {
                   "type": "string",
@@ -1222,9 +1146,7 @@
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "in"
-                  ]
+                  "enum": ["in"]
                 },
                 "values": {
                   "type": "array",
@@ -1245,12 +1167,7 @@
                   }
                 }
               },
-              "required": [
-                "field",
-                "name",
-                "operator",
-                "values"
-              ]
+              "required": ["field", "name", "operator", "values"]
             },
             {
               "type": "object",
@@ -1259,9 +1176,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "attribute"
-                  ]
+                  "enum": ["attribute"]
                 },
                 "name": {
                   "type": "string",
@@ -1269,21 +1184,13 @@
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "greater_than",
-                    "less_than"
-                  ]
+                  "enum": ["greater_than", "less_than"]
                 },
                 "value": {
                   "type": "number"
                 }
               },
-              "required": [
-                "field",
-                "name",
-                "operator",
-                "value"
-              ]
+              "required": ["field", "name", "operator", "value"]
             },
             {
               "type": "object",
@@ -1292,9 +1199,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "attribute"
-                  ]
+                  "enum": ["attribute"]
                 },
                 "name": {
                   "type": "string",
@@ -1302,10 +1207,7 @@
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "before",
-                    "after"
-                  ]
+                  "enum": ["before", "after"]
                 },
                 "value": {
                   "type": "string",
@@ -1313,12 +1215,7 @@
                   "description": "ISO 8601 date (`YYYY-MM-DD`, read as midnight UTC) or date-time with `Z` or an offset."
                 }
               },
-              "required": [
-                "field",
-                "name",
-                "operator",
-                "value"
-              ]
+              "required": ["field", "name", "operator", "value"]
             },
             {
               "type": "object",
@@ -1327,9 +1224,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "attribute"
-                  ]
+                  "enum": ["attribute"]
                 },
                 "name": {
                   "type": "string",
@@ -1337,16 +1232,10 @@
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "exists"
-                  ]
+                  "enum": ["exists"]
                 }
               },
-              "required": [
-                "field",
-                "name",
-                "operator"
-              ]
+              "required": ["field", "name", "operator"]
             },
             {
               "type": "object",
@@ -1355,25 +1244,17 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "consent"
-                  ]
+                  "enum": ["consent"]
                 },
                 "operator": {
                   "type": "string",
-                  "enum": [
-                    "equals"
-                  ]
+                  "enum": ["equals"]
                 },
                 "value": {
                   "type": "boolean"
                 }
               },
-              "required": [
-                "field",
-                "operator",
-                "value"
-              ]
+              "required": ["field", "operator", "value"]
             },
             {
               "type": "object",
@@ -1382,9 +1263,7 @@
               "properties": {
                 "field": {
                   "type": "string",
-                  "enum": [
-                    "campaign"
-                  ]
+                  "enum": ["campaign"]
                 },
                 "campaignId": {
                   "type": "string",
@@ -1403,11 +1282,7 @@
                   ]
                 }
               },
-              "required": [
-                "field",
-                "campaignId",
-                "outcome"
-              ]
+              "required": ["field", "campaignId", "outcome"]
             }
           ]
         },
@@ -1454,10 +1329,7 @@
                     }
                   }
                 },
-                "required": [
-                  "phone",
-                  "tags"
-                ]
+                "required": ["phone", "tags"]
               }
             },
             "evaluatedAt": {
@@ -1482,10 +1354,7 @@
           "properties": {
             "match": {
               "type": "string",
-              "enum": [
-                "all",
-                "any"
-              ]
+              "enum": ["all", "any"]
             },
             "groups": {
               "type": "array",
@@ -1497,10 +1366,7 @@
                 "properties": {
                   "match": {
                     "type": "string",
-                    "enum": [
-                      "all",
-                      "any"
-                    ]
+                    "enum": ["all", "any"]
                   },
                   "negate": {
                     "type": "boolean",
@@ -1515,34 +1381,21 @@
                     }
                   }
                 },
-                "required": [
-                  "match",
-                  "conditions"
-                ]
+                "required": ["match", "conditions"]
               }
             }
           },
-          "required": [
-            "match",
-            "groups"
-          ]
+          "required": ["match", "groups"]
         },
         "CampaignDrip": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "enrollment",
-            "exitOnReply",
-            "exitOnLinkClick"
-          ],
+          "required": ["enrollment", "exitOnReply", "exitOnLinkClick"],
           "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test connections only.",
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ],
+              "enum": ["audience", "continuous"],
               "default": "audience",
               "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
             },
@@ -1565,10 +1418,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ],
+              "enum": ["audience", "continuous"],
               "default": "audience",
               "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
             },
@@ -1591,10 +1441,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ],
+              "enum": ["audience", "continuous"],
               "description": "Select `audience` for contacts present at launch. Select `continuous` to also accept contacts through the enrollment endpoint while the campaign is running or paused. Setting a continuous drip back to `audience` closes enrollment; the campaign completes after all enrolled contacts finish."
             },
             "exitOnReply": {
@@ -1613,10 +1460,7 @@
           "properties": {
             "enrollment": {
               "type": "string",
-              "enum": [
-                "audience",
-                "continuous"
-              ]
+              "enum": ["audience", "continuous"]
             },
             "enrolled": {
               "type": "integer"
@@ -1743,17 +1587,12 @@
               "example": "18:00"
             }
           },
-          "required": [
-            "start",
-            "end"
-          ]
+          "required": ["start", "end"]
         },
         "EnrollCampaignContactRequest": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "phone"
-          ],
+          "required": ["phone"],
           "properties": {
             "projectId": {
               "type": "string",
@@ -1803,21 +1642,14 @@
         },
         "CampaignMessage.delayUnit": {
           "type": "string",
-          "enum": [
-            "minutes",
-            "hours",
-            "days"
-          ],
+          "enum": ["minutes", "hours", "days"],
           "description": "Display unit. delayAfterSec must be a whole multiple of this unit."
         },
         "CampaignMessage.sendWindow": {
           "type": "object",
           "nullable": true,
           "additionalProperties": false,
-          "required": [
-            "days",
-            "hours"
-          ],
+          "required": ["days", "hours"],
           "description": "Drip steps after the first only. Replaces the campaign weekdays and hours for this step, retaining its time zone settings. Without a campaign window, uses the team time zone saved when the drip was configured.",
           "properties": {
             "days": {
@@ -1922,20 +1754,14 @@
               "description": "Profiles that matched at launch, before opt-outs and withheld consent were removed."
             }
           },
-          "required": [
-            "revision",
-            "evaluatedAt",
-            "matchedCount"
-          ]
+          "required": ["revision", "evaluatedAt", "matchedCount"]
         }
       },
       "paths": {
         "/platform/campaigns/{campaignId}/launch": {
           "post": {
             "operationId": "launchPlatformCampaign",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Launch campaign",
             "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected connection is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.connectionIds` when a selected connection is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. A segment campaign requires a team API key or signed-in dashboard session; project tokens answer `403 permission_denied`. Both audience betas must be available, otherwise launch answers `403 feature_unavailable`. An audience change while launch is being authorized answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. A composed attachment requires a public `media.url` (`400 invalid_parameter`). The template must be complete (`400 invalid_parameter`) and approved on every Cloud API connection (`400 template_not_approved`). Every recipient needs a value or fallback for each variable (`422 campaign_variables_missing`); `skipMissingVariables: true` skips those recipients before the first send. A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API connections, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending connections changed during the launch. When the team requires approval above a recipient threshold and the launch would send to more recipients, a launch by anyone other than a team owner or admin signed in to the console answers `409 campaign_approval_required`, sends nothing, and records a pending approval request that `GET /platform/campaigns/{campaignId}/approvals` lists. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -2008,9 +1834,7 @@
                     "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
                     "schema": {
                       "type": "string",
-                      "enum": [
-                        "true"
-                      ]
+                      "enum": ["true"]
                     }
                   }
                 },
@@ -2023,11 +1847,7 @@
                         "data": {
                           "type": "object",
                           "additionalProperties": true,
-                          "required": [
-                            "id",
-                            "status",
-                            "operationId"
-                          ],
+                          "required": ["id", "status", "operationId"],
                           "properties": {
                             "id": {
                               "type": "string",
@@ -2054,9 +1874,7 @@
                           }
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2160,9 +1978,7 @@
         "/platform/campaigns/{campaignId}/enrollments": {
           "post": {
             "operationId": "enrollCampaignContact",
-            "tags": [
-              "campaigns"
-            ],
+            "tags": ["campaigns"],
             "summary": "Enroll a contact in a drip",
             "description": "Beta. Adds one contact to a running or paused continuous drip. Requires campaigns:manage and the drip beta; otherwise 403 feature_unavailable. Idempotent per phone, including contacts who completed or exited: returns created=false without changing variables. Opted-out contacts are skipped. A campaign not accepting enrollment answers 409 state_conflict.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
@@ -2231,9 +2047,7 @@
                           "$ref": "#/components/schemas/CampaignEnrollment"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2259,9 +2073,7 @@
         "/platform/audience-segments": {
           "get": {
             "operationId": "listAudienceSegments",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "List audience segments",
             "description": "Lists the team's saved segments with cursor pagination. Reads stay available after beta withdrawal.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2337,10 +2149,7 @@
                           "$ref": "#/components/schemas/CursorPageMetadata"
                         }
                       },
-                      "required": [
-                        "data",
-                        "page"
-                      ]
+                      "required": ["data", "page"]
                     }
                   }
                 }
@@ -2358,9 +2167,7 @@
           },
           "post": {
             "operationId": "createAudienceSegment",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "Create an audience segment",
             "description": "Saves a named rule set over the team's audience profiles. A team holds at most 100 segments. Every campaign a rule names must belong to the team. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2392,10 +2199,7 @@
                         "$ref": "#/components/schemas/AudienceSegmentRules"
                       }
                     },
-                    "required": [
-                      "name",
-                      "rules"
-                    ]
+                    "required": ["name", "rules"]
                   }
                 }
               }
@@ -2434,9 +2238,7 @@
                           "$ref": "#/components/schemas/AudienceSegment"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2459,9 +2261,7 @@
         "/platform/audience-segments/preview": {
           "post": {
             "operationId": "previewAudienceSegmentRules",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "Preview audience segment rules",
             "description": "Evaluates unsaved rules now and returns counts and up to five masked matching profiles. Nothing is saved. A campaign evaluates its segment again when it launches, so counts can change. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2488,9 +2288,7 @@
                         "$ref": "#/components/schemas/AudienceSegmentRules"
                       }
                     },
-                    "required": [
-                      "rules"
-                    ]
+                    "required": ["rules"]
                   }
                 }
               }
@@ -2529,9 +2327,7 @@
                           "$ref": "#/components/schemas/AudienceSegmentPreview"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2554,9 +2350,7 @@
         "/platform/audience-segments/{segmentId}": {
           "get": {
             "operationId": "getAudienceSegment",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "Get an audience segment",
             "description": "Returns one saved segment.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2615,9 +2409,7 @@
                           "$ref": "#/components/schemas/AudienceSegment"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2638,9 +2430,7 @@
           },
           "patch": {
             "operationId": "updateAudienceSegment",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "Update an audience segment",
             "description": "Replaces the name, the rules or both at the observed revision; a stale revision answers `409`. A draft campaign that uses the segment evaluates the new rules when it launches. Campaigns already launched keep their recipients. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2686,9 +2476,7 @@
                         "$ref": "#/components/schemas/AudienceSegmentRules"
                       }
                     },
-                    "required": [
-                      "expectedRevision"
-                    ]
+                    "required": ["expectedRevision"]
                   }
                 }
               }
@@ -2727,9 +2515,7 @@
                           "$ref": "#/components/schemas/AudienceSegment"
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2753,9 +2539,7 @@
           },
           "delete": {
             "operationId": "deleteAudienceSegment",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "Delete an audience segment",
             "description": "Deletes the segment at the observed revision. Answers `409` while an unlaunched draft campaign uses it as its audience. Launched campaigns keep their recipients and `segmentSnapshot`; their `segmentId` becomes null. Deletion stays available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2826,24 +2610,17 @@
                           "properties": {
                             "deleted": {
                               "type": "boolean",
-                              "enum": [
-                                true
-                              ]
+                              "enum": [true]
                             },
                             "id": {
                               "type": "string",
                               "format": "uuid"
                             }
                           },
-                          "required": [
-                            "deleted",
-                            "id"
-                          ]
+                          "required": ["deleted", "id"]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }
@@ -2869,9 +2646,7 @@
         "/platform/audience-segments/{segmentId}/preview": {
           "get": {
             "operationId": "previewAudienceSegment",
-            "tags": [
-              "audience-segments"
-            ],
+            "tags": ["audience-segments"],
             "summary": "Preview an audience segment",
             "description": "Evaluates the saved segment now and returns counts, up to five masked matching profiles and the evaluated `revision`. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
@@ -2969,10 +2744,7 @@
                                     }
                                   }
                                 },
-                                "required": [
-                                  "phone",
-                                  "tags"
-                                ]
+                                "required": ["phone", "tags"]
                               }
                             },
                             "evaluatedAt": {
@@ -2996,9 +2768,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "data"
-                      ]
+                      "required": ["data"]
                     }
                   }
                 }

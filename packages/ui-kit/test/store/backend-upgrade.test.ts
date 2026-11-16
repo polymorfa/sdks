@@ -5,24 +5,20 @@ import { openIndexedDbBackend } from "../../src/store/backend.js";
 async function seed(factory: IDBFactory, sealed = false) {
   const opening = factory.open("cache", 1);
   opening.onupgradeneeded = () => {
-    opening.result
-      .createObjectStore("sessions", { keyPath: "id" })
-      .put({
-        id: "stable-root",
-        session: "support",
-        _t: 1,
-        ...(sealed
-          ? { _sealed: "owner-ciphertext" }
-          : { phoneNumber: "+15550001" }),
-      });
-    opening.result
-      .createObjectStore("messages", { keyPath: "id" })
-      .put({
-        id: "message-1",
-        session: "support",
-        _t: 2,
-        _sealed: "unchanged-message-ciphertext",
-      });
+    opening.result.createObjectStore("sessions", { keyPath: "id" }).put({
+      id: "stable-root",
+      session: "support",
+      _t: 1,
+      ...(sealed
+        ? { _sealed: "owner-ciphertext" }
+        : { phoneNumber: "+15550001" }),
+    });
+    opening.result.createObjectStore("messages", { keyPath: "id" }).put({
+      id: "message-1",
+      session: "support",
+      _t: 2,
+      _sealed: "unchanged-message-ciphertext",
+    });
   };
   return new Promise<IDBDatabase>((resolve, reject) => {
     opening.onsuccess = () => resolve(opening.result);

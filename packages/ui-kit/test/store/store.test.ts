@@ -374,7 +374,13 @@ describe("idempotency and ordering", () => {
   it("ignores malformed envelopes and other connections", async () => {
     const store = await openStore({ connection: "support" });
     const result = await store.ingest([
-      { id: "", connection: "support", timestamp: "x", event: "a", payload: {} },
+      {
+        id: "",
+        connection: "support",
+        timestamp: "x",
+        event: "a",
+        payload: {},
+      },
       event("contact.update", { id: "c" }, { connection: "sales" }),
     ]);
     expect(result).toEqual({ accepted: 0, duplicates: 0, ignored: 2 });

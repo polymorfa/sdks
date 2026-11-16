@@ -207,7 +207,9 @@ describe("Client BanSafe resources", () => {
       webhookNotification: true,
     });
     await client.connections.getSafeMode("connection/a");
-    await client.connections.updateSafeMode("connection/a", { typing: "inherit" });
+    await client.connections.updateSafeMode("connection/a", {
+      typing: "inherit",
+    });
 
     expectTypeOf(policy).toEqualTypeOf<
       ApiResponse<DataEnvelope<ProjectHealthPolicy>>

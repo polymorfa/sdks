@@ -43,9 +43,7 @@ it("checks bare testing-phone results and actual202 through native HTTP", async 
     credential: { type: "projectToken", value: PROJECT_TOKEN },
     baseUrl: server.url,
   });
-  expect((await m.testing.getPhone("s/a")).data).toEqual(
-    fixtures[0],
-  );
+  expect((await m.testing.getPhone("s/a")).data).toEqual(fixtures[0]);
   expect(
     (
       await m.testing.sendPhoneMessage("s/a", {
@@ -54,9 +52,9 @@ it("checks bare testing-phone results and actual202 through native HTTP", async 
       })
     ).metadata.status,
   ).toBe(202);
-  expect(
-    (await m.testing.unlinkPhoneDevice("s/a", 99)).data,
-  ).toEqual(fixtures[2]);
+  expect((await m.testing.unlinkPhoneDevice("s/a", 99)).data).toEqual(
+    fixtures[2],
+  );
   expect(server.requests.map((r) => [r.method, r.path, r.body])).toEqual([
     ["GET", `/messaging/s%2Fa/phone`, ""],
     [
@@ -64,11 +62,7 @@ it("checks bare testing-phone results and actual202 through native HTTP", async 
       `/messaging/s%2Fa/phone/messages`,
       '{"to":"+15551234568","text":"x"}',
     ],
-    [
-      "POST",
-      `/messaging/s%2Fa/phone/devices/99/unlink`,
-      "",
-    ],
+    ["POST", `/messaging/s%2Fa/phone/devices/99/unlink`, ""],
   ]);
   await expect(m.testing.getPhone("s/a")).rejects.toMatchObject({
     code: "invalid_response",

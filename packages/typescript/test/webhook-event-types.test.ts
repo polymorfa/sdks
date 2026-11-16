@@ -554,9 +554,9 @@ describe("webhook event payload types", () => {
     expectTypeOf<
       ConnectionRestrictionUpdatedPayload["type"]
     >().toEqualTypeOf<"reachout_timelock">();
-    expectTypeOf<ConnectionRestrictionUpdatedPayload["expiresAt"]>().toEqualTypeOf<
-      string | null
-    >();
+    expectTypeOf<
+      ConnectionRestrictionUpdatedPayload["expiresAt"]
+    >().toEqualTypeOf<string | null>();
   });
 
   it("distinguishes Meta Cloud API synchronization events", () => {

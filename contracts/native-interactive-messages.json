@@ -23,10 +23,7 @@
       "campaignMethod": "Client.campaigns.create",
       "mediaHeader": {
         "sourceFile": "src/messaging/types.ts",
-        "symbols": [
-          "ButtonsMedia",
-          "InteractiveMediaSource"
-        ],
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
         "testFile": "test/messages.test.ts",
         "testNeedles": [
           "preserves mixed controls and a media header without splitting transport",
@@ -36,10 +33,7 @@
       },
       "carousel": {
         "sourceFile": "src/messaging/types.ts",
-        "symbols": [
-          "CarouselCard",
-          "CarouselMessageContent"
-        ],
+        "symbols": ["CarouselCard", "CarouselMessageContent"],
         "testFile": "test/messages.test.ts",
         "testNeedles": [
           "preserves one %i-card request and every card's media and reply ID",
@@ -50,10 +44,7 @@
       },
       "campaignReplies": {
         "sourceFile": "src/platform/types.ts",
-        "symbols": [
-          "CampaignMessage",
-          "readonly id?: string"
-        ],
+        "symbols": ["CampaignMessage", "readonly id?: string"],
         "testFile": "test/campaign-41-wire.test.ts",
         "testNeedles": [
           "preserves typed campaign reply IDs and media on the public wire",
@@ -67,10 +58,7 @@
       "campaignMethod": "TeamClient.Campaigns.Create",
       "mediaHeader": {
         "sourceFile": "interactive.go",
-        "symbols": [
-          "ButtonsMedia",
-          "InteractiveMediaSource"
-        ],
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
         "testFile": "interactive_test.go",
         "testNeedles": [
           "TestInteractiveMediaAndCarouselWire",
@@ -80,10 +68,7 @@
       },
       "carousel": {
         "sourceFile": "interactive.go",
-        "symbols": [
-          "CarouselCard",
-          "CarouselContent"
-        ],
+        "symbols": ["CarouselCard", "CarouselContent"],
         "testFile": "interactive_test.go",
         "testNeedles": [
           "TestInteractiveMediaAndCarouselWire",
@@ -94,10 +79,7 @@
       },
       "campaignReplies": {
         "sourceFile": "campaign_existing.go",
-        "symbols": [
-          "CampaignComposedButton",
-          "json:\"id,omitempty\""
-        ],
+        "symbols": ["CampaignComposedButton", "json:\"id,omitempty\""],
         "testFile": "interactive_test.go",
         "testNeedles": [
           "TestInteractiveCampaignStableReplyIDWire",
@@ -111,10 +93,7 @@
       "campaignMethod": "AsyncClient.campaigns.create",
       "mediaHeader": {
         "sourceFile": "src/polymorfa/message_content.py",
-        "symbols": [
-          "ButtonsMedia",
-          "MediaButtons"
-        ],
+        "symbols": ["ButtonsMedia", "MediaButtons"],
         "testFile": "tests/test_message_content.py",
         "testNeedles": [
           "test_public_send_all_composed_variants_context_and_response",
@@ -124,10 +103,7 @@
       },
       "carousel": {
         "sourceFile": "src/polymorfa/message_content.py",
-        "symbols": [
-          "CarouselCard",
-          "CarouselContent"
-        ],
+        "symbols": ["CarouselCard", "CarouselContent"],
         "testFile": "tests/test_message_content.py",
         "testNeedles": [
           "test_public_send_all_composed_variants_context_and_response",
@@ -138,10 +114,7 @@
       },
       "campaignReplies": {
         "sourceFile": "src/polymorfa/campaign_models.py",
-        "symbols": [
-          "CampaignMessageButtonFields",
-          "id: NotRequired[str]"
-        ],
+        "symbols": ["CampaignMessageButtonFields", "id: NotRequired[str]"],
         "testFile": "tests/test_campaigns.py",
         "testNeedles": [
           "test_composed_campaign_preserves_reply_id_and_media_on_wire",
@@ -155,10 +128,7 @@
       "campaignMethod": "Client::campaigns.create",
       "mediaHeader": {
         "sourceFile": "src/MessageModels.php",
-        "symbols": [
-          "ButtonsMedia",
-          "InteractiveMedia"
-        ],
+        "symbols": ["ButtonsMedia", "InteractiveMedia"],
         "testFile": "tests/messaging_complete.php",
         "testNeedles": [
           "nativeCases",
@@ -168,24 +138,13 @@
       },
       "carousel": {
         "sourceFile": "src/MessageModels.php",
-        "symbols": [
-          "CarouselCard",
-          "CarouselVideo"
-        ],
+        "symbols": ["CarouselCard", "CarouselVideo"],
         "testFile": "tests/messaging_complete.php",
-        "testNeedles": [
-          "nativeCases",
-          "'carousel'",
-          "Outer only",
-          "card-9"
-        ]
+        "testNeedles": ["nativeCases", "'carousel'", "Outer only", "card-9"]
       },
       "campaignReplies": {
         "sourceFile": "src/CampaignModels.php",
-        "symbols": [
-          "CampaignMessage",
-          "id?:string"
-        ],
+        "symbols": ["CampaignMessage", "id?:string"],
         "testFile": "tests/campaigns.php",
         "testNeedles": [
           "nativeCases",
@@ -199,10 +158,7 @@
       "campaignMethod": "TeamClient.campaigns.create",
       "mediaHeader": {
         "sourceFile": "src/message_content.rs",
-        "symbols": [
-          "ButtonsMedia",
-          "InteractiveMediaSource"
-        ],
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
         "testFile": "tests/message_content.rs",
         "testNeedles": [
           "all_typed_message_content_variants_round_trip_on_the_wire",
@@ -213,10 +169,7 @@
       },
       "carousel": {
         "sourceFile": "src/message_content.rs",
-        "symbols": [
-          "CarouselCard",
-          "CarouselMessageContent"
-        ],
+        "symbols": ["CarouselCard", "CarouselMessageContent"],
         "testFile": "tests/message_content.rs",
         "testNeedles": [
           "all_typed_message_content_variants_round_trip_on_the_wire",
@@ -247,10 +200,7 @@
       "campaignMethod": "TeamClient.Campaigns.CreateAsync",
       "mediaHeader": {
         "sourceFile": "src/Polymorfa.Sdk/MessageContent.cs",
-        "symbols": [
-          "ButtonsMedia",
-          "InteractiveMediaSource"
-        ],
+        "symbols": ["ButtonsMedia", "InteractiveMediaSource"],
         "testFile": "tests/Polymorfa.Sdk.Tests/MessageContentTests.cs",
         "testNeedles": [
           "MessageContentTests",
@@ -261,10 +211,7 @@
       },
       "carousel": {
         "sourceFile": "src/Polymorfa.Sdk/MessageContent.cs",
-        "symbols": [
-          "CarouselCard",
-          "CarouselMessage"
-        ],
+        "symbols": ["CarouselCard", "CarouselMessage"],
         "testFile": "tests/Polymorfa.Sdk.Tests/MessageContentTests.cs",
         "testNeedles": [
           "MessageContentTests",
@@ -275,10 +222,7 @@
       },
       "campaignReplies": {
         "sourceFile": "src/Polymorfa.Sdk/Campaigns.cs",
-        "symbols": [
-          "PlatformCampaignButton",
-          "string? Id = null"
-        ],
+        "symbols": ["PlatformCampaignButton", "string? Id = null"],
         "testFile": "tests/Polymorfa.Sdk.Tests/CampaignExistingTests.cs",
         "testNeedles": [
           "CampaignExistingTests",

@@ -313,7 +313,11 @@ const phoneModels = {
     devices: list(object({ deviceId: integer })),
   }),
   send: object({ connection: string, to: string, messageId: nullable(string) }),
-  unlink: object({ connection: string, deviceId: integer, unlinked: one(true) }),
+  unlink: object({
+    connection: string,
+    deviceId: integer,
+    unlinked: one(true),
+  }),
 };
 /** @internal Testing-phone endpoints return bare JSON, including accepted202. */
 export async function requestPhone<T>(

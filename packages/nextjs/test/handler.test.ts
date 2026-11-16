@@ -562,7 +562,9 @@ describe("adapters", () => {
         onEvent,
       },
       authenticate: (request) =>
-        request.headers.get("cookie") === "connection=1" ? { id: "user_1" } : null,
+        request.headers.get("cookie") === "connection=1"
+          ? { id: "user_1" }
+          : null,
     });
     const middleware = toExpress(route);
     server = createServer(

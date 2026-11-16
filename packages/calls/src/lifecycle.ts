@@ -503,7 +503,8 @@ export class LifecycleSocket extends Emitter<Events> {
   #path(token: CallsToken): string {
     if (isClientToken(token.value)) return LIFECYCLE_SOCKET_PATH;
     const query = new URLSearchParams();
-    if (this.#o.connection !== undefined) query.set("connection", this.#o.connection);
+    if (this.#o.connection !== undefined)
+      query.set("connection", this.#o.connection);
     if (this.#o.participant !== undefined)
       query.set("participant", this.#o.participant);
     const search = query.toString();

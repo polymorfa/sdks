@@ -17,7 +17,8 @@ const operations = [
     suffix: "/challenge",
     body: f.issue,
     reply: f.ticket,
-    call: (c: MessagingClient) => c.passkeys.issueChallenge(f.connection, f.issue),
+    call: (c: MessagingClient) =>
+      c.passkeys.issueChallenge(f.connection, f.issue),
   },
   {
     method: "GET",

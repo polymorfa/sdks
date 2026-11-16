@@ -206,7 +206,9 @@ const PAYLOADS: {
     ? Shape<RuntimeTemplateStatusPayload>
     : Shape<P[K]>;
 } = {
-  "connection.capabilities_updated": shape<P["connection.capabilities_updated"]>()(
+  "connection.capabilities_updated": shape<
+    P["connection.capabilities_updated"]
+  >()(
     {
       connection: "support",
       projectId: IDS.project,
@@ -260,7 +262,9 @@ const PAYLOADS: {
     { reason: "banned", code: 401 },
     ["reason", "code"],
   ),
-  "connection.restriction_updated": shape<P["connection.restriction_updated"]>()(
+  "connection.restriction_updated": shape<
+    P["connection.restriction_updated"]
+  >()(
     {
       type: "reachout_timelock",
       active: true,
@@ -308,11 +312,14 @@ const PAYLOADS: {
   ),
   "customer.pairing_link.connected": shape<
     P["customer.pairing_link.connected"]
-  >()({ ...customer, pairingLinkId: IDS.pairingLink, connectionId: IDS.connection }, [
-    ...customerRequired,
-    "pairingLinkId",
-    "connectionId",
-  ]),
+  >()(
+    {
+      ...customer,
+      pairingLinkId: IDS.pairingLink,
+      connectionId: IDS.connection,
+    },
+    [...customerRequired, "pairingLinkId", "connectionId"],
+  ),
   "customer.pairing_link.failed": shape<P["customer.pairing_link.failed"]>()(
     { ...customer, pairingLinkId: IDS.pairingLink, errorCode: "expired" },
     [...customerRequired, "pairingLinkId", "errorCode"],
@@ -326,17 +333,26 @@ const PAYLOADS: {
     [...customerRequired, "pairingLinkId"],
   ),
   "customer.connection.attached": shape<P["customer.connection.attached"]>()(
-    { ...customer, connectionId: IDS.connection, pairingLinkId: IDS.pairingLink },
+    {
+      ...customer,
+      connectionId: IDS.connection,
+      pairingLinkId: IDS.pairingLink,
+    },
     [...customerRequired, "connectionId"],
   ),
-  "customer.connection.transferred": shape<P["customer.connection.transferred"]>()(
+  "customer.connection.transferred": shape<
+    P["customer.connection.transferred"]
+  >()(
     { ...customer, connectionId: IDS.connection, sourceCustomerId: IDS.event },
     [...customerRequired, "connectionId", "sourceCustomerId"],
   ),
-  "customer.connection.disconnected": shape<P["customer.connection.disconnected"]>()(
-    { ...customer, connectionId: IDS.connection, reason: "logged_out" },
-    [...customerRequired, "connectionId", "reason"],
-  ),
+  "customer.connection.disconnected": shape<
+    P["customer.connection.disconnected"]
+  >()({ ...customer, connectionId: IDS.connection, reason: "logged_out" }, [
+    ...customerRequired,
+    "connectionId",
+    "reason",
+  ]),
   "bansafe.health_threshold": shape<P["bansafe.health_threshold"]>()(
     {
       connectionId: IDS.connection,

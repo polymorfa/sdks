@@ -92,7 +92,9 @@ function projectClient(fetch: typeof globalThis.fetch) {
 
 function csv(rows: readonly string[], cursor?: string): Response {
   return new Response(
-    ["callId,projectId,connectionId", ...rows].map((row) => `${row}\r\n`).join(""),
+    ["callId,projectId,connectionId", ...rows]
+      .map((row) => `${row}\r\n`)
+      .join(""),
     {
       headers: {
         "content-type": "text/csv; charset=utf-8",

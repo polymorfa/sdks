@@ -90,7 +90,7 @@ Copy `.env.example` to `.env.local` and fill it in:
 | `POLYMORFA_TEAM_API_KEY`             | The team `Client` in the admin area and BanSafe Health (`pmfa_...`)                 |
 | `POLYMORFA_PROJECT_ID`               | The project the project token is bound to                                           |
 | `POLYMORFA_PROJECT_SLUG`             | Template and Messaging campaign routes                                              |
-| `POLYMORFA_CONNECTION`                  | The Connection the support team uses                                          |
+| `POLYMORFA_CONNECTION`               | The Connection the support team uses                                                |
 | `POLYMORFA_TEMPLATE_SESSION`         | The Cloud API session that submits templates to Meta                                |
 | `POLYMORFA_AGENT_SESSIONS`           | Optional comma-separated extra sessions agents may use                              |
 | `POLYMORFA_WEBHOOK_SECRET`           | Signing secret of the management webhook at `/api/polymorfa/webhooks`               |
@@ -196,7 +196,7 @@ flowchart LR
 | Templates library, picker and builder                                  | `templates.list`, `TemplateBuilder`, `TemplateBuilderController`, `createTemplateBuilderRoute`                      | `ui/pages/templates.tsx`, `app/api/polymorfa/templates/route.ts`   |
 | Campaigns and the create wizard                                        | `MessagingClient.campaigns` (`list`, `create`, `launch`, `pause`, `resume`, `stop`)                                 | `lib/desk/live.ts`, `app/api/messaging/campaigns/route.ts`         |
 | Connections, QR and pairing code, restart, logout, delete              | `sessions.list`, `qr`, `requestPairingCode`, `restart`, `logout`, `delete`, `start`, `stop`                         | `lib/desk/live.ts`, `app/api/messaging/sessions/route.ts`          |
-| Connect a connection (hosted QuickLink URL only)                           | `quickLinks.create`                                                                                                 | `lib/desk/live.ts`, `app/api/messaging/quicklinks/route.ts`        |
+| Connect a connection (hosted QuickLink URL only)                       | `quickLinks.create`                                                                                                 | `lib/desk/live.ts`, `app/api/messaging/quicklinks/route.ts`        |
 | BanSafe health on connection cards and in Admin                        | `Client.banSafe`                                                                                                    | `lib/desk/live.ts`, `app/api/admin/bansafe/route.ts`               |
 | Calls, dial pad, incoming calls                                        | `createBrowserCalls`, `CallSurface`, `DialPad`, `clientTokens.mint`, `voip.reject`, `voip.end`                      | `ui/calls.ts`, `ui/pages/calls.tsx`, `app/api/messaging/calls/*`   |
 | Webhooks and live events                                               | `readVerifiedWebhook`, `constructWebhookEvent`, `isEvent`, `WebhookEventOf`                                         | `lib/webhooks.ts`, `lib/realtime.ts`, `lib/browser/live-events.ts` |

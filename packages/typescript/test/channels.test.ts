@@ -74,7 +74,11 @@ describe("MessagingClient channels", () => {
       mutationOptions,
     );
     const retrieved = await channels.retrieve(connection, channelId);
-    const deleted = await channels.delete(connection, channelId, mutationOptions);
+    const deleted = await channels.delete(
+      connection,
+      channelId,
+      mutationOptions,
+    );
     const messages = await channels.listMessages(connection, channelId, {
       count: 25,
       before: 91,

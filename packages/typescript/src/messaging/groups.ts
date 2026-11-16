@@ -119,7 +119,13 @@ export class GroupsResource {
     body: SetGroupFieldRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.putGroupSubresource(connection, groupId, "subject", body, options);
+    return this.putGroupSubresource(
+      connection,
+      groupId,
+      "subject",
+      body,
+      options,
+    );
   }
 
   setDescription(
@@ -208,7 +214,13 @@ export class GroupsResource {
     body: SetGroupPictureRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.putGroupSubresource(connection, groupId, "picture", body, options);
+    return this.putGroupSubresource(
+      connection,
+      groupId,
+      "picture",
+      body,
+      options,
+    );
   }
 
   setInfoEditing(

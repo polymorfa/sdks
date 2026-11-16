@@ -51,17 +51,7 @@
     "completed",
     "failed"
   ],
-  "errors": [
-    400,
-    403,
-    404,
-    409,
-    410,
-    413,
-    422,
-    502,
-    503
-  ],
+  "errors": [400, 403, 404, 409, 410, 413, 422, 502, 503],
   "derivedFrom": "contracts/fixtures/passkeys.candidate.json",
   "published": false,
   "apiSource": "1c1c88f04bac58ba1f006af9d4879fa0648576cb"

@@ -61,7 +61,9 @@ describe("Client team access and operations", () => {
     expectTypeOf<Client["apiKeys"]>().toEqualTypeOf<ApiKeysResource>();
     expectTypeOf<Client["members"]>().toEqualTypeOf<MembersResource>();
     expectTypeOf<Client["auditLogs"]>().toEqualTypeOf<AuditLogsResource>();
-    expectTypeOf<Client["connectionBans"]>().toEqualTypeOf<ConnectionBansResource>();
+    expectTypeOf<
+      Client["connectionBans"]
+    >().toEqualTypeOf<ConnectionBansResource>();
     expectTypeOf<
       Client["securityIncidents"]
     >().toEqualTypeOf<SecurityIncidentsResource>();

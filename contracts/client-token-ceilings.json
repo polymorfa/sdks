@@ -10,9 +10,7 @@
     "/platform/client-tokens": {
       "post": {
         "operationId": "mintClientToken",
-        "tags": [
-          "Client Tokens"
-        ],
+        "tags": ["Client Tokens"],
         "summary": "Mint a short-lived browser-safe client token",
         "description": "**Required scopes (all):** `connections:manage` \u00b7 `messages:write` \u00b7 `contacts:read` \u00b7 `presence:read` \u00b7 `presence:observe` \u00b7 `mcp`\n\nMinting requires an active, unrevoked issuer with the required scopes and current resource ownership. A human-owned issuer must belong to a current team owner or admin who is not banned. Service-account credentials can delegate only actions allowed by the issuing credential's live scopes. Test-key clients remain restricted to test connections. Issuance eligibility denials return 403; unavailable issuance checks return 503 and no token.",
         "security": [
@@ -227,9 +225,7 @@
     "/platform/connections/{connection}/client-rules": {
       "put": {
         "operationId": "setClientRules",
-        "tags": [
-          "Client Tokens"
-        ],
+        "tags": ["Client Tokens"],
         "summary": "Set client-token rules for a connection",
         "security": [
           {
@@ -464,10 +460,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "token",
-        "expiresAt"
-      ]
+      "required": ["token", "expiresAt"]
     },
     "PlatformAccessMintClientTokenRequest": {
       "type": "object",
@@ -533,27 +526,20 @@
           "description": "Token lifetime in seconds. Must be at least 1 and within the maximum allowed lifetime. Omit to use that maximum."
         }
       },
-      "required": [
-        "ephemeralId"
-      ]
+      "required": ["ephemeralId"]
     },
     "PlatformAccessMintClientTokenResponse": {
       "type": "object",
       "properties": {
         "success": {
           "type": "boolean",
-          "enum": [
-            true
-          ]
+          "enum": [true]
         },
         "data": {
           "$ref": "#/components/schemas/PlatformAccessClientToken"
         }
       },
-      "required": [
-        "success",
-        "data"
-      ]
+      "required": ["success", "data"]
     },
     "PlatformAccessPublicError": {
       "type": "object",
@@ -699,20 +685,12 @@
               "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
             }
           },
-          "required": [
-            "type",
-            "code",
-            "message",
-            "param",
-            "request_id"
-          ]
+          "required": ["type", "code", "message", "param", "request_id"]
         },
         "data": {
           "type": "string",
           "nullable": true,
-          "enum": [
-            null
-          ],
+          "enum": [null],
           "description": "Always null for a failed request."
         },
         "docs": {
@@ -720,11 +698,7 @@
           "format": "uri"
         }
       },
-      "required": [
-        "error",
-        "data",
-        "docs"
-      ]
+      "required": ["error", "data", "docs"]
     },
     "PlatformAccessSetClientRulesRequest": {
       "type": "object",
@@ -783,10 +757,7 @@
           "description": "How long, in seconds, a sender remains replyable in `conversation` mode after their latest inbound message. Must be between 300 (5 minutes) and 604800 (7 days). Defaults to 86400 (24 hours)."
         }
       },
-      "required": [
-        "recipientMode",
-        "enabled"
-      ]
+      "required": ["recipientMode", "enabled"]
     },
     "PlatformAccessSuccessResponse": {
       "type": "object",
@@ -798,9 +769,7 @@
           "type": "string"
         }
       },
-      "required": [
-        "success"
-      ]
+      "required": ["success"]
     }
   },
   "previousExport": {

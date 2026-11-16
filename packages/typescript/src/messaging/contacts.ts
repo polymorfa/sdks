@@ -67,7 +67,12 @@ export class ContactsResource {
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetContactPictureResponse>> {
-    return this.getContactSubresource(connection, contactId, "picture", options);
+    return this.getContactSubresource(
+      connection,
+      contactId,
+      "picture",
+      options,
+    );
   }
 
   info(
@@ -83,7 +88,12 @@ export class ContactsResource {
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetUserDevicesResponse>> {
-    return this.getContactSubresource(connection, contactId, "devices", options);
+    return this.getContactSubresource(
+      connection,
+      contactId,
+      "devices",
+      options,
+    );
   }
 
   businessProfile(

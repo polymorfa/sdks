@@ -62,7 +62,9 @@ async function policiesServer(): Promise<{
     },
     body: JSON.stringify({
       success: true,
-      data: request.path.includes("/projects/") ? projectPolicy : connectionPolicy,
+      data: request.path.includes("/projects/")
+        ? projectPolicy
+        : connectionPolicy,
     }),
   }));
   servers.push(server);
@@ -136,7 +138,9 @@ describe("MessagingClient observation policies", () => {
 
   it("replaces policy writes with unified configuration", async () => {
     const { client, requests } = await policiesServer();
-    expect(client.observationPolicies).not.toHaveProperty("updateForConnection");
+    expect(client.observationPolicies).not.toHaveProperty(
+      "updateForConnection",
+    );
     expect(client.observationPolicies).not.toHaveProperty("updateForProject");
     await client.connections.update("support", {
       revision: 2,

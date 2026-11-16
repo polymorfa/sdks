@@ -564,9 +564,9 @@ describe("call permissions", () => {
     expect(() =>
       messaging.voip.check({ connection: "", to: "+14155550123" }),
     ).toThrow(PolymorfaValidationError);
-    expect(() => messaging.voip.check({ connection: "support", to: "" })).toThrow(
-      PolymorfaValidationError,
-    );
+    expect(() =>
+      messaging.voip.check({ connection: "support", to: "" }),
+    ).toThrow(PolymorfaValidationError);
     expect(() =>
       messagingClient(fetch, "clientToken").voip.check({
         connection: "support",

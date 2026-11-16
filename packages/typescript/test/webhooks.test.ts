@@ -33,8 +33,16 @@ function sign(body: Uint8Array, secret = "fixture-secret"): string {
 
 describe("verifyWebhookSignature", () => {
   it("verifies historical bytes without accepting the retired account envelope", async () => {
-    expect(await verifyWebhookSignature(legacyRaw, legacySignature, "fixture-secret")).toBe(true);
-    await expect(constructWebhookEvent(legacyRaw, legacySignature, "fixture-secret")).rejects.toThrow("Webhook body is not a valid event envelope.");
+    expect(
+      await verifyWebhookSignature(
+        legacyRaw,
+        legacySignature,
+        "fixture-secret",
+      ),
+    ).toBe(true);
+    await expect(
+      constructWebhookEvent(legacyRaw, legacySignature, "fixture-secret"),
+    ).rejects.toThrow("Webhook body is not a valid event envelope.");
   });
   it("accepts the native hexadecimal signature over the exact raw bytes", async () => {
     await expect(

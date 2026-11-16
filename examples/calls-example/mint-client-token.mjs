@@ -23,7 +23,11 @@ if (!key || !connection || !ephemeralId) {
       credential: { type: credentialType, value: key },
       baseUrl: "https://api.polymorfastaging.com",
     });
-    const token = await mintCallsExampleToken(messaging, connection, ephemeralId);
+    const token = await mintCallsExampleToken(
+      messaging,
+      connection,
+      ephemeralId,
+    );
     process.stdout.write(`${token}\n`);
   } catch (cause) {
     const detail =

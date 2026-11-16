@@ -477,7 +477,11 @@ describe("WebRtcMediaFactory track negotiation", () => {
       getUserMedia,
     }).open("call-1", false, callbacks, new AbortController().signal);
 
-    await connection.switchInput?.("video", "cam-1", new AbortController().signal);
+    await connection.switchInput?.(
+      "video",
+      "cam-1",
+      new AbortController().signal,
+    );
     // Keeping one would satisfy enableVideo's guard and strand the upgrade.
     expect(getUserMedia).toHaveBeenCalledTimes(1);
     expect(local.getVideoTracks()).toHaveLength(0);
@@ -1228,7 +1232,9 @@ describe("display capture on the owned outgoing video stream", () => {
       const camera = new FakeTrack("video");
       camera.enabled = enabled;
       const f = await setup(camera);
-      const start = f.connection.startScreenShare!(new AbortController().signal);
+      const start = f.connection.startScreenShare!(
+        new AbortController().signal,
+      );
       // Picker runs synchronously, preserving transient user activation.
       expect(f.getDisplayMedia).toHaveBeenCalledWith({
         video: true,
@@ -1393,7 +1399,10 @@ it("sends waiting-room effects through authenticated signaling, never the data c
     ).toBe(false);
     moderate.mockRejectedValueOnce(new Error("revoked credential"));
     await expect(
-      connection.moderateWaitingRoom!({ operation: "deny", participantId: "123" }),
+      connection.moderateWaitingRoom!({
+        operation: "deny",
+        participantId: "123",
+      }),
     ).rejects.toMatchObject({ code: "waiting_room_control_unknown" });
     expect(moderate).toHaveBeenCalledTimes(2);
   } finally {

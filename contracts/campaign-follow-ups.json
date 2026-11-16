@@ -106,9 +106,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "text"
-                      ]
+                      "enum": ["text"]
                     },
                     "text": {
                       "type": "string",
@@ -116,10 +114,7 @@
                       "maxLength": 16384
                     }
                   },
-                  "required": [
-                    "type",
-                    "text"
-                  ],
+                  "required": ["type", "text"],
                   "additionalProperties": false
                 },
                 {
@@ -127,27 +122,20 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "template"
-                      ]
+                      "enum": ["template"]
                     },
                     "templateId": {
                       "type": "string",
                       "format": "uuid"
                     }
                   },
-                  "required": [
-                    "type",
-                    "templateId"
-                  ],
+                  "required": ["type", "templateId"],
                   "additionalProperties": false
                 }
               ]
             }
           },
-          "required": [
-            "message"
-          ],
+          "required": ["message"],
           "additionalProperties": false,
           "description": "One optional follow-up, sent from the Connection that sent the first message. Null when the campaign has none. Content and timing freeze at launch."
         },
@@ -174,9 +162,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "text"
-                      ]
+                      "enum": ["text"]
                     },
                     "text": {
                       "type": "string",
@@ -184,10 +170,7 @@
                       "maxLength": 16384
                     }
                   },
-                  "required": [
-                    "type",
-                    "text"
-                  ],
+                  "required": ["type", "text"],
                   "additionalProperties": false
                 },
                 {
@@ -195,27 +178,20 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "template"
-                      ]
+                      "enum": ["template"]
                     },
                     "templateId": {
                       "type": "string",
                       "format": "uuid"
                     }
                   },
-                  "required": [
-                    "type",
-                    "templateId"
-                  ],
+                  "required": ["type", "templateId"],
                   "additionalProperties": false
                 }
               ]
             }
           },
-          "required": [
-            "message"
-          ],
+          "required": ["message"],
           "additionalProperties": false,
           "description": "One optional follow-up. A beta; a team that is not enrolled gets `403 feature_unavailable`. Requires a single first message: a campaign with a composed message sequence cannot launch with a follow-up. Follow-up text cannot contain tracked links."
         },
@@ -242,9 +218,7 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "text"
-                      ]
+                      "enum": ["text"]
                     },
                     "text": {
                       "type": "string",
@@ -252,10 +226,7 @@
                       "maxLength": 16384
                     }
                   },
-                  "required": [
-                    "type",
-                    "text"
-                  ],
+                  "required": ["type", "text"],
                   "additionalProperties": false
                 },
                 {
@@ -263,27 +234,20 @@
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "template"
-                      ]
+                      "enum": ["template"]
                     },
                     "templateId": {
                       "type": "string",
                       "format": "uuid"
                     }
                   },
-                  "required": [
-                    "type",
-                    "templateId"
-                  ],
+                  "required": ["type", "templateId"],
                   "additionalProperties": false
                 }
               ]
             }
           },
-          "required": [
-            "message"
-          ],
+          "required": ["message"],
           "additionalProperties": false,
           "description": "One follow-up, editable only before launch. Null removes it. A beta; a team that is not enrolled gets `403 feature_unavailable` when setting one. The first read takes precedence over the first delivery; replies and opt-outs cancel; an expired wait never sends."
         },
@@ -315,11 +279,7 @@
             "anchorKind": {
               "type": "string",
               "nullable": true,
-              "enum": [
-                "delivered",
-                "read",
-                null
-              ]
+              "enum": ["delivered", "read", null]
             },
             "firstDeliveredAt": {
               "type": "number",
@@ -392,9 +352,7 @@
         "CampaignFollowUp": {
           "type": "object",
           "additionalProperties": false,
-          "required": [
-            "message"
-          ],
+          "required": ["message"],
           "description": "One optional receipt-timed follow-up, sent from the Connection that sent the first message. A beta; a team that is not enrolled gets `403 feature_unavailable`. Expiry must exceed delay and is counted from the first send. Configuration freezes at launch. The first read takes precedence over the first delivery; additional reads do not move it. Replies and opt-outs cancel it. Without a delivery or read receipt it never arms, and an expired wait never sends. Requires a single first message, and the text cannot contain tracked links.",
           "properties": {
             "delaySeconds": {
@@ -414,16 +372,11 @@
                 {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "type",
-                    "text"
-                  ],
+                  "required": ["type", "text"],
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "text"
-                      ]
+                      "enum": ["text"]
                     },
                     "text": {
                       "type": "string",
@@ -435,16 +388,11 @@
                 {
                   "type": "object",
                   "additionalProperties": false,
-                  "required": [
-                    "type",
-                    "templateId"
-                  ],
+                  "required": ["type", "templateId"],
                   "properties": {
                     "type": {
                       "type": "string",
-                      "enum": [
-                        "template"
-                      ]
+                      "enum": ["template"]
                     },
                     "templateId": {
                       "type": "string",
@@ -499,11 +447,7 @@
             },
             "anchorKind": {
               "type": "string",
-              "enum": [
-                "delivered",
-                "read",
-                null
-              ],
+              "enum": ["delivered", "read", null],
               "nullable": true
             },
             "firstDeliveredAt": {

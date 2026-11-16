@@ -37,7 +37,10 @@ export class BrowserMessagingClient {
   readonly widget: BrowserWidgetResource;
 
   constructor(options: BrowserMessagingClientOptions) {
-    if (typeof options.connection !== "string" || options.connection.length === 0) {
+    if (
+      typeof options.connection !== "string" ||
+      options.connection.length === 0
+    ) {
       throw new BrowserValidationError(
         "A connection is required for the browser Messaging client.",
         "missing_connection",

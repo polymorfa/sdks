@@ -25,7 +25,10 @@ export const POST = route("admin", async ({ body, connectionOf }) => {
   const connection = connectionOf(body);
   switch (action(body)) {
     case "set":
-      return privacy.set(connection, mutation(body.setting, text(body, "value")));
+      return privacy.set(
+        connection,
+        mutation(body.setting, text(body, "value")),
+      );
     case "defaultTimer":
       return privacy.setDefaultDisappearingTimer(connection, {
         durationSeconds:

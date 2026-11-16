@@ -536,7 +536,9 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
       expiresAt,
       scopes: grant.allow,
       grant: {
-        ...(grant.connection === undefined ? {} : { connection: grant.connection }),
+        ...(grant.connection === undefined
+          ? {}
+          : { connection: grant.connection }),
         ...(grant.customer === undefined ? {} : { customer: grant.customer }),
         conversations: grant.conversations,
         allow: grant.allow,
@@ -743,7 +745,9 @@ function normalizeGrant(
   const hasCustomer =
     typeof input.customer === "string" && input.customer.length > 0;
   if (hasConnection === hasCustomer)
-    throw new TypeError("mint must return exactly one of connection or customer.");
+    throw new TypeError(
+      "mint must return exactly one of connection or customer.",
+    );
   if (
     !Array.isArray(input.allow) ||
     input.allow.length === 0 ||

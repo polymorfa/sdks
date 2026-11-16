@@ -58,7 +58,10 @@ it("reviews, explicitly confirms, and reads the durable tier result without roun
     { idempotencyKey: "confirm-1" },
   );
   expect(queued.data.data.status).toBe("queued");
-  const applied = await sdk.connections.retrieveTierChange("number/a", quote.id);
+  const applied = await sdk.connections.retrieveTierChange(
+    "number/a",
+    quote.id,
+  );
   expect(applied.data.data.status).toBe("applied");
   expect(server.requests.map((r) => `${r.method} ${r.path}`)).toEqual([
     "POST /platform/connections/number%2Fa/tier-quotes",
@@ -112,7 +115,9 @@ it("exposes insufficient funding as a payment-required error without retrying a 
     },
     body: '{"error":{"type":"permission_error","code":"entitlement_required","message":"The account needs the required entitlement for this action.","param":null},"data":null,"docs":"https://docs.polymorfa.com/api/errors#entitlement-required"}',
   }));
-  await expect(client(server).connections.start("number")).rejects.toMatchObject({
+  await expect(
+    client(server).connections.start("number"),
+  ).rejects.toMatchObject({
     name: PolymorfaPaymentRequiredError.name,
     status: 402,
     code: "entitlement_required",

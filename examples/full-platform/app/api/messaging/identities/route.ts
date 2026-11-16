@@ -18,7 +18,10 @@ export const POST = route("agent", async ({ body, connectionOf }) => {
       return messaging().identities.resolve(connection, identity(body));
     case "securityCode":
       // Display-only verification code for a stable user id.
-      return messaging().users.getSecurityCode(connection, text(body, "userId"));
+      return messaging().users.getSecurityCode(
+        connection,
+        text(body, "userId"),
+      );
     default:
       return unknownAction(action(body));
   }

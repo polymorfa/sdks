@@ -48,7 +48,9 @@ export class CallsDisabledError extends CallsApiError {
  * The client asks the token provider for a fresh token before reconnecting.
  */
 export class CallsAuthError extends CallsError {
-  constructor(message = "The credential no longer authorizes this connection.") {
+  constructor(
+    message = "The credential no longer authorizes this connection.",
+  ) {
     super("unauthorized", message);
     this.name = "CallsAuthError";
   }

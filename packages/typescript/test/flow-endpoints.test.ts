@@ -54,7 +54,10 @@ describe("dynamic Flow endpoints", () => {
       expectedRevision: 2,
     });
     await flows.deleteEndpoint(flowId, { connectionId: "support" });
-    await flows.endpointReceipts(flowId, { connectionId: "support", limit: 10 });
+    await flows.endpointReceipts(flowId, {
+      connectionId: "support",
+      limit: 10,
+    });
     await flows.encryptionKey({ connectionId: "support" });
     await flows.rotateEncryptionKey({ connectionId: "support" });
     expect(server.requests.map((r) => `${r.method} ${r.path}`)).toEqual([

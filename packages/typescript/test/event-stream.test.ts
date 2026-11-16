@@ -157,7 +157,9 @@ describe("events.stream", () => {
     );
     const url = new URL(requests[0]!.url);
     expect(url.pathname).toBe(`/platform/projects/${PROJECT}/events/stream`);
-    expect(url.searchParams.get("types")).toBe("message.*,connection.connected");
+    expect(url.searchParams.get("types")).toBe(
+      "message.*,connection.connected",
+    );
     expect(requests[0]!.headers.get("accept")).toBe("text/event-stream");
     expect(requests[0]!.headers.get("authorization")).toBe(
       `Bearer ${PROJECT_TOKEN}`,

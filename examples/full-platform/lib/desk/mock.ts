@@ -301,7 +301,9 @@ export class MockDesk implements DeskData {
             ...current,
             status: "connected",
           });
-          emitWebhook("connection.status", connectionId, { status: "connected" });
+          emitWebhook("connection.status", connectionId, {
+            status: "connected",
+          });
         }, 2000);
         return { status: "connecting" };
     }

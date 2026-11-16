@@ -23,7 +23,9 @@ function App() {
   const [connection, setConnection] = useState("");
   const [label, setLabel] = useState("");
   const [token, setToken] = useState("");
-  const [connections, setConnections] = useState<readonly CallingConnection[]>([]);
+  const [connections, setConnections] = useState<readonly CallingConnection[]>(
+    [],
+  );
   const [selectedId, setSelectedId] = useState("");
   const [error, setError] = useState("");
   const [feedback, setFeedback] = useState<Record<string, Feedback>>({});
@@ -37,7 +39,8 @@ function App() {
       window.clearInterval(timer);
       for (const stop of subscriptions.current.values()) stop();
       subscriptions.current.clear();
-      for (const connection of connectionsRef.current) void connection.dispose();
+      for (const connection of connectionsRef.current)
+        void connection.dispose();
       connectionsRef.current = [];
     };
   }, []);
@@ -124,7 +127,9 @@ function App() {
     await connection.dispose();
   }
 
-  const selected = connections.find((connection) => connection.id === selectedId);
+  const selected = connections.find(
+    (connection) => connection.id === selectedId,
+  );
   const busy = hasActiveCall(connections);
   return (
     <PolymorfaProvider>
@@ -160,7 +165,9 @@ function App() {
               placeholder="Support · +41…"
               autoComplete="off"
             />
-            <label htmlFor="token">Browser client token for this Connection</label>
+            <label htmlFor="token">
+              Browser client token for this Connection
+            </label>
             <input
               id="token"
               type="password"

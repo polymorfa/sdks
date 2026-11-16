@@ -246,7 +246,9 @@ export async function upsertMessage(
     context.put("conversations", {
       ...summary,
       _t: Math.max(summary._t, time),
-      ...(conversation.connection === undefined ? { connection: patch.connection } : {}),
+      ...(conversation.connection === undefined
+        ? { connection: patch.connection }
+        : {}),
     });
 }
 
@@ -261,7 +263,8 @@ async function tombstone(
   const existing = await context.get("messages", id);
   const conversation = existing?.conversationId ?? conversationId;
   if (conversation === undefined) return;
-  const base = existing ?? emptyMessage(id, event.connection, conversation, time);
+  const base =
+    existing ?? emptyMessage(id, event.connection, conversation, time);
   const row: Mutable<StoredMessage> = {
     ...base,
     _t: Math.max(base._t, time),

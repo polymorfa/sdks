@@ -633,7 +633,13 @@ function Panel({ tab }: { readonly tab: string }) {
                 <Table
                   caption="Findings"
                   rows={rowsOf(field(data, "findings"))}
-                  keys={["connection", "code", "severity", "status", "createdAt"]}
+                  keys={[
+                    "connection",
+                    "code",
+                    "severity",
+                    "status",
+                    "createdAt",
+                  ]}
                 />
               </Card>
             </>

@@ -36,17 +36,11 @@
                 }
               }
             },
-            "required": [
-              "name",
-              "description",
-              "overrides"
-            ]
+            "required": ["name", "description", "overrides"]
           }
         }
       },
-      "required": [
-        "fixtures"
-      ]
+      "required": ["fixtures"]
     },
     "TriggerTestEventRequest": {
       "type": "object",
@@ -76,9 +70,7 @@
           "description": "message.received only. Send a simulated text message from this other connected Test connection in the same project instead of generating an event."
         }
       },
-      "required": [
-        "event"
-      ],
+      "required": ["event"],
       "additionalProperties": false
     },
     "TriggerTestEventResponse": {
@@ -103,10 +95,7 @@
         },
         "delivery": {
           "type": "string",
-          "enum": [
-            "generated",
-            "simulated"
-          ]
+          "enum": ["generated", "simulated"]
         },
         "eventId": {
           "type": "string",
@@ -115,19 +104,10 @@
         },
         "source": {
           "type": "string",
-          "enum": [
-            "test",
-            "runtime"
-          ]
+          "enum": ["test", "runtime"]
         }
       },
-      "required": [
-        "event",
-        "connection",
-        "delivery",
-        "eventId",
-        "source"
-      ]
+      "required": ["event", "connection", "delivery", "eventId", "source"]
     },
     "TestEventOverrides": {
       "type": "object",
@@ -148,13 +128,7 @@
         },
         "mediaType": {
           "type": "string",
-          "enum": [
-            "image",
-            "video",
-            "audio",
-            "document",
-            "sticker"
-          ]
+          "enum": ["image", "video", "audio", "document", "sticker"]
         },
         "caption": {
           "type": "string",
@@ -163,12 +137,7 @@
         },
         "ackStatus": {
           "type": "string",
-          "enum": [
-            "delivered",
-            "read",
-            "played",
-            "error"
-          ]
+          "enum": ["delivered", "read", "played", "error"]
         },
         "messageId": {
           "type": "string",
@@ -207,11 +176,7 @@
         },
         "status": {
           "type": "string",
-          "enum": [
-            "CONNECTING",
-            "CONNECTED",
-            "DISCONNECTED"
-          ]
+          "enum": ["CONNECTING", "CONNECTED", "DISCONNECTED"]
         },
         "statusReason": {
           "type": "string",
@@ -232,10 +197,7 @@
         },
         "templateStatus": {
           "type": "string",
-          "enum": [
-            "APPROVED",
-            "REJECTED"
-          ]
+          "enum": ["APPROVED", "REJECTED"]
         },
         "reason": {
           "type": "string",

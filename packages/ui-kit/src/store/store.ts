@@ -603,7 +603,8 @@ export async function createPolymorfaStore(
     const valid = events.filter((event) => {
       const ok =
         isEnvelope(event) &&
-        (options.connection === undefined || event.connection === options.connection);
+        (options.connection === undefined ||
+          event.connection === options.connection);
       if (!ok) result.ignored += 1;
       return ok;
     });
@@ -825,7 +826,8 @@ export async function createPolymorfaStore(
               context,
               pick({
                 id: message.id,
-                connection: upsertOptions.connection ?? options.connection ?? "",
+                connection:
+                  upsertOptions.connection ?? options.connection ?? "",
                 conversationId: message.conversationId,
                 createdAt: message.createdAt,
                 fromMe: message.fromMe,

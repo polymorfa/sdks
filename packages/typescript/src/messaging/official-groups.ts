@@ -215,7 +215,12 @@ export class OfficialGroupsResource {
     group: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
-    return this.write("DELETE", groupPath(connection, group), undefined, options);
+    return this.write(
+      "DELETE",
+      groupPath(connection, group),
+      undefined,
+      options,
+    );
   }
 
   getInviteLink(
@@ -223,7 +228,11 @@ export class OfficialGroupsResource {
     group: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<OfficialGroupInviteLink>>> {
-    return this.read(`${groupPath(connection, group)}/invite-link`, {}, options);
+    return this.read(
+      `${groupPath(connection, group)}/invite-link`,
+      {},
+      options,
+    );
   }
 
   /** Creates a new invite link; every earlier link stops working. */

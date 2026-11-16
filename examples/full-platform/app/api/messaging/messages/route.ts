@@ -28,7 +28,10 @@ export const POST = route("agent", async ({ body, connectionOf, request }) => {
         idempotencyKey: idempotencyKey(request),
       });
     case "seen":
-      return messages.markSeen(connection, { conversation, id: text(body, "id") });
+      return messages.markSeen(connection, {
+        conversation,
+        id: text(body, "id"),
+      });
     case "typing":
       return messages.setTyping(connection, {
         conversation,

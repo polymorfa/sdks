@@ -91,7 +91,9 @@ export class CallsSocket {
         socketUrl: (path) =>
           unsupported(signaling.socketUrl).call(signaling, path),
       },
-      ...(options.connection === undefined ? {} : { connection: options.connection }),
+      ...(options.connection === undefined
+        ? {}
+        : { connection: options.connection }),
       ...(options.participant === undefined
         ? {}
         : { participant: options.participant }),

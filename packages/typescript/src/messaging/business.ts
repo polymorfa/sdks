@@ -165,7 +165,12 @@ export class BusinessResource {
     body: BusinessProductMutationRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UpdateBusinessProductResponse>> {
-    return this.mutate("PUT", productPath(connection, productId), body, options);
+    return this.mutate(
+      "PUT",
+      productPath(connection, productId),
+      body,
+      options,
+    );
   }
 
   deleteProduct(

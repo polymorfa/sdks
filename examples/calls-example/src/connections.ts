@@ -51,7 +51,9 @@ export function createCallingConnection(
   };
 }
 
-export function hasActiveCall(connections: readonly CallingConnection[]): boolean {
+export function hasActiveCall(
+  connections: readonly CallingConnection[],
+): boolean {
   return connections.some(({ calls }) => {
     const snapshot = calls.controller.getSnapshot();
     return (

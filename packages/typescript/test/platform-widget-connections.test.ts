@@ -84,7 +84,9 @@ describe("Client batch connection lifecycle", () => {
       path: "/platform/connections/delete",
       body: '{"connectionIds":["support","sales"]}',
     });
-    expect(requests[0]?.headers["idempotency-key"]).toBe("delete-connections-1");
+    expect(requests[0]?.headers["idempotency-key"]).toBe(
+      "delete-connections-1",
+    );
     expect(removed.metadata.requestId).toBe("req_platform_widget_connections");
   });
 });

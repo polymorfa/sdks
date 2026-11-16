@@ -129,7 +129,9 @@ export class PolymorfaDesk implements DeskData {
     }
     const contact = this.#store.ensureContact(input.phone);
     const agent = this.#store.agentFor(operator);
-    return this.#store.openTicket(contact, connection, { assigneeId: agent.id });
+    return this.#store.openTicket(contact, connection, {
+      assigneeId: agent.id,
+    });
   }
 
   async updateTicket(
@@ -439,8 +441,8 @@ export class PolymorfaDesk implements DeskData {
           throw new InputError("Enter the phone number in E.164 format.");
         }
         return {
-          ...(await connections.requestPairingCode(connectionId, { phone })).data
-            .data,
+          ...(await connections.requestPairingCode(connectionId, { phone }))
+            .data.data,
         };
     }
   }
