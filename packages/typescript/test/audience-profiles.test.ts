@@ -7,7 +7,7 @@ import {
   type ListAudienceProfilesParams,
   type PutAudienceProfileRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const servers: TestServer[] = [];
@@ -64,7 +64,7 @@ async function setup(status = 200) {
     server,
     resource: new Client({
       baseUrl: server.url,
-      credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+      credential: { type: "teamApiKey", value: TEAM_API_KEY },
       maxNetworkRetries: 0,
     }).audienceProfiles,
   };
@@ -166,9 +166,9 @@ it("preserves API revision conflicts", async () => {
     resource.put(phone, { tags: [], attributes: {} }),
   ).rejects.toBeInstanceOf(PolymorfaConflictError);
 });
-it("restricts the resource to organization clients", () => {
+it("restricts the resource to team clients", () => {
   const project = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
   }).project("project-1");
   expect("audienceProfiles" in project).toBe(false);
   expectTypeOf<ListAudienceProfilesParams["phonePrefix"]>().toEqualTypeOf<
@@ -323,7 +323,7 @@ it("surfaces the API's invalid_parameter envelope for a rejected list filter", a
   servers.push(server);
   const resource = new Client({
     baseUrl: server.url,
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     maxNetworkRetries: 0,
   }).audienceProfiles;
   const failure = await resource
