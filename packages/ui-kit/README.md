@@ -14,13 +14,14 @@ Check the registry for a published version before installing:
 npm view @polymorfa/ui-kit dist-tags
 ```
 
-Once matching versions are published, install the UI Kit in your application:
+Once the preview tag appears in the registry, install the UI Kit in your application:
 
 ```bash
-npm install @polymorfa/ui-kit@dev
+npm install @polymorfa/ui-kit@preview
 ```
 
-A source build does not establish registry or API availability. Source checkout
+Preview packages have not passed deployed API acceptance. A source build does
+not establish registry or API availability. Source checkout
 examples use workspace packages; their guides state what was exercised.
 
 `@polymorfa/ui-kit` depends on `@polymorfa/sdk` for the shared Calls client.

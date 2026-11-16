@@ -11,12 +11,11 @@ matching production acceptance. Every contract snapshot and feature supplement,
 including client-token ceilings, must reconcile with that exact accepted
 producer. Keep publication holds until this reconciliation is reviewed.
 
-The shared npm and native release gate also enforces
-`contracts/calls-guests.candidate.json`. Both the guest-call candidate and its
-HTTP moderation operation must have reviewed source acceptance and publication
-approval. The candidate's API version, producer commit and Messaging specification
-hash must match the accepted release contract. Merging SDK source does not lift
-these holds.
+The manual `preview` channel publishes checked source artifacts without deployed
+API acceptance. It preserves feature holds, including guest-call candidate
+metadata, and records native coverage gaps. Preview provenance explicitly says
+API acceptance is unverified. Nightly and stable publication keep their existing
+feature and environment acceptance requirements.
 
 The workflow binds inspected package bytes to `release-contract.json`, confirms
 registry contents after publication and refuses conflicting existing versions.
@@ -26,7 +25,7 @@ archive, feed, path install or extracted-crate patch proves packaging only.
 ## Customer documentation
 
 After publication, verify each advertised install command in a clean environment
-against its registry. Then update the matching Mintlify language guides,
+against its registry. Then update the matching public language guides,
 overview, navigation and shipped-day changelog in `polymorfa/polymorfa` with the
 actual package versions and coverage. Keep release-dependent guides and install
 claims private until those checks pass.

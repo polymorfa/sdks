@@ -21,6 +21,14 @@ test("native version formats preserve one release across registries", () => {
     },
   );
   assert.throws(() => versions("stable", "0.2.3-dev.1"));
+  assert.deepEqual(
+    versions("preview", undefined, new Date("2026-11-16T12:00:00Z")),
+    {
+      semver: "0.1.0-preview.20261116120000",
+      python: "0.1.0a0.dev20261116120000",
+      goTag: "packages/go/v0.1.0-preview.20261116120000",
+    },
+  );
 });
 function fixture() {
   const operation = {
@@ -104,5 +112,38 @@ test("release recomputes changed and removed operations and refuses omitted snap
   assert.throws(
     () => requireNativeCoverage(f.ledger, f.manifests, []),
     /removed operations/,
+  );
+});
+
+test("preview permits recorded gaps while retaining drift and native evidence checks", () => {
+  const f = fixture();
+  f.ledger.operations[0].php = {
+    status: "partial",
+    reason: "One field is not implemented",
+    milestone: "next",
+  };
+  Object.assign(f.manifests.php.operations[0], f.ledger.operations[0].php);
+  assert.throws(
+    () => requireNativeCoverage(f.ledger, f.manifests, f.actual),
+    /missing pinned TypeScript method/,
+  );
+  requireNativeCoverage(f.ledger, f.manifests, f.actual, {
+    allowIncomplete: true,
+  });
+  assert.equal(f.ledger.operations[0].php.status, "partial");
+  assert.throws(
+    () =>
+      requireNativeCoverage(f.ledger, f.manifests, [], {
+        allowIncomplete: true,
+      }),
+    /removed operations/,
+  );
+  delete f.manifests.go.operations[0].testFile;
+  assert.throws(
+    () =>
+      requireNativeCoverage(f.ledger, f.manifests, f.actual, {
+        allowIncomplete: true,
+      }),
+    /native evidence/,
   );
 });
