@@ -1,36 +1,22 @@
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { pathToFileURL } from "node:url";
+import { compareCoverage, extractOperations } from "./check-coverage.mjs";
+import {
+  releaseChannels,
+  releaseTag,
+  validateAcceptance,
+  validatePreview,
+  validateReleaseAuthorization,
+  validateReleaseVersion,
+} from "./release-policy.mjs";
+export { validateAcceptance } from "./release-policy.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const hash = (value) => createHash("sha256").update(value).digest("hex");
-export function validateAcceptance(receipt, expected) {
-  assert.equal(receipt.schemaVersion, 1);
-  assert.equal(receipt.repository, "polymorfa/polymorfa");
-  for (const key of ["sourceSha", "apiVersion", "environment"])
-    assert.equal(receipt[key], expected[key], `Acceptance ${key} mismatch`);
-  assert.deepEqual(
-    receipt.contracts,
-    expected.contracts,
-    "Acceptance spec mismatch",
-  );
-  assert.equal(receipt.result, "passed");
-  assert.ok(
-    receipt.scenarios?.length &&
-      receipt.scenarios.every((s) => s.result === "passed"),
-  );
-  assert.equal(receipt.deployment?.commit, expected.sourceSha);
-  assert.equal(receipt.deployment?.status, "finished");
-  assert.ok(Number.isFinite(Date.parse(receipt.acceptedAt)));
-  assert.match(
-    receipt.runUrl,
-    /^https:\/\/github\.com\/polymorfa\/polymorfa\/actions\/runs\/\d+$/,
-  );
-  return receipt;
-}
 export function validateFeatureContractPins(source, pins) {
   for (const pin of pins) {
     assert.equal(
@@ -133,7 +119,8 @@ export function campaignSupplementPins(supplement) {
     sourceSha256: snapshot.sourceSha256,
   }));
 }
-export function expectedContract() {
+export function expectedContract(channel = "stable") {
+  assert.ok(releaseChannels.includes(channel));
   // Campaign supplements carry separate Messaging and Platform source hashes.
   const source = JSON.parse(readFileSync(join(root, "contracts/source.json")));
   assert.equal(source.repository, "polymorfa/polymorfa");
@@ -142,45 +129,53 @@ export function expectedContract() {
     readFileSync(join(root, "packages/typescript/src/version.ts"), "utf8"),
   )?.[1];
   assert.ok(apiVersion);
-  validateGuestCallPublication(
-    source,
-    JSON.parse(
-      readFileSync(join(root, "contracts/calls-guests.candidate.json")),
-    ),
-    apiVersion,
-  );
-  validateFeatureContractPins(source, [
-    ...multiSourcePins(
+  // Preview publication records the held source without claiming acceptance.
+  // Nightly and stable publication retain every existing feature gate.
+  if (channel !== "preview") {
+    validateGuestCallPublication(
+      source,
       JSON.parse(
-        readFileSync(join(root, "contracts/calls-simultaneous-calls.json")),
+        readFileSync(join(root, "contracts/calls-guests.candidate.json")),
       ),
-    ),
-    JSON.parse(
-      readFileSync(join(root, "contracts/analytics-device-signals.json")),
-    ),
-    JSON.parse(readFileSync(join(root, "contracts/abprops-capabilities.json"))),
-    JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
-    JSON.parse(
-      readFileSync(join(root, "contracts/client-token-ceilings.json")),
-    ),
-    ...[
-      "campaign-ab-tests.json",
-      "campaign-message-variations.json",
-      "campaign-follow-ups.json",
-      "campaign-custody-20261014.json",
-      // Integrated main supplements: released only after their source is
-      // reconciled with the accepted release contract.
-      "campaign-frequency-cap.json",
-      "campaign-segments-drip.json",
-    ].flatMap((name) =>
-      campaignSupplementPins(
-        JSON.parse(readFileSync(join(root, "contracts", name))),
+      apiVersion,
+    );
+    validateFeatureContractPins(source, [
+      ...multiSourcePins(
+        JSON.parse(
+          readFileSync(join(root, "contracts/calls-simultaneous-calls.json")),
+        ),
       ),
-    ),
-  ]);
-  validateFeatureContractPins(source, [
-    JSON.parse(readFileSync(join(root, "contracts/official-api-round2.json"))),
-  ]);
+      JSON.parse(
+        readFileSync(join(root, "contracts/analytics-device-signals.json")),
+      ),
+      JSON.parse(
+        readFileSync(join(root, "contracts/abprops-capabilities.json")),
+      ),
+      JSON.parse(readFileSync(join(root, "contracts/request-logs.json"))),
+      JSON.parse(
+        readFileSync(join(root, "contracts/client-token-ceilings.json")),
+      ),
+      ...[
+        "campaign-ab-tests.json",
+        "campaign-message-variations.json",
+        "campaign-follow-ups.json",
+        "campaign-custody-20261014.json",
+        // Integrated main supplements: released only after their source is
+        // reconciled with the accepted release contract.
+        "campaign-frequency-cap.json",
+        "campaign-segments-drip.json",
+      ].flatMap((name) =>
+        campaignSupplementPins(
+          JSON.parse(readFileSync(join(root, "contracts", name))),
+        ),
+      ),
+    ]);
+    validateFeatureContractPins(source, [
+      JSON.parse(
+        readFileSync(join(root, "contracts/official-api-round2.json")),
+      ),
+    ]);
+  }
   const contracts = Object.fromEntries(
     Object.entries(source.contracts).map(([name, spec]) => {
       assert.ok(["messaging", "platform"].includes(name));
@@ -195,6 +190,139 @@ export function expectedContract() {
   );
   assert.deepEqual(Object.keys(contracts).sort(), ["messaging", "platform"]);
   return { sourceSha: source.commit, apiVersion, contracts };
+}
+export function previewProvenance(env = process.env) {
+  const apiSource = {
+    repository: "polymorfa/polymorfa",
+    ...expectedContract("preview"),
+  };
+  const coverageBytes = readFileSync(join(root, "contracts/coverage.json"));
+  const ledger = JSON.parse(coverageBytes);
+  assert.equal(ledger.sourceCommit, apiSource.sourceSha);
+  compareCoverage(
+    ["messaging", "platform"].flatMap((family) =>
+      extractOperations(
+        family,
+        JSON.parse(
+          readFileSync(join(root, `contracts/openapi.${family}.json`)),
+        ),
+      ),
+    ),
+    ledger,
+    true,
+  );
+  const featureContracts = readdirSync(join(root, "contracts"))
+    .filter(
+      (file) =>
+        file.endsWith(".json") &&
+        !file.startsWith("openapi.") &&
+        !file.startsWith("doc-snippets") &&
+        !["source.json", "coverage.json"].includes(file),
+    )
+    .sort()
+    .flatMap((name) => {
+      const bytes = readFileSync(join(root, "contracts", name));
+      const value = JSON.parse(bytes);
+      const repository = value.repository ?? value.candidateSource?.repository;
+      if (!repository) return [];
+      return [
+        {
+          file: `contracts/${name}`,
+          sha256: hash(bytes),
+          repository,
+          sourceCommit:
+            value.commit ??
+            value.sourceCommit ??
+            value.candidateSource?.commit ??
+            null,
+          sourceAccepted: value.sourceAccepted ?? null,
+          published: value.published ?? null,
+        },
+      ];
+    });
+  const preview = {
+    apiAcceptance: "not-verified",
+    apiSource,
+    authorization: {
+      eventName: env.GITHUB_EVENT_NAME,
+      ref: env.GITHUB_REF,
+      runUrl: `https://github.com/polymorfa/sdks/actions/runs/${env.GITHUB_RUN_ID}`,
+      actor: env.GITHUB_ACTOR,
+    },
+    featureContracts,
+    coverage: {
+      path: "contracts/coverage.json",
+      sha256: hash(coverageBytes),
+      sourceCommit: ledger.sourceCommit,
+      operationCount: ledger.operations.length,
+      languages: Object.fromEntries(
+        ledger.languages.map((language) => {
+          const counts = { covered: 0, partial: 0, missing: 0, excluded: 0 };
+          const incomplete = [];
+          for (const operation of ledger.operations) {
+            counts[operation[language].status]++;
+            if (["missing", "partial"].includes(operation[language].status))
+              incomplete.push({
+                operationId: operation.operationId,
+                status: operation[language].status,
+              });
+          }
+          return [language, { counts, incomplete }];
+        }),
+      ),
+    },
+  };
+  return validatePreview(preview);
+}
+function sourceRevision() {
+  assert.equal(
+    execFileSync("git", ["status", "--porcelain"], {
+      cwd: root,
+      encoding: "utf8",
+    }).trim(),
+    "",
+    "Release source must be clean",
+  );
+  const sha = execFileSync("git", ["rev-parse", "HEAD"], {
+    cwd: root,
+    encoding: "utf8",
+  }).trim();
+  return sha;
+}
+export function verifySourceProvenance(provenance) {
+  assert.equal(
+    provenance.sourceSha,
+    sourceRevision(),
+    "Package provenance source differs from checkout",
+  );
+  assert.equal(
+    provenance.fingerprint,
+    publicationFingerprint(),
+    "Package provenance fingerprint differs from checkout",
+  );
+  return provenance;
+}
+export function releaseSource(env = process.env) {
+  assert.equal(
+    env.GITHUB_REF,
+    "refs/heads/main",
+    "SDK publication runs only from main",
+  );
+  const sha = sourceRevision();
+  assert.equal(
+    sha,
+    env.GITHUB_SHA,
+    "Release source differs from workflow revision",
+  );
+  try {
+    execFileSync("git", ["merge-base", "--is-ancestor", sha, "origin/main"], {
+      cwd: root,
+      stdio: "pipe",
+    });
+  } catch {
+    throw new Error("Release source must be merged into origin/main");
+  }
+  return sha;
 }
 export function publicationFingerprint() {
   const files = execFileSync(
@@ -328,35 +456,38 @@ export async function publishedProvenance(tag, output) {
   return provenance;
 }
 export function releaseVersion(channel, requested, base, date = new Date()) {
-  assert.ok(["nightly", "stable"].includes(channel));
+  assert.ok(releaseChannels.includes(channel));
   if (channel === "stable") {
     assert.match(requested ?? "", /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)$/);
+    return requested;
+  }
+  if (channel === "preview" && requested !== undefined) {
+    validateReleaseVersion(channel, requested);
+    assert.ok(
+      requested.startsWith(`${base}-preview.`),
+      "Preview must use the source package base version",
+    );
     return requested;
   }
   assert.equal(
     requested,
     undefined,
-    "Nightly versions are generated after acceptance",
+    "Prerelease versions are generated by the workflow",
   );
-  return `${base}-dev.${date.toISOString().replace(/\D/g, "").slice(0, 14)}`;
+  return `${base}-${channel === "preview" ? "preview" : "dev"}.${date.toISOString().replace(/\D/g, "").slice(0, 14)}`;
 }
 async function prepare() {
-  assert.equal(
-    process.env.GITHUB_REF,
-    "refs/heads/main",
-    "SDK publication runs only from main",
-  );
+  const sourceSha = releaseSource();
   const channel = process.env.RELEASE_CHANNEL;
   const environment = channel === "stable" ? "production" : "staging";
   const output = resolve(process.env.RELEASE_OUTPUT);
   mkdirSync(output, { recursive: true, mode: 0o700 });
-  const expected = { ...expectedContract(), environment };
-  const acceptance = await acceptedContract(expected, output);
+  const expected = { ...expectedContract(channel), environment };
+  const acceptance =
+    channel === "preview" ? null : await acceptedContract(expected, output);
+  const preview = channel === "preview" ? previewProvenance() : undefined;
   const fingerprint = publicationFingerprint();
-  const previous = await publishedProvenance(
-    channel === "stable" ? "latest" : "dev",
-    output,
-  );
+  const previous = await publishedProvenance(releaseTag(channel), output);
   if (channel === "nightly" && previous?.fingerprint === fingerprint) {
     writeFileSync(process.env.GITHUB_OUTPUT, "publish=false\n", { flag: "a" });
     console.log(
@@ -369,7 +500,7 @@ async function prepare() {
   ).version.split("-")[0];
   const version = releaseVersion(
     channel,
-    process.env.STABLE_VERSION || undefined,
+    process.env.RELEASE_VERSION || undefined,
     base,
   );
   if (channel === "stable" && previous?.packageVersion === version)
@@ -378,10 +509,6 @@ async function prepare() {
       fingerprint,
       "Stable version already belongs to different source",
     );
-  const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], {
-    cwd: root,
-    encoding: "utf8",
-  }).trim();
   const provenance = {
     schemaVersion: 1,
     repository: "polymorfa/sdks",
@@ -390,7 +517,9 @@ async function prepare() {
     channel,
     packageVersion: version,
     acceptance,
+    ...(preview ? { preview } : {}),
   };
+  validateReleaseAuthorization(provenance);
   writeFileSync(
     join(output, "release-contract.json"),
     JSON.stringify(provenance, null, 2) + "\n",

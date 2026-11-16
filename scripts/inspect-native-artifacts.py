@@ -109,4 +109,4 @@ for path in files:
                 assert stream is not None
                 assert json.load(stream) == expected, f"Receipt mismatch in {path.name}"
     assert actual == expected, f"Receipt mismatch in {path.name}"
-print(f"Verified embedded acceptance receipts in {len(files)} {language} artifacts.")
+print(f"Verified embedded release provenance in {len(files)} {language} artifacts.")
