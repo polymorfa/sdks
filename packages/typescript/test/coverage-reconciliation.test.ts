@@ -211,6 +211,35 @@ describe("reconciled coverage evidence", () => {
     }
   });
 
+  it("covers the six Number-scoped Test routes from the global baseline", () => {
+    const ids = [
+      "createTestingHistoryFixture",
+      "getTestingPhone",
+      "listTestEventFixtures",
+      "sendTestingPhoneMessage",
+      "triggerTestEvent",
+      "unlinkTestingPhoneDevice",
+    ];
+    const operations = ledger.operations.filter((operation) =>
+      ids.includes(operation.operationId),
+    );
+    expect(operations.map((operation) => operation.operationId).sort()).toEqual(
+      ids,
+    );
+    for (const operation of operations) {
+      expect(operation.typescript.status, operation.operationId).toBe(
+        "covered",
+      );
+      expect(operation.path, operation.operationId).not.toContain(
+        "/messaging/testing/",
+      );
+      expect(
+        (operation as LedgerEntry & { sourceCommit?: string }).sourceCommit,
+        operation.operationId,
+      ).toBeUndefined();
+    }
+  });
+
   it("pins Analytics to the same full Platform source and snapshot hash", () => {
     const source = JSON.parse(
       readFileSync(repositoryFile("contracts/source.json"), "utf8"),

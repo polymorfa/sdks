@@ -33,9 +33,9 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
     assert re.fullmatch(r"[a-f0-9]{40}", receipt["sourceSha"])
     assert re.fullmatch(r"[a-f0-9]{64}", receipt["fingerprint"])
     version = receipt["versions"]["semver"]
-    assert re.fullmatch(r"\d+\.\d+\.\d+(?:-dev\.\d{14})?", version)
-    assert receipt["channel"] in ("stable", "nightly")
-    assert ("-dev." in version) == (receipt["channel"] == "nightly")
+    assert receipt["channel"] in ("preview", "stable", "nightly")
+    suffix = {"stable": "", "nightly": r"-dev\.\d{14}", "preview": r"-preview\.\d{14}"}[receipt["channel"]]
+    assert re.fullmatch(r"\d+\.\d+\.\d+" + suffix, version)
     assert not output.exists(), (
         "Mirror output must not exist; preserve previous preparations"
     )
@@ -104,7 +104,7 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
     else:
         # Timestamped SDK prereleases remain in provenance. Composer discovers
         # nightly source through the approved mirror branch, not a made-up tag.
-        plan["composerBranchVersion"] = "dev-main"
+        plan["composerBranchVersion"] = "dev-preview" if receipt["channel"] == "preview" else "dev-main"
     output.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=".php-mirror-", dir=output.parent) as staging:
         staged = Path(staging) / "prepared"

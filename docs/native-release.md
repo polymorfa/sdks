@@ -5,9 +5,26 @@ from `main` only, by manual dispatch. Nothing in this repository has been
 published by it yet. GitHub release environments and immutable Go tag protection
 are configured. Registry trust policies and account access remain prerequisites.
 
+## Preview releases
+
+Manual dispatch supports `preview`, `nightly` and `stable`. A preview skips
+API acceptance and full-coverage prerequisites, preserves all feature holds,
+and records the exact API sources, spec hashes and missing/partial operations.
+Contract drift, missing coverage rows, native method evidence, source cleanliness,
+merged `main` ancestry, package/wire checks and artifact integrity remain checked.
+The receipt contains `acceptance: null`; it cannot authorize an accepted release.
+
+Use the same `<base>-preview.<UTC YYYYMMDDHHmmss>` version as the npm dispatch.
+Rust, NuGet and Go use that SemVer. Python uses
+`<base>a0.dev<UTC YYYYMMDDHHmmss>`. Composer previews use `dev-preview` on the
+mirror's `preview` branch; pin the verified commit for reproducible installs.
+Nightly Composer releases keep `dev-main`, and stable tags stay on `main`.
+Preview jobs use the existing nightly registry environments and trust bindings.
+Registry account prerequisites below still apply, including first crate creation.
+
 ## What the workflow does
 
-1. **gate** requires the exact deployed API acceptance receipt for the channel
+1. **gate** requires the exact deployed API acceptance receipt for accepted channels
    (staging for nightly, production for stable), every feature contract pin,
    including frequency caps, segments/drips and client-token ceilings, reconciled with the
    release contract, and complete native coverage. It computes one version and

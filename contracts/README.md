@@ -1,5 +1,16 @@
 # Contract coverage
 
+## Number-scoped Test phone and events
+
+The full Messaging snapshot at API `f180dc1ee2bd45dbecf01702f73bdd75c664634b`
+contains the six Number-scoped Test operations (`getTestingPhone`,
+`sendTestingPhoneMessage`, `unlinkTestingPhoneDevice`, `triggerTestEvent`,
+`listTestEventFixtures` and `createTestingHistoryFixture`), so the ledger
+covers them from the global baseline with no per-operation source override.
+`testing-phone.json` and `testing-events.json` are focused extracts of those
+operations and their schemas from the same snapshot. This is a breaking SDK
+change: the earlier project-scoped `/messaging/testing/...` methods are gone.
+
 ## Idempotency response replay
 
 `idempotency-replay.json` is produced by
@@ -117,9 +128,8 @@ published SDK package before updating their pinned dependency.
 
 `testing-phone.json` records the three Test number phone operations
 (`getTestingPhone`, `sendTestingPhoneMessage`, `unlinkTestingPhoneDevice`) and
-their schemas from API `dev` merge commit
-`2f1510f901aca1d68398a6dc9dbf243348c672c0` (polymorfa/polymorfa#526), with the
-source path and file hash. `MessagingClient.testing.getPhone`,
+their schemas from API commit `f180dc1ee2bd45dbecf01702f73bdd75c664634b`, with
+the source path and file hash. `MessagingClient.testing.getPhone`,
 `sendPhoneMessage` and `unlinkPhoneDevice` use this revision; a contract test
 compares their paths and fields. The full snapshots are not repinned here.
 

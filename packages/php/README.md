@@ -1076,6 +1076,17 @@ next request. Filters include direction, outcome and ISO 8601 start-time
 bounds `since`/`until`. `peer` may be null; its user ID, phone number and
 username may each be absent. Platform call records keep `peerRef`.
 
+## Number-scoped Test operations
+
+The Test phone methods take a Number ID, without a project argument:
+~~~php
+$phone = $client->testing->getPhone('support');
+$event = $client->testing->triggerEvent('support', ['event' => 'call.missed', 'fromNumber' => 'sales']);
+$fixtures = $client->testing->listEventFixtures();
+~~~
+
+Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.
+
 ## Guest participants and waiting rooms (unreleased)
 
 Call participants and participant webhooks can include optional `guest` and

@@ -1,4 +1,4 @@
-name: Prepare accepted native SDK releases
+name: Publish native SDK packages
 
 on:
   workflow_dispatch:
@@ -6,10 +6,10 @@ on:
       channel:
         description: Acceptance channel
         type: choice
-        options: [nightly, stable]
+        options: [preview, nightly, stable]
         default: nightly
       version:
-        description: Exact x.y.z for stable; leave empty for nightly
+        description: Exact stable or preview version; leave empty to generate a prerelease
         type: string
 
 permissions: {}
@@ -32,6 +32,7 @@ jobs:
         with:
           node-version: 24
       - id: acceptance-token
+        if: inputs.channel != 'preview'
         uses: actions/create-github-app-token@bcd2ba49218906704ab6c1aa796996da409d3eb1 # v3
         with:
           client-id: ${{ secrets.SDK_COVERAGE_CLIENT_ID }}
@@ -40,16 +41,16 @@ jobs:
           repositories: polymorfa
           permission-contents: read
           permission-actions: read
-      - name: Require exact deployed API acceptance and complete native coverage
+      - name: Validate release channel and native coverage
         env:
           GH_TOKEN: ${{ steps.acceptance-token.outputs.token }}
           RELEASE_CHANNEL: ${{ inputs.channel }}
-          STABLE_VERSION: ${{ inputs.version }}
+          RELEASE_VERSION: ${{ inputs.version }}
           RELEASE_OUTPUT: .release/native
         run: node scripts/native-release.mjs
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native/release-contract.json
           if-no-files-found: error
@@ -98,7 +99,7 @@ jobs:
           rustup target add wasm32-unknown-unknown --toolchain 1.85.0
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native
       - name: Build existing browser components for framework examples
@@ -126,12 +127,12 @@ jobs:
       - if: matrix.language == 'php'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: native-php-accepted-mirror
+          name: native-php-release-mirror
           path: .release/native/php-mirror/
           if-no-files-found: error
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: native-${{ matrix.language }}-accepted-packs
+          name: native-${{ matrix.language }}-release-packs
           include-hidden-files: true
           path: .release/native/packs/${{ matrix.language }}/*
           if-no-files-found: error
@@ -154,18 +155,18 @@ jobs:
           node-version: 24
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          pattern: native-*-accepted-packs
+          pattern: native-*-release-packs
           path: .release/native/download
       - name: Bind every accepted artifact to one publication plan
         run: |
           for language in go python php rust dotnet; do
             mkdir -p ".release/native/packs/$language"
-            cp -a ".release/native/download/native-$language-accepted-packs/." ".release/native/packs/$language/"
+            cp -a ".release/native/download/native-$language-release-packs/." ".release/native/packs/$language/"
             python3 scripts/inspect-native-artifacts.py "$language" ".release/native/packs/$language" .release/native/release-contract.json
           done
           node scripts/native-publish.mjs plan .release/native/packs .release/native/release-contract.json .release/native/publish-plan.json
@@ -191,7 +192,7 @@ jobs:
       - run: rustup toolchain install 1.85.0 --profile minimal && rustup default 1.85.0
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -200,7 +201,7 @@ jobs:
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: native-rust-accepted-packs
+          name: native-rust-release-packs
           include-hidden-files: true
           path: .release/native/packs/rust
       - name: Exchange the OIDC token for a short-lived crates.io token
@@ -226,7 +227,7 @@ jobs:
           node-version: 24
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -235,7 +236,7 @@ jobs:
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: native-dotnet-accepted-packs
+          name: native-dotnet-release-packs
           include-hidden-files: true
           path: .release/native/packs/dotnet
       - name: Exchange the OIDC token for a one-hour NuGet key
@@ -263,7 +264,7 @@ jobs:
           node-version: 24
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
@@ -272,7 +273,7 @@ jobs:
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: native-python-accepted-packs
+          name: native-python-release-packs
           include-hidden-files: true
           path: .release/native/packs/python
       - name: Refuse different existing files before uploading
@@ -309,7 +310,7 @@ jobs:
           cache: false
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: ${{ runner.temp }}/accepted
       - name: Create the tag-only release commit and prove its module zip
@@ -339,12 +340,12 @@ jobs:
           node-version: 24
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: accepted-native-contract
+          name: native-release-contract
           include-hidden-files: true
           path: .release/native
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
-          name: native-php-accepted-mirror
+          name: native-php-release-mirror
           path: .release/native/php-mirror
       - name: Require the dedicated mirror repository setting
         env:
