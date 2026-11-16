@@ -59,6 +59,36 @@ QUALITY = {
 CASES = [
     (
         "POST",
+        "/messaging/voip/calls/call_1/waiting-room",
+        {
+            "connectionId": "connection_1",
+            "control": {
+                "type": "waiting_room_control",
+                "requestId": "request_123",
+                "operation": "deny",
+                "participantId": "123",
+            },
+        },
+        {
+            "success": True,
+            "data": {"type": "waiting_room_result", "requestId": "request_123", "ok": True},
+        },
+        False,
+        lambda r: r.moderate_waiting_room(
+            "call_1",
+            {
+                "connectionId": "connection_1",
+                "control": {
+                    "type": "waiting_room_control",
+                    "requestId": "request_123",
+                    "operation": "deny",
+                    "participantId": "123",
+                },
+            },
+        ),
+    ),
+    (
+        "POST",
         "/messaging/voip/calls",
         {"session": "support", "to": "+15551234567", "participant": "agent_1", "video": True},
         {"success": True, "data": {"callId": "call_1", "session": "support", "video": True}},
@@ -300,6 +330,19 @@ async def test_call_control_guards_and_no_retry_boundaries():
         assert not attempts
         for invoke in (
             lambda: client.voip.create_call_link({"session": "support"}),
+            lambda: client.voip.moderate_waiting_room(
+                "call_1",
+                {
+                    "connectionId": "connection_1",
+                    "control": {
+                        "type": "waiting_room_control",
+                        "requestId": "request_123",
+                        "operation": "deny",
+                        "participantId": "123",
+                    },
+                },
+                options=RequestOptions(idempotency_key="key", max_network_retries=3),
+            ),
             lambda: client.voip.send_reaction(
                 "call_1",
                 {"connectionId": "connection_1", "emoji": "👍"},

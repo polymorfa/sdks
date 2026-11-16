@@ -298,7 +298,7 @@ pub enum CallParticipantState {
     Connected,
     Left,
 }
-payload!(WebhookCallParticipant {id:String,audio_muted:bool,video:bool,state:CallParticipantState} {hand_raised:bool,phone_number:String,bsuid:String,username:String});
+payload!(WebhookCallParticipant {id:String,audio_muted:bool,video:bool,state:CallParticipantState} {hand_raised:bool,guest:bool,name:String,phone_number:String,bsuid:String,username:String});
 payload!(CallParticipantPayload {call_id:String,participant:WebhookCallParticipant} {});
 payload!(CallParticipantLeftPayload {call_id:String,participant_id:String} {reason:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]

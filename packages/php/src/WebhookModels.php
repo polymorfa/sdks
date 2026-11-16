@@ -46,7 +46,7 @@ namespace Polymorfa;
  * @phpstan-type CallAccepted array{from:Identity,callId:string,answeredBy?:string,exclusive?:bool,sessionConnection?:Connection,capabilities?:CallCapabilities}
  * @phpstan-type CallEnded array{from:Identity|null,callId:string,durationSeconds:int|float,reason:string,direction:'inbound'|'outbound',hadVideo:bool,sessionConnection?:Connection}
  * @phpstan-type CallTelemetry array{callId:string,setupMs:int|float,ringMs:int|float,durationSeconds:int|float,terminateReason:string,codec:string,jitterMs:int|float,packetsLost:int|float,rttMs:int|float,recvKbps:int|float,sendKbps:int|float}
- * @phpstan-type Participant array{handRaised?:bool,id:string,phoneNumber?:string,bsuid?:string,parentBsuid?:string,username?:string,audioMuted:false,video:false,state:'invited'|'ringing'|'connected'|'left'}
+ * @phpstan-type Participant array{handRaised?:bool,guest?:bool,name?:string,id:string,phoneNumber?:string,bsuid?:string,parentBsuid?:string,username?:string,audioMuted:false,video:false,state:'invited'|'ringing'|'connected'|'left'}
  * @phpstan-type ParticipantEvent array{callId:string,participant:Participant}
  * @phpstan-type ConnectionJoined array{callId:string,connection:array{id:string,participant:string,transport:'webrtc'|'socket'|'sip'}}
  * @phpstan-type ConnectionLeft array{callId:string,connectionId:string,participant:string,reason:'left'|'replaced'|'claimed'|'call_ended'|'sip_busy'|'sip_declined'|'sip_no_answer'|'sip_unavailable'|'sip_auth_failed'}

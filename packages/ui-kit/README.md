@@ -4,9 +4,24 @@ The Polymorfa UI Kit: browser transport, product controllers, React
 components, web components, appearance, an opt-in event store and a
 development assistant, in one package with one version.
 
+React and Next.js are the default setup. Start with `Inbox` for a complete
+inbox, `ChatWindow` for one conversation, or the Calls components for calling.
+The [React guide](docs/react.md) pairs client components with your server route.
+
+Check the registry for a published version before installing:
+
+```bash
+npm view @polymorfa/ui-kit dist-tags
+```
+
+Once matching versions are published, install the UI Kit in your application:
+
 ```bash
 npm install @polymorfa/ui-kit@dev
 ```
+
+A source build does not establish registry or API availability. Source checkout
+examples use workspace packages; their guides state what was exercised.
 
 `@polymorfa/ui-kit` depends on `@polymorfa/sdk` for the shared Calls client.
 React applications also need `react` and `react-dom` 18.2 or 19. They are
@@ -17,8 +32,8 @@ them.
 
 | Import                                  | Contents                                                                        | Guide                                    |
 | --------------------------------------- | ------------------------------------------------------------------------------- | ---------------------------------------- |
-| `@polymorfa/ui-kit`                     | Client-token transport, token refresh and product controllers                   | [Browser runtime](docs/browser.md)       |
 | `@polymorfa/ui-kit/react`               | React components and hooks over the same controllers                            | [React components](docs/react.md)        |
+| `@polymorfa/ui-kit`                     | Client-token transport, token refresh and product controllers                   | [Browser runtime](docs/browser.md)       |
 | `@polymorfa/ui-kit/web-components`      | Custom elements and `defineUiKit()` for plain HTML, Vue, Svelte and other hosts | [Web components](docs/web-components.md) |
 | `@polymorfa/ui-kit/web-components/*`    | `chat`, `templates` and `calls` element groups on their own                     | [Web components](docs/web-components.md) |
 | `@polymorfa/ui-kit/appearance`          | Themes, localization, diagnostic redaction and shared styles                    | [Appearance](docs/appearance.md)         |
@@ -40,6 +55,8 @@ defineUiKit({ tokenEndpoint: "/api/polymorfa/token" });
 Tag, class and CSS variable names use the `pmfa-` prefix, for example
 `<pmfa-inbox>`, `.pmfa-bubble` and `--pmfa-c-primary`.
 
+For the retained language and framework hosts, see [Integrations](docs/integrations.md).
+
 ## Credentials
 
 The UI Kit accepts only short-lived `pmfa_ct_` client tokens returned by your
@@ -49,8 +66,12 @@ your server with `@polymorfa/sdk` or `@polymorfa/nextjs`.
 ## Moving from the earlier packages
 
 The UI Kit replaces six packages. Change the import specifier; the exported
-names are unchanged except `definePolymorfa`, which is now `defineUiKit`, and
-its options type, now `DefineUiKitOptions`.
+names are preserved except `definePolymorfa`, which is now `defineUiKit`, and
+its options type, now `DefineUiKitOptions`. `TemplateManager`, `SessionStatus`
+and `ConnectWhatsAppButton`, plus their matching custom elements, are removed.
+Use your application's controls with the underlying template, client-state and
+QuickLink APIs where those workflows are needed. `TemplateBuilder` remains
+available for embedded template authoring.
 
 | Earlier import                                          | UI Kit import                                                         |
 | ------------------------------------------------------- | --------------------------------------------------------------------- |
@@ -61,3 +82,14 @@ its options type, now `DefineUiKitOptions`.
 | `@polymorfa/ui`                                         | `@polymorfa/ui-kit/appearance`                                        |
 | `@polymorfa/store`, `@polymorfa/store/react`            | `@polymorfa/ui-kit/store`, `@polymorfa/ui-kit/store/react`            |
 | `@polymorfa/devtools`, `@polymorfa/devtools/production` | `@polymorfa/ui-kit/devtools`, `@polymorfa/ui-kit/devtools/production` |
+
+## Guest call participants (unreleased)
+
+React `ParticipantList` and the `<pmfa-call>` Web Component display a guest's
+self-reported name with a Guest label. A phone number is optional. The Calls
+controller exposes `waitingRoom`, `setApprovalRequired`, `admitParticipant` and
+`denyParticipant`. Controls appear only for an active connection whose current
+provider state grants administrator authority. Acknowledgement does not remove
+a pending user until the provider updates the roster. Unconfirmed changes show
+an error; commands are not retried automatically. This requires the matching
+unreleased backend and does not enable guest messaging or anonymous API access.

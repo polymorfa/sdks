@@ -7,6 +7,7 @@ internal static class CallsTests
     private const string Settings = "{\"success\":true,\"data\":{\"callsEnabled\":true,\"conferenceMode\":false,\"inboundRoute\":\"clients\",\"sipTrunkId\":null,\"sipClaim\":false,\"hostCloudApiCalls\":false,\"revision\":2,\"updatedAt\":null}}";
     public static async Task RunAsync()
     {
+        await Messaging("POST", "/messaging/voip/calls/call/waiting-room", "{\"connectionId\":\"connection1\",\"control\":{\"type\":\"waiting_room_control\",\"requestId\":\"request_123\",\"operation\":\"deny\",\"participantId\":\"123\"}}", "{\"success\":true,\"data\":{\"type\":\"waiting_room_result\",\"requestId\":\"request_123\",\"ok\":true}}", async c => True((await c.Calls.ModerateWaitingRoomAsync("call", new("connection1", new("request_123", "deny", ParticipantId: "123")))).Data.Data.Ok));
         await CallSettingsCoverageEndTests.RunAsync();
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":true,\"acknowledgeRisk\":true}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: true, AcknowledgeRisk: true))).Data.Data.Revision, 2L));
         await Messaging("PUT", "/platform/sessions/s/call-settings", "{\"simultaneousCalls\":false}", Settings, async c => ResourceTests.Equal((await c.Calls.UpdateCallSettingsAsync("s", new(SimultaneousCalls: false))).Data.Data.Revision, 2L));

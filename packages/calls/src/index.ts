@@ -40,3 +40,5 @@ export {
 } from "./protocol.js";
 
 export type { MediaState, MediaStateUpdate } from "./media-state.js";
+
+export type { WaitingRoomState } from "./waiting-room.js";

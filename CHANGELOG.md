@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
+  styling slots. It supports `classNames` and unstyled mode without a host
+  stylesheet.
+- UI Kit: remove `TemplateManager`, `SessionStatus`, `ConnectWhatsAppButton`,
+  their props and matching custom elements. Inbox, chat, Calls, TemplateBuilder
+  and the underlying client/server APIs remain available. React/Next.js is the
+  default setup; Web Components and native SDK host integrations remain supported.
+- UI Kit: align composer fields and controls in the shared stylesheet at desktop
+  and mobile widths, including custom font sizes. Applications no longer need
+  the documentation's composer-alignment CSS workaround.
+
 - Breaking: every public "organization" name is now "team", matching API
   contract revision `f180dc1ee2` of polymorfa/polymorfa#887, merged into API
   `dev` as `a3db53e74c` with byte-identical specifications. There are no
@@ -50,6 +61,17 @@
   these SDKs only after the API change is deployed: a build from this source
   cannot call an API that still uses the old names. Source-only and
   unpublished.
+
+- Calls: expose optional guest and self-reported name metadata in participant
+  events across TypeScript, Go, Python, PHP, Rust and .NET. Add host waiting-room
+  state and acknowledged approval/admit/deny controls on the authenticated media
+  connection. Rust keeps audio and video writes flowing while controls await
+  confirmation. PHP clears waiting-room authority when media reconnects.
+  The UI Kit shows guest labels and pending-participant controls.
+  Requires the matching unreleased API; no package publication or deployment is
+  implied. Rust participant struct literals need the new optional fields; prefer
+  defaults where available. Go callers should use keyed struct literals. Appended
+  .NET record fields also change the positional deconstruction shape.
 
 - UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 

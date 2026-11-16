@@ -529,3 +529,18 @@ func TestCallReporterBoundsAndRefusal(t *testing.T) {
 	}
 	r2.Error("other")
 }
+
+func TestGuestVideoSourceLabels(t *testing.T) {
+	for _, test := range []struct{ name, phone, want string }{
+		{"Ada Guest", "+15550001", "Ada Guest"},
+		{"", "+15550001", "+15550001"},
+		{"", "", "123"},
+	} {
+		call := &Call{ctx: context.Background(), events: make(chan CallEvent, 1), snapshot: CallSnapshot{VideoSources: map[uint32]CallVideoSource{}}}
+		participant := &CallParticipant{ID: "123", Name: test.name, PhoneNumber: test.phone, Video: true, State: "connected"}
+		call.control(MediaControlFrame{Type: "video_source", Source: 1, Participant: participant})
+		if got := call.Snapshot().VideoSources[1].Label; got != test.want {
+			t.Errorf("label=%q, want %q", got, test.want)
+		}
+	}
+}
