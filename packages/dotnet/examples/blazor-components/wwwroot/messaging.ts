@@ -1,7 +1,5 @@
 import {
   defineUiKit,
-  type PolymorfaSessionStatusElement,
-  type PolymorfaConnectWhatsAppElement,
   type PolymorfaInboxElement,
 } from "@polymorfa/ui-kit/web-components";
 import { PolymorfaClient } from "@polymorfa/ui-kit";
@@ -17,14 +15,11 @@ export async function mount(tokenEndpoint: string) {
   client = defineUiKit({
     client: new PolymorfaClient({ tokenEndpoint, baseUrl: config.apiBaseUrl }),
   });
-  for (const element of document.querySelectorAll<
-    | PolymorfaSessionStatusElement
-    | PolymorfaConnectWhatsAppElement
-    | PolymorfaInboxElement
-  >("pmfa-session-status,pmfa-connect-whatsapp,pmfa-inbox"))
-    element.client = client;
   const inbox = document.querySelector<PolymorfaInboxElement>("pmfa-inbox");
-  if (inbox) inbox.source = undefined;
+  if (inbox) {
+    inbox.client = client;
+    inbox.source = undefined;
+  }
 }
 export function dispose() {
   client?.dispose();
