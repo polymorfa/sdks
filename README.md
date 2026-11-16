@@ -52,7 +52,14 @@ The manual `preview` channel publishes checked SDK and UI Kit prereleases before
 deployed API acceptance. Their provenance records feature holds and incomplete
 SDK coverage. Preview publication does not establish API feature availability.
 These packages use the `preview` npm tag and distinct `-preview.<timestamp>`
-versions; `dev` and `latest` retain their acceptance requirements. See the
+versions; `dev` and `latest` retain their acceptance requirements. After the
+preview tags appear in npm, install matching packages with:
+
+```bash
+npm install @polymorfa/sdk@preview @polymorfa/ui-kit@preview
+```
+
+See the
 [release procedure](docs/releasing.md#preview-publication).
 
 ## TypeScript development install
@@ -64,7 +71,6 @@ publication:
 
 ```bash
 npm install @polymorfa/sdk@dev
-npm install @polymorfa/ui-kit@dev   # browser apps
 ```
 
 Pin an exact version for reproducible installs. Check
