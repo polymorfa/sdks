@@ -80257,7 +80257,7 @@
               "cloud_api",
               "hybrid"
             ],
-            "description": "How the connection connects to WhatsApp. 'linked_device' pairs as a WhatsApp linked device; 'cloud_api' uses the Meta Cloud API. Immutable after create."
+            "description": "The connection's method: 'linked_device' pairs as a WhatsApp linked device; 'cloud_api' uses the Meta Cloud API; 'hybrid' combines both methods in one Connection."
           },
           "testMode": {
             "type": "boolean",

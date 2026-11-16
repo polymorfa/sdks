@@ -15,7 +15,7 @@ export function checkOfficialRound2() {
   assert.equal(inventory.sourceCommit, pin.sourceCommit);
   assert.equal(
     json("contracts/source.json").commit,
-    "8354399b827d9127210b9759cd055586e967449e",
+    "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
   );
   for (const item of pin.items)
     assert.equal(
