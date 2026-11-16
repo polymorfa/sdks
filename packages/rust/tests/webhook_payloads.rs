@@ -480,7 +480,11 @@ fn status_sticker_packs_decode_through_the_verified_event_parser() {
         "status.received",
         json!({"id":"123","whatsapp_ids":{"linked_devices":"authored-pack"},"scope":"personal","publisher":{"id":"456"},"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"sticker_pack","stickerPack":{"name":"authored"}}}),
     );
-    let WebhookEvent::StatusReceived { payload, .. } = event else {
+    let WebhookEvent::Known {
+        payload: KnownWebhookPayload::StatusReceived(payload),
+        ..
+    } = event
+    else {
         panic!("status classification lost")
     };
     assert!(matches!(

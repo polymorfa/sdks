@@ -112,7 +112,11 @@ $httpSocket = stream_socket_server('tcp://127.0.0.1:0');
 $address = stream_socket_get_name($httpSocket, false);
 fclose($httpSocket);
 $httpUrl = 'http://'.$address;
-$http = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/calls-runtime-http.php'], [['pipe','r'],['pipe','w'],['pipe','w']], $httpPipes, null, $env);
+$httpLog = tmpfile();
+if ($httpLog === false) {
+    throw new RuntimeException('Cannot create fixture server log.');
+}
+$http = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/calls-runtime-http.php'], [['pipe','r'],$httpLog,$httpLog], $httpPipes, null, $env);
 $ws = proc_open([PHP_BINARY,__DIR__.'/calls-runtime-server.php'], [['pipe','r'],['pipe','w'],['pipe','w']], $wsPipes, null, $env);
 try {
     $wire = json_decode(fgets($wsPipes[1]), true, flags:JSON_THROW_ON_ERROR);
@@ -225,6 +229,7 @@ try {
             fclose($pipe);
         } proc_close($process);
     }
+    fclose($httpLog);
     foreach (glob($state.'.*') as $file) {
         unlink($file);
     }
