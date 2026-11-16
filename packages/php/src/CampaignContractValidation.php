@@ -329,6 +329,22 @@ final class CampaignContractValidation
         }
     }
 
+    /** @param array<string,mixed> $params */
+    public static function profileList(array $params): void
+    {
+        self::fields($params, ['cursor', 'limit', 'tag', 'phonePrefix'], [], 'params');
+        self::page(array_intersect_key($params, array_flip(['cursor', 'limit'])));
+        if (array_key_exists('tag', $params)) {
+            $tag = $params['tag'];
+            if (!is_string($tag) || strlen($tag) < 1 || strlen($tag) > 48 || preg_match('//u', $tag) !== 1 || preg_match('/[\x00-\x1f\x7f]/', $tag) !== 0) {
+                self::invalid('params.tag');
+            }
+        }
+        if (array_key_exists('phonePrefix', $params) && (!is_string($params['phonePrefix']) || preg_match('/^\+[0-9]{1,15}$/D', $params['phonePrefix']) !== 1)) {
+            self::invalid('params.phonePrefix');
+        }
+    }
+
     /** @param array<string,mixed> $body */
     public static function profile(array $body): void
     {

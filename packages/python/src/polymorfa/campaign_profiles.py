@@ -60,7 +60,7 @@ class AudienceProfiles(Resource):
         return await self._request(
             "GET",
             "/platform/audience-profiles",
-            query=cast(dict[str, QueryValue], V.page({} if params is None else params)),
+            query=cast(dict[str, QueryValue], V.profile_list({} if params is None else params)),
             options=V.options(options),
         )
 
@@ -95,7 +95,7 @@ class AudienceProfiles(Resource):
     async def list_consent(
         self,
         phone: str,
-        params: M.ListAudienceProfilesParams | None = None,
+        params: M.ListAudienceProfileConsentParams | None = None,
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[M.AudienceProfilePage[M.AudienceConsentAssertion]]:
