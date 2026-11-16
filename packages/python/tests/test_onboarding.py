@@ -272,7 +272,14 @@ async def test_onboarding_methods_over_native_http(method, path, body, fixture, 
             )
             await writer.drain()
             receipt.set_result(True)
-        except Exception as error:
+        except (
+            AssertionError,
+            OSError,
+            ValueError,
+            KeyError,
+            asyncio.IncompleteReadError,
+            asyncio.LimitOverrunError,
+        ) as error:
             receipt.set_exception(error)
         finally:
             writer.close()
