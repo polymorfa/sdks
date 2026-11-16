@@ -42,6 +42,12 @@ export function checkBusinessAccountModes({
   ]);
   assert.ok(!schemas.BusinessProfile.required.includes("encryption"));
   assert.equal(inventory.operations.length, 1);
+  assert.equal(inventory.operations[0].operationId, "setTestingAccountMode");
+  assert.equal(inventory.operations[0].method, "PUT");
+  assert.equal(
+    inventory.operations[0].path,
+    "/messaging/{session}/phone/account-mode",
+  );
   for (const operation of inventory.operations) {
     assert.equal(
       pin.sources.messaging.paths[operation.path][

@@ -64,3 +64,15 @@ test("fails when a language loses its field evidence", () => {
     ),
   );
 });
+test("fails when the inventory names a different pinned operation", () => {
+  assert.throws(
+    run((json) => {
+      const operation = json(inventory).operations[0];
+      operation.operationId = "createQuickLink";
+      operation.method = "POST";
+      operation.path = Object.entries(json(pin).sources.messaging.paths).find(
+        ([, item]) => item.post?.operationId === "createQuickLink",
+      )[0];
+    }),
+  );
+});
