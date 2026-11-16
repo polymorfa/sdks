@@ -960,6 +960,12 @@ when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
+
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
 
@@ -1059,6 +1065,16 @@ $state = $client->passkeys->getConfirmation($session);
 $confirmExplicitly = fn () => $client->passkeys->confirm($session, $suppliedConfirmation);
 ```
 
+## Number-scoped Test operations
+
+The Test phone methods take a Number ID, without a project argument:
+~~~php
+$phone = $client->testing->getPhone('support');
+$event = $client->testing->triggerEvent('support', ['event' => 'call.missed', 'fromNumber' => 'sales']);
+$fixtures = $client->testing->listEventFixtures();
+~~~
+
+Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.
 
 ## Guest participants and waiting rooms (unreleased)
 

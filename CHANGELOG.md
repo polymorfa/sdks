@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Breaking: Test number phone and event methods use the Number-scoped routes
+  in API contract revision `f180dc1ee2`. `testing.getPhone`, `sendPhoneMessage`
+  and `unlinkPhoneDevice` take a Number ID and no project argument, and
+  `testing.triggerEvent(numberId, body)` omits body `session` and accepts
+  `fromNumber`. `listEventFixtures()` has no project argument. History fixtures
+  keep their project argument and use
+  `/messaging/projects/{projectId}/test-history-fixtures`. Real Numbers return
+  `404 resource_not_found`. Scope names remain `sandbox:read` / `sandbox:write`.
+  Applies to all six SDKs. Source-only and unpublished.
+
 - UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
   styling slots. It supports `classNames` and unstyled mode without a host
   stylesheet.
@@ -48,16 +58,16 @@
   Contract snapshots, coverage fingerprints, the machine-credential fixture and
   the documentation snippet catalog are re-pinned to that revision. The
   revision also carries later API dev changes. The coverage ledger now holds 671
-  operations: 451 covered, 2 partial, 58 missing and 160 excluded in TypeScript.
+  operations: 457 covered, 2 partial, 52 missing and 160 excluded in TypeScript.
   The TypeScript error-code list adds the new `billing_credit_required`,
   `safe_mode_not_entitled`, `warmup_plan_not_entitled`, `team_deletion_scheduled`,
   `terms_acceptance_required`, `terms_activation_blocked` and
   `idempotency_replay_unavailable` codes, and the campaign recipient sent and
-  failed webhook payloads type the optional `messageIndex`. The Test number
-  routes (`/messaging/testing/...`), `/platform/keys` and `/platform/tokens` left
-  the specification, so `projectTokens.list`, `apiKeys.list` and
-  `apiKeys.deactivate` and the older Test-event helpers target retired paths
-  until a removal or update decision lands. Publish
+  failed webhook payloads type the optional `messageIndex`. The
+  `/platform/keys` and `/platform/tokens` routes left the specification, so
+  `projectTokens.list`, `apiKeys.list` and `apiKeys.deactivate` target retired
+  paths until a removal or update decision lands. The Test number helpers use
+  the Number-scoped routes (see the entry above). Publish
   these SDKs only after the API change is deployed: a build from this source
   cannot call an API that still uses the old names. Source-only and
   unpublished.
@@ -72,6 +82,16 @@
   implied. Rust participant struct literals need the new optional fields; prefer
   defaults where available. Go callers should use keyed struct literals. Appended
   .NET record fields also change the positional deconstruction shape.
+
+- All six server SDKs recognize the Ban Credit claim verdict
+  `linked_device_interactive` on claim reads and `bansafe.claim` webhooks, and
+  type claim evidence `linkedDeviceInteractive`. Rust's closed verdict enums
+  previously rejected this value. Source compatibility: Rust exhaustive
+  `match` on the verdict enums and `ClaimEvidence` struct literals, Go unkeyed `BanSafeClaimEvidence`
+  literals and the C# `BanSafeClaimEvidence` constructor/Deconstruct need the
+  added members. Pinned to API contract revision `f180dc1ee2` (merged to API `dev` as
+  `a3db53e74c`), which contains merged API #845. Package publication follows the existing release
+  process.
 
 - UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 
@@ -103,7 +123,6 @@
 - Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.
 
 - TypeScript, Python and PHP call-settings updates now refuse keys the API does not accept, including the response-only `simultaneousCallsCoverageExcludedUntil`, before sending. Go, Rust and .NET requests already serialize only writable fields.
-
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;

@@ -318,7 +318,11 @@ Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
 up to six decimal places, not integer cents. A claim with verdict
 `simultaneous_calls` opens `denied` with amount 0 because simultaneous calls
 were on for the number during the 30 days before the ban;
-`evidence.simultaneousCalls` reports that state for every claim. Finding acknowledgement and
+`evidence.simultaneousCalls` reports that state for every claim. The verdict
+`linked_device_interactive` (an interactive message sent from a linked device)
+also opens `denied` with amount 0 when the send falls in that window;
+`evidence.linkedDeviceInteractive` reports it, and is `false` on claims filed
+before it was recorded. Finding acknowledgement and
 enforcement appeals require a signed-in dashboard session and are not SDK
 methods.
 
@@ -3038,30 +3042,28 @@ hosted message storage.
 
 Fire a named, signed test event for a Test number. The event reaches your
 webhooks and event history with `source: "test"` and does not change the Test
-number. Real numbers are refused with a `PolymorfaValidationError`, and each
+number. Real Numbers return `404 resource_not_found` (`PolymorfaNotFoundError`), and each
 project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
 
 ```ts
 import { TEST_EVENT_FIXTURES } from "@polymorfa/sdk";
 
-const result = await messaging.testing.triggerEvent(projectId, {
-  session: "my-test-number",
+const result = await messaging.testing.triggerEvent("my-test-number", {
   event: "message.received", // one of TEST_EVENT_FIXTURES
   overrides: { text: "hi", from: "+15550100001" },
 });
 console.log(result.data.eventId);
 
 // Rare events: failed delivery, ban warning, incoming call, template rejection.
-await messaging.testing.triggerEvent(projectId, {
-  session: "my-test-number",
+await messaging.testing.triggerEvent("my-test-number", {
   event: "template.status",
   overrides: { templateStatus: "REJECTED", reason: "INVALID_FORMAT" },
 });
 
-const { data } = await messaging.testing.listEventFixtures(projectId);
+const { data } = await messaging.testing.listEventFixtures();
 ```
 
-Set `fromSession` on a `message.received` request to send a simulated text
+Set `fromNumber` on a `message.received` request to send a simulated text
 from another connected Test number in the same project instead; the response
 has `delivery: "simulated"` and the event arrives as ordinary Test number
 activity. Both methods require a team key or project token with
@@ -3084,26 +3086,25 @@ to see which companions are linked, to send a message as the phone, or to
 unlink a companion as a person would from Linked devices.
 
 ```ts
-const { data: phone } = await messaging.testing.getPhone(
-  projectId,
-  "my-test-number",
-);
+const { data: phone } = await messaging.testing.getPhone("my-test-number");
 console.log(phone.online, phone.devices); // [{ deviceId: 33 }, ...]
 
 // Sent over the simulated network to another connected Test number in the
 // same project. The sender's companions receive the sent copy.
-await messaging.testing.sendPhoneMessage(projectId, "my-test-number", {
+await messaging.testing.sendPhoneMessage("my-test-number", {
   to: "+15550100002",
   text: "hello from the phone",
 });
 
-await messaging.testing.unlinkPhoneDevice(projectId, "my-test-number", 74);
+await messaging.testing.unlinkPhoneDevice("my-test-number", 74);
 ```
 
 `getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
 need `sandbox:write`. All three need a team key or project token
-and Test numbers access. Real numbers, an offline phone and recipients outside
-the project are refused with a `PolymorfaValidationError`. Phone messages share
+and Test numbers access. Real Numbers return `404 resource_not_found`
+(`PolymorfaNotFoundError`). An offline phone and invalid recipients return
+`400` (`PolymorfaValidationError`); a Test key hides unknown, real, and
+other-project recipients with `404 resource_not_found`. Phone messages share
 the 30-per-minute project limit with test events. Device 0 is the phone and
 cannot be unlinked.
 

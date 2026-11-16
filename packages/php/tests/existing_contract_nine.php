@@ -14,12 +14,12 @@ foreach ($ecPrincipals as $principal) {
     ecCheck($r->data['data']['capabilities'][0]['value'] === null && $r->data['data']['capabilities'][1]['value'] === false, 'Group nullable capability and Client support');
 }
 $ecPhone = ['session' => 's','phone' => '+15555555555','online' => false,'devices' => [['deviceId' => 1],['deviceId' => 99]]];
-$ecTestingPath = '/messaging/testing/'.$ecProject.'/numbers/s/phone';
+$ecTestingPath = '/messaging/s/phone';
 $ecNine = [
  ['getGroupCapabilities','GET','/messaging/s/groups/g/capabilities',null,['success' => true,'data' => $ecCapabilities],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->groups->getCapabilities('s', 'g', $o),200,'2026-09-22'],
- ['getTestingPhone','GET',$ecTestingPath,null,$ecPhone,fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->getPhone($ecProject, 's', $o),200,'2026-09-22'],
- ['sendTestingPhoneMessage','POST',$ecTestingPath.'/messages',['to' => '+15555555555','text' => 'hello'],['session' => 's','to' => '+15555555555','messageId' => null],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->sendPhoneMessage($ecProject, 's', ['to' => '+15555555555','text' => 'hello'], $o),202,'2026-09-22'],
- ['unlinkTestingPhoneDevice','POST',$ecTestingPath.'/devices/99/unlink',null,['session' => 's','deviceId' => 99,'unlinked' => true],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->unlinkPhoneDevice($ecProject, 's', 99, $o),200,'2026-09-22'],
+ ['getTestingPhone','GET',$ecTestingPath,null,$ecPhone,fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->getPhone('s', $o),200,'2026-09-22'],
+ ['sendTestingPhoneMessage','POST',$ecTestingPath.'/messages',['to' => '+15555555555','text' => 'hello'],['session' => 's','to' => '+15555555555','messageId' => null],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->sendPhoneMessage('s', ['to' => '+15555555555','text' => 'hello'], $o),202,'2026-09-22'],
+ ['unlinkTestingPhoneDevice','POST',$ecTestingPath.'/devices/99/unlink',null,['session' => 's','deviceId' => 99,'unlinked' => true],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->unlinkPhoneDevice('s', 99, $o),200,'2026-09-22'],
  ['retryHistoryChunk','POST','/messaging/s/history/chunks/retry',['syncType' => 'FULL','chunkOrder' => 0,'regenerate' => false],['success' => true,'data' => ['requestId' => 'native-retry','status' => 'requested']],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0,'regenerate' => false], $o),200,'2026-10-14'],
  ['deleteHistoryMedia','POST','/messaging/s/history/media/delete',['directPath' => '/mms/history/file','fileEncSha256' => '//////////////////////////////////////////8=','encHandle' => 'handle','companionMetaNonce' => 'nonce'],['success' => true,'data' => ['status' => 'deleted']],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->historySync->deleteChunk('s', '/mms/history/file', str_repeat("\xff", 32), 'handle', 'nonce', $o),200,'2026-10-14'],
 ];

@@ -7,6 +7,8 @@ if (args.Contains("--cloud-order-quantity-only")) { await CloudOrderQuantityTest
 
 if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); return; }
 
+if (args.Contains("--bansafe-only")) { await BanSafeTests.RunAsync(); Console.WriteLine("PASS BanSafe routes and Ban Credit waiver claims"); return; }
+
 if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsync(); return; }
 
 OpaqueCredentialTests.Run();
