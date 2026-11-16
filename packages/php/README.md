@@ -1065,6 +1065,23 @@ $state = $client->passkeys->getConfirmation($session);
 $confirmExplicitly = fn () => $client->passkeys->confirm($session, $suppliedConfirmation);
 ```
 
+## Number call history (unreleased source)
+
+Read one number's calls with the other party's identity through
+`GET /messaging/{session}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```php
+$page = $messaging->calls->list("support", ["limit" => 25, "outcome" => "missed"]);
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
 ## Number-scoped Test operations
 
 The Test phone methods take a Number ID, without a project argument:

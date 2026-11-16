@@ -20,6 +20,9 @@ Once the preview tag appears in the registry, install the UI Kit in your applica
 npm install @polymorfa/ui-kit@preview
 ```
 
+API-backed group actions and call history also require matching API support.
+Granting an action does not enable a capability on a deployed API.
+
 Preview packages have not passed deployed API acceptance. A source build does
 not establish registry or API availability. Source checkout
 examples use workspace packages; their guides state what was exercised.
