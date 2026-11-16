@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "8354399b827d9127210b9759cd055586e967449e",
+  "commit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
   "sourcePath": "apps/api/docs/openapi.json",
-  "sourceSha256": "11346736cdb19b4124d34b193a5a563d4f6ad1800d07785b5fb0aae9f0923f43",
+  "sourceSha256": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
   "schemas": {
     "TestEventFixtureList": {
       "type": "object",

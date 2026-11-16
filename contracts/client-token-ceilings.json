@@ -1,9 +1,9 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "8354399b827d9127210b9759cd055586e967449e",
+  "sourceCommit": "56dab15a078b0bd56eb1f7088e0bf6f380eaf22c",
   "family": "platform",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "2cd45b6a4a919b2c4f93c7438a9439046f82ffc3a1767ccd2dfd5da15450c6f9",
+  "sourceSha256": "b6dc511a27e33d0ca05cea104cf2542b69171666c06c03da1f0e08b56206c1d0",
   "published": false,
   "scope": "Client-token mint ceiling and live rule validation only. Reserved regional actions remain unavailable; reconcile full snapshots and exact API acceptance before publication.",
   "paths": {
