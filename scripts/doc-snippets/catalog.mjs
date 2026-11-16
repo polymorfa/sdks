@@ -198,7 +198,7 @@ export function synthetic(name) {
     return readJSON("contracts/machine-credentials.v1.json").opaque[0].token;
   if (
     /Id$/.test(name) &&
-    !["productId", "collectionId", "coverPhotoId", "sessionId"].includes(name)
+    !["productId", "collectionId", "coverPhotoId", "connectionId"].includes(name)
   )
     return "00000000-0000-4000-8000-000000000042";
   return "42";

@@ -2,8 +2,8 @@ import { key, p } from "./recipes.mjs";
 // Evidence: packages/rust/src/{messaging,business,models,platform}.rs,
 // tests/{business,developer,transport}.rs and the public text request helper.
 export function render(id, { client, request }) {
-  const s = p("session"),
-    sid = p("sessionId");
+  const s = p("connection"),
+    sid = p("connectionId");
   const m = "polymorfa_sdk::models",
     b = "polymorfa_sdk::business";
   const body = request.body,
@@ -21,14 +21,14 @@ export function render(id, { client, request }) {
     setTyping: `sdk.messages().set_typing(${s}, &${m}::TypingRequest { conversation: ${conv}, id: None, state: ${m}::TypingState::${typing} }, Default::default())`,
     sendReaction: `sdk.messages().react(${s}, &${m}::ReactRequest { conversation: ${conv}, id: ${quote(body?.id)}.into(), reaction: ${quote(body?.reaction)}.into(), transport: None }, Default::default())`,
     starMessage: `sdk.messages().star(${s}, &${m}::StarRequest { conversation: ${conv}, id: ${quote(body?.id)}.into(), star: ${body?.star} }, Default::default())`,
-    listPlatformSessions: "sdk.sessions().list(Default::default())",
-    getSession: `sdk.sessions().retrieve(${sid}, Default::default())`,
-    getSessionAccount: `sdk.sessions().account(${sid}, Default::default())`,
-    startPlatformSession: `sdk.sessions().start(${sid}, Default::default())`,
-    stopPlatformSession: `sdk.sessions().stop(${sid}, Default::default())`,
-    restartSession: `sdk.sessions().restart(${sid}, Default::default())`,
-    logoutSession: `sdk.sessions().logout(${sid}, Default::default())`,
-    deletePlatformSession: `sdk.sessions().delete(${sid}, Default::default())`,
+    listPlatformConnections: "sdk.connections().list(Default::default())",
+    getConnection: `sdk.connections().retrieve(${sid}, Default::default())`,
+    getConnectionAccount: `sdk.connections().account(${sid}, Default::default())`,
+    startPlatformConnection: `sdk.connections().start(${sid}, Default::default())`,
+    stopPlatformConnection: `sdk.connections().stop(${sid}, Default::default())`,
+    restartConnection: `sdk.connections().restart(${sid}, Default::default())`,
+    logoutConnection: `sdk.connections().logout(${sid}, Default::default())`,
+    deletePlatformConnection: `sdk.connections().delete(${sid}, Default::default())`,
     getOwnBusinessProfile: `sdk.business().get_profile(${s}, Default::default())`,
     getBusinessMerchantCompliance: `sdk.business().get_merchant_compliance(${s}, Default::default())`,
     getBusinessLinkedAccounts: `sdk.business().get_linked_accounts(${s}, Default::default())`,
