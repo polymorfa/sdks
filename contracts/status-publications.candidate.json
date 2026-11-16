@@ -5,13 +5,13 @@
   "apiVersion": "2026-09-22",
   "candidateSource": {
     "repository": "polymorfa/polymorfa",
-    "commit": "c3f94ba15e32c2df3848955054a0b2f165114753",
+    "commit": "b7b3534c37a671344f291986e2329bb743b5cbdc",
     "branch": "fix/status-stanza-delivery",
     "pullRequest": "https://github.com/polymorfa/polymorfa/pull/1026",
     "files": [
       {
         "path": "apps/api/docs/openapi.json",
-        "sha256": "3481b6560d689dda7957279b450480b7280f108a7a1cdbcc8b6ca7b3c4167901"
+        "sha256": "bb7810211838dda0a1a3280b0fb5b5e2401ddae1b6bf40d0d0f417a05f4461f6"
       }
     ]
   },
@@ -366,7 +366,8 @@
                 "type": "boolean"
               },
               "timestamp": {
-                "type": "number"
+                "type": "integer",
+                "minimum": 0
               },
               "pushName": {
                 "type": "string"
@@ -417,7 +418,8 @@
                 "type": "boolean"
               },
               "timestamp": {
-                "type": "number"
+                "type": "integer",
+                "minimum": 0
               },
               "pushName": {
                 "type": "string"
@@ -472,7 +474,8 @@
                 "type": "boolean"
               },
               "timestamp": {
-                "type": "number"
+                "type": "integer",
+                "minimum": 0
               },
               "pushName": {
                 "type": "string"

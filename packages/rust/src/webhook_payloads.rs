@@ -39,6 +39,7 @@ pub enum LinkedDeviceMessageType {
     ListReply,
     Poll,
     Sticker,
+    StickerPack,
     Reaction,
     Revoke,
     Edited,
@@ -57,8 +58,52 @@ pub struct LinkedDeviceMessagePayload {
     pub timestamp: u64,
     pub push_name: String,
     pub is_group: bool,
+    #[serde(rename = "type")]
+    pub message_type: LinkedDeviceMessageType,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub caption: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub mime_type: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub ptt: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub filename: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub latitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub longitude: Option<f64>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub display_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub title: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reaction: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reaction_to: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub revoked_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub media_url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub edited: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub poll_options: Option<Vec<PollOption>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unavailable: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub unavailable_reason: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub native_flow_response: Option<NativeFlowResponse>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub reply_choice: Option<ReplyChoice>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub parent_message_id: Option<String>,
     #[serde(flatten)]
-    pub content: ReceivedContent,
+    pub extensions: BTreeMap<String, serde_json::Value>,
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -111,12 +156,7 @@ pub struct ReceivedContent {
     #[serde(flatten)]
     pub extensions: BTreeMap<String, serde_json::Value>,
 }
-impl std::ops::Deref for LinkedDeviceMessagePayload {
-    type Target = ReceivedContent;
-    fn deref(&self) -> &Self::Target {
-        &self.content
-    }
-}
+
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(tag = "scope", rename_all = "snake_case")]
 pub enum StatusAudience {

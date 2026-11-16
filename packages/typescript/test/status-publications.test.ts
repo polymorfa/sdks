@@ -35,4 +35,10 @@ describe("status publications", () => {
       expect(event.payload.group.id).toBe("789");
     expect(event.payload).not.toHaveProperty("conversation");
   });
+  it("accepts the candidate sticker-pack content discriminator", () => {
+    const content: StatusPublicationPayload["content"] = {
+      type: "sticker_pack",
+    };
+    expect(content.type).toBe("sticker_pack");
+  });
 });

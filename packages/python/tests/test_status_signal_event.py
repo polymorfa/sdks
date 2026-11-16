@@ -12,3 +12,10 @@ def test_remote_status_keeps_scope_without_becoming_a_message() -> None:
     assert event.type == "status.received"
     assert event.status_scope == "personal"
     assert event.chat == "status@broadcast"
+
+
+def test_status_sticker_pack_is_a_typed_received_content() -> None:
+    from polymorfa.webhook_models import ReceivedContent
+
+    content: ReceivedContent = {"type": "sticker_pack"}
+    assert content["type"] == "sticker_pack"

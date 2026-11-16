@@ -39,15 +39,37 @@ type WebhookPollOption struct {
 }
 type LinkedDeviceMessagePayload struct {
 	webhookPayloadBase
-	ID           string              `json:"id"`
-	WhatsAppIDs  WhatsAppMessageIDs  `json:"whatsapp_ids"`
-	WhatsAppID   string              `json:"whatsapp_id,omitempty"`
-	Conversation WebhookConversation `json:"conversation"`
-	FromMe       bool                `json:"fromMe"`
-	Timestamp    int64               `json:"timestamp"`
-	PushName     string              `json:"pushName"`
-	IsGroup      bool                `json:"isGroup"`
-	ReceivedContent
+	ID                 string              `json:"id"`
+	WhatsAppIDs        WhatsAppMessageIDs  `json:"whatsapp_ids"`
+	WhatsAppID         string              `json:"whatsapp_id,omitempty"`
+	Conversation       WebhookConversation `json:"conversation"`
+	FromMe             bool                `json:"fromMe"`
+	Timestamp          int64               `json:"timestamp"`
+	PushName           string              `json:"pushName"`
+	IsGroup            bool                `json:"isGroup"`
+	Type               string              `json:"type"`
+	Text               string              `json:"text,omitempty"`
+	Caption            string              `json:"caption,omitempty"`
+	MimeType           string              `json:"mimeType,omitempty"`
+	PTT                *bool               `json:"ptt,omitempty"`
+	Filename           string              `json:"filename,omitempty"`
+	Latitude           *float64            `json:"latitude,omitempty"`
+	Longitude          *float64            `json:"longitude,omitempty"`
+	DisplayName        string              `json:"displayName,omitempty"`
+	Title              string              `json:"title,omitempty"`
+	Reaction           string              `json:"reaction,omitempty"`
+	ReactionTo         string              `json:"reactionTo,omitempty"`
+	RevokedID          string              `json:"revokedId,omitempty"`
+	Media              string              `json:"media,omitempty"`
+	MediaURL           string              `json:"mediaUrl,omitempty"`
+	Edited             *bool               `json:"edited,omitempty"`
+	PollOptions        []WebhookPollOption `json:"pollOptions,omitempty"`
+	Unavailable        *bool               `json:"unavailable,omitempty"`
+	UnavailableReason  string              `json:"unavailableReason,omitempty"`
+	NativeFlowResponse *NativeFlowResponse `json:"nativeFlowResponse,omitempty"`
+	ReplyChoice        *ReplyChoice        `json:"replyChoice,omitempty"`
+	ParentMessageID    string              `json:"parentMessageId,omitempty"`
+	Extra              PlatformPayload     `json:"-"`
 }
 
 // ReceivedContent is shared by messages and status publications.

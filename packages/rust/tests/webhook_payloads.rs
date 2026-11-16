@@ -472,3 +472,28 @@ fn cloud_variants_and_payment_method_selections_preserve_distinct_shapes() {
     .unwrap();
     assert_eq!(encoded["payload"]["timestamp"], "1800000000");
 }
+
+#[test]
+fn status_sticker_packs_decode_through_the_verified_event_parser() {
+    use polymorfa_sdk::webhook_payloads::LinkedDeviceMessageType;
+    let event = signed(
+        "status.received",
+        json!({"id":"123","whatsapp_ids":{"linked_devices":"authored-pack"},"scope":"personal","publisher":{"id":"456"},"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"sticker_pack","stickerPack":{"name":"authored"}}}),
+    );
+    let WebhookEvent::StatusReceived { payload, .. } = event else {
+        panic!("status classification lost")
+    };
+    assert!(matches!(
+        payload.content.message_type,
+        LinkedDeviceMessageType::StickerPack
+    ));
+}
+
+#[test]
+fn existing_message_fields_remain_owned_and_mutable() {
+    use polymorfa_sdk::webhook_payloads::LinkedDeviceMessagePayload;
+    let mut payload: LinkedDeviceMessagePayload = serde_json::from_value(linked()).unwrap();
+    payload.text = Some("authored direct mutation".into());
+    let moved = payload.text;
+    assert_eq!(moved.as_deref(), Some("authored direct mutation"));
+}

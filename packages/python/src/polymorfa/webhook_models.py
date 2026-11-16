@@ -59,6 +59,7 @@ LinkedDeviceMessageType = Literal[
     "list_reply",
     "poll",
     "sticker",
+    "sticker_pack",
     "reaction",
     "revoke",
     "edited",

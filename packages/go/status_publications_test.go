@@ -42,3 +42,18 @@ func TestSignalStatusEventDoesNotFallBackToMessage(t *testing.T) {
 		t.Fatal("remote status classification was lost")
 	}
 }
+
+func TestLinkedMessageLiteralStillBuildsWithOwnedFields(t *testing.T) {
+	payload := LinkedDeviceMessagePayload{Type: "text", Text: "authored legacy construction"}
+	encoded, err := json.Marshal(payload)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var decoded LinkedDeviceMessagePayload
+	if err := json.Unmarshal(encoded, &decoded); err != nil {
+		t.Fatal(err)
+	}
+	if decoded.Type != payload.Type || decoded.Text != payload.Text {
+		t.Fatal("message construction changed")
+	}
+}
