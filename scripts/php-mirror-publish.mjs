@@ -21,6 +21,8 @@ import {
 } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
+import { releaseSource } from "./release-gate.mjs";
+import { validateReleaseAuthorization } from "./release-policy.mjs";
 
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 function files(dir, base = dir, out = {}) {
@@ -74,6 +76,14 @@ export function push(
   receiptPath = process.env.PHP_MIRROR_RECEIPT,
 ) {
   const plan = loadPreparation(prepared);
+  assert.ok(["preview", "nightly", "stable"].includes(plan.channel));
+  const branch = plan.channel === "preview" ? "preview" : "main";
+  const sourceLabel =
+    plan.channel === "preview" ? "Preview source" : "Accepted source";
+  if (branch === "preview") {
+    assert.equal(plan.proposedTag, undefined);
+    assert.equal(plan.composerBranchVersion, "dev-preview");
+  }
   if (receiptPath) {
     const receipt = JSON.parse(readFileSync(receiptPath));
     assert.equal(
@@ -96,16 +106,16 @@ export function push(
   const work = mkdtempSync(
     join(process.env.RUNNER_TEMP ?? dirname(prepared), "php-mirror-"),
   );
-  const mainHead = remoteRef(work, remote, "refs/heads/main");
-  git(work, ["init", "-q", "-b", "main"]);
+  const mainHead = remoteRef(work, remote, `refs/heads/${branch}`);
+  git(work, ["init", "-q", "-b", branch]);
   if (mainHead)
     (git(work, [
       "fetch",
       "-q",
       remote,
-      "refs/heads/main:refs/remotes/origin/main",
+      `refs/heads/${branch}:refs/remotes/origin/${branch}`,
     ]),
-      git(work, ["checkout", "-q", "-B", "main", "origin/main"]));
+      git(work, ["checkout", "-q", "-B", branch, `origin/${branch}`]));
   const tag = plan.proposedTag ? `refs/tags/${plan.proposedTag}` : null;
   if (tag) {
     const existing = remoteRef(work, remote, tag);
@@ -129,7 +139,7 @@ export function push(
     mainHead &&
     JSON.stringify(files(work)) === JSON.stringify(plan.files) &&
     git(work, ["log", "-1", "--format=%B"]).includes(
-      `Accepted source: ${plan.sourceSha}`,
+      `${sourceLabel}: ${plan.sourceSha}`,
     )
   ) {
     if (tag) git(work, ["push", "-q", remote, `HEAD:${tag}`]);
@@ -158,11 +168,11 @@ export function push(
     "-m",
     `polymorfa/sdk ${plan.version}`,
     "-m",
-    `Accepted source: ${plan.sourceSha}\nArchive sha256: ${plan.archiveSha256}`,
+    `${sourceLabel}: ${plan.sourceSha}\nArchive sha256: ${plan.archiveSha256}`,
   ]);
   const commit = git(work, ["rev-parse", "HEAD"]);
   // A plain push is a fast-forward only; Git refuses if main moved meanwhile.
-  git(work, ["push", "-q", remote, "HEAD:refs/heads/main"]);
+  git(work, ["push", "-q", remote, `HEAD:refs/heads/${branch}`]);
   if (tag) {
     git(work, [
       ...identity,
@@ -174,7 +184,7 @@ export function push(
     ]);
     git(work, ["push", "-q", remote, `${tag}:${tag}`]);
   }
-  assert.equal(remoteRef(work, remote, "refs/heads/main"), commit);
+  assert.equal(remoteRef(work, remote, `refs/heads/${branch}`), commit);
   return { state: "published", commit };
 }
 
@@ -209,9 +219,17 @@ if (
   import.meta.url === pathToFileURL(resolve(process.argv[1])).href
 ) {
   const [command, prepared, value] = process.argv.slice(2);
-  if (command === "push")
+  if (command === "push") {
+    assert.ok(
+      process.env.PHP_MIRROR_RECEIPT,
+      "Publication requires release provenance",
+    );
+    const receipt = validateReleaseAuthorization(
+      JSON.parse(readFileSync(process.env.PHP_MIRROR_RECEIPT)),
+    );
+    assert.equal(receipt.sourceSha, releaseSource());
     console.log(JSON.stringify(push(resolve(prepared), value)));
-  else if (command === "verify")
+  } else if (command === "verify")
     console.log(await verify(resolve(prepared), value));
   else throw new Error("Use push or verify");
 }

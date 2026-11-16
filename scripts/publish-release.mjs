@@ -3,7 +3,8 @@ import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
-import { validateAcceptance } from "./release-gate.mjs";
+import { releaseTag, validateReleaseAuthorization } from "./release-policy.mjs";
+import { publicationFingerprint, releaseSource } from "./release-gate.mjs";
 
 const directory = resolve(process.env.RELEASE_OUTPUT);
 const provenance = JSON.parse(
@@ -12,13 +13,21 @@ const provenance = JSON.parse(
 const channel = process.env.RELEASE_CHANNEL;
 assert.equal(provenance.channel, channel);
 assert.equal(provenance.sourceSha, process.env.GITHUB_SHA);
+assert.equal(provenance.sourceSha, releaseSource());
 assert.equal(provenance.repository, "polymorfa/sdks");
-const environment = channel === "stable" ? "production" : "staging";
-validateAcceptance(provenance.acceptance, {
-  ...provenance.acceptance,
-  environment,
-});
-const tag = channel === "stable" ? "latest" : "dev";
+const environment =
+  channel === "preview"
+    ? "unverified"
+    : channel === "stable"
+      ? "production"
+      : "staging";
+validateReleaseAuthorization(provenance);
+assert.equal(
+  provenance.fingerprint,
+  publicationFingerprint(),
+  "Release fingerprint differs from checkout",
+);
+const tag = releaseTag(channel);
 const manifest = JSON.parse(readFileSync(join(directory, "manifest.json")));
 for (const pkg of manifest) {
   assert.equal(pkg.version, provenance.packageVersion);
@@ -79,7 +88,7 @@ for (const pkg of manifest) {
 const packages = Object.fromEntries(
   manifest.map((pkg) => [pkg.name, pkg.version]),
 );
-const events = (provenance.acceptance.featureLinks ?? []).map((feature) => {
+const events = (provenance.acceptance?.featureLinks ?? []).map((feature) => {
   const stage = channel === "stable" ? "stable_published" : "nightly_published";
   const identity = {
     featureId: feature.id,

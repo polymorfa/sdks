@@ -15,6 +15,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { validateReceipt } from "./native-publish.mjs";
+import { releaseSource } from "./release-gate.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 export const modulePath = "github.com/polymorfa/sdks/packages/go";
@@ -93,6 +94,7 @@ export function inspectModuleZip(zip, version, receipt) {
 
 export function prepare(receiptPath, out) {
   const receipt = validateReceipt(JSON.parse(readFileSync(receiptPath)));
+  assert.equal(receipt.sourceSha, releaseSource());
   const version = receipt.versions.semver;
   const tag = receipt.versions.goTag;
   assert.equal(
@@ -206,6 +208,12 @@ export function remoteTag(remote, tag) {
 }
 
 export function push(prepared, remote = "origin") {
+  assert.equal(
+    git(["rev-parse", `${prepared.releaseCommit}^`]),
+    prepared.sourceSha,
+    "Go release must descend from its recorded source",
+  );
+  git(["merge-base", "--is-ancestor", prepared.sourceSha, "origin/main"]);
   assert.equal(
     git(["rev-parse", `refs/tags/${prepared.tag}^{commit}`]),
     prepared.releaseCommit,
