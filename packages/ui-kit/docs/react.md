@@ -1,6 +1,12 @@
 # `@polymorfa/ui-kit/react`
 
-React bindings for the framework-neutral controllers in `@polymorfa/ui-kit`.
+Use the React components and hooks for React and Next.js applications. They
+share the controllers in `@polymorfa/ui-kit`; you do not need a separate
+browser package.
+
+For Next.js, pair these client components with the server-only
+[`@polymorfa/nextjs` helpers](https://github.com/polymorfa/sdks/tree/main/packages/nextjs).
+The handler authenticates users and issues short-lived tokens.
 
 ## Drop-in components
 
@@ -22,18 +28,15 @@ short tokens), and retries failures with exponential backoff and jitter
 `usePolymorfaClient()` returns the shared client; `usePermissions()` reports
 the grant for rendering only. `appearance` and `locale` work as before.
 
-| Component                                | Needs              | Notes                                                                                                                   |
-| ---------------------------------------- | ------------------ | ----------------------------------------------------------------------------------------------------------------------- |
-| `<Inbox/>`                               | `read_messages`    | List, chat and contact panel. Composer needs `send_message`, contact panel `read_contact`, the call button `voip_place` |
-| `<ConversationList/>`, `<ContactPanel/>` |                    | Inbox parts, usable alone                                                                                               |
-| `<ConnectWhatsAppButton/>`               | `connect_whatsapp` | Opens Polymorfa's hosted QuickLink page; never embeds it                                                                |
-| `<QuickLinkButton url/>`                 |                    | Link to a QuickLink your server already created; no token or handler call                                               |
-| `<SessionStatus/>`                       |                    | Connection badge with a Retry button                                                                                    |
-| `<CallButton to/>`                       | `voip_place`       | Places a call with the browser Calls client and shows `CallSurface`                                                     |
-| `<TemplateManager/>`                     | `manage_templates` | Template list plus `<TemplateBuilder/>`                                                                                 |
+| Component                                | Needs           | Notes                                                                                                                   |
+| ---------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `<Inbox/>`                               | `read_messages` | List, chat and contact panel. Composer needs `send_message`, contact panel `read_contact`, the call button `voip_place` |
+| `<ConversationList/>`, `<ContactPanel/>` |                 | Inbox parts, usable alone                                                                                               |
+| `<QuickLinkButton url/>`                 |                 | Link to a QuickLink your server already created; no token or handler call                                               |
+| `<CallButton to/>`                       | `voip_place`    | Places a call with the browser Calls client and shows `CallSurface`                                                     |
 
-`<QuickLinkButton url={link.url} target="popup"/>` renders an `<a>` styled as
-the Connect WhatsApp button (`connectButton` slot). It accepts only `https`
+`<QuickLinkButton url={link.url} target="popup"/>` renders a styled `<a>` using
+the `connectButton` slot. It accepts only `https`
 URLs, or `http` on `localhost`/`127.0.0.1` for local development, and renders
 nothing otherwise. Pass `url=""` while your server creates the link; nothing
 renders and no warning is logged. The URL is the recipient's only credential: create it on
@@ -327,6 +330,11 @@ The component does not discover Connections or mint credentials. Give each clien
 its own token provider, authorized for that Connection's connection. Selection must
 never replace the token or connection on an existing client. The connection option
 does not override the connection bound to the client token.
+
+The picker includes its own styles and follows the provider's appearance and
+locale. Use `className` for its root or `classNames` and appearance element
+styles for `callConnectionPicker`, `callConnectionLabel` and `callConnectionSelect`.
+An unstyled provider skips the bundled stylesheet.
 
 ## Controlled inbox rows
 

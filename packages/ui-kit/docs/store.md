@@ -328,3 +328,17 @@ store.registerReducer("campaign.completed", async (event, context) => {
 `PolymorfaEvent` is the webhook envelope: `id`, `connection`, `timestamp`,
 `event`, `payload`, and optional `externalId`. The server SDK's
 `WebhookEvent` union is assignable to it.
+
+## Connection cache upgrade
+
+The UI cache uses IndexedDB schema version 2, independently of the native
+storage adapter schema. Upgrading a previous unsealed account cache preserves
+row IDs, renames the account store and its top-level ownership fields, and
+keeps message ciphertext unchanged. Ordinary reads expose only Connections.
+
+An account row sealed with owner-defined encryption cannot be moved under a
+new store context safely. That upgrade aborts without changing the old cache.
+Export and re-encrypt through the owning application before choosing a fresh
+cache namespace. Do not discard an old cache that contains the only retained
+copy. An open blocked by another tab also aborts rather than upgrading later
+after the caller has already received an error.

@@ -9,9 +9,20 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
+
+func TestSupabaseSchemaMarkerMatchesAdapter(t *testing.T) {
+	script, err := SupabaseSchema(SupabaseOptions{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(script, fmt.Sprintf("VALUES ('storage',%d)", SchemaVersion)) || !strings.Contains(script, fmt.Sprintf("WHERE id='storage') <> %d", SchemaVersion)) {
+		t.Fatal("preset marker/guard differs from adapter schema")
+	}
+}
 
 func TestSupabaseRequiresDistinctWriterAndSafeNames(t *testing.T) {
 	for _, o := range []SupabaseOptions{{ServerRole: "authenticated"}, {ServerRole: "anon"}, {ServerRole: "same", ReaderRole: "same"}, {Schema: "unsafe;sql"}, {TablePrefix: "unsafe;sql"}} {

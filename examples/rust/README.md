@@ -20,8 +20,7 @@ import { defineUiKit } from "@polymorfa/ui-kit/web-components";
 defineUiKit({ tokenEndpoint: "/api/polymorfa/token" });
 ```
 
-Render `<pmfa-session-status>`, `<pmfa-connect-whatsapp>` and `<pmfa-inbox>`
-through the framework's custom-element support. There is no second Rust UI
+Render `<pmfa-inbox>` through the framework's custom-element support. There is no second Rust UI
 implementation. The token endpoint must authenticate your application user,
 derive their authorized Connection or customer from server state, and use
 `MessagingClient.client_tokens().mint()` to issue a short-lived token. Never

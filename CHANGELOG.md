@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+- UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
+  styling slots. It supports `classNames` and unstyled mode without a host
+  stylesheet.
+- UI Kit: remove `TemplateManager`, `SessionStatus`, `ConnectWhatsAppButton`,
+  their props and matching custom elements. Inbox, chat, Calls, TemplateBuilder
+  and the underlying client/server APIs remain available. React/Next.js is the
+  default setup; Web Components and native SDK host integrations remain supported.
+- UI Kit: align composer fields and controls in the shared stylesheet at desktop
+  and mobile widths, including custom font sizes. Applications no longer need
+  the documentation's composer-alignment CSS workaround.
+
 - Breaking: every public "organization" name is now "team", matching API
   contract revision `f180dc1ee2` of polymorfa/polymorfa#887, merged into API
   `dev` as `a3db53e74c` with byte-identical specifications. There are no

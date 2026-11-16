@@ -9,7 +9,7 @@ export interface IndexSpec {
   readonly keyPath: string | readonly string[];
 }
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 const timeIndex: IndexSpec = { name: "by_time", keyPath: "_t" };
 const typeIndex: IndexSpec = { name: "by_type", keyPath: "type" };
@@ -314,9 +314,25 @@ export async function openIndexedDbBackend(
   name: string,
 ): Promise<IndexedDbBackend> {
   const opening = factory.open(name, SCHEMA_VERSION);
-  opening.onupgradeneeded = () => {
+  let abandoned = false;
+  let upgradeError: Error | undefined;
+  opening.onupgradeneeded = (event) => {
     const database = opening.result;
     const transaction = opening.transaction;
+    if (abandoned) {
+      transaction?.abort();
+      return;
+    }
+    if (database.objectStoreNames.contains("sessions")) {
+      if (database.objectStoreNames.contains("connections")) {
+        upgradeError = new Error(
+          "Conflicting account stores require an explicit cache export.",
+        );
+        transaction?.abort();
+        return;
+      }
+      transaction!.objectStore("sessions").name = "connections";
+    }
     for (const store of INTERNAL_STORE_NAMES) {
       const objectStore = database.objectStoreNames.contains(store)
         ? transaction?.objectStore(store)
@@ -329,12 +345,60 @@ export async function openIndexedDbBackend(
             index.keyPath as string | string[],
           );
     }
+    if (event.oldVersion > 0)
+      for (const store of INTERNAL_STORE_NAMES) {
+        if (store === "meta" || store === "checkpoints") continue;
+        const scan = transaction!.objectStore(store).openCursor();
+        scan.onsuccess = () => {
+          const cursor = scan.result;
+          if (cursor === null) return;
+          const row = cursor.value as Row;
+          // The caller defines encryption and may bind ciphertext to the store name.
+          // Never discard or reinterpret account ciphertext under a new seal context.
+          if (store === "connections" && row._sealed !== undefined) {
+            upgradeError = new Error(
+              "A sealed account cache requires owner export and re-encryption before upgrade.",
+            );
+            transaction!.abort();
+            return;
+          }
+          if (Object.hasOwn(row, "session")) {
+            if (
+              Object.hasOwn(row, "connection") &&
+              row.connection !== row.session
+            ) {
+              upgradeError = new Error(
+                "Conflicting account fields require an explicit cache export.",
+              );
+              transaction!.abort();
+              return;
+            }
+            const { session, ...rest } = row;
+            cursor.update({ ...rest, connection: session });
+          }
+          cursor.continue();
+        };
+      }
   };
   const blocked = new Promise<never>((_, reject) => {
-    opening.onblocked = () =>
+    opening.onblocked = () => {
+      abandoned = true;
       reject(new Error("IndexedDB upgrade is blocked by another tab."));
+    };
   });
-  const database = await Promise.race([request(opening), blocked]);
+  const completed = request(opening).then(
+    (database) => {
+      if (abandoned) {
+        database.close();
+        throw new Error("IndexedDB open was abandoned.");
+      }
+      return database;
+    },
+    (error) => {
+      throw upgradeError ?? error;
+    },
+  );
+  const database = await Promise.race([completed, blocked]);
   return new IndexedDbBackend(database);
 }
 

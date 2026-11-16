@@ -12,13 +12,10 @@ import {
 import { resetPermissionWarnings } from "@polymorfa/ui-kit/internal";
 import {
   CallButton,
-  ConnectWhatsAppButton,
   ConversationListView,
   Inbox,
   PolymorfaProvider,
   QuickLinkButton,
-  SessionStatus,
-  TemplateManager,
   usePermissions,
 } from "../../src/react/index.js";
 
@@ -525,16 +522,17 @@ describe("<PolymorfaProvider tokenEndpoint>", () => {
     );
     vi.stubGlobal("fetch", fetch);
     const seen: boolean[] = [];
+    const statuses: string[] = [];
     function Probe() {
-      const { can } = usePermissions();
+      const { can, status } = usePermissions();
       seen.push(can("send_message"));
+      statuses.push(status);
       return null;
     }
     act(() =>
       root.render(
         <PolymorfaProvider tokenEndpoint="/auth/polymorfa/token">
           <Probe />
-          <SessionStatus />
         </PolymorfaProvider>,
       ),
     );
@@ -545,11 +543,7 @@ describe("<PolymorfaProvider tokenEndpoint>", () => {
     );
     expect(seen.at(-1)).toBe(true);
     expect(seen[0]).toBe(false);
-    expect(
-      host
-        .querySelector('[data-pmfa="session-status"]')
-        ?.getAttribute("data-status"),
-    ).toBe("ready");
+    expect(statuses.at(-1)).toBe("ready");
     vi.unstubAllGlobals();
   });
 });
@@ -625,105 +619,25 @@ describe("<QuickLinkButton/>", () => {
   });
 });
 
-describe("<ConnectWhatsAppButton/>", () => {
-  it("creates the QuickLink through the handler and opens the hosted page", async () => {
-    const { client, fetch } = clientWith(["connect_whatsapp"]);
-    const open = vi.fn();
-    const onConnect = vi.fn();
-    act(() =>
-      root.render(
-        <PolymorfaProvider client={client}>
-          <ConnectWhatsAppButton open={open} onConnect={onConnect} />
-        </PolymorfaProvider>,
-      ),
-    );
-    await act(async () => void (await client.refresh()));
-    const button = host.querySelector('[data-pmfa="connect-whatsapp"]');
-    expect(button?.textContent).toBe("Connect WhatsApp");
-    click(button);
-    await settle();
-    expect(fetch).toHaveBeenCalledWith(
-      "/api/polymorfa/connect",
-      expect.objectContaining({ method: "POST" }),
-    );
-    expect(open).toHaveBeenCalledWith("https://link.polymorfa.com/ql_1");
-    expect(onConnect).toHaveBeenCalledWith(
-      expect.objectContaining({ id: "ql_1" }),
-    );
-    expect(host.querySelector("iframe")).toBeNull();
-  });
-
-  it("shows an accessible error when the handler refuses", async () => {
-    const fetch = vi.fn(async (input: RequestInfo | URL) =>
-      String(input).endsWith("/connect")
-        ? Response.json(
-            { error: { code: "x", message: "no" } },
-            { status: 500 },
-          )
-        : Response.json({
-            value: "pmfa_ct_Zml4dHVyZQ",
-            audience: "browser",
-            expiresAt: Date.now() + 600_000,
-            grant: {
-              connection: "s",
-              conversations: [],
-              allow: ["connect_whatsapp"],
-            },
-          }),
-    );
-    const client = new PolymorfaClient({ fetch });
-    act(() =>
-      root.render(
-        <PolymorfaProvider client={client}>
-          <ConnectWhatsAppButton open={vi.fn()} />
-        </PolymorfaProvider>,
-      ),
-    );
-    await act(async () => void (await client.refresh()));
-    click(host.querySelector('[data-pmfa="connect-whatsapp"]'));
-    await settle();
-    const alert = host.querySelector('[role="alert"]');
-    expect(alert?.textContent).toBe(
-      "Could not start the connection. Try again.",
-    );
-    expect(
-      host
-        .querySelector('[data-pmfa="connect-whatsapp"]')
-        ?.getAttribute("aria-describedby"),
-    ).toBe(alert?.id);
-  });
-});
-
 describe("permission-aware components", () => {
-  it("hide ConnectWhatsAppButton, CallButton and TemplateManager without their permissions", async () => {
+  it("hides CallButton without its permission", async () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
     const { client } = clientWith(["read_messages"]);
     act(() =>
       root.render(
         <PolymorfaProvider client={client}>
-          <ConnectWhatsAppButton />
           <CallButton to="+15550001" />
-          <TemplateManager />
         </PolymorfaProvider>,
       ),
     );
     await act(async () => void (await client.refresh()));
     await settle();
     expect(host.innerHTML).toBe("");
-    const warnings = warn.mock.calls.map(([message]) => String(message));
-    expect(warnings).toEqual(
-      expect.arrayContaining([
-        expect.stringContaining(
-          '<ConnectWhatsAppButton/>: button hidden; the token lacks "connect_whatsapp"',
-        ),
-        expect.stringContaining(
-          '<CallButton/>: button hidden; the token lacks "voip_place"',
-        ),
-        expect.stringContaining(
-          '<TemplateManager/>: templates hidden; the token lacks "manage_templates"',
-        ),
-      ]),
-    );
+    expect(warn.mock.calls.map(([message]) => String(message))).toEqual([
+      expect.stringContaining(
+        '<CallButton/>: button hidden; the token lacks "voip_place"',
+      ),
+    ]);
   });
 
   it("stays silent in production builds", async () => {
@@ -733,32 +647,13 @@ describe("permission-aware components", () => {
     act(() =>
       root.render(
         <PolymorfaProvider client={client}>
-          <ConnectWhatsAppButton />
+          <CallButton to="+15550001" />
         </PolymorfaProvider>,
       ),
     );
     await act(async () => void (await client.refresh()));
     expect(warn).not.toHaveBeenCalled();
     vi.unstubAllEnvs();
-  });
-
-  it("lists templates with manage_templates", async () => {
-    const { client } = clientWith(["manage_templates"]);
-    act(() =>
-      root.render(
-        <PolymorfaProvider client={client}>
-          <TemplateManager />
-        </PolymorfaProvider>,
-      ),
-    );
-    await act(async () => void (await client.refresh()));
-    await settle();
-    const item = host.querySelector('[data-slot="templateItem"]');
-    expect(item?.textContent).toContain("order_ready");
-    expect(item?.textContent).toContain("APPROVED");
-    click(item);
-    await settle();
-    expect(host.querySelector('[data-pmfa="template-builder"]')).not.toBeNull();
   });
 
   it("render in unstyled mode with slot class names", async () => {

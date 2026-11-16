@@ -7,10 +7,8 @@ import {
   type PolymorfaPermission,
 } from "@polymorfa/ui-kit/internal";
 import {
-  PolymorfaConnectWhatsAppElement,
   PolymorfaInboxElement,
   PolymorfaQuickLinkButtonElement,
-  PolymorfaSessionStatusElement,
   defineUiKit,
 } from "../../src/web-components/index.js";
 import { resetDefineUiKit } from "../../src/web-components/dropin.js";
@@ -66,58 +64,18 @@ afterEach(() => {
 });
 
 describe("defineUiKit", () => {
-  it("fetches a token and defines the drop-in elements", async () => {
-    const fetch = tokenFetch(["connect_whatsapp"]);
-    const client = defineUiKit({
-      client: new PolymorfaClient({ fetch }),
-    });
-    expect(customElements.get("pmfa-inbox")).toBe(PolymorfaInboxElement);
-    expect(customElements.get("pmfa-session-status")).toBe(
-      PolymorfaSessionStatusElement,
-    );
-    const status = document.createElement("pmfa-session-status");
-    document.body.append(status);
-    await vi.waitFor(() => expect(client.getSnapshot().status).toBe("ready"));
-    expect(
-      status.shadowRoot
-        ?.querySelector(".pmfa-session")
-        ?.getAttribute("data-status"),
-    ).toBe("ready");
-  });
-
-  it("opens the hosted QuickLink from <pmfa-connect-whatsapp>", async () => {
-    const fetch = tokenFetch(["connect_whatsapp"]);
+  it("fetches a token for the supported drop-in elements", async () => {
+    const fetch = tokenFetch(["read_messages"]);
     const client = defineUiKit({ client: new PolymorfaClient({ fetch }) });
-    await client.refresh();
-    const assign = vi.fn();
-    vi.spyOn(window, "location", "get").mockReturnValue({
-      ...window.location,
-      assign,
-    } as unknown as Location);
-    const connect = document.createElement(
-      "pmfa-connect-whatsapp",
-    ) as PolymorfaConnectWhatsAppElement;
-    const connected = vi.fn();
-    connect.addEventListener("pmfa-connect", connected);
-    document.body.append(connect);
-    const button = connect.shadowRoot!.querySelector("button")!;
-    expect(button.textContent).toBe("Connect WhatsApp");
-    button.click();
-    await vi.waitFor(() => expect(connected).toHaveBeenCalled());
-    expect(assign).toHaveBeenCalledWith("https://link.polymorfa.com/ql_1");
-  });
-
-  it("hides <pmfa-connect-whatsapp> without connect_whatsapp and warns once", async () => {
-    const warn = vi.spyOn(console, "warn").mockImplementation(() => undefined);
-    const client = defineUiKit({
-      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
-    });
-    await client.refresh();
-    const connect = document.createElement("pmfa-connect-whatsapp");
-    document.body.append(connect);
-    expect(connect.shadowRoot!.querySelector("button")).toBeNull();
-    expect(warn).toHaveBeenCalledTimes(1);
-    expect(String(warn.mock.calls[0]?.[0])).toContain('"connect_whatsapp"');
+    expect(customElements.get("pmfa-inbox")).toBe(PolymorfaInboxElement);
+    expect(customElements.get("pmfa-quicklink-button")).toBe(
+      PolymorfaQuickLinkButtonElement,
+    );
+    await vi.waitFor(() => expect(client.getSnapshot().status).toBe("ready"));
+    expect(fetch).toHaveBeenCalledWith(
+      "/api/polymorfa/token",
+      expect.objectContaining({ method: "POST" }),
+    );
   });
 });
 
