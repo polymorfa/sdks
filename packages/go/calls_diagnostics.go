@@ -23,7 +23,7 @@ func NewCallReporter(connectionID string, send func(context.Context, CallReportR
 	if !connectionPattern.MatchString(connectionID) || send == nil {
 		return nil, configuration("reporter", "A valid connection ID and report sender are required.")
 	}
-	return &CallReporter{connectionID: connectionID, send: send, client: CallReportClient{SDK: "polymorfa-go", Version: "0.1.0-dev.0", Platform: "other"}}, nil
+	return &CallReporter{connectionID: connectionID, send: send, client: CallReportClient{SDK: "polymorfa-go", Version: Version, Platform: "other"}}, nil
 }
 func (r *CallReporter) Stop()         { r.mu.Lock(); r.stopped = true; r.mu.Unlock() }
 func (r *CallReporter) Stopped() bool { r.mu.Lock(); defer r.mu.Unlock(); return r.stopped }
