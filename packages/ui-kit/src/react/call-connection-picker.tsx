@@ -14,7 +14,7 @@ export interface CallConnectionOption {
 export interface CallConnectionPickerProps {
   readonly connections: readonly CallConnectionOption[];
   readonly value: string;
-  /** Select the existing Connection client; never replace its token or session. */
+  /** Select the existing client; never replace its credential or active call. */
   readonly onChange: (id: string) => void;
   readonly disabled?: boolean;
   readonly className?: string;
@@ -41,7 +41,7 @@ function busy(connections: readonly CallConnectionOption[]): boolean {
 /**
  * Choose an outgoing Connection from application-authorized clients. Locks while
  * any supplied client places, answers, or carries a call. It does not connect,
- * disconnect, discover Numbers, mint credentials, or retarget an existing call.
+ * disconnect, discover Connections, mint credentials, or retarget an existing call.
  */
 export function CallConnectionPicker({
   connections,
