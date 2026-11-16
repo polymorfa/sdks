@@ -18,7 +18,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
         expected,
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let page = client
         .voice()
         .audio("project")
@@ -39,7 +39,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
     );
     assert_eq!(page.next_cursor.as_deref(), Some("next"));
     server.await.unwrap();
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/voice/audio",
@@ -57,7 +57,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/voice/audio/tts",
@@ -79,7 +79,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/voice/audio/asset",
@@ -91,7 +91,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
             .unwrap()
             .retrieve("asset", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/voice/audio/asset/complete",
@@ -103,7 +103,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
             .unwrap()
             .complete("asset", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "PATCH",
         "/platform/voice/audio/asset",
@@ -119,7 +119,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "DELETE",
         "/platform/voice/audio/asset",
@@ -131,7 +131,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
             .unwrap()
             .delete("asset", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/voice/audio/asset/preview",
@@ -146,7 +146,7 @@ async fn audio_library_tts_preview_and_nullable_retention_native_wire() {
 }
 #[tokio::test]
 async fn provider_credentials_write_only_key_and_future_response_values_native_wire() {
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/voice/provider-credentials?projectId=project",
@@ -157,7 +157,7 @@ async fn provider_credentials_write_only_key_and_future_response_values_native_w
             .provider_credentials(Some("project"))
             .list(RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/voice/provider-credentials",
@@ -172,7 +172,7 @@ async fn provider_credentials_write_only_key_and_future_response_values_native_w
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/voice/provider-credentials/credential",
@@ -183,7 +183,7 @@ async fn provider_credentials_write_only_key_and_future_response_values_native_w
             .provider_credentials(None)
             .retrieve("credential", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/voice/provider-credentials/credential/verify",
@@ -194,7 +194,7 @@ async fn provider_credentials_write_only_key_and_future_response_values_native_w
             .provider_credentials(None)
             .verify("credential", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "DELETE",
         "/platform/voice/provider-credentials/credential",
@@ -217,7 +217,7 @@ async fn project_foreign_assets_and_teamwide_credential_mutations_fail_before_wr
         json!({"data":foreign}),
     )
     .await;
-    let client = support::organization(base).project("project").unwrap();
+    let client = support::team(base).project("project").unwrap();
     let error = client
         .voice()
         .audio()
@@ -240,7 +240,7 @@ async fn project_foreign_assets_and_teamwide_credential_mutations_fail_before_wr
         json!({"data":credential()}),
     )
     .await;
-    let client = support::organization(base).project("project").unwrap();
+    let client = support::team(base).project("project").unwrap();
     let error = client
         .voice()
         .provider_credentials()
@@ -257,7 +257,7 @@ async fn project_foreign_assets_and_teamwide_credential_mutations_fail_before_wr
         json!({"data":asset()}),
     )
     .await;
-    let client = support::organization(base).project("project").unwrap();
+    let client = support::team(base).project("project").unwrap();
     let result = client
         .voice()
         .audio()
@@ -270,7 +270,7 @@ async fn project_foreign_assets_and_teamwide_credential_mutations_fail_before_wr
         .unwrap();
     assert_eq!(result.data.status, "ready");
     server.await.unwrap();
-    let client = support::organization("http://127.0.0.1:1".into());
+    let client = support::team("http://127.0.0.1:1".into());
     let token = tokio_util::sync::CancellationToken::new();
     token.cancel();
     assert_eq!(

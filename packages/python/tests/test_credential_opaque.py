@@ -15,7 +15,7 @@ FIXTURE = json.loads(
 
 def test_shared_credentials_and_growth():
     for vector in FIXTURE["opaque"]:
-        kind = "organization_api_key" if vector["kind"] == "key" else "project_token"
+        kind = "team_api_key" if vector["kind"] == "key" else "project_token"
         Credential(kind, vector["token"])
         for bad in [
             vector["token"].replace("_A", "_B", 1),
@@ -32,7 +32,7 @@ def test_shared_credentials_and_growth():
         body = (
             base64.urlsafe_b64encode(raw + zlib.crc32(raw).to_bytes(4, "big")).decode().rstrip("=")
         )
-        for kind, prefix in [("organization_api_key", "pmfa_"), ("project_token", "pmfa_pt_")]:
+        for kind, prefix in [("team_api_key", "pmfa_"), ("project_token", "pmfa_pt_")]:
             value = prefix + body
             assert len(value) > 512
             c = Credential(kind, value)
@@ -68,7 +68,7 @@ async def test_native_wire_reflection(unused_tcp_port):
 
     values = (
         [
-            ("organization_api_key" if v["kind"] == "key" else "project_token", v["token"])
+            ("team_api_key" if v["kind"] == "key" else "project_token", v["token"])
             for v in FIXTURE["opaque"]
         ]
         + [("client_token", v["token"]) for v in FIXTURE["client"]["cases"]]

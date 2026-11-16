@@ -91,7 +91,7 @@ async def test_bridge_route_project_token_only():
     with pytest.raises(ConfigurationError):
         AsyncBridgeClient(
             Credential(
-                "organization_api_key",
+                "team_api_key",
                 "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
             )
         )
@@ -169,7 +169,7 @@ AVAILABILITY = {
 RETRIES = {"attempts": 3, "delaySeconds": 1.5, "policy": "exponential"}
 HOOK = {
     "id": "hook_1",
-    "tenantId": "org_1",
+    "tenantId": "team_1",
     "session": "support",
     "url": "https://example.invalid/webhook",
     "events": ["message.received"],
@@ -296,7 +296,7 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -315,7 +315,7 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
 async def test_reject_session_call_documented_response_variants(value):
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(lambda r: httpx.Response(200, json=value)),
@@ -346,7 +346,7 @@ async def test_quicklink_testing_configuration_shape():
 
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

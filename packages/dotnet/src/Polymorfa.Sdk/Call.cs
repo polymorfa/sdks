@@ -44,6 +44,7 @@ public sealed class Call
     public bool CanJoin => state == "incoming" && Answered && !Exclusive && !ClaimedByOther;
     public bool? RemoteAudioMuted { get; private set; }
     public int? SampleRate { get; private set; }
+    public CallWaitingRoomState? WaitingRoom { get; private set; }
     public bool HandRaised { get; private set; }
     public bool SocialSupported { get; private set; }
     public CallMediaState MediaState { get; private set; } = new(false, false);
@@ -109,7 +110,8 @@ public sealed class Call
         {
             await foreach (var frame in connection.FramesAsync(lifetime.Token).ConfigureAwait(false))
             {
-                if (frame is CallRemoteMedia mute) RemoteAudioMuted = mute.AudioMuted;
+                if (frame is CallWaitingRoom room) WaitingRoom = room.State;
+                else if (frame is CallRemoteMedia mute) RemoteAudioMuted = mute.AudioMuted;
                 else if (frame is CallHandState hand) { HandRaised = hand.Raised; SocialSupported = hand.Supported; }
                 else if (frame is CallParticipantFrame participant) UpdateParticipant(participant.Participant);
                 else if (frame is CallParticipantLeft left) ParticipantLeft(left.ParticipantId);
@@ -122,7 +124,7 @@ public sealed class Call
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception error) { failure ??= error; }
         finally { await connection.DisposeAsync().ConfigureAwait(false); }
-        lock (gate) sources.Clear();
+        lock (gate) { sources.Clear(); WaitingRoom = null; }
         if (Ended || lifetime.IsCancellationRequested) return;
         failure ??= new CallsSocketException("Media connection ended.", "socket_closed", connection.CloseCode);
         if (failure is CallsSocketException { CloseCode: 1000 or 4409 }) { Finish(failure is CallsSocketException { Code: "call_claimed" } ? "claimed" : "remote_hangup"); return; }
@@ -138,6 +140,14 @@ public sealed class Call
     }
     public Task SendAudioAsync(short[] pcm, CancellationToken cancellationToken = default) => ConnectedMedia().SendAudioAsync(pcm, cancellationToken);
     public Task SendVideoAsync(CallVideoFrame frame, CancellationToken cancellationToken = default) => ConnectedMedia().SendVideoAsync(frame, cancellationToken);
+    public Task SetApprovalRequiredAsync(bool enabled, CancellationToken cancellationToken = default) => ModerateWaitingRoomAsync("toggle", null, enabled, cancellationToken);
+    public Task AdmitParticipantAsync(string participantId, CancellationToken cancellationToken = default) => ModerateWaitingRoomAsync("admit", participantId, null, cancellationToken);
+    public Task DenyParticipantAsync(string participantId, CancellationToken cancellationToken = default) => ModerateWaitingRoomAsync("deny", participantId, null, cancellationToken);
+    private Task ModerateWaitingRoomAsync(string operation, string? participantId, bool? enabled, CancellationToken cancellationToken)
+    {
+        if (WaitingRoom?.IsAdmin != true) throw new CallsSocketException("Waiting-room administrator authority is required.", "waiting_room_admin_required");
+        return ConnectedMedia().ModerateWaitingRoomAsync(operation, participantId, enabled, cancellationToken);
+    }
     public async Task<CallMediaState> SetMediaStateAsync(bool? audioMuted = null, bool? videoEnabled = null, bool? screenSharing = null, CancellationToken cancellationToken = default) { var result = await ConnectedMedia().SetMediaStateAsync(audioMuted, videoEnabled, screenSharing, cancellationToken).ConfigureAwait(false); if (!Ended) MediaState = result; return result; }
     private CallsSocket ConnectedMedia() => state == "connected" && media is { Connected: true } connection ? connection : throw new CallsSocketException("Media is not connected.", "invalid_state");
     public async Task RejectAsync(CancellationToken cancellationToken = default) { if (state != "incoming" || Answered) throw new CallsSocketException("Only a ringing unanswered call can be rejected.", "invalid_state"); await owner.RequestAsync(async (c, participant, o) => await c.Calls.RejectAsync(Id, new(participant), o).ConfigureAwait(false), new() { CancellationToken = cancellationToken }).ConfigureAwait(false); Finish("rejected"); }

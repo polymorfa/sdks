@@ -14,7 +14,7 @@ import {
   type UsageSummary,
   type UsageUnit,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -93,9 +93,9 @@ const gates: UsageGateList = {
 
 async function usageServer(
   body: (request: RecordedRequest) => string,
-  credential: "organizationApiKey" | "projectToken" = "organizationApiKey",
+  credential: "teamApiKey" | "projectToken" = "teamApiKey",
 ): Promise<{
-  client: Client<"organization"> | Client<"project">;
+  client: Client<"team"> | Client<"project">;
   requests: RecordedRequest[];
 }> {
   const server = await startTestServer((request) => ({
@@ -116,8 +116,8 @@ async function usageServer(
         })
       : new Client({
           credential: {
-            type: "organizationApiKey",
-            value: ORGANIZATION_API_KEY,
+            type: "teamApiKey",
+            value: TEAM_API_KEY,
           },
           baseUrl: server.url,
           maxNetworkRetries: 0,

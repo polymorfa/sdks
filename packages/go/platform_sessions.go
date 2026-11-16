@@ -178,7 +178,7 @@ type UpdateSessionSafeModeRequest struct {
 }
 type PlatformSessions struct{ t *transport }
 
-func (c *OrganizationClient) Sessions() *PlatformSessions { return &PlatformSessions{c.t} }
+func (c *TeamClient) Sessions() *PlatformSessions { return &PlatformSessions{c.t} }
 func (r *PlatformSessions) List(ctx context.Context, projectID string, o ...RequestOptions) (Response[Envelope[[]PlatformSession]], error) {
 	q := url.Values{}
 	setString(q, "projectId", projectID)

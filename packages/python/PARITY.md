@@ -34,7 +34,7 @@ establish helper or typing parity.
 | --- | --- | --- |
 | Official API supplements | `cloud_catalogs`, `cloud_marketing`, `flow_encryption` | `tests/test_templates_graph.py` |
 | Testing supplements | `testing` phone methods | `tests/test_onboarding.py` |
-| Campaign supplements | `campaigns.update` and organization/project `reschedule` | `tests/test_campaigns.py` |
+| Campaign supplements | `campaigns.update` and team/project `reschedule` | `tests/test_campaigns.py` |
 | Generic raw JSON and decoded pagination | `raw.request`, `raw.paginate`, `PageResult`, `RawCursorPage` | `tests/test_python_parity.py`: native HTTP arrays/scalars/null, custom envelopes/cursor names, metadata, request replay, project confinement, invalid cursor and error paths |
 | Conversation targets and open Platform campaigns | request target union, `PlatformCampaign.known`, update `extra_fields` | `tests/test_python_parity.py`: native request bodies and preserved unknown fields, strict positive/negative mypy checks |
 | Presence catalogs | four public immutable `PRESENCE_*` tuples | `tests/test_python_parity.py`: exact known values |

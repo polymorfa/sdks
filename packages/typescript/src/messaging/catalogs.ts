@@ -132,7 +132,7 @@ export class CatalogsResource {
   private path(session: string, catalogId?: string): string {
     if (this.credentialType === "clientToken")
       throw new PolymorfaConfigurationError(
-        "Catalog sync requires an organization API key or project token.",
+        "Catalog sync requires a team API key or project token.",
         "credential",
       );
     if (!session.trim())

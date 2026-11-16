@@ -11,7 +11,7 @@ from polymorfa.direct_media import DirectMediaApi
 from polymorfa.media_encrypt import prepare_whatsapp_upload
 from polymorfa.transport import RequestOptions, Transport
 
-KEY = Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
+KEY = Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
 
 
 @pytest.mark.parametrize("operation", ["grant", "relay", "retry", "delete"])

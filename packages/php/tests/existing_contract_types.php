@@ -8,33 +8,33 @@ declare(strict_types=1);
  * @phpstan-import-type DirectHistory from \Polymorfa\WebhookModels */
 final class ExistingContractConsumer
 {
-    public static function publicInputs(Polymorfa\Client $org, Polymorfa\MessagingClient $messages, string $project, string $id): void
+    public static function publicInputs(Polymorfa\Client $team, Polymorfa\MessagingClient $messages, string $project, string $id): void
     {
-        $org->campaigns->create(['projectId' => $project,'name' => 'Draft','variableMapping' => ['0' => [],'__proto__' => ['fallback' => '0']],'trackedLinks' => [], 'messagesArray' => [[],['source' => str_repeat('x', 5000),'footer' => '','delayAfterSec' => 0,'media' => ['kind' => 'image','url' => '','extension' => false],'buttons' => [['kind' => 'reply','label' => '','extension' => 0]],'extension' => null]]]);
-        $org->campaigns->update($id, ['templateId' => null,'variableMapping' => null,'trackedLinks' => null,'future' => false], ['projectId' => $project]);
+        $team->campaigns->create(['projectId' => $project,'name' => 'Draft','variableMapping' => ['0' => [],'__proto__' => ['fallback' => '0']],'trackedLinks' => [], 'messagesArray' => [[],['source' => str_repeat('x', 5000),'footer' => '','delayAfterSec' => 0,'media' => ['kind' => 'image','url' => '','extension' => false],'buttons' => [['kind' => 'reply','label' => '','extension' => 0]],'extension' => null]]]);
+        $team->campaigns->update($id, ['templateId' => null,'variableMapping' => null,'trackedLinks' => null,'future' => false], ['projectId' => $project]);
         $messages->campaigns->update('slug', $id, ['templateId' => null]);
         $messages->campaigns->update('slug', $id, ['variableMapping' => null]);
         $messages->campaigns->update('slug', $id, ['trackedLinks' => null]);
         $messages->campaigns->create('slug', ['name' => 'Draft','variableMapping' => ['0' => []],'messageVariations' => null,'variants' => null,'variantStrategy' => null]);
-        $org->campaigns->launch($id, ['projectId' => $project,'scheduledAt' => 0,'skipMissingVariables' => false]);
+        $team->campaigns->launch($id, ['projectId' => $project,'scheduledAt' => 0,'skipMissingVariables' => false]);
         $messages->campaigns->launch('slug', $id, ['scheduledAt' => 0,'skipMissingVariables' => false]);
         $messages->campaigns->listRecipients('slug', $id, ['reason' => 'missing_variable','status' => 'failed','cursor' => 'next','limit' => 1]);
-        $org->campaigns->recipients($id, ['projectId' => $project,'reason' => 'other','status' => 'queued','cursor' => 'next','limit' => 100]);
-        $org->project($project)->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']],'reset' => ['historySync.delivery']],'revision' => 0]);
+        $team->campaigns->recipients($id, ['projectId' => $project,'reason' => 'other','status' => 'queued','cursor' => 'next','limit' => 100]);
+        $team->project($project)->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']],'reset' => ['historySync.delivery']],'revision' => 0]);
         $messages->sessions->update('s', ['configuration' => ['reset' => ['historySync.delivery']],'revision' => 0]);
-        $org->sessions->update('s', ['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']]],'revision' => 0]);
+        $team->sessions->update('s', ['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']]],'revision' => 0]);
         $messages->quickLinks->create(['signalMode' => 'zero_knowledge','configuration' => ['historySync' => ['delivery' => 'descriptor','consent' => 'force_off']]]);
         $messages->quickLinks->create(['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','configuration' => ['allowPhoneChange' => false]]);
         self::campaign($messages->campaigns->retrieve('slug', $id)->data['data']);
         self::analytics($messages->campaigns->analytics('slug', $id)->data['data']);
-        foreach ($org->campaigns->recipients($id, ['projectId' => $project])->data['data'] as $r) {
+        foreach ($team->campaigns->recipients($id, ['projectId' => $project])->data['data'] as $r) {
             self::recipient($r);
         }
         $session = $messages->sessions->retrieve('s')->data['data'];
         if (isset($session['signalMode'])) {
             self::mode($session['signalMode']);
         }
-        $config = $org->project($project)->sessionConfiguration->retrieve()->data;
+        $config = $team->project($project)->sessionConfiguration->retrieve()->data;
         if (isset($config['effective']['historySync']['delivery'])) {
             self::delivery($config['effective']['historySync']['delivery']);
         }
@@ -42,7 +42,7 @@ final class ExistingContractConsumer
         $messages->testing->getPhone($project, 's')->data['online'];
         $messages->testing->sendPhoneMessage($project, 's', ['to' => '+15555555555','text' => 'hello'])->data['messageId'];
         $messages->testing->unlinkPhoneDevice($project, 's', 1)->data['unlinked'];
-        $org->project($project)->requestLogs->list()->items;
+        $team->project($project)->requestLogs->list()->items;
         $messages->whatsappMedia->relayUpload('s', new Polymorfa\EncryptedMediaInfo('image', str_repeat('k', 32), str_repeat('h', 32), str_repeat('e', 32), 1, 26), static fn (?Polymorfa\CancellationToken $c): Psr\Http\Message\StreamInterface => GuzzleHttp\Psr7\Utils::streamFor('cipher'));
         $messages->whatsappMedia->createUploadGrant('s', 'sticker', str_repeat('h', 32));
         $messages->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0,'regenerate' => false])->data['data']['requestId'];

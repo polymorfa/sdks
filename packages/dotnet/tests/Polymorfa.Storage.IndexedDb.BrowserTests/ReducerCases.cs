@@ -76,7 +76,7 @@ internal static class ReducerCases
         Check(saved is not null && saved["chatId"].GetString() == "platform-chat" && saved["text"].GetString() == "mapped native history", "Browser decoded history lost platform identity or content");
         Check(!(await storage.ApplyEventAsync(linked, options)).Applied && calls == 1, "Browser history replay invoked decoder again");
         var webhookEvent = Webhooks.ParseVerifiedEvent(JsonSerializer.SerializeToUtf8Bytes(new WebhookEnvelope("browser-stream-event", "browser-stream", "2026-10-01T12:00:00Z", "message.received", JsonSerializer.SerializeToElement(new { id = "stream-message", conversation = new { id = "stream-chat" }, timestamp = 1790856000, type = "text", text = "stored before ACK" })), Json));
-        var item = new EventStreamItem(new(webhookEvent.Envelope.Id, "synthetic-org", "synthetic-project", "message.received", "runtime", "development", "2026-10-01T00:00:00Z", "available", null, null, "2026-10-15T00:00:00Z"), "browser-stream-id", 1, webhookEvent, "browser-cursor");
+        var item = new EventStreamItem(new(webhookEvent.Envelope.Id, "synthetic-team", "synthetic-project", "message.received", "runtime", "development", "2026-10-01T00:00:00Z", "available", null, null, "2026-10-15T00:00:00Z"), "browser-stream-id", 1, webhookEvent, "browser-cursor");
         var acknowledged = false;
         var source = new SyntheticSource(item, async (_, ack) =>
         {

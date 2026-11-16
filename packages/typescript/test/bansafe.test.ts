@@ -21,7 +21,7 @@ import {
   MessagingClient,
   PolymorfaConfigurationError,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 import {
   startTestServer,
   type RecordedRequest,
@@ -46,8 +46,8 @@ async function testClient(): Promise<{
   return {
     client: new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
       baseUrl: server.url,
       maxNetworkRetries: 0,
@@ -248,10 +248,7 @@ describe("MessagingClient BanSafe settings", () => {
   }
 
   it("maps project settings and number Safe Mode to Messaging routes", async () => {
-    const { client, requests } = await messagingClient(
-      "apiKey",
-      ORGANIZATION_API_KEY,
-    );
+    const { client, requests } = await messagingClient("apiKey", TEAM_API_KEY);
     expectTypeOf(client.banSafe).toEqualTypeOf<MessagingBanSafeResource>();
     await client.banSafe.getProjectSafeMode("project/a");
     await client.banSafe.updateProjectSafeMode("project/a", {
@@ -303,9 +300,7 @@ describe("MessagingClient BanSafe settings", () => {
       onlineEnd: 18,
     });
     expect(JSON.parse(requests[9]!.body)).toEqual({ reads: "off" });
-    expect(requests[0]?.headers.authorization).toBe(
-      `Bearer ${ORGANIZATION_API_KEY}`,
-    );
+    expect(requests[0]?.headers.authorization).toBe(`Bearer ${TEAM_API_KEY}`);
   });
 
   it("rejects browser client tokens before transport", async () => {

@@ -17,7 +17,7 @@ from .transport import ApiResponse, JsonObject, RequestOptions
 
 Theme = Literal["light", "dark", "system"]
 Shape = Literal["square", "rounded", "pill"]
-LogoMode = Literal["none", "custom", "organization", "project"]
+LogoMode = Literal["none", "custom", "team", "project"]
 HistorySync = Literal["ask", "force_on", "force_off"]
 Method = Literal["qr", "pairing"]
 

@@ -32,6 +32,7 @@ public sealed class CallsSocket : IAsyncDisposable
     private readonly object controlGate = new();
     private TaskCompletionSource<CallMediaState>? pendingControl;
     private string? pendingId;
+    private TaskCompletionSource<bool>? pendingWaiting;
     private int queuedControls;
     private int awaitingPong;
     private Task? reader;
@@ -99,7 +100,12 @@ public sealed class CallsSocket : IAsyncDisposable
                 if (frame is CallPong) { Interlocked.Exchange(ref awaitingPong, 0); continue; }
                 lock (controlGate)
                 {
-                    if (frame is CallMediaStateReply reply && reply.RequestId == pendingId) pendingControl?.TrySetResult(new(reply.AudioMuted, reply.VideoEnabled, reply.ScreenSharing));
+                    if (frame is CallWaitingRoomResult waiting && waiting.RequestId == pendingId)
+                    {
+                        if (waiting.Ok) pendingWaiting?.TrySetResult(true);
+                        else pendingWaiting?.TrySetException(new CallsSocketException("Waiting-room control was refused.", waiting.Code ?? "waiting_room_control_unknown"));
+                    }
+                    else if (frame is CallMediaStateReply reply && reply.RequestId == pendingId) pendingControl?.TrySetResult(new(reply.AudioMuted, reply.VideoEnabled, reply.ScreenSharing));
                     else if (frame is CallMediaStateError error && error.RequestId == pendingId) pendingControl?.TrySetException(new CallsSocketException("Media state change was refused.", error.Code));
                 }
                 await frames.Writer.WriteAsync(frame, lifetime.Token).ConfigureAwait(false);
@@ -107,7 +113,7 @@ public sealed class CallsSocket : IAsyncDisposable
         }
         catch (OperationCanceledException) when (lifetime.IsCancellationRequested) { }
         catch (Exception e) { failure = e; }
-        finally { lifetime.Cancel(); lock (controlGate) pendingControl?.TrySetException(failure ?? new CallsSocketException("Media connection closed.", "media_control_unavailable")); frames.Writer.TryComplete(failure); }
+        finally { lifetime.Cancel(); lock (controlGate) { pendingControl?.TrySetException(failure ?? new CallsSocketException("Media connection closed.", "media_control_unavailable")); pendingWaiting?.TrySetException(failure ?? new CallsSocketException("Media connection closed.", "waiting_room_control_unknown")); } frames.Writer.TryComplete(failure); }
     }
     private async Task HeartbeatAsync()
     {
@@ -148,6 +154,22 @@ public sealed class CallsSocket : IAsyncDisposable
         }
         catch (TimeoutException) { throw new CallsSocketException("Media command timed out; its effect is unknown.", "media_control_unknown"); }
         finally { if (entered) { lock (controlGate) { pendingId = null; pendingControl = null; } controls.Release(); } Interlocked.Decrement(ref queuedControls); }
+    }
+    public async Task ModerateWaitingRoomAsync(string operation, string? participantId = null, bool? enabled = null, CancellationToken cancellationToken = default)
+    {
+        if (!media || (operation == "toggle" ? enabled is null || participantId is not null : operation is not ("admit" or "deny") || participantId is null || !System.Text.RegularExpressions.Regex.IsMatch(participantId, "^[1-9][0-9]{0,18}$") || enabled is not null)) throw new PolymorfaValidationException("Specify a waiting-room operation and public target.", "invalid_waiting_room_control");
+        if (Interlocked.Increment(ref queuedControls) > 16) { Interlocked.Decrement(ref queuedControls); throw new CallsSocketException("Control queue is full.", "waiting_room_unavailable"); }
+        var entered = false;
+        try
+        {
+            await controls.WaitAsync(cancellationToken).ConfigureAwait(false); entered = true;
+            var id = CallsProtocol.CreateConnectionId(); var completion = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+            lock (controlGate) { pendingId = id; pendingWaiting = completion; }
+            await SendObjectAsync(new { type = "waiting_room_control", requestId = id, operation, participantId, enabled }, cancellationToken).ConfigureAwait(false);
+            await completion.Task.WaitAsync(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
+        }
+        catch (TimeoutException) { throw new CallsSocketException("Waiting-room control timed out; its effect is unknown.", "waiting_room_control_unknown"); }
+        finally { if (entered) { lock (controlGate) { pendingId = null; pendingWaiting = null; } controls.Release(); } Interlocked.Decrement(ref queuedControls); }
     }
     public Task LeaveAsync(CancellationToken cancellationToken = default) => SendObjectAsync(new { type = "leave" }, cancellationToken);
     public Task EndCallAsync(CancellationToken cancellationToken = default) => SendObjectAsync(new { type = "end_call" }, cancellationToken);

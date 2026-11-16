@@ -80,7 +80,7 @@ func contractRows() []contractWireRow {
 		{"updateProjectSignalCustody", "PUT", "/platform/projects/" + contractProject + "/signal-custody", "", custodyJSON},
 	}
 }
-func callContract(ctx context.Context, id string, m *MessagingClient, c *OrganizationClient, p *ProjectClient, bound bool, o RequestOptions) (any, error) {
+func callContract(ctx context.Context, id string, m *MessagingClient, c *TeamClient, p *ProjectClient, bound bool, o RequestOptions) (any, error) {
 	test := CampaignTestSendRequest{SessionID: contractID, To: "+15551234567", Variables: cptr(map[string]CampaignVariable{})}
 	selection := CampaignProjectParams{contractProject}
 	switch id {
@@ -281,7 +281,7 @@ func TestCampaignContractThirtyWire(t *testing.T) {
 					if r.Method != row.method || r.URL.EscapedPath() != row.path || r.URL.RawQuery != row.query {
 						t.Errorf("wire %s %s?%s", r.Method, r.URL.EscapedPath(), r.URL.RawQuery)
 					}
-					if r.Header.Get("Polymorfa-Version") != expectedVersion || r.Header.Get("Authorization") != "Bearer "+orgConfig("").Credential.Value {
+					if r.Header.Get("Polymorfa-Version") != expectedVersion || r.Header.Get("Authorization") != "Bearer "+teamConfig("").Credential.Value {
 						t.Errorf("authority/version")
 					}
 					body, _ := io.ReadAll(r.Body)
@@ -339,7 +339,7 @@ func TestCampaignContractThirtyWire(t *testing.T) {
 					writeContractFixture(w, row)
 				}))
 				m := mustMessaging(t, s.URL)
-				c, e := NewOrganizationClient(orgConfig(s.URL))
+				c, e := NewTeamClient(teamConfig(s.URL))
 				if e != nil {
 					t.Fatal(e)
 				}

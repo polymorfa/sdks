@@ -31,7 +31,7 @@ internal static class Analytics41Tests
                 metric["conversationBreakdown"]!["rows"]![0]!["replyRate"] = 0;
             }
             foreach (var project in new[] { false, true })
-                await Organization("GET", project ? "/platform/projects/" + Adoption41Fixtures.Project + "/analytics" : "/platform/analytics", null, Adoption41Fixtures.Envelope(body.ToJsonString(), false), async c =>
+                await Team("GET", project ? "/platform/projects/" + Adoption41Fixtures.Project + "/analytics" : "/platform/analytics", null, Adoption41Fixtures.Envelope(body.ToJsonString(), false), async c =>
                 {
                     var value = project ? (await c.Project(Adoption41Fixtures.Project).Analytics.GetAsync()).Data : (await c.Analytics.GetAsync()).Data;
                     var m = value.Summary!;
@@ -41,7 +41,7 @@ internal static class Analytics41Tests
         }
         var optional = JsonNode.Parse(Full)!;
         optional["summary"]!.AsObject().Remove("recipientActivity"); optional["numbers"]![0]!.AsObject().Remove("recipientActivity");
-        await Organization("GET", "/platform/analytics", null, Adoption41Fixtures.Envelope(optional.ToJsonString(), false), async c => Check((await c.Analytics.GetAsync()).Data.Summary!.RecipientActivity is null, "Optional activity omitted"));
-        Console.WriteLine("PASS analytics41 organization and immutable Project full/partial/unknown/zero metrics");
+        await Team("GET", "/platform/analytics", null, Adoption41Fixtures.Envelope(optional.ToJsonString(), false), async c => Check((await c.Analytics.GetAsync()).Data.Summary!.RecipientActivity is null, "Optional activity omitted"));
+        Console.WriteLine("PASS analytics41 team and immutable Project full/partial/unknown/zero metrics");
     }
 }

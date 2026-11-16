@@ -9,7 +9,7 @@ type MessagingCampaigns struct{ t *transport }
 type Campaigns struct{ t *transport }
 
 func (c *MessagingClient) Campaigns() *MessagingCampaigns { return &MessagingCampaigns{c.t} }
-func (c *OrganizationClient) Campaigns() *Campaigns       { return &Campaigns{c.t} }
+func (c *TeamClient) Campaigns() *Campaigns               { return &Campaigns{c.t} }
 func messagingCampaignsPath(project string) string {
 	return messagingProjectPath(project) + "/campaigns"
 }

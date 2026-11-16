@@ -1,4 +1,4 @@
-//! Organization-owned campaign audiences and paginated member imports.
+//! Team-owned campaign audiences and paginated member imports.
 use crate::{
     campaigns::{CampaignRecipientInput, CampaignRecipientPage, InvalidRecipientRow},
     models::DataEnvelope,

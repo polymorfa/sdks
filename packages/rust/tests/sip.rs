@@ -33,8 +33,8 @@ fn create_json() -> serde_json::Value {
     json!({"projectId":"project","name":"PBX","enabled":true,"codecs":["PCMU","opus"],"maxConcurrentCalls":10,"direction":"both","outbound":{"targetUri":"sips:pbx.example.com","transport":"tls","authUsername":"user","authPassword":"write-only","fromUser":null},"inbound":{"session":"support","allowedAddresses":["192.0.2.0/24"],"allowedDestinations":["1","44"]}})
 }
 #[tokio::test]
-async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wire() {
-    wire_unwrapped_organization!(
+async fn team_sip_trunk_configuration_credentials_and_endpoint_native_wire() {
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/sip-trunks?projectId=project",
@@ -44,7 +44,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
             .sip_trunks()
             .list("project", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/sip-trunks",
@@ -54,7 +54,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
             .sip_trunks()
             .create("project", &create(), RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/sip-trunks/trunk",
@@ -64,7 +64,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
             .sip_trunks()
             .retrieve("trunk", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "PATCH",
         "/platform/sip-trunks/trunk",
@@ -90,7 +90,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
             RequestOptions::default()
         )
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "DELETE",
         "/platform/sip-trunks/trunk",
@@ -100,7 +100,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
             .sip_trunks()
             .delete("trunk", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "POST",
         "/platform/sip-trunks/trunk/credentials",
@@ -110,7 +110,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
             .sip_trunks()
             .rotate_credentials("trunk", RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/sip/endpoint",
@@ -118,7 +118,7 @@ async fn organization_sip_trunk_configuration_credentials_and_endpoint_native_wi
         json!({"data":{"status":"hosted","host":"sip.example.com","transports":[{"transport":"tls","port":5061,"srtp":"required"}],"rtp":{"protocol":"udp","portMin":10000,"portMax":20000}}}),
         client.sip_trunks().endpoint(RequestOptions::default())
     );
-    wire_unwrapped_organization!(
+    wire_unwrapped_team!(
         client,
         "GET",
         "/platform/sip/endpoint",
@@ -137,7 +137,7 @@ async fn immutable_project_sip_methods_and_foreign_project_refusal_native_wire()
         expected.clone(),
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let view = client.project("project").unwrap();
     let response = view
         .sip_trunks()
@@ -157,7 +157,7 @@ async fn immutable_project_sip_methods_and_foreign_project_refusal_native_wire()
         expected.clone(),
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let view = client.project("project").unwrap();
     let response = view
         .sip_trunks()
@@ -178,7 +178,7 @@ async fn immutable_project_sip_methods_and_foreign_project_refusal_native_wire()
         json!({"data":foreign}),
     )
     .await;
-    let client = support::organization(base);
+    let client = support::team(base);
     let view = client.project("project").unwrap();
     let error = view
         .sip_trunks()
@@ -247,7 +247,7 @@ async fn project_sip_preflight_excludes_write_key_then_permits_matching_revision
             socket.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{response}",response.len()).as_bytes()).await.unwrap();
         }
     });
-    let client = support::organization(base);
+    let client = support::team(base);
     let view = client.project("PROJECT").unwrap();
     let result = view
         .sip_trunks()

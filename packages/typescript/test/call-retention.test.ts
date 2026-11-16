@@ -9,7 +9,7 @@ import {
   type CallRetention,
   type UpdateCallRetentionRequest,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
+import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 const DEFAULT_RETENTION: CallRetention = {
   policy: "extended",
@@ -29,9 +29,9 @@ function request(fetch: ReturnType<typeof vi.fn>, index: number) {
   };
 }
 
-function organizationClient(fetch: typeof globalThis.fetch) {
+function teamClient(fetch: typeof globalThis.fetch) {
   return new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: "https://api.example.com",
     fetch,
     maxNetworkRetries: 0,
@@ -66,16 +66,14 @@ describe("call retention", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: DEFAULT_RETENTION }),
     );
-    const response = await organizationClient(fetch).callRetention.retrieve();
+    const response = await teamClient(fetch).callRetention.retrieve();
     expect(response.data).toEqual(DEFAULT_RETENTION);
     const sent = request(fetch, 0);
     expect(sent.method).toBe("GET");
     expect(sent.url.pathname).toBe("/platform/call-retention");
     expect(sent.url.search).toBe("");
     expect(sent.body).toBeUndefined();
-    expect(sent.headers.get("authorization")).toBe(
-      `Bearer ${ORGANIZATION_API_KEY}`,
-    );
+    expect(sent.headers.get("authorization")).toBe(`Bearer ${TEAM_API_KEY}`);
   });
 
   it("keeps unknown appliesTo kinds", async () => {
@@ -86,7 +84,7 @@ describe("call retention", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: future }),
     );
-    const response = await organizationClient(fetch).callRetention.retrieve();
+    const response = await teamClient(fetch).callRetention.retrieve();
     expect(response.data.appliesTo).toContain("recordings");
   });
 
@@ -148,7 +146,7 @@ describe("call retention", () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json({ success: true, data: saved }),
     );
-    const client = organizationClient(fetch);
+    const client = teamClient(fetch);
     const input: UpdateCallRetentionRequest = {
       policy: "custom",
       retentionDays: 45,
@@ -205,7 +203,7 @@ describe("call retention", () => {
         "call retention revision is 2, not 1",
       ),
     );
-    const error = await organizationClient(fetch)
+    const error = await teamClient(fetch)
       .callRetention.update({ policy: "standard", expectedRevision: 1 })
       .catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(PolymorfaConflictError);
@@ -228,7 +226,7 @@ describe("call retention", () => {
         "retentionDays must be 30 for the standard policy",
       ),
     );
-    const error = await organizationClient(fetch)
+    const error = await teamClient(fetch)
       .callRetention.update({ policy: "standard", retentionDays: 31 })
       .catch((caught: unknown) => caught);
     expect(error).toBeInstanceOf(PolymorfaValidationError);

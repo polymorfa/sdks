@@ -33,7 +33,7 @@ func TestCallsPlacementBindsOnlyServerPrincipal(t *testing.T) {
 				w.Write([]byte(`{"success":true,"data":{"callId":"call","session":"bound","video":false}}`))
 			}))
 			defer server.Close()
-			credential := Credential{Kind: OrganizationAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
+			credential := Credential{Kind: TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
 			participant := "worker"
 			if clientToken {
 				credential = Credential{Kind: ClientToken, Value: "pmfa_ct_Zml4dHVyZQ"}

@@ -93,7 +93,7 @@ async def test_native_stored_history_stream_preserves_bytes_metadata_and_display
 
     async with (
         wire(handler) as base,
-        AsyncMessagingClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncMessagingClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         stream = await client.chats.download_message_media_stream(
             "support", "person@example", "message_1"
@@ -141,7 +141,7 @@ async def test_native_voice_upload_never_sends_api_cookie_or_credential_to_stora
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         result = await client.voice.audio.upload(
             "Greeting",
@@ -167,7 +167,7 @@ async def test_native_api_response_rejects_non_json_numeric_constant_with_metada
 
     async with (
         wire(handler) as base,
-        AsyncClient(Credential("organization_api_key", SERVER), base_url=base) as client,
+        AsyncClient(Credential("team_api_key", SERVER), base_url=base) as client,
     ):
         with pytest.raises(ServerError) as failure:
             await client.projects.list()

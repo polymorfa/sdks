@@ -42,7 +42,7 @@ fn update_health() -> UpdateProjectHealthPolicyRequest {
 }
 #[tokio::test]
 async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_native_wire() {
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects/project/safe-mode",
@@ -52,7 +52,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             .projects()
             .get_safe_mode("project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/projects/project/safe-mode",
@@ -62,7 +62,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             .projects()
             .update_safe_mode("project", &update_safety(), RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects/project/warmup-plan",
@@ -72,7 +72,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             .projects()
             .get_warmup_plan("project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/projects/project/warmup-plan",
@@ -84,7 +84,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects/project/insurance-evidence",
@@ -94,7 +94,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             .projects()
             .get_insurance_evidence("project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/projects/project/insurance-evidence",
@@ -106,7 +106,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects/project/health-policy",
@@ -116,7 +116,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             .projects()
             .get_health_policy("project", RequestOptions::default())
     );
-    wire_organization!(
+    wire_team!(
         client,
         "PUT",
         "/platform/projects/project/health-policy",
@@ -130,7 +130,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
             RequestOptions::default()
         )
     );
-    wire_organization!(
+    wire_team!(
         client,
         "GET",
         "/platform/projects/project/hybrid-merge-candidates",

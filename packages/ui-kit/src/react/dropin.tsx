@@ -1,24 +1,16 @@
 import {
   InboxController,
   MessageComposerController,
-  TemplateBuilderController,
-  connectWhatsApp,
   isQuickLinkUrl,
   warnInvalidQuickLink,
   createConversationComposerActions,
   createHandlerInboxSource,
-  createSameOriginTemplateBuilderTransport,
-  type ConnectWhatsAppOptions,
-  type ConnectWhatsAppResult,
   type ConversationController,
   type ConversationMessage,
   type InboxContact,
   type InboxConversation,
   type InboxDataSource,
   type InboxSnapshot,
-  type PolymorfaClientStatus,
-  type ProjectTemplateDocument,
-  type TemplateDraft,
 } from "../browser/index.js";
 import {
   filterInboxRows,
@@ -45,7 +37,6 @@ import {
   ComposeBox,
   Icon,
   MessageList,
-  TemplateBuilder,
   text,
   useShell,
   useSlots,
@@ -57,7 +48,6 @@ import {
   usePermission,
   usePermissions,
   usePolymorfa,
-  usePolymorfaClient,
 } from "./context.js";
 import { useController, useOwnedController } from "./hooks.js";
 import { CallButton } from "./call-button.js";
@@ -1003,97 +993,6 @@ export function Inbox({
   );
 }
 
-// ── ConnectWhatsAppButton ─────────────────────────────────────────────
-
-export interface ConnectWhatsAppButtonProps extends Pick<
-  ConnectWhatsAppOptions,
-  "target" | "open"
-> {
-  readonly children?: ReactNode;
-  readonly onConnect?: (result: ConnectWhatsAppResult) => void;
-  readonly onError?: (error: unknown) => void;
-  readonly className?: string;
-  readonly classNames?: SlotClassNames;
-}
-
-/**
- * Creates a QuickLink through your handler and opens Polymorfa's hosted
- * pairing page. The pairing UI is never embedded.
- */
-export function ConnectWhatsAppButton({
-  target = "redirect",
-  open,
-  children,
-  onConnect,
-  onError,
-  className,
-  classNames,
-}: ConnectWhatsAppButtonProps) {
-  const client = usePolymorfaClient();
-  const configuration = usePolymorfa();
-  const slots = useSlots(classNames);
-  const root = useShell(
-    slots,
-    "connectButton",
-    "pmfa-btn pmfa-btn-primary pmfa-connect",
-    className,
-  );
-  const allowed = usePermission(
-    "ConnectWhatsAppButton",
-    "button",
-    "connect_whatsapp",
-  );
-  const [busy, setBusy] = useState(false);
-  const [failed, setFailed] = useState(false);
-  const errorId = useId();
-  if (!allowed) return null;
-  return (
-    <>
-      <button
-        type="button"
-        {...root}
-        data-pmfa="connect-whatsapp"
-        aria-busy={busy ? "true" : undefined}
-        aria-describedby={failed ? errorId : undefined}
-        disabled={busy}
-        onClick={() => {
-          setBusy(true);
-          setFailed(false);
-          connectWhatsApp(client, {
-            target,
-            ...(open === undefined ? {} : { open }),
-          }).then(
-            (result) => {
-              setBusy(false);
-              onConnect?.(result);
-            },
-            (error: unknown) => {
-              setBusy(false);
-              setFailed(true);
-              onError?.(error);
-            },
-          );
-        }}
-      >
-        <Icon name="link" />
-        {busy
-          ? text(configuration, "connect.opening")
-          : (children ?? text(configuration, "connect.button"))}
-      </button>
-      {failed && (
-        <span
-          id={errorId}
-          role="alert"
-          {...slots("error", "pmfa pmfa-error")}
-          style={{ display: "block", marginTop: 6 }}
-        >
-          {text(configuration, "connect.failed")}
-        </span>
-      )}
-    </>
-  );
-}
-
 // ── QuickLinkButton ───────────────────────────────────────────────────
 
 export interface QuickLinkButtonProps {
@@ -1113,8 +1012,8 @@ export interface QuickLinkButtonProps {
 
 /**
  * A link styled as the Connect WhatsApp button for a QuickLink your server
- * already created. It creates nothing and needs no client token; use
- * `ConnectWhatsAppButton` to create the link through your handler instead.
+ * already created. It creates nothing and needs no client token. Create the
+ * link on your server before rendering it.
  */
 export function QuickLinkButton({
   url,
@@ -1151,228 +1050,5 @@ export function QuickLinkButton({
       <Icon name="link" />
       {children ?? text(configuration, "connect.button")}
     </a>
-  );
-}
-
-// ── SessionStatus ─────────────────────────────────────────────────────
-
-export interface SessionStatusProps {
-  /** Show a Retry button after a failure. Defaults to `true`. */
-  readonly retry?: boolean;
-  readonly className?: string;
-  readonly classNames?: SlotClassNames;
-}
-
-/** The provider's connection state as a badge, with a retry prompt. */
-export function SessionStatus({
-  retry = true,
-  className,
-  classNames,
-}: SessionStatusProps) {
-  const client = usePolymorfaClient();
-  const { snapshot } = usePermissions();
-  const configuration = usePolymorfa();
-  const slots = useSlots(classNames);
-  const root = useShell(slots, "sessionStatus", "pmfa-session", className);
-  const status: PolymorfaClientStatus = snapshot?.status ?? "idle";
-  const label = text(configuration, `status.${status}`);
-  const failed =
-    status === "error" || status === "unauthenticated" || status === "retrying";
-  return (
-    <span
-      {...root}
-      role="status"
-      data-pmfa="session-status"
-      data-status={status}
-      aria-label={text(configuration, "status.label", { status: label })}
-    >
-      <span className="pmfa-session-dot" aria-hidden="true" />
-      <span aria-hidden="true">{label}</span>
-      {retry && failed && (
-        <button
-          type="button"
-          {...slots("button", "pmfa-btn pmfa-btn-ghost")}
-          onClick={() => void client.refresh().catch(() => undefined)}
-        >
-          {text(configuration, "common.retry")}
-        </button>
-      )}
-    </span>
-  );
-}
-
-// ── TemplateManager ───────────────────────────────────────────────────
-
-export interface TemplateManagerProps {
-  /** Starting draft for "New template". */
-  readonly newDraft?: TemplateDraft;
-  readonly className?: string;
-  readonly classNames?: SlotClassNames;
-}
-
-const DEFAULT_DRAFT: TemplateDraft = {
-  name: "new_template",
-  definition: {
-    version: 1,
-    kind: "standard",
-    category: "UTILITY",
-    language: "en_US",
-    body: "Hello {{name}}",
-    variables: [{ name: "name", type: "text", example: "Ada" }],
-  },
-} as TemplateDraft;
-
-/**
- * Lists your project's templates and edits one with `<TemplateBuilder/>`,
- * through your handler's `templates` route.
- */
-export function TemplateManager({
-  newDraft = DEFAULT_DRAFT,
-  className,
-  classNames,
-}: TemplateManagerProps) {
-  const client = usePolymorfaClient();
-  const configuration = usePolymorfa();
-  const slots = useSlots(classNames);
-  const root = useShell(slots, "templateManager", "pmfa-tm", className);
-  const allowed = usePermission(
-    "TemplateManager",
-    "templates",
-    "manage_templates",
-  );
-  const transport = useMemo(
-    () =>
-      createSameOriginTemplateBuilderTransport({
-        path: client.url("templates"),
-        fetch: client.fetch,
-      }),
-    [client],
-  );
-  const [templates, setTemplates] = useState<
-    readonly ProjectTemplateDocument[] | undefined
-  >();
-  const [failed, setFailed] = useState(false);
-  const [editing, setEditing] = useState<
-    { readonly id?: string; readonly key: number } | undefined
-  >();
-  const reload = useCallback(() => {
-    const abort = new AbortController();
-    setFailed(false);
-    transport.list!(abort.signal).then(setTemplates, () => setFailed(true));
-    return () => abort.abort();
-  }, [transport]);
-  useEffect(() => {
-    if (allowed && editing === undefined) return reload();
-    return undefined;
-  }, [allowed, editing, reload]);
-  if (!allowed) return null;
-  if (editing !== undefined)
-    return (
-      <div {...root} data-pmfa="template-manager">
-        <div className="pmfa-tm-head">
-          <button
-            type="button"
-            {...slots("backButton", "pmfa-btn pmfa-btn-ghost")}
-            onClick={() => setEditing(undefined)}
-          >
-            <Icon name="back" />
-            {text(configuration, "templates.back")}
-          </button>
-        </div>
-        <TemplateEditor
-          key={editing.key}
-          transport={transport}
-          {...(editing.id === undefined ? {} : { templateId: editing.id })}
-          draft={newDraft}
-          {...(classNames === undefined ? {} : { classNames })}
-        />
-      </div>
-    );
-  return (
-    <div {...root} data-pmfa="template-manager">
-      <div className="pmfa-tm-head">
-        <h2>{text(configuration, "templates.list")}</h2>
-        <button
-          type="button"
-          {...slots("primaryButton", "pmfa-btn pmfa-btn-primary")}
-          onClick={() => setEditing({ key: Date.now() })}
-        >
-          <Icon name="plus" />
-          {text(configuration, "templates.new")}
-        </button>
-      </div>
-      {failed ? (
-        <div className="pmfa-inbox-state" role="alert">
-          <p className="pmfa-error">
-            {text(configuration, "templates.loadError")}
-          </p>
-          <button
-            type="button"
-            {...slots("button", "pmfa-btn")}
-            onClick={reload}
-          >
-            {text(configuration, "common.retry")}
-          </button>
-        </div>
-      ) : templates === undefined ? (
-        <div className="pmfa-skeleton" aria-busy="true">
-          <span />
-          <span />
-        </div>
-      ) : templates.length === 0 ? (
-        <div {...slots("empty", "pmfa-inbox-state")}>
-          {text(configuration, "templates.empty")}
-        </div>
-      ) : (
-        <ul {...slots("templateList", "pmfa-tm-list")}>
-          {templates.map((template) => (
-            <li key={template.id}>
-              <button
-                type="button"
-                {...slots("templateItem", "pmfa-tm-item")}
-                onClick={() => setEditing({ id: template.id, key: Date.now() })}
-              >
-                <span className="pmfa-tm-name">{template.name}</span>
-                <span className="pmfa-tm-body">{template.definition.body}</span>
-                <span className="pmfa-tm-meta">
-                  <span className="pmfa-tag" data-status={template.status}>
-                    {template.status}
-                  </span>
-                  <span className="pmfa-tag">{template.category}</span>
-                  <span className="pmfa-tag">{template.language}</span>
-                </span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
-  );
-}
-
-function TemplateEditor({
-  transport,
-  templateId,
-  draft,
-  classNames,
-}: {
-  readonly transport: ReturnType<
-    typeof createSameOriginTemplateBuilderTransport
-  >;
-  readonly templateId?: string;
-  readonly draft: TemplateDraft;
-  readonly classNames?: SlotClassNames;
-}) {
-  const controller = useOwnedController(undefined, () => {
-    const created = new TemplateBuilderController(transport);
-    if (templateId === undefined) created.create(draft);
-    else void created.load(templateId);
-    return created;
-  })!;
-  return (
-    <TemplateBuilder
-      controller={controller}
-      {...(classNames === undefined ? {} : { classNames })}
-    />
   );
 }

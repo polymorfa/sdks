@@ -9,7 +9,7 @@ from polymorfa.calls import AudioFrame, MediaSocket
 
 async def main() -> None:
     async with MediaSocket(
-        Credential("organization_api_key", os.environ["POLYMORFA_API_KEY"]),
+        Credential("team_api_key", os.environ["POLYMORFA_API_KEY"]),
         os.environ["POLYMORFA_CALL_ID"],
         os.environ["POLYMORFA_CONNECTION_ID"],
         participant=os.environ["POLYMORFA_PARTICIPANT"],

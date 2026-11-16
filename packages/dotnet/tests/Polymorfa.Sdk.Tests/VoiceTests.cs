@@ -6,35 +6,35 @@ internal static class VoiceTests
     private const string CredentialJson = """{"id":"c1","projectId":null,"provider":"openai","label":"Voice","keyFingerprint":"1234abcd","status":"future_status","verifiedAt":"2026-09-22","lastError":null,"revision":2,"createdAt":"2026-09-22","updatedAt":"2026-09-22"}""";
     public static async Task RunAsync()
     {
-        await Organization("GET", "/platform/voice/audio?projectId=p1&status=ready&limit=2", null, "{\"data\":[" + Asset + "],\"page\":{\"nextCursor\":null}}", async c => ResourceTests.Equal((await c.Voice.Audio.ListAsync("p1", new(Status: "ready", Limit: 2))).Items[0].DurationMs, 500L));
-        await Organization("POST", "/platform/voice/audio", """{"name":"Greeting","contentType":"audio/ogg","sizeBytes":3,"projectId":"p1"}""", "{\"data\":{\"asset\":" + Asset + ",\"upload\":{\"url\":\"https://storage.example/once\",\"method\":\"POST\",\"headers\":{\"x-upload\":\"fixture\"},\"maxBytes\":16777216,\"expiresAt\":\"2026-09-22\"}}}", async c => { var u = (await c.Voice.Audio.CreateUploadAsync(new("Greeting", "audio/ogg", 3), "p1")).Data; ResourceTests.Equal(u.Upload.MaxBytes, 16777216L); ResourceTests.True(!u.Upload.ToString().Contains("/once")); });
-        await Organization("POST", "/platform/voice/audio/tts", """{"name":"Greeting","text":"Hello","provider":"openai","voiceId":"alloy","model":"tts-1","projectId":"p1"}""", Envelope(Asset.Replace("\"tts\":null", "\"tts\":{\"provider\":\"openai\",\"voiceId\":\"alloy\",\"model\":\"tts-1\",\"text\":\"Hello\",\"characters\":5,\"keySource\":\"managed\",\"credentialId\":null}")), async c => ResourceTests.Equal((await c.Voice.Audio.SynthesizeAsync(new OpenAiVoiceAudioInput("Greeting", "Hello", OpenAiTtsVoice.Alloy, OpenAiTtsModel.Tts1), "p1")).Data.Tts!.Characters, 5L));
-        await Organization("GET", "/platform/voice/audio/a1", null, Envelope(Asset), async c => ResourceTests.Equal((await c.Voice.Audio.RetrieveAsync("a1")).Data.ContentSha256, "abcdef"));
-        await Organization("POST", "/platform/voice/audio/a1/complete", null, Envelope(Asset), async c => ResourceTests.Equal((await c.Voice.Audio.CompleteAsync("a1")).Data.Status, "ready"));
-        await Organization("PATCH", "/platform/voice/audio/a1", """{"expectedRevision":1,"retentionDays":null}""", Envelope(Asset), async c => ResourceTests.Equal((await c.Voice.Audio.UpdateAsync("a1", new(ExpectedRevision: 1, RetentionDays: PatchValue<int?>.Set(null)))).Data.Revision, 2L));
-        await Organization("DELETE", "/platform/voice/audio/a1", null, """{"data":{"id":"a1","deleted":true}}""", async c => ResourceTests.True((await c.Voice.Audio.DeleteAsync("a1")).Data.Deleted));
-        await Organization("GET", "/platform/voice/audio/a1/preview", null, """{"data":{"url":"https://storage.example/once","contentType":"audio/ogg","expiresAt":"2026-09-22"}}""", async c => ResourceTests.True(!(await c.Voice.Audio.PreviewUrlAsync("a1")).Data.ToString().Contains("/once")));
-        await Organization("GET", "/platform/voice/provider-credentials?projectId=p1", null, "{\"data\":[" + CredentialJson + "]}", async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.ListAsync("p1")).Data[0].Status, "future_status"));
-        await Organization("POST", "/platform/voice/provider-credentials", """{"provider":"openai","label":"Voice","apiKey":"fixture-key","projectId":null}""", Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.CreateAsync(new("openai", "Voice", "fixture-key", PatchValue<string>.Set(null)))).Data.KeyFingerprint, "1234abcd"));
-        await Organization("GET", "/platform/voice/provider-credentials/c1", null, Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.RetrieveAsync("c1")).Data.ProjectId, null));
-        await Organization("POST", "/platform/voice/provider-credentials/c1/verify", null, Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.VerifyAsync("c1")).Data.Revision, 2L));
-        await Organization("DELETE", "/platform/voice/provider-credentials/c1", null, """{"data":{"id":"c1","deleted":true}}""", async c => ResourceTests.True((await c.Voice.ProviderCredentials.DeleteAsync("c1")).Data.Deleted));
+        await Team("GET", "/platform/voice/audio?projectId=p1&status=ready&limit=2", null, "{\"data\":[" + Asset + "],\"page\":{\"nextCursor\":null}}", async c => ResourceTests.Equal((await c.Voice.Audio.ListAsync("p1", new(Status: "ready", Limit: 2))).Items[0].DurationMs, 500L));
+        await Team("POST", "/platform/voice/audio", """{"name":"Greeting","contentType":"audio/ogg","sizeBytes":3,"projectId":"p1"}""", "{\"data\":{\"asset\":" + Asset + ",\"upload\":{\"url\":\"https://storage.example/once\",\"method\":\"POST\",\"headers\":{\"x-upload\":\"fixture\"},\"maxBytes\":16777216,\"expiresAt\":\"2026-09-22\"}}}", async c => { var u = (await c.Voice.Audio.CreateUploadAsync(new("Greeting", "audio/ogg", 3), "p1")).Data; ResourceTests.Equal(u.Upload.MaxBytes, 16777216L); ResourceTests.True(!u.Upload.ToString().Contains("/once")); });
+        await Team("POST", "/platform/voice/audio/tts", """{"name":"Greeting","text":"Hello","provider":"openai","voiceId":"alloy","model":"tts-1","projectId":"p1"}""", Envelope(Asset.Replace("\"tts\":null", "\"tts\":{\"provider\":\"openai\",\"voiceId\":\"alloy\",\"model\":\"tts-1\",\"text\":\"Hello\",\"characters\":5,\"keySource\":\"managed\",\"credentialId\":null}")), async c => ResourceTests.Equal((await c.Voice.Audio.SynthesizeAsync(new OpenAiVoiceAudioInput("Greeting", "Hello", OpenAiTtsVoice.Alloy, OpenAiTtsModel.Tts1), "p1")).Data.Tts!.Characters, 5L));
+        await Team("GET", "/platform/voice/audio/a1", null, Envelope(Asset), async c => ResourceTests.Equal((await c.Voice.Audio.RetrieveAsync("a1")).Data.ContentSha256, "abcdef"));
+        await Team("POST", "/platform/voice/audio/a1/complete", null, Envelope(Asset), async c => ResourceTests.Equal((await c.Voice.Audio.CompleteAsync("a1")).Data.Status, "ready"));
+        await Team("PATCH", "/platform/voice/audio/a1", """{"expectedRevision":1,"retentionDays":null}""", Envelope(Asset), async c => ResourceTests.Equal((await c.Voice.Audio.UpdateAsync("a1", new(ExpectedRevision: 1, RetentionDays: PatchValue<int?>.Set(null)))).Data.Revision, 2L));
+        await Team("DELETE", "/platform/voice/audio/a1", null, """{"data":{"id":"a1","deleted":true}}""", async c => ResourceTests.True((await c.Voice.Audio.DeleteAsync("a1")).Data.Deleted));
+        await Team("GET", "/platform/voice/audio/a1/preview", null, """{"data":{"url":"https://storage.example/once","contentType":"audio/ogg","expiresAt":"2026-09-22"}}""", async c => ResourceTests.True(!(await c.Voice.Audio.PreviewUrlAsync("a1")).Data.ToString().Contains("/once")));
+        await Team("GET", "/platform/voice/provider-credentials?projectId=p1", null, "{\"data\":[" + CredentialJson + "]}", async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.ListAsync("p1")).Data[0].Status, "future_status"));
+        await Team("POST", "/platform/voice/provider-credentials", """{"provider":"openai","label":"Voice","apiKey":"fixture-key","projectId":null}""", Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.CreateAsync(new("openai", "Voice", "fixture-key", PatchValue<string>.Set(null)))).Data.KeyFingerprint, "1234abcd"));
+        await Team("GET", "/platform/voice/provider-credentials/c1", null, Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.RetrieveAsync("c1")).Data.ProjectId, null));
+        await Team("POST", "/platform/voice/provider-credentials/c1/verify", null, Envelope(CredentialJson), async c => ResourceTests.Equal((await c.Voice.ProviderCredentials.VerifyAsync("c1")).Data.Revision, 2L));
+        await Team("DELETE", "/platform/voice/provider-credentials/c1", null, """{"data":{"id":"c1","deleted":true}}""", async c => ResourceTests.True((await c.Voice.ProviderCredentials.DeleteAsync("c1")).Data.Deleted));
         await Confine(); await WaitTerminal(); await WaitDeadline(); await UploadTls();
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
+        using var client = new TeamClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"));
         try { await client.Voice.Audio.UploadAsync(new("Greeting", "audio/ogg", 4), new byte[3], "p1"); throw new Exception("Size mismatch accepted"); } catch (PolymorfaValidationException) { }
         try { await client.Voice.Audio.ListAsync(); throw new Exception("Missing project accepted"); } catch (PolymorfaConfigurationException) { }
         ResourceTests.True(!new CreateVoiceProviderCredentialInput("openai", "Voice", "fixture-key").ToString().Contains("fixture-key"));
         Console.WriteLine("PASS 13 typed Voice APIs, retention nulls, provider redaction, project confinement and bounded ready waits");
     }
     private static string Envelope(string json) => "{\"data\":" + json + "}";
-    private static Task Organization(string method, string path, string? body, string response, Func<OrganizationClient, Task> invoke) => BillingTests.Organization(method, path, body, response, invoke);
+    private static Task Team(string method, string path, string? body, string response, Func<TeamClient, Task> invoke) => BillingTests.Team(method, path, body, response, invoke);
     private static async Task Confine()
     {
         foreach (var team in new[] { false, true })
         {
             using var fixture = new WireFixture { AbsentHeaders = ["idempotency-key"] };
             var serving = fixture.ServeAsync("GET", team ? "/platform/voice/provider-credentials/c1" : "/platform/voice/audio/a1", null, Envelope(team ? CredentialJson : Asset.Replace("\"p1\"", "\"other\"")));
-            using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url }); var bound = client.Project("p1");
+            using var client = new TeamClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url }); var bound = client.Project("p1");
             try { if (team) await bound.Voice.ProviderCredentials.DeleteAsync("c1", new() { IdempotencyKey = "mutation-key" }); else await bound.Voice.Audio.DeleteAsync("a1", new() { IdempotencyKey = "mutation-key" }); throw new Exception("Project escaped confinement"); }
             catch (PolymorfaAuthorizationException) when (team) { }
             catch (PolymorfaNotFoundException) when (!team) { }
@@ -43,11 +43,11 @@ internal static class VoiceTests
     }
     private static async Task WaitTerminal()
     {
-        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/platform/voice/audio/a1", null, Envelope(Asset.Replace("\"ready\"", "\"failed\""))); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url }); ResourceTests.Equal((await client.Voice.Audio.WaitUntilReadyAsync("a1", new(TimeSpan.FromSeconds(1)))).Data.Status, "failed"); await serving;
+        using var fixture = new WireFixture(); var serving = fixture.ServeAsync("GET", "/platform/voice/audio/a1", null, Envelope(Asset.Replace("\"ready\"", "\"failed\""))); using var client = new TeamClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url }); ResourceTests.Equal((await client.Voice.Audio.WaitUntilReadyAsync("a1", new(TimeSpan.FromSeconds(1)))).Data.Status, "failed"); await serving;
     }
     private static async Task WaitDeadline()
     {
-        using var fixture = new WireFixture(); using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
+        using var fixture = new WireFixture(); using var client = new TeamClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = fixture.Url });
         var started = System.Diagnostics.Stopwatch.GetTimestamp(); try { await client.Voice.Audio.WaitUntilReadyAsync("a1", new(TimeSpan.FromMilliseconds(20))); throw new Exception("Wait ignored budget"); } catch (PolymorfaTimeoutException) { ResourceTests.True(System.Diagnostics.Stopwatch.GetElapsedTime(started) < TimeSpan.FromSeconds(1)); }
     }
 #pragma warning disable SYSLIB0057 // Public certificate fixture supports .NET 8 loading.
@@ -62,7 +62,7 @@ internal static class VoiceTests
         using var storage = new WireFixture(cert) { AbsentHeaders = ["authorization", "cookie", "idempotency-key", "x-private", "polymorfa-version"], ExpectedHeaders = new Dictionary<string, string> { ["x-upload"] = "fixture", ["content-type"] = "audio/ogg" } };
         using var api = new WireFixture();
         var servingApi = Serve(); var servingStorage = storage.ServeAsync("POST", "/upload", "bytes:b2dn", "", 204);
-        using var client = new OrganizationClient(Credential.OrganizationApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = api.Url, StorageTransportHandlerFactory = () => new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, SslOptions = new System.Net.Security.SslClientAuthenticationOptions { RemoteCertificateValidationCallback = (_, peer, _, _) => peer?.GetCertHashString() == cert.GetCertHashString() } } });
+        using var client = new TeamClient(Credential.TeamApiKey("pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"), new() { BaseUrl = api.Url, StorageTransportHandlerFactory = () => new SocketsHttpHandler { AllowAutoRedirect = false, UseCookies = false, SslOptions = new System.Net.Security.SslClientAuthenticationOptions { RemoteCertificateValidationCallback = (_, peer, _, _) => peer?.GetCertHashString() == cert.GetCertHashString() } } });
         ResourceTests.Equal((await client.Voice.Audio.UploadAsync(new("Greeting", "audio/ogg", 3), System.Text.Encoding.UTF8.GetBytes("ogg"), "p1", new() { IdempotencyKey = "create", Headers = new Dictionary<string, string> { ["x-private"] = "fixture" } })).Data.Status, "ready");
         await Task.WhenAll(servingApi, servingStorage);
         async Task Serve()

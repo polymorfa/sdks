@@ -31,7 +31,7 @@ func TestEventStreamLiveSourceNativeWire(t *testing.T) {
 		<-r.Context().Done()
 	}))
 	defer server.Close()
-	client, _ := NewOrganizationClient(orgConfig(server.URL))
+	client, _ := NewTeamClient(teamConfig(server.URL))
 	project, _ := client.Project("p")
 	source, err := project.Events().LiveSource(EventStreamParams{Types: []string{"future.*"}})
 	if err != nil {
@@ -91,7 +91,7 @@ func TestEventStreamLiveSourceErrorsAndPayloadRecovery(t *testing.T) {
 		}
 	}))
 	defer server.Close()
-	client, _ := NewOrganizationClient(orgConfig(server.URL))
+	client, _ := NewTeamClient(teamConfig(server.URL))
 	source, _ := client.Events().LiveSource(EventStreamParams{ProjectID: "p", InitialDelay: time.Millisecond, MaxDelay: time.Millisecond, OnReconnect: func(err error, delay time.Duration) {
 		var api *Error
 		if !errors.As(err, &api) || api.Code != "invalid_response" {

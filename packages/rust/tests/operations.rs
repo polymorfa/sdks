@@ -9,10 +9,10 @@ use tokio::{
 };
 
 fn operation(project: bool, status: &str, sequence: u64) -> serde_json::Value {
-    json!({"id":"operation","organizationId":"org","projectId":if project { Some("project") } else { None },"kind":"session_lifecycle","resource":{"type":"session","id":"s"},"status":status,"sequence":sequence,"capabilities":{"cancellable":true,"watchable":true},"progress":{"code":"starting","current":1,"total":2},"result":null,"error":null,"actionRequired":null,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z","completedAt":null})
+    json!({"id":"operation","teamId":"team","projectId":if project { Some("project") } else { None },"kind":"session_lifecycle","resource":{"type":"session","id":"s"},"status":status,"sequence":sequence,"capabilities":{"cancellable":true,"watchable":true},"progress":{"code":"starting","current":1,"total":2},"result":null,"error":null,"actionRequired":null,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z","completedAt":null})
 }
 #[tokio::test]
-async fn organization_and_project_operation_public_methods_native_wire_contracts() {
+async fn team_and_project_operation_public_methods_native_wire_contracts() {
     for project in [false, true] {
         let prefix = if project {
             "/platform/projects/project"
@@ -27,12 +27,12 @@ async fn organization_and_project_operation_public_methods_native_wire_contracts
             json!({"data":[expected],"page":{"nextCursor":null,"hasMore":false}}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.operations()
         } else {
-            organization.operations()
+            team.operations()
         };
         let page = resource
             .list(
@@ -55,12 +55,12 @@ async fn organization_and_project_operation_public_methods_native_wire_contracts
             json!({"data":expected}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.operations()
         } else {
-            organization.operations()
+            team.operations()
         };
         let response = resource
             .get(
@@ -84,12 +84,12 @@ async fn organization_and_project_operation_public_methods_native_wire_contracts
             json!({"data":[transition],"page":{"nextCursor":null,"hasMore":false}}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.operations()
         } else {
-            organization.operations()
+            team.operations()
         };
         let page = resource
             .list_transitions(
@@ -114,12 +114,12 @@ async fn organization_and_project_operation_public_methods_native_wire_contracts
             json!({"data":receipt}),
         )
         .await;
-        let organization = support::organization(base);
-        let view = organization.project("project").unwrap();
+        let team = support::team(base);
+        let view = team.project("project").unwrap();
         let resource = if project {
             view.operations()
         } else {
-            organization.operations()
+            team.operations()
         };
         let response = resource
             .cancel("operation", RequestOptions::default())
@@ -152,8 +152,8 @@ async fn operation_wait_long_polls_until_terminal_and_zero_budget_still_reads() 
             socket.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
         }
     });
-    let organization = support::organization(base);
-    let view = organization.project("project").unwrap();
+    let team = support::team(base);
+    let view = team.project("project").unwrap();
     let result = view
         .operations()
         .wait(
@@ -175,7 +175,7 @@ async fn operation_wait_long_polls_until_terminal_and_zero_budget_still_reads() 
         json!({"data":operation(false,"running",1)}),
     )
     .await;
-    let result = support::organization(base)
+    let result = support::team(base)
         .operations()
         .wait(
             "operation",
@@ -192,8 +192,8 @@ async fn operation_wait_long_polls_until_terminal_and_zero_budget_still_reads() 
 
 #[tokio::test]
 async fn operation_wait_and_owner_filters_fail_closed_before_network() {
-    let organization = support::organization("http://localhost:1".into());
-    let project = organization.project("project").unwrap();
+    let team = support::team("http://localhost:1".into());
+    let project = team.project("project").unwrap();
     assert!(project
         .operations()
         .get(
@@ -206,7 +206,7 @@ async fn operation_wait_and_owner_filters_fail_closed_before_network() {
         )
         .await
         .is_err());
-    assert!(organization
+    assert!(team
         .operations()
         .get(
             "operation",

@@ -707,7 +707,7 @@ pub enum ProjectDefaultTier {
 #[serde(rename_all = "camelCase")]
 pub struct CreatedProject {
     pub id: String,
-    pub org_id: String,
+    pub team_id: String,
     pub name: String,
     pub slug: String,
     pub icon: ProjectIcon,
@@ -722,7 +722,7 @@ pub struct ProjectWithStats {
     pub id: String,
     #[serde(rename = "_creationTime")]
     pub creation_time: u64,
-    pub org_id: String,
+    pub team_id: String,
     pub name: String,
     pub slug: String,
     pub icon: ProjectIcon,
@@ -750,7 +750,7 @@ pub struct ProductionEnrollmentRequest {
 #[serde(rename_all = "camelCase")]
 pub struct ProductionEnrollmentResult {
     pub id: String,
-    pub org_id: String,
+    pub team_id: String,
     pub name: String,
     pub slug: String,
     pub stage: String,
@@ -770,7 +770,7 @@ pub struct ProductionEnrollmentCommandResult {
 #[serde(rename_all = "camelCase")]
 pub struct EventRecord {
     pub id: String,
-    pub organization_id: String,
+    pub team_id: String,
     pub project_id: Option<String>,
     #[serde(rename = "type")]
     pub event_type: String,

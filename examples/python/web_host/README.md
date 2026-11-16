@@ -48,7 +48,7 @@ Duplicate event IDs are ignored within a bounded 1024-event window.
 
 Before public hosting, integrate live application membership, authorization,
 HTTPS, durable sessions and durable conversation/deduplication storage. Keep
-project and organization credentials in the server. The separate token and
+project and team credentials in the server. The separate token and
 supplementary connection routes remain examples; this inbox does not use them.
 
 `packages/python/tests/test_browser_hosts.py` runs both ASGI applications over

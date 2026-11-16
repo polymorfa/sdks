@@ -1,4 +1,4 @@
-import { organization } from "../../../../lib/polymorfa.js";
+import { team } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
 import {
   action,
@@ -13,14 +13,14 @@ import {
 
 // Management campaigns use the server-configured project.
 export const GET = route("admin", () =>
-  organization().campaigns.list({
+  team().campaigns.list({
     projectId: env.projectId(),
     projectSlug: env.projectSlug(),
   }),
 );
 
 export const POST = route("admin", async ({ body, request }) => {
-  const campaigns = organization().campaigns;
+  const campaigns = team().campaigns;
   const payload = (body.payload ?? {}) as Body;
   const name = action(body);
   if (name === "create") {

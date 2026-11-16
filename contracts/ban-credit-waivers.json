@@ -1,16 +1,16 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "38487509fa14dcad94e09df8c85f544e516b01cd",
+  "sourceCommit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
   "published": false,
-  "scope": "Ban Credit claim waivers: verdict linked_device_interactive and claim evidence linkedDeviceInteractive (polymorfa/polymorfa#845, merged). Other SDK contracts retain their recorded source revisions.",
+  "scope": "Ban Credit claim waivers: verdict linked_device_interactive and claim evidence linkedDeviceInteractive (polymorfa/polymorfa#845, merged; contained in contract revision f180dc1ee2, merged to API dev as a3db53e74c). Other SDK contracts retain their recorded source revisions.",
   "sources": {
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sha256": "66a15c733e79bed64982883c19f73a196434c409557762c061fb4c9cc9f2f03f"
+      "sha256": "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485"
     },
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sha256": "4ab7649b01873b0b530a2b35e99ead508748f869a3318429c184d30e4defe39b"
+      "sha256": "0c66f1ee93923cf57425ac29c01a84c5c140b703ace2160e1b899ee6dad0b071"
     }
   },
   "verdicts": {
@@ -57,7 +57,7 @@
       "properties": {
         "linkedDeviceInteractive": {
           "type": "boolean",
-          "description": "Whether this number sent an interactive message (buttons, lists, product messages, Flows and similar) from a linked device inside the window. When true, Ban Credit does not cover the ban and the claim is denied when filed. False for claims filed before this was recorded."
+          "description": "Whether this number sent an interactive message (buttons, lists, product messages, Flows and similar) from a linked device inside the window. When true, Ban Credit does not cover the ban and the claim is denied when filed. False can also mean not recorded: earlier claims report false, and sends before recording began are not backfilled."
         }
       }
     }

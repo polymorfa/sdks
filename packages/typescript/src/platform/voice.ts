@@ -297,14 +297,13 @@ interface CreateVoiceProviderCredentialBase {
   readonly apiKey: string;
 }
 
-export type CreateVoiceProviderCredentialInput<
-  O extends ClientOwner = "organization",
-> = O extends "project"
-  ? CreateVoiceProviderCredentialBase
-  : CreateVoiceProviderCredentialBase & {
-      /** A project, or `null`/omitted for a credential every project can use. */
-      readonly projectId?: string | null;
-    };
+export type CreateVoiceProviderCredentialInput<O extends ClientOwner = "team"> =
+  O extends "project"
+    ? CreateVoiceProviderCredentialBase
+    : CreateVoiceProviderCredentialBase & {
+        /** A project, or `null`/omitted for a credential every project can use. */
+        readonly projectId?: string | null;
+      };
 
 type ProjectArgument<O extends ClientOwner> = O extends "project"
   ? []

@@ -5,9 +5,9 @@ import {
   FollowableIndexedEventPage,
   PolymorfaValidationError,
   type IndexedEventPage,
-  type OrganizationEvent,
+  type TeamEvent,
 } from "../src/index.js";
-import { ORGANIZATION_API_KEY } from "./support/credentials.js";
+import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
 const PROJECT_ID = "11111111-2222-4333-8444-555555555555";
@@ -38,7 +38,7 @@ it("matches both indexed event-list contract paths", () => {
   }
 });
 
-it("follows nextOffset, not a cursor, for organization event pages", async () => {
+it("follows nextOffset, not a cursor, for team event pages", async () => {
   const server = await startTestServer((_request, index) => ({
     body: JSON.stringify({
       data: [{ id: `event-${index + 1}` }],
@@ -52,7 +52,7 @@ it("follows nextOffset, not a cursor, for organization event pages", async () =>
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
 
@@ -90,7 +90,7 @@ it("uses the project event route and rejects incompatible offset filters locally
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const events = client.project(PROJECT_ID).events;
@@ -132,13 +132,14 @@ it("accepts a final indexed page without nextOffset and preserves the public pag
   }));
   servers.push(server);
   const client = new Client({
-    credential: { type: "organizationApiKey", value: ORGANIZATION_API_KEY },
+    credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
   const followable = await client.events.list({ afterOffset: "0" });
   expect(followable.nextOffset).toBeNull();
-  const indexed: IndexedEventPage<OrganizationEvent> =
-    await client.events.listIndexed({ afterOffset: "0" });
+  const indexed: IndexedEventPage<TeamEvent> = await client.events.listIndexed({
+    afterOffset: "0",
+  });
   expect(indexed.page).toEqual({
     hasMore: false,
     nextOffset: null,

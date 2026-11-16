@@ -73,21 +73,21 @@
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns.RescheduleAsync",
+      "sdkMethod": "TeamClient.Campaigns.RescheduleAsync",
       "method": "POST",
       "fixturePath": "/platform/campaigns/c1/reschedule",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/CampaignTests.cs"
     },
     {
-      "sdkMethod": "OrganizationClient.RequestLogs.ListAsync and ProjectClient.RequestLogs.ListAsync",
+      "sdkMethod": "TeamClient.RequestLogs.ListAsync and ProjectClient.RequestLogs.ListAsync",
       "method": "GET",
       "fixturePath": "/platform/projects/p1/request-logs?status=404%2C5xx&method=GET%2CPOST&route=%2Fmessaging%2F%3Asession%2Fmessages&source=api&limit=2",
       "status": "covered",
       "testFile": "tests/Polymorfa.Sdk.Tests/RequestLogTests.cs"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns.GetFrequencyCapAsync",
+      "sdkMethod": "TeamClient.Campaigns.GetFrequencyCapAsync",
       "method": "GET",
       "fixturePath": "/platform/campaign-settings/frequency-cap",
       "status": "covered",
@@ -97,7 +97,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns.UpdateFrequencyCapAsync",
+      "sdkMethod": "TeamClient.Campaigns.UpdateFrequencyCapAsync",
       "method": "PUT",
       "fixturePath": "/platform/campaign-settings/frequency-cap",
       "status": "covered",
@@ -107,7 +107,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.Campaigns.EnrollAsync",
+      "sdkMethod": "TeamClient.Campaigns.EnrollAsync",
       "method": "POST",
       "fixturePath": "/platform/campaigns/c%2F1/enrollments",
       "status": "covered",
@@ -127,7 +127,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.ListAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.ListAsync",
       "method": "GET",
       "fixturePath": "/platform/audience-segments",
       "status": "covered",
@@ -137,7 +137,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.CreateAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.CreateAsync",
       "method": "POST",
       "fixturePath": "/platform/audience-segments",
       "status": "covered",
@@ -147,7 +147,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.RetrieveAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.RetrieveAsync",
       "method": "GET",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -157,7 +157,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.UpdateAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.UpdateAsync",
       "method": "PATCH",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -167,7 +167,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.DeleteAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.DeleteAsync",
       "method": "DELETE",
       "fixturePath": "/platform/audience-segments/s%2F1",
       "status": "covered",
@@ -177,7 +177,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.PreviewAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.PreviewAsync",
       "method": "GET",
       "fixturePath": "/platform/audience-segments/s/preview",
       "status": "covered",
@@ -187,7 +187,7 @@
       "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a"
     },
     {
-      "sdkMethod": "OrganizationClient.AudienceSegments.PreviewRulesAsync",
+      "sdkMethod": "TeamClient.AudienceSegments.PreviewRulesAsync",
       "method": "POST",
       "fixturePath": "/platform/audience-segments/preview",
       "status": "covered",

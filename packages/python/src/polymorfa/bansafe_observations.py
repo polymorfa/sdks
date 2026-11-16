@@ -1,4 +1,4 @@
-"""Organization BanSafe observations, typed health evidence and incident receipts."""
+"""Team BanSafe observations, typed health evidence and incident receipts."""
 
 from __future__ import annotations
 
@@ -114,7 +114,7 @@ class HealthProjection(HealthCommon):
 class NumberEnforcement(TypedDict):
     rung: EnforcementRung
     previousRung: EnforcementRung
-    organizationFloor: EnforcementRung
+    teamFloor: EnforcementRung
     reason: str
     source: Literal["automatic", "operator"]
     throughputPerMinute: float | None
@@ -201,7 +201,7 @@ class EnforcementSummary(HealthProjection):
     projectId: str
     rung: EnforcementRung
     previousRung: EnforcementRung
-    organizationFloor: EnforcementRung
+    teamFloor: EnforcementRung
     reason: str
     source: Literal["automatic", "operator"]
     throughputPerMinute: float | None
@@ -420,7 +420,7 @@ def _query(parameters: object) -> dict[str, QueryValue]:
 
 class BanSafeObservations(Resource):
     def __init__(self, transport: Transport) -> None:
-        super().__init__(transport, "organization_api_key")
+        super().__init__(transport, "team_api_key")
 
     async def list_health(
         self, params: ListHealth | None = None, *, options: RequestOptions = O

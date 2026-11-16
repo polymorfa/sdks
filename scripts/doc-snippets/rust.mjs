@@ -53,7 +53,7 @@ export function render(id, { client, request }) {
       ? "MessagingClient"
       : client === "project"
         ? "ProjectClient"
-        : "OrganizationClient";
+        : "TeamClient";
   const project = client === "project" ? `, ${p("projectId")}` : "";
-  return `use polymorfa_sdk::{${type}, ClientOptions, Credential};\n\n#[tokio::main(flavor = "current_thread")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = ${type}::new(Credential::organization_api_key(${key})?${project}, ClientOptions::default())?;\n    let result = ${calls[id]}.await?;\n    println!("{:?}", ${client === "project" ? "result.items" : "result"});\n    Ok(())\n}\n`;
+  return `use polymorfa_sdk::{${type}, ClientOptions, Credential};\n\n#[tokio::main(flavor = "current_thread")]\nasync fn main() -> Result<(), Box<dyn std::error::Error>> {\n    let sdk = ${type}::new(Credential::team_api_key(${key})?${project}, ClientOptions::default())?;\n    let result = ${calls[id]}.await?;\n    println!("{:?}", ${client === "project" ? "result.items" : "result"});\n    Ok(())\n}\n`;
 }

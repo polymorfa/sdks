@@ -14,7 +14,7 @@ import type { EncodedEventPayload, JsonValue } from "./developer-types.js";
 /** The event object in an `event` frame. Same fields as a project event. */
 export interface StreamedEvent {
   readonly id: string;
-  readonly organizationId: string;
+  readonly teamId: string;
   readonly projectId: string;
   readonly type: string;
   readonly source: "runtime" | "platform" | "test";
@@ -91,7 +91,7 @@ export interface EventStreamParams {
   readonly ack?: "auto" | "manual";
 }
 
-export interface OrganizationEventStreamParams extends EventStreamParams {
+export interface TeamEventStreamParams extends EventStreamParams {
   /** Team keys stream one project at a time. */
   readonly projectId: string;
 }

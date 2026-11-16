@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { ORGANIZATION_API_KEY } from "../../typescript/test/support/credentials.js";
+import { TEAM_API_KEY } from "../../typescript/test/support/credentials.js";
 import type { EventStreamItem, EventStreamParams } from "@polymorfa/sdk";
 import { Client, webhooks } from "@polymorfa/sdk";
 import { decodeHistorySyncPayload } from "../../typescript/src/history/index.js";
@@ -18,7 +18,7 @@ function item(cursor = "cursor-1", sequence = 1): EventStreamItem {
     webhook: webhook as EventStreamItem["webhook"],
     event: {
       id: webhook.id,
-      organizationId: "fixture-org",
+      teamId: "fixture-team",
       projectId: "fixture-project",
       type: webhook.event,
       source: "runtime",
@@ -249,8 +249,8 @@ describe("durable stream synchronization", () => {
   it("accepts the real project-bound SDK source without a wrapper", () => {
     const client = new Client({
       credential: {
-        type: "organizationApiKey",
-        value: ORGANIZATION_API_KEY,
+        type: "teamApiKey",
+        value: TEAM_API_KEY,
       },
     });
     const actual: EventStreamSource = client.project("fixture-project").events;

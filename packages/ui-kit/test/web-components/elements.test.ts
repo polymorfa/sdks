@@ -1568,3 +1568,49 @@ it("offers the same screen start and stop controls without React", () => {
   expect(stopScreenShare).toHaveBeenCalledOnce();
   node.remove();
 });
+
+it("uses identifying labels for empty guest names in active and waiting rosters", () => {
+  const fixture = fixtureController({
+    status: "connected",
+    revision: 0,
+    updatedAt: 0,
+    capabilities: { video: false, mute: true },
+    video: false,
+    audioMuted: false,
+    videoMuted: true,
+    selectedDevices: {},
+    devices: [],
+    participants: [
+      {
+        id: "123",
+        name: "",
+        phoneNumber: "+15550102",
+        guest: true,
+        state: "connected",
+        audioMuted: false,
+        video: false,
+      },
+    ],
+    waitingRoom: {
+      enabled: true,
+      isAdmin: false,
+      inWaitingRoom: false,
+      users: [
+        {
+          id: "124",
+          name: "",
+          guest: true,
+          state: "invited",
+          audioMuted: false,
+          video: false,
+        },
+      ],
+    },
+  });
+  const node = document.createElement("pmfa-call") as PolymorfaCallElement;
+  node.controller = fixture.controller as never;
+  document.body.append(node);
+  expect(node.shadowRoot?.textContent).toContain("+15550102");
+  expect(node.shadowRoot?.textContent).toContain("124 · Guest");
+  node.remove();
+});

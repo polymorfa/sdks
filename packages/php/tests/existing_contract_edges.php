@@ -15,13 +15,13 @@ foreach ([['variableMapping' => null],['variableMapping' => ['bad key' => []]],[
     $ecNoIO(fn () => $ecMessaging->campaigns->create('slug', ['name' => 'Draft'] + $bad));
 }
 foreach ([['messagesArray' => array_fill(0, 11, [])],['messagesArray' => [['delayAfterSec' => 86401]]],['messagesArray' => [['version' => 3]]],['messagesArray' => [['media' => ['url' => 'x']]]],['messagesArray' => [['buttons' => [['kind' => 'reply']]]]],['messageVariations' => null],['variants' => null],['variantStrategy' => null]] as $bad) {
-    $ecNoIO(fn () => $ecOrg->campaigns->create(['projectId' => $ecProject,'name' => 'Draft'] + $bad));
+    $ecNoIO(fn () => $ecTeam->campaigns->create(['projectId' => $ecProject,'name' => 'Draft'] + $bad));
 }
 foreach ([['projectId' => $ecProject,'skipMissingVariables' => false,'extra' => 0],['skipMissingVariables' => true],['projectId' => $ecProject,'scheduledAt' => null]] as $bad) {
-    $ecNoIO(fn () => $ecOrg->campaigns->launch($ecId, $bad));
+    $ecNoIO(fn () => $ecTeam->campaigns->launch($ecId, $bad));
 }
 foreach ([['projectId' => $ecBProject], ['projectId' => null], ['id' => 'foreign'], ['id' => null]] as $bad) {
-    $ecNoIO(fn () => $ecOrg->campaigns->update($ecId, $bad, ['projectId' => $ecProject]));
+    $ecNoIO(fn () => $ecTeam->campaigns->update($ecId, $bad, ['projectId' => $ecProject]));
 }
 $ecNoIO(fn () => $ecMessaging->campaigns->update('slug', $ecId, []));
 foreach ([['reason' => 'invented'],['reason' => null],['limit' => 0],['limit' => 101],['cursor' => str_repeat('x', 257)],['status' => 'unknown'],['extra' => true]] as $params) {
@@ -49,7 +49,7 @@ foreach ([['syncType' => 'FULL','chunkOrder' => -1],['syncType' => 'FULL','chunk
 foreach ([0,100] as $device) {
     $ecNoIO(fn () => $ecMessaging->testing->unlinkPhoneDevice($ecProject, 's', $device), Polymorfa\ValidationException::class);
 }
-$ecNoIO(fn () => $ecOrg->requestLogs->list());
+$ecNoIO(fn () => $ecTeam->requestLogs->list());
 $ecNoIO(fn () => $ecA->requestLogs->list(['projectId' => $ecBProject]), Polymorfa\ValidationException::class);
 $ecNoIO(fn () => $ecA->requestLogs->list(['cursor' => 'next','traceId' => 'trace']), Polymorfa\ValidationException::class);
 $ecBrowser = new Polymorfa\MessagingClient($ecPrincipals[2], baseUrl:$ecUrl);
@@ -131,13 +131,13 @@ $ecAudience = ['id' => $ecId,'name' => 'Audience','source' => 'api','recipientCo
 $ecAppendBody = ['recipients' => [['phone' => '+15555555555','variables' => ['x' => false]]]];
 $ecAudienceBody = ['name' => 'Audience','source' => 'api','members' => [['phone' => '+15555555555','variables' => ['x' => false]]]];
 $ecMemberBody = ['members' => [['phone' => '+15555555555','variables' => ['x' => false]]]];
-$ecReplayRows = [['POST',$ecPath.'/recipients',$ecAppendBody,['success' => true,'data' => $ecAdded],fn ($c, $b, $o) => $c->campaigns->addRecipients('slug', $ecId, $b, $o),'messaging'],['POST',$ecPlatform.'/recipients',['projectId' => $ecProject] + $ecAppendBody,['data' => $ecAdded],fn ($c, $b, $o) => $c->campaigns->addRecipients($ecId, $b, $o),'organization'],['POST','/platform/audiences',$ecAudienceBody,['data' => $ecAudience],fn ($c, $b, $o) => $c->audiences->create($b, $o),'organization'],['POST','/platform/audiences/'.$ecId.'/members',$ecMemberBody,['data' => ['listId' => $ecId,'added' => 0,'recipientCount' => 0,'duplicateCount' => 0,'invalidCount' => 0,'invalidRows' => []]],fn ($c, $b, $o) => $c->audiences->addMembers($ecId, $b, $o),'organization']];
+$ecReplayRows = [['POST',$ecPath.'/recipients',$ecAppendBody,['success' => true,'data' => $ecAdded],fn ($c, $b, $o) => $c->campaigns->addRecipients('slug', $ecId, $b, $o),'messaging'],['POST',$ecPlatform.'/recipients',['projectId' => $ecProject] + $ecAppendBody,['data' => $ecAdded],fn ($c, $b, $o) => $c->campaigns->addRecipients($ecId, $b, $o),'team'],['POST','/platform/audiences',$ecAudienceBody,['data' => $ecAudience],fn ($c, $b, $o) => $c->audiences->create($b, $o),'team'],['POST','/platform/audiences/'.$ecId.'/members',$ecMemberBody,['data' => ['listId' => $ecId,'added' => 0,'recipientCount' => 0,'duplicateCount' => 0,'invalidCount' => 0,'invalidRows' => []]],fn ($c, $b, $o) => $c->audiences->addMembers($ecId, $b, $o),'team']];
 foreach ($ecReplayRows as [$method,$path,$body,$result,$call,$surface]) {
     $wire = $body;
     $list = array_key_exists('recipients', $wire) ? 'recipients' : 'members';
     $wire[$list][0]['variables'] = (object)['x' => false];
     foreach ([null,'caller-key'] as $key) {
-        $client = $surface === 'messaging' ? $ecMessaging : $ecOrg;
+        $client = $surface === 'messaging' ? $ecMessaging : $ecTeam;
         $ecConfigure(['method' => $method,'path' => $path,'body' => $wire,'statuses' => [503,200],'response' => json_encode($result),'headers' => ['Retry-After' => '0']]);
         if ($path === '/platform/audiences' && $key !== null) {
             $r = $call($client, $body, new Polymorfa\RequestOptions(idempotencyKey:$key));

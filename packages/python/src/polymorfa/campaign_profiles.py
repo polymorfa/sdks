@@ -1,4 +1,4 @@
-"""Finite, organization-owned customer-supplied profile operations."""
+"""Finite, team-owned customer-supplied profile operations."""
 
 from __future__ import annotations
 

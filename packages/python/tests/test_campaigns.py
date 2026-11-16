@@ -41,7 +41,7 @@ async def test_composed_campaign_preserves_reply_id_and_media_on_wire():
         return httpx.Response(200, json={"data": CAMPAIGN})
 
     async with AsyncClient(
-        Credential("organization_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
         http_transport=httpx.MockTransport(handler),
     ) as client:
         await client.campaigns.create(body)
@@ -641,7 +641,7 @@ async def test_all_public_campaign_and_audience_methods(surface, case):
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     async with cls(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -687,7 +687,7 @@ async def test_append_no_automatic_retry_unless_explicit(surface, method, explic
     cls = AsyncMessagingClient if surface == "messaging" else AsyncClient
     async with cls(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -731,7 +731,7 @@ async def test_campaign_preflight_validation_and_inline_audience():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -753,7 +753,7 @@ async def test_campaign_preflight_validation_and_inline_audience():
     assert len(seen) == 1
     async with AsyncMessagingClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),
@@ -781,7 +781,7 @@ async def test_recipient_pagination_carries_project_status_limit_and_options():
 
     async with AsyncClient(
         Credential(
-            "organization_api_key",
+            "team_api_key",
             "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k",
         ),
         http_transport=httpx.MockTransport(handler),

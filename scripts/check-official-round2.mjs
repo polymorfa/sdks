@@ -15,7 +15,7 @@ export function checkOfficialRound2() {
   assert.equal(inventory.sourceCommit, pin.sourceCommit);
   assert.equal(
     json("contracts/source.json").commit,
-    "171a9683ff45d11a4b5d3917dc428ad2722b0d99",
+    "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
   );
   for (const item of pin.items)
     assert.equal(
@@ -54,7 +54,7 @@ export function checkOfficialRound2() {
     createHash("sha256")
       .update(read("contracts/machine-credentials.v1.json"))
       .digest("hex"),
-    "7694d8eb61dca6aed69f41392d2e5fae585084e330b276ee6a71844ef9e2365d",
+    "259fac4490ad8d2b7067427b98f76d1861b33ccbf854156354ab463f3063104d",
   );
   console.log(
     `Official beta supplement: ${inventory.operations.length} new native operations and ${Object.keys(inventory.fields).length} field/delivery groups attributed in six languages; execution and packaging are separate gates.`,

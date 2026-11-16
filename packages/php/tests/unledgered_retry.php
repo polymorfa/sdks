@@ -17,7 +17,7 @@ check(is_resource($process), 'Unledgered fixture starts');
 try {
     $url = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR)['url'];
     $control = new GuzzleHttp\Client(['base_uri' => $url, 'timeout' => 3]);
-    $credential = Polymorfa\Credential::organizationApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
+    $credential = Polymorfa\Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
     $client = new Polymorfa\MessagingClient($credential, baseUrl:$url, maxNetworkRetries:1);
     foreach (['grant','relay','retry','delete','catalog-sync','official-picture'] as $operation) {
         foreach (['drop','429','503'] as $outcome) {

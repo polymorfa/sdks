@@ -21,7 +21,7 @@ Status = Literal["active", "archiving", "archived"]
 
 class Customer(TypedDict):
     id: str
-    orgId: str
+    teamId: str
     projectId: str
     name: str | None
     externalCustomerId: str | None
@@ -100,7 +100,7 @@ class CustomerEvent(TypedDict):
 
 class PairingLink(TypedDict):
     id: str
-    orgId: str
+    teamId: str
     projectId: str
     customerId: str
     expectedPhoneMasked: str | None
