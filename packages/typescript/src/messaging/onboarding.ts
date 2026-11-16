@@ -67,7 +67,7 @@ export class TestingResource {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "POST",
-      path: `/messaging/testing/${encodeURIComponent(projectId)}/history-fixtures`,
+      path: `/messaging/projects/${encodeURIComponent(projectId)}/test-history-fixtures`,
       body: input,
       ...options,
     });
@@ -75,22 +75,22 @@ export class TestingResource {
 
   /**
    * Fire a named, signed test event for a Test number. Generated events reach
-   * webhooks and event history with `source: "test"`. With `fromSession`, a
+   * webhooks and event history with `source: "test"`. With `fromNumber`, a
    * `message.received` request sends a simulated message from another Test
-   * number instead. Real numbers are refused with a 400 error. Pass
+   * number instead. Real numbers are refused with a 404 resource_not_found error. Pass
    * `options.idempotencyKey` to make retries safe: repeating the request with
    * the same key and body reuses the same event ID, and the SDK then retries
    * network and 5xx failures.
    */
   triggerEvent(
-    projectId: string,
+    session: string,
     input: TriggerTestEventRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TriggerTestEventResponse>> {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "POST",
-      path: `/messaging/testing/${encodeURIComponent(projectId)}/events`,
+      path: `/messaging/${encodeURIComponent(session)}/test-events`,
       body: input,
       ...options,
     });
@@ -98,23 +98,21 @@ export class TestingResource {
 
   /** List test-event fixtures and the overrides each accepts. */
   listEventFixtures(
-    projectId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<{ fixtures: TestEventFixtureInfo[] }>> {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "GET",
-      path: `/messaging/testing/${encodeURIComponent(projectId)}/events/fixtures`,
+      path: `/messaging/test-events/fixtures`,
       ...options,
     });
   }
 
   /**
    * Read a Test number's simulated phone: whether it is online and which
-   * companions are linked to it. Real numbers are refused with a 400 error.
+   * companions are linked to it. Real numbers are refused with a 404 resource_not_found error.
    */
   getPhone(
-    projectId: string,
     session: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingPhone>> {
@@ -123,7 +121,7 @@ export class TestingResource {
       this.transport,
       {
         method: "GET",
-        path: phonePath(projectId, session),
+        path: phonePath(session),
         ...existingOptions(options),
       },
       "phone",
@@ -138,7 +136,6 @@ export class TestingResource {
    * normal inbound message. Counts toward the Testing rate limit.
    */
   sendPhoneMessage(
-    projectId: string,
     session: string,
     input: SendTestingPhoneMessageRequest,
     options: RequestOptions = {},
@@ -148,7 +145,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(projectId, session)}/messages`,
+        path: `${phonePath(session)}/messages`,
         body: input,
         ...existingOptions(options),
       },
@@ -163,7 +160,6 @@ export class TestingResource {
    * cannot be unlinked.
    */
   unlinkPhoneDevice(
-    projectId: string,
     session: string,
     deviceId: number,
     options: RequestOptions = {},
@@ -177,7 +173,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(projectId, session)}/devices/${deviceId}/unlink`,
+        path: `${phonePath(session)}/devices/${deviceId}/unlink`,
         ...existingOptions(options),
       },
       "unlink",
@@ -185,8 +181,8 @@ export class TestingResource {
     );
   }
 }
-function phonePath(projectId: string, session: string): string {
-  return `/messaging/testing/${encodeURIComponent(projectId)}/numbers/${encodeURIComponent(session)}/phone`;
+function phonePath(session: string): string {
+  return `/messaging/${encodeURIComponent(session)}/phone`;
 }
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")

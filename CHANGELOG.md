@@ -2,6 +2,16 @@
 
 ## Unreleased
 
+- Breaking: Test number phone and event methods use the Number-scoped routes
+  in API contract revision `f180dc1ee2`. `testing.getPhone`, `sendPhoneMessage`
+  and `unlinkPhoneDevice` take a Number ID and no project argument, and
+  `testing.triggerEvent(numberId, body)` omits body `session` and accepts
+  `fromNumber`. `listEventFixtures()` has no project argument. History fixtures
+  keep their project argument and use
+  `/messaging/projects/{projectId}/test-history-fixtures`. Real Numbers return
+  `404 resource_not_found`. Scope names remain `sandbox:read` / `sandbox:write`.
+  Applies to all six SDKs. Source-only and unpublished.
+
 - UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
   styling slots. It supports `classNames` and unstyled mode without a host
   stylesheet.
@@ -48,16 +58,16 @@
   Contract snapshots, coverage fingerprints, the machine-credential fixture and
   the documentation snippet catalog are re-pinned to that revision. The
   revision also carries later API dev changes. The coverage ledger now holds 671
-  operations: 451 covered, 2 partial, 58 missing and 160 excluded in TypeScript.
+  operations: 457 covered, 2 partial, 52 missing and 160 excluded in TypeScript.
   The TypeScript error-code list adds the new `billing_credit_required`,
   `safe_mode_not_entitled`, `warmup_plan_not_entitled`, `team_deletion_scheduled`,
   `terms_acceptance_required`, `terms_activation_blocked` and
   `idempotency_replay_unavailable` codes, and the campaign recipient sent and
-  failed webhook payloads type the optional `messageIndex`. The Test number
-  routes (`/messaging/testing/...`), `/platform/keys` and `/platform/tokens` left
-  the specification, so `projectTokens.list`, `apiKeys.list` and
-  `apiKeys.deactivate` and the older Test-event helpers target retired paths
-  until a removal or update decision lands. Publish
+  failed webhook payloads type the optional `messageIndex`. The
+  `/platform/keys` and `/platform/tokens` routes left the specification, so
+  `projectTokens.list`, `apiKeys.list` and `apiKeys.deactivate` target retired
+  paths until a removal or update decision lands. The Test number helpers use
+  the Number-scoped routes (see the entry above). Publish
   these SDKs only after the API change is deployed: a build from this source
   cannot call an API that still uses the old names. Source-only and
   unpublished.

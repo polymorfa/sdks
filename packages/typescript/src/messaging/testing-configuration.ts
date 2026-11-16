@@ -95,15 +95,13 @@ export interface TestEventOverrides {
 }
 
 export interface TriggerTestEventRequest {
-  /** Test number session name in the project. */
-  session: string;
   event: TestEventFixture;
   overrides?: TestEventOverrides;
   /**
    * message.received only: deliver a real simulated message from this other
    * Test number in the same project instead of a generated event.
    */
-  fromSession?: string;
+  fromNumber?: string;
 }
 
 export interface TriggerTestEventResponse {
