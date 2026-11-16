@@ -151,6 +151,16 @@
   defaults where available. Go callers should use keyed struct literals. Appended
   .NET record fields also change the positional deconstruction shape.
 
+- All six server SDKs recognize the Ban Credit claim verdict
+  `linked_device_interactive` on claim reads and `bansafe.claim` webhooks, and
+  type claim evidence `linkedDeviceInteractive`. Rust's closed verdict enums
+  previously rejected this value. Source compatibility: Rust exhaustive
+  `match` on the verdict enums and `ClaimEvidence` struct literals, Go unkeyed `BanSafeClaimEvidence`
+  literals and the C# `BanSafeClaimEvidence` constructor/Deconstruct need the
+  added members. Pinned to API contract revision `f180dc1ee2` (merged to API `dev` as
+  `a3db53e74c`), which contains merged API #845. Package publication follows the existing release
+  process.
+
 - UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 
 - Breaking: the browser UI packages are now one package, the UI Kit
@@ -181,7 +191,6 @@
 - Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.
 
 - TypeScript, Python and PHP call-settings updates now refuse keys the API does not accept, including the response-only `simultaneousCallsCoverageExcludedUntil`, before sending. Go, Rust and .NET requests already serialize only writable fields.
-
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;

@@ -318,7 +318,11 @@ Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
 up to six decimal places, not integer cents. A claim with verdict
 `simultaneous_calls` opens `denied` with amount 0 because simultaneous calls
 were on for the number during the 30 days before the ban;
-`evidence.simultaneousCalls` reports that state for every claim. Finding acknowledgement and
+`evidence.simultaneousCalls` reports that state for every claim. The verdict
+`linked_device_interactive` (an interactive message sent from a linked device)
+also opens `denied` with amount 0 when the send falls in that window;
+`evidence.linkedDeviceInteractive` reports it, and is `false` on claims filed
+before it was recorded. Finding acknowledgement and
 enforcement appeals require a signed-in dashboard session and are not SDK
 methods.
 

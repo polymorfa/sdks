@@ -1,5 +1,16 @@
 # Contract coverage
 
+## Ban Credit claim waivers
+
+`ban-credit-waivers.json` pins the `BanSafeClaim` and `BanSafeClaimPayload`
+verdict enums and the `linkedDeviceInteractive` claim evidence field to API contract revision `f180dc1ee2bd45dbecf01702f73bdd75c664634b`
+(polymorfa/polymorfa#845, merged; that revision merged to API `dev` as
+`a3db53e74c` with byte-identical specifications). It is held with `published: false`.
+`ban-credit-waivers-contract.test.ts` checks the TypeScript types against it;
+each native package has a decoding test. No operation is added. The full
+snapshots here already contain the verdict, so this supplement stays as the
+explicit pin that the decoding tests read.
+
 ## Number-scoped Test phone and events
 
 The full Messaging snapshot at API `f180dc1ee2bd45dbecf01702f73bdd75c664634b`
