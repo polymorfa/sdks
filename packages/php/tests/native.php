@@ -13,7 +13,9 @@ function nativeCases(array $cases, callable $makeClient, ?Polymorfa\Credential $
     $socket = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
     $address = stream_socket_get_name($socket, false);
     fclose($socket);
-    $server = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/native-server.php'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes, null, ['POLYMORFA_PHP_WIRE_STATE' => $state] + getenv());
+    // PHP's request logs can fill an unread pipe and stall the fixture server.
+    $serverLog = $scratch.'/server-'.getmypid().'.log';
+    $server = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/native-server.php'], [0 => ['pipe','r'],1 => ['file',$serverLog,'a'],2 => ['file',$serverLog,'a']], $pipes, null, ['POLYMORFA_PHP_WIRE_STATE' => $state] + getenv());
     if (!is_resource($server)) {
         throw new RuntimeException('Cannot start native PHP fixture server.');
     }
