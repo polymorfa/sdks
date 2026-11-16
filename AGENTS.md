@@ -63,11 +63,12 @@ Nightlies require matching staging API acceptance; stable releases require
 matching production acceptance. Never publish or claim installability from a
 local package build alone.
 
-For the first new SDK nightly release, guest-call candidate acceptance is not
-a package-publication prerequisite. Preserve its unaccepted/unpublished metadata.
-Other feature holds and exact staging API acceptance still apply. Stable
-publication still requires guest-call acceptance. A package release does not
-activate or establish availability of the guest-call API.
+A manually dispatched `preview` release may publish without deployed API
+acceptance. Keep its versions and npm `preview` tag separate from accepted
+nightly and stable channels. Preserve held feature metadata and report coverage
+gaps in the preview provenance. Never fabricate an accepted API receipt or use a
+preview receipt to authorize nightly/stable publication. A preview package does
+not activate or establish deployed availability of its API features.
 
 ## Documentation snippet maintenance
 

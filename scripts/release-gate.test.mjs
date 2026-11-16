@@ -307,7 +307,7 @@ test("A two-audience supplement is checked per family and honours its hold", () 
   );
 });
 
-test("nightlies defer guest-call acceptance while stable and other feature holds remain enforced", async () => {
+test("preview records held source while nightly and stable feature gates remain enforced", async () => {
   const parent = join(
     homedir(),
     ".polymorfa-agent-work",
@@ -323,6 +323,16 @@ test("nightlies defer guest-call acceptance while stable and other feature holds
     new URL("./release-gate.mjs", import.meta.url),
     join(fixture, "scripts/release-gate.mjs"),
   );
+  for (const name of [
+    "release-policy.mjs",
+    "check-coverage.mjs",
+    "interactive-supplement.mjs",
+    "native-supplements.mjs",
+  ])
+    copyFileSync(
+      new URL(`./${name}`, import.meta.url),
+      join(fixture, "scripts", name),
+    );
   copyFileSync(
     new URL("../packages/typescript/src/version.ts", import.meta.url),
     join(fixture, "packages/typescript/src/version.ts"),
@@ -378,7 +388,11 @@ test("nightlies defer guest-call acceptance while stable and other feature holds
   const publisher = await import(
     pathToFileURL(join(fixture, "scripts/release-gate.mjs")).href
   );
-  assert.equal(publisher.expectedContract("nightly").sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("preview").sourceSha, source.commit);
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /Guest calls.*held from publication/,
+  );
   assert.throws(
     () => publisher.expectedContract("stable"),
     /Guest calls.*held from publication/,
@@ -389,7 +403,7 @@ test("nightlies defer guest-call acceptance while stable and other feature holds
   writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
   assert.throws(
     () => publisher.expectedContract("nightly"),
-    /held from publication/,
+    /Guest calls.*held from publication/,
   );
   writeFileSync(heldPath, JSON.stringify(held));
   assert.equal(candidate.sourceAccepted, false);
@@ -407,6 +421,13 @@ test("nightlies defer guest-call acceptance while stable and other feature holds
   ];
   writeFileSync(candidatePath, JSON.stringify(candidate));
   assert.equal(publisher.expectedContract("stable").sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("nightly").sourceSha, source.commit);
+  writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
+  assert.equal(publisher.expectedContract("preview").sourceSha, source.commit);
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /held from publication/,
+  );
 });
 
 test("guest-call publication binds both holds, version, repository, commit and Messaging hash", () => {

@@ -16,6 +16,10 @@ import { readFileSync, readdirSync, writeFileSync } from "node:fs";
 import { basename, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { nativePackages } from "./native-packages.mjs";
+import {
+  pythonVersion,
+  validateReleaseAuthorization,
+} from "./release-policy.mjs";
 
 export const registries = {
   crates: "rust",
@@ -27,24 +31,10 @@ export const registries = {
 const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex");
 
 export function validateReceipt(receipt) {
-  assert.equal(receipt.schemaVersion, 1);
-  assert.equal(receipt.repository, "polymorfa/sdks");
-  assert.match(receipt.sourceSha, /^[a-f0-9]{40}$/);
-  assert.match(receipt.fingerprint, /^[a-f0-9]{64}$/);
-  assert.ok(["nightly", "stable"].includes(receipt.channel));
+  validateReleaseAuthorization(receipt);
   const { semver, python, goTag } = receipt.versions ?? {};
-  assert.match(semver, /^\d+\.\d+\.\d+(?:-dev\.\d{14})?$/);
-  assert.equal(
-    semver.includes("-dev."),
-    receipt.channel === "nightly",
-    "Version does not match channel",
-  );
-  assert.equal(python, semver.replace(/-dev\./, ".dev"));
+  assert.equal(python, pythonVersion(semver));
   assert.equal(goTag, `packages/go/v${semver}`);
-  assert.ok(
-    receipt.acceptance && typeof receipt.acceptance === "object",
-    "Acceptance is required",
-  );
   return receipt;
 }
 

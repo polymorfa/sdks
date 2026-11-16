@@ -27,11 +27,23 @@ accepted. Repinning alone does not establish SDK coverage. Feature contract pins
 and Platform hash before publication. A newer intermediate feature pin blocks
 a nightly against an older acceptance record.
 
-Guest-call candidate acceptance is deferred for the first new nightly release.
-Its unaccepted and unpublished metadata stays intact. Other feature holds and
-the exact staging API acceptance requirement still apply. Stable publication
-continues to require guest-call acceptance. Publishing a package does not enable
-the guest-call API or establish its deployed availability.
+## Preview publication
+
+Manual dispatch also offers `channel: preview`. It publishes source-verified
+prereleases without deployed API acceptance. The gate still verifies the baseline
+spec hashes and coverage inventory. It records each feature contract's original
+source and hold metadata, lists incomplete operations in all six SDK languages,
+and writes `acceptance: null` with `apiAcceptance: not-verified`. Guest-call
+acceptance is not a prerequisite for this channel. Preview publication does not
+enable an API feature or establish its deployed availability.
+
+Preview versions use `<base>-preview.<UTC YYYYMMDDHHmmss>` and npm's `preview`
+tag. Supply the same explicit preview version to the npm and native dispatches
+when publishing one coordinated release; leaving the version empty generates it.
+The workflow accepts previews only through manual dispatch from merged `main`.
+Nightly and stable acceptance rules remain unchanged, including guest-call holds.
+Preview provenance cannot authorize either accepted channel, and preview
+publication emits no accepted-feature rollout events.
 
 `Polymorfa-Version` advances for each published API contract batch. Nightly
 package timestamps do not change that date. Compatibility notes, upgrade
@@ -45,7 +57,8 @@ Public workspaces publish in dependency order at one exact version. Private
 package dependencies and peer dependencies pin the same exact version.
 
 Every tarball contains `dist/release-contract.json` with the SDK source commit,
-source fingerprint and matching API acceptance receipt. The CLI uses this file
+source fingerprint and either the matching API acceptance receipt or explicit
+preview limitations. The CLI uses this file
 to pin an accepted SDK version. A retry verifies registry integrity before
 accepting an existing version; conflicting contents fail. Publication receipts
 also include feature-to-Linear stage events for a later posting bot. The bot

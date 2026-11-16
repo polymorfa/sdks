@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, writeFileSync, copyFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { dotnetPackages } from "./native-packages.mjs";
+import { validateReleaseAuthorization } from "./release-policy.mjs";
 const root = resolve(import.meta.dirname, "..");
 const language = process.argv[2];
 assert.ok(["go", "python", "php", "dotnet", "rust"].includes(language));
@@ -10,9 +11,8 @@ const receiptPath = resolve(
   "release-contract.json",
 );
 const provenance = JSON.parse(readFileSync(receiptPath));
-assert.equal(provenance.repository, "polymorfa/sdks");
+validateReleaseAuthorization(provenance);
 const version = provenance.versions.semver;
-assert.match(version, /^\d+\.\d+\.\d+(?:-dev\.\d{14})?$/);
 const pkg = join(root, "packages", language);
 function replace(file, pattern, replacement) {
   const path = join(pkg, file);
@@ -30,7 +30,7 @@ if (language === "go") {
   replace("calls_diagnostics.go", /Version: "[^"]+"/, "Version: Version");
 } else if (language === "python") {
   const pep440 = provenance.versions.python;
-  assert.match(pep440, /^\d+\.\d+\.\d+(?:\.dev\d{14})?$/);
+  assert.match(pep440, /^\d+\.\d+\.\d+(?:a0)?(?:\.dev\d{14})?$/);
   replace("pyproject.toml", /^version = "[^"]+"/m, `version = "${pep440}"`);
   replace(
     "src/polymorfa/transport.py",
@@ -99,5 +99,5 @@ if (language === "go") {
   );
 }
 console.log(
-  `Stamped ${language} release source with accepted provenance. No publication occurred.`,
+  `Stamped ${language} ${provenance.channel} release source. No publication occurred.`,
 );

@@ -1,5 +1,4 @@
 import assert from "node:assert/strict";
-import { execFileSync } from "node:child_process";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
@@ -8,7 +7,14 @@ import {
   expectedContract,
   publicationFingerprint,
   releaseVersion,
+  previewProvenance,
+  releaseSource,
 } from "./release-gate.mjs";
+import {
+  pythonVersion,
+  releaseChannels,
+  validateReleaseAuthorization,
+} from "./release-policy.mjs";
 
 import { compareCoverage, extractOperations } from "./check-coverage.mjs";
 
@@ -18,11 +24,16 @@ export function versions(channel, requested, date = new Date()) {
   const semver = releaseVersion(channel, requested, "0.1.0", date);
   return {
     semver,
-    python: channel === "stable" ? semver : semver.replace(/-dev\./, ".dev"),
+    python: pythonVersion(semver),
     goTag: `packages/go/v${semver}`,
   };
 }
-export function requireNativeCoverage(ledger, manifests, actual) {
+export function requireNativeCoverage(
+  ledger,
+  manifests,
+  actual,
+  { allowIncomplete = false } = {},
+) {
   assert.equal(ledger.schemaVersion, 2);
   assert.ok(
     Array.isArray(actual),
@@ -53,7 +64,7 @@ export function requireNativeCoverage(ledger, manifests, actual) {
         entry.status,
         `${language}: ledger mismatch ${key}`,
       );
-      if (operation.typescript.status === "covered")
+      if (!allowIncomplete && operation.typescript.status === "covered")
         assert.equal(
           entry.status,
           "covered",
@@ -65,9 +76,11 @@ export function requireNativeCoverage(ledger, manifests, actual) {
           `${language}: covered method needs native evidence ${key}`,
         );
       } else {
-        assert.equal(
-          entry.status,
-          "excluded",
+        assert.ok(
+          (allowIncomplete
+            ? ["excluded", "missing", "partial"]
+            : ["excluded"]
+          ).includes(entry.status),
           `${language}: unfinished ${key}`,
         );
         assert.ok(
@@ -79,21 +92,9 @@ export function requireNativeCoverage(ledger, manifests, actual) {
   }
 }
 export async function prepareNativeRelease() {
-  assert.equal(
-    process.env.GITHUB_REF,
-    "refs/heads/main",
-    "Native release builds run only from main",
-  );
-  assert.equal(
-    execFileSync("git", ["status", "--porcelain"], {
-      cwd: root,
-      encoding: "utf8",
-    }).trim(),
-    "",
-    "Release source must be clean",
-  );
+  const sourceSha = releaseSource();
   const channel = process.env.RELEASE_CHANNEL;
-  assert.ok(["nightly", "stable"].includes(channel));
+  assert.ok(releaseChannels.includes(channel));
   const output = resolve(
     process.env.RELEASE_OUTPUT ?? join(root, ".release/native"),
   );
@@ -117,17 +118,16 @@ export async function prepareNativeRelease() {
         ),
       ),
     ),
+    { allowIncomplete: channel === "preview" },
   );
   const expected = {
     ...expectedContract(channel),
     environment: channel === "stable" ? "production" : "staging",
   };
-  const acceptance = await acceptedContract(expected, output);
-  const version = versions(channel, process.env.STABLE_VERSION || undefined);
-  const sourceSha = execFileSync("git", ["rev-parse", "HEAD"], {
-    cwd: root,
-    encoding: "utf8",
-  }).trim();
+  const acceptance =
+    channel === "preview" ? null : await acceptedContract(expected, output);
+  const preview = channel === "preview" ? previewProvenance() : undefined;
+  const version = versions(channel, process.env.RELEASE_VERSION || undefined);
   const provenance = {
     schemaVersion: 1,
     repository: "polymorfa/sdks",
@@ -137,7 +137,9 @@ export async function prepareNativeRelease() {
     versions: version,
     sourceSdkCommit: manifests.go.sourceSdkCommit,
     acceptance,
+    ...(preview ? { preview } : {}),
   };
+  validateReleaseAuthorization(provenance);
   writeFileSync(
     join(output, "release-contract.json"),
     JSON.stringify(provenance, null, 2) + "\n",
@@ -150,7 +152,7 @@ export async function prepareNativeRelease() {
       { flag: "a" },
     );
   console.log(
-    "Native release contract accepted. No packages have been published.",
+    `Native ${channel} release prepared. No packages have been published.`,
   );
 }
 if (

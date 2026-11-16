@@ -11,13 +11,11 @@ matching production acceptance. Every contract snapshot and feature supplement,
 including client-token ceilings, must reconcile with that exact accepted
 producer. Keep publication holds until this reconciliation is reviewed.
 
-For the first new nightly release, the shared npm and native gate defers
-guest-call candidate acceptance. Its unaccepted and unpublished metadata stays
-intact, and the other feature holds and exact staging API acceptance still apply.
-Stable publication enforces `contracts/calls-guests.candidate.json`: both the
-guest-call candidate and its HTTP moderation operation need reviewed source
-acceptance and publication approval. Their API version, producer commit and
-Messaging specification hash must match the accepted release contract.
+The manual `preview` channel publishes checked source artifacts without deployed
+API acceptance. It preserves feature holds, including guest-call candidate
+metadata, and records native coverage gaps. Preview provenance explicitly says
+API acceptance is unverified. Nightly and stable publication keep their existing
+feature and environment acceptance requirements.
 
 The workflow binds inspected package bytes to `release-contract.json`, confirms
 registry contents after publication and refuses conflicting existing versions.

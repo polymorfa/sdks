@@ -23,6 +23,10 @@ import {
   writeFileSync,
 } from "node:fs";
 import { join, resolve } from "node:path";
+import {
+  validateReleaseAuthorization,
+  validateReleaseVersion,
+} from "./release-policy.mjs";
 
 const root = resolve(import.meta.dirname, "..");
 const rootManifest = JSON.parse(
@@ -152,9 +156,13 @@ function nextVersion(date = new Date()) {
 }
 
 function pack(version, out) {
-  if (!/^\d+\.\d+\.\d+(?:-dev\.[1-9]\d*)?$/.test(version)) {
-    fail(`version ${version} must be a stable version or <x.y.z>-dev.<number>`);
-  }
+  const provenancePath = arg("provenance");
+  if (!provenancePath) fail("pack requires verified --provenance");
+  const provenance = JSON.parse(readFileSync(resolve(provenancePath), "utf8"));
+  validateReleaseAuthorization(provenance);
+  validateReleaseVersion(provenance.channel, version);
+  if (provenance.packageVersion !== version)
+    fail("Package provenance mismatch");
   const { pub, pubNames } = loadPackages();
   const order = publishOrder(pub, pubNames);
   const sourceVersions = new Set(order.map((p) => p.json.version));
@@ -163,16 +171,6 @@ function pack(version, out) {
       if (from !== version)
         rewriteDistVersion(join(root, p.dir), from, version);
     }
-    const provenancePath = arg("provenance");
-    if (!provenancePath) fail("pack requires verified --provenance");
-    const provenance = JSON.parse(
-      readFileSync(resolve(provenancePath), "utf8"),
-    );
-    if (
-      provenance.packageVersion !== version ||
-      provenance.repository !== "polymorfa/sdks"
-    )
-      fail("Package provenance mismatch");
     writeFileSync(
       join(root, p.dir, "dist/release-contract.json"),
       JSON.stringify(provenance, null, 2) + "\n",
