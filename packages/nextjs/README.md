@@ -18,7 +18,7 @@ export const { GET, POST } = createPolymorfaHandler({
   }),
   authenticate: (request) => currentUser(request), // your auth; null → 401
   mint: (user) => ({
-    session: "support",
+    connection: "support",
     conversations: user.assignedConversationIds, // or "all"
     allow: ["read_messages", "subscribe_events", "send_message"],
     ttlSeconds: 600,
@@ -39,26 +39,26 @@ and `conversations` must be explicit. The handler calls `authenticate` and
 `mint` on every request, so revoked access takes effect on the next call. The
 browser never sends permissions, and the API key never leaves the server.
 
-| Route                                | Method | Needs                               | Purpose                                                   |
-| ------------------------------------ | ------ | ----------------------------------- | --------------------------------------------------------- |
-| `token`                              | POST   | signed-in user                      | Mints a client token and returns it with the grant        |
-| `webhooks`                           | POST   | signature                           | Verifies the raw body, then calls `onEvent`               |
-| `media/:id`                          | GET    | `read_messages` + `media.authorize` | Reuses `createMediaDownloadRoute` modes                   |
-| `history/conversations`              | GET    | `read_messages`                     | Your list, filtered to the grant                          |
-| `history/conversations/:id/messages` | GET    | `read_messages`                     | `404` outside the grant                                   |
-| `history/conversations/:id/contact`  | GET    | `read_contact`                      | Contact panel data                                        |
-| `events`                             | GET    | `subscribe_events`                  | Server-sent events, filtered by session and conversations |
-| `connect`                            | POST   | `connect_whatsapp`                  | Creates a QuickLink; the browser gets only the hosted URL |
-| `templates`                          | POST   | `manage_templates`                  | The template builder route plus `list`                    |
+| Route                                | Method | Needs                               | Purpose                                                      |
+| ------------------------------------ | ------ | ----------------------------------- | ------------------------------------------------------------ |
+| `token`                              | POST   | signed-in user                      | Mints a client token and returns it with the grant           |
+| `webhooks`                           | POST   | signature                           | Verifies the raw body, then calls `onEvent`                  |
+| `media/:id`                          | GET    | `read_messages` + `media.authorize` | Reuses `createMediaDownloadRoute` modes                      |
+| `history/conversations`              | GET    | `read_messages`                     | Your list, filtered to the grant                             |
+| `history/conversations/:id/messages` | GET    | `read_messages`                     | `404` outside the grant                                      |
+| `history/conversations/:id/contact`  | GET    | `read_contact`                      | Contact panel data                                           |
+| `events`                             | GET    | `subscribe_events`                  | Server-sent events, filtered by connection and conversations |
+| `connect`                            | POST   | `connect_whatsapp`                  | Creates a QuickLink; the browser gets only the hosted URL    |
+| `templates`                          | POST   | `manage_templates`                  | The template builder route plus `list`                       |
 
 Enforcement: the Polymorfa API enforces the client-token actions (`send_*`,
-`read_presence`, `subscribe_presence`, `read_contact`, `voip_*`). Session
-tokens carry the session's client rules; `allow` narrows them in the API only
+`read_presence`, `subscribe_presence`, `read_contact`, `voip_*`). Connection
+tokens carry the connection's client rules; `allow` narrows them in the API only
 for Customer tokens (`customer`, beta), where the handler forwards the API
 actions in `allow`. The handler enforces `read_messages`,
 `subscribe_events`, `connect_whatsapp`, `manage_templates` and
 `conversations` on its own routes. A Customer grant with no API action is
-refused rather than minted with the session rules. For Customer grants your
+refused rather than minted with the connection rules. For Customer grants your
 `events` source must return only that Customer's events.
 
 `createDevelopmentInboxStore()` keeps webhook events in memory and serves
@@ -103,7 +103,7 @@ export const POST = createClientTokenRoute({
   mint: createMessagingClientTokenMint({
     clientTokens: messaging.clientTokens,
     resolve: async (subject) => ({
-      session: "support",
+      connection: "support",
       ephemeralId: subject.userId,
       ttlSeconds: 600,
     }),
@@ -115,17 +115,17 @@ Browser calls use this same route. `POST /platform/client-tokens` is the only
 way to mint a client token, so `@polymorfa/sdk/calls` and `@polymorfa/ui-kit`
 receive the token from `messaging.clientTokens.mint`. The path the browser
 posts to is your own route; `createClientTokenProvider` defaults to
-`/api/polymorfa/token`. Grant the session's client rules the Calls actions
+`/api/polymorfa/token`. Grant the connection's client rules the Calls actions
 the browser needs: `voip_place` to place calls and add participants,
 `voip_answer` to accept or decline, and `voip_signal` for signaling, ending a
 call, and the call lifecycle socket.
 
 The server key that mints tokens needs all client delegation scopes:
-`sessions:manage`, `messages:write`, `contacts:read`, `presence:read`,
+`connections:manage`, `messages:write`, `contacts:read`, `presence:read`,
 `presence:observe`, and `mcp`.
 
 To mint one token for the numbers a Customer owns (beta), return `customer`
-instead of `session` from `resolve`. The server key also needs
+instead of `connection` from `resolve`. The server key also needs
 `customers:read`. Resolve the Customer ID on your server from the signed-in
 user; never take it from the request body.
 
@@ -137,13 +137,13 @@ resolve: async (subject) => ({
 }),
 ```
 
-The adapter throws before minting when both or neither of `session` and
+The adapter throws before minting when both or neither of `connection` and
 `customer` are set, or when `allow` is set without `customer`; the route then
 answers `500 token_mint_failed`.
 
 `createTemplateBuilderRoute` pairs the browser template transport with
 `MessagingClient.templates`. The application authorizes every request and
-resolves both project scope and the Cloud API submission session on the server.
+resolves both project scope and the Cloud API submission connection on the server.
 
 ```ts
 import { MessagingClient } from "@polymorfa/sdk";
@@ -158,7 +158,7 @@ export const POST = createTemplateBuilderRoute({
   authorize: async (request) => authorizeApplicationUser(request),
   resolveProjectSlug: async (subject) => projectSlugFor(subject.projectId),
   resolveSubmissionSession: async (subject) =>
-    cloudSessionFor(subject.projectId),
+    cloudConnectionFor(subject.projectId),
 });
 ```
 

@@ -30,7 +30,7 @@ For webhook delivery, pass the result of `constructWebhookEvent` to `storageWebh
 
 ## Consistency and recovery
 
-Every adapter implements atomic conditional commits. The shared engine obtains a durable session lease and includes its revision fence in each commit. An expired writer cannot overwrite a later writer or mark an unfinished event as complete. Lease rows remain after release so a generation is never reused. All writers must use the same namespace, adapter tables, merge contract and synchronized clocks; do not bypass the engine or delete lease rows while writers are active. Stop writers before a database reset or destructive maintenance.
+Every adapter implements atomic conditional commits. The shared engine obtains a durable connection lease and includes its revision fence in each commit. An expired writer cannot overwrite a later writer or mark an unfinished event as complete. Lease rows remain after release so a generation is never reused. All writers must use the same namespace, adapter tables, merge contract and synchronized clocks; do not bypass the engine or delete lease rows while writers are active. Stop writers before a database reset or destructive maintenance.
 
 A large event/history chunk spans multiple atomic commits. Rows from its completed commits can be visible before the whole event finishes. Its deduplication marker is stored last; replay after failure converges through field-version merges. This is not a transaction over the entire event. Field versions resolve arrival-order differences; receipts preserve progression, revocation clears content, and chat-clearing watermarks reject older copies. The exported conformance suite and portable fixtures define these merge rules.
 
@@ -63,11 +63,20 @@ Document/IndexedDB adapters bound a scope read before applying the shared index 
 
 ## Schema and ORM exports
 
-Schema version 2 includes durable lease fences. `STORAGE_SCHEMA`, `encodeKey`, `migrationSql` and the adapter subpaths expose the shared entity contract. SQL `setup()` creates missing reference tables; it is not a migration owner for an existing application schema. Review migrations before installation and keep all SDK ports on the same schema revision.
+Schema version 3 uses Connection identities and retains durable lease fences. `STORAGE_SCHEMA`, `encodeKey`, `migrationSql` and the adapter subpaths expose the shared entity contract. SQL `setup()` creates missing reference tables; it is not a migration owner for an existing application schema. Review migrations before installation and keep all SDK ports on the same schema revision.
+
+Setup does not convert an existing store's account fields or physical entity
+locations. Stop its writers and complete an explicit migration before using
+the same namespace with schema 3. SQL and IndexedDB reject unsupported schema
+versions. Document-provider initialization is not evidence that retained data
+was converted. The IndexedDB adapter provides `upgradeIndexedDbSchema2`;
+`upgradeSchema2Row` converts an exported row while preserving its ID, revision,
+field versions and opaque nested data. It does not enumerate or move provider
+records. Customer-owned SQL and document-store migrations remain explicit.
 
 `./drizzle` exports PostgreSQL/MySQL/SQLite schema factories. `./prisma` exports `prismaSchema({ provider, tablePrefix })`; generated schema assets live under `prisma/`. These are application query models. Use the adapter's reviewed migration SQL as the DDL authority for collations, indexes and database permissions. Prisma connection URLs belong in the application's Prisma configuration. ORM writes that bypass field versions and lease fences are unsafe.
 
-`./supabase` exports `supabasePreset`: reference PostgreSQL schema plus FORCE RLS and live session memberships. Install once as a reviewed customer-owned migration. Create its reader and backend writer roles separately. The default reader is `authenticated`; the writer is `polymorfa_storage_writer`. Readers can select only sessions with their own `auth.uid()` membership; they cannot write data or memberships. The named backend writer has explicit storage/membership authority. Never grant that role to browser users or a public API key. Membership and policy administration remain customer-owned.
+`./supabase` exports `supabasePreset`: reference PostgreSQL schema plus FORCE RLS and live connection memberships. Install once as a reviewed customer-owned migration. Create its reader and backend writer roles separately. The default reader is `authenticated`; the writer is `polymorfa_storage_writer`. Readers can select only connections with their own `auth.uid()` membership; they cannot write data or memberships. The named backend writer has explicit storage/membership authority. Never grant that role to browser users or a public API key. Membership and policy administration remain customer-owned.
 
 ## Verification and portability
 
@@ -95,7 +104,7 @@ const handle = storageWebhookHandler(storage, {
         ? { inlinePayload: descriptor.inline.data }
         : { ...descriptor.media!, fileLength: descriptor.fileLength },
     );
-    return projectHistoryForStorage(full, event.session);
+    return projectHistoryForStorage(full, event.connection);
   },
 });
 ```

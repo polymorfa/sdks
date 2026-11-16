@@ -26,7 +26,7 @@ import {
 } from "@polymorfa/ui-kit";
 
 const messaging = new BrowserMessagingClient({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
 });
 
@@ -48,9 +48,9 @@ Requests expose status, request ID, response headers, and attempt count. Safe re
 
 Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so Web Components and framework bindings share the same behavior.
 
-`BrowserMessagingClient` binds one session and exposes only the exact
+`BrowserMessagingClient` binds one connection and exposes only the exact
 client-token allowlist: message actions, presence reads/subscriptions, contact
-reads, and permitted widget pairing actions. Session start and status require a server
+reads, and permitted widget pairing actions. Connection start and status require a server
 Platform credential; use QuickLink for onboarding. The browser widget start/status
 helpers are removed in this breaking contract revision. Conversation history,
 template management and media upload remain application-owned server adapters.
@@ -130,7 +130,7 @@ import {
 } from "@polymorfa/ui-kit";
 
 const calls = createBrowserCalls({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
   onError: (error) => {
     // "unauthorized": the platform stopped accepting the token.
@@ -280,7 +280,7 @@ await templates.refreshPreview();
 ```
 
 The same-origin transport sends application actions with browser cookies. It
-does not accept a server credential, project slug, or Cloud API session. The
+does not accept a server credential, project slug, or Cloud API connection. The
 application route resolves those values after authorizing the request.
 
 Microphone and camera controls synchronize the connection's media preferences

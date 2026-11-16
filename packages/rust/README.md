@@ -438,7 +438,7 @@ let storage = Storage::new(Arc::new(adapter), StorageOptions::default())?;
 # Ok(()) }
 ```
 
-The D1 adapter uses `polymorfa-d1-storage-v1`, schema 2, bridge source
+The D1 adapter uses `polymorfa-d1-storage-v1`, schema 3, bridge source
 `d80b581c9df122411e9149a7e39a33700a51571c`. It signs the exact request bytes
 and authenticates each response's exact body, nonce, authority and table prefix.
 Commit limits are 50 writes, including the engine's connection fence; reads and

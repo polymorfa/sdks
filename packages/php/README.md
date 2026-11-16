@@ -440,7 +440,7 @@ retry automatically. Timeout or cancellation does not undo an accepted effect.
 `Polymorfa\Storage\D1Bridge` implements the storage-only `Adapter` interface for
 a customer Worker using the atomic D1 binding. Supply its URL, fixed authority,
 table prefix and a separate application secret. HTTPS is required except on
-loopback. A fresh signed handshake must confirm schema 2, identity, atomicity and
+loopback. A fresh signed handshake must confirm schema 3, identity, atomicity and
 bounds before capability is exposed. Setup requires the Worker's explicit
 permission. `get()`, `query()` and conditional `commit()` validate schema, row
 identity and revision, query scope/order and conflict IDs.

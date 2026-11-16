@@ -170,7 +170,7 @@ import {
 import { PolymorfaCallElement } from "@polymorfa/ui-kit/web-components";
 
 const calls = createBrowserCalls({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
 });
 await calls.connect();

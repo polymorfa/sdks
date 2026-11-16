@@ -377,7 +377,7 @@ kind and plaintext hash, with no media key. The SDK never closes the supplied
 S3 client. Local protocol and filesystem checks do not establish hosted bucket
 or WhatsApp acceptance.
 
-`polymorfa.storage` provides customer-owned schema version 2 with 17 entities,
+`polymorfa.storage` provides customer-owned schema version 3 with 17 entities,
 per-field version merges, event deduplication, permanent content revocation,
 clear-chat watermarks and cleanup of media/reactions/receipts/poll votes.
 `Storage(adapter)` requires atomic conditional commits. A failed commit stops

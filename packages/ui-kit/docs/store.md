@@ -34,7 +34,7 @@ flowchart LR
 
 Each `ingest()` call:
 
-1. Drops envelopes for other sessions (when `session` is set) and malformed
+1. Drops envelopes for other connections (when `connection` is set) and malformed
    envelopes.
 2. Removes token-like fields and your `redact` paths from the payload.
 3. Skips event IDs already in the `events` log.
@@ -43,7 +43,7 @@ Each `ingest()` call:
 5. Writes the whole batch in one transaction, then notifies subscribers in
    this tab and, through `BroadcastChannel`, in other tabs.
 
-Meta account notices are stored in `sessions.cloudAccountNotification`; they
+Meta account notices are stored in `connections.cloudAccountNotification`; they
 do not overwrite connection status. Cloud template status and quality updates
 set the matching template fields and preserve language and WABA references.
 
@@ -64,7 +64,7 @@ import {
 
 const store = await createPolymorfaStore({
   name: `support:${user.id}`,
-  session: "support",
+  connection: "support",
 });
 
 const connection = connectEventSource(
@@ -95,7 +95,7 @@ name.
 ```text
 id: evt_123
 event: message.received
-data: {"id":"evt_123","session":"support","timestamp":"2026-09-01T10:00:00Z","event":"message.received","payload":{...}}
+data: {"id":"evt_123","connection":"support","timestamp":"2026-09-01T10:00:00Z","event":"message.received","payload":{...}}
 ```
 
 `fromEventSource()` passes the saved cursor as the `lastEventId` query
@@ -179,7 +179,7 @@ fourth `key` argument that changes when the query inputs change.
 - The store never keeps credentials. It removes fields named like tokens,
   secrets, passwords, authorization, or API keys, and replaces any value
   starting with `pmfa_` with `[redacted]`.
-- Name each store for one signed-in user and session, and call `clear()` on
+- Name each store for one signed-in user and connection, and call `clear()` on
   sign-out.
 - Retention limits how long data stays. See [Retention](#retention).
 
@@ -209,7 +209,7 @@ newest event applied to them.
 | `presence`      | 1 day, 5,000 rows   |
 | `calls`         | 90 days, 5,000 rows |
 | `labels`        | 1,000 rows          |
-| `sessions`      | 100 rows            |
+| `connections`   | 100 rows            |
 | `templates`     | 2,000 rows          |
 | `events`        | 7 days, 10,000 rows |
 | `custom`        | 30 days, 5,000 rows |
@@ -226,22 +226,22 @@ await createPolymorfaStore({
 
 ## Event routing
 
-| Event types                                                                          | Store                                           |
-| ------------------------------------------------------------------------------------ | ----------------------------------------------- |
-| `message.received`, `message.update`, `message.edited`                               | `messages`, conversation summary                |
-| `message.sent`                                                                       | `messages` (outbound, `sent`)                   |
-| `message.ack`                                                                        | message status                                  |
-| `message.reaction`, `message.vote`                                                   | message reactions and votes                     |
-| `message.delete`, `message.revoked`                                                  | message tombstone                               |
-| `chat.read`, `chat.archive`, `chat.mute`, `chat.clear`, `chat.delete`                | `conversations`                                 |
-| `group.update`                                                                       | `conversations` (name, description)             |
-| `contact.update`, `blocklist.update`                                                 | `contacts`                                      |
-| `presence.update`                                                                    | `presence`                                      |
-| `call.*`                                                                             | `calls`                                         |
-| `labels.update`                                                                      | `labels`, conversation or message labels, stars |
-| `session.status`, `session.connected`, `session.logged_out`, `session.phone_offline` | `sessions`                                      |
-| `template.status`                                                                    | `templates`                                     |
-| Every other type, including unknown ones                                             | `custom`                                        |
+| Event types                                                                                      | Store                                           |
+| ------------------------------------------------------------------------------------------------ | ----------------------------------------------- |
+| `message.received`, `message.update`, `message.edited`                                           | `messages`, conversation summary                |
+| `message.sent`                                                                                   | `messages` (outbound, `sent`)                   |
+| `message.ack`                                                                                    | message status                                  |
+| `message.reaction`, `message.vote`                                                               | message reactions and votes                     |
+| `message.delete`, `message.revoked`                                                              | message tombstone                               |
+| `chat.read`, `chat.archive`, `chat.mute`, `chat.clear`, `chat.delete`                            | `conversations`                                 |
+| `group.update`                                                                                   | `conversations` (name, description)             |
+| `contact.update`, `blocklist.update`                                                             | `contacts`                                      |
+| `presence.update`                                                                                | `presence`                                      |
+| `call.*`                                                                                         | `calls`                                         |
+| `labels.update`                                                                                  | `labels`, conversation or message labels, stars |
+| `connection.status`, `connection.connected`, `connection.logged_out`, `connection.phone_offline` | `connections`                                   |
+| `template.status`                                                                                | `templates`                                     |
+| Every other type, including unknown ones                                                         | `custom`                                        |
 
 Every accepted event is also appended to `events`. Payload timestamps in
 seconds or milliseconds are stored as epoch milliseconds. `message.failed`
@@ -256,7 +256,7 @@ store.registerReducer("campaign.completed", async (event, context) => {
     id: `campaign:${payload.campaignId}`,
     _t: context.time,
     type: "campaign.summary",
-    session: event.session,
+    connection: event.connection,
     timestamp: event.timestamp,
     payload,
   });
@@ -269,9 +269,9 @@ store.registerReducer("campaign.completed", async (event, context) => {
 
 | Option             | Description                                                        |
 | ------------------ | ------------------------------------------------------------------ |
-| `name`             | Required. Database name; include the user and session.             |
+| `name`             | Required. Database name; include the user and connection.          |
 | `version`          | Application data version. A change wipes stored data on open.      |
-| `session`          | Store only events for this session.                                |
+| `connection`       | Store only events for this connection.                             |
 | `retention`        | Per-store `{ maxAgeMs, maxRows }` or `false`.                      |
 | `sweepIntervalMs`  | Retention interval. Defaults to one hour; `0` sweeps only on open. |
 | `indexedDB`        | `IDBFactory` to use. `null` forces memory mode.                    |
@@ -294,8 +294,8 @@ store.registerReducer("campaign.completed", async (event, context) => {
 | `conversations.get(id)`                                                          | One conversation.                                                                                                                                                                                                                   |
 | `messages.list({ conversationId, before?, beforeId?, limit?, includeDeleted? })` | Newest first. `before` is epoch milliseconds, exclusive. With `beforeId`, messages created exactly at `before` whose ID sorts before `beforeId` are included too, so pages with shared timestamps continue. `limit` defaults to 50. |
 | `messages.get(id)`                                                               | One message, including tombstones.                                                                                                                                                                                                  |
-| `messages.upsert(messages, { session? })`                                        | Writes backend history. Live events for the same message win.                                                                                                                                                                       |
-| `contacts`, `presence`, `calls`, `labels`, `sessions`, `templates`               | `get(id)` and `list({ limit? })`, most recently updated first.                                                                                                                                                                      |
+| `messages.upsert(messages, { connection? })`                                     | Writes backend history. Live events for the same message win.                                                                                                                                                                       |
+| `contacts`, `presence`, `calls`, `labels`, `connections`, `templates`            | `get(id)` and `list({ limit? })`, most recently updated first.                                                                                                                                                                      |
 | `events.list({ types?, since?, limit? })`                                        | The event log, oldest first. `since` is epoch milliseconds, inclusive.                                                                                                                                                              |
 | `custom.list({ types?, since?, limit? })`                                        | Events without a reducer.                                                                                                                                                                                                           |
 | `checkpoints.get(id)`, `checkpoints.set(id, cursor)`                             | Resume positions.                                                                                                                                                                                                                   |
@@ -319,12 +319,12 @@ store.registerReducer("campaign.completed", async (event, context) => {
 
 ### Chat integration
 
-| Export                                               | Description                                                                      |
-| ---------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `createStoreConversationSource(store, options)`      | `conversationId`, `send`, and optional `load`, `pageSize`, `session`, `onError`. |
-| `toConversationMessage(row)`                         | Maps a stored message to `ConversationMessage`.                                  |
-| `usePolymorfaStoreQuery(store, stores, query, key?)` | From `@polymorfa/ui-kit/store/react`. Returns `{ data, error, loading }`.        |
+| Export                                               | Description                                                                         |
+| ---------------------------------------------------- | ----------------------------------------------------------------------------------- |
+| `createStoreConversationSource(store, options)`      | `conversationId`, `send`, and optional `load`, `pageSize`, `connection`, `onError`. |
+| `toConversationMessage(row)`                         | Maps a stored message to `ConversationMessage`.                                     |
+| `usePolymorfaStoreQuery(store, stores, query, key?)` | From `@polymorfa/ui-kit/store/react`. Returns `{ data, error, loading }`.           |
 
-`PolymorfaEvent` is the webhook envelope: `id`, `session`, `timestamp`,
+`PolymorfaEvent` is the webhook envelope: `id`, `connection`, `timestamp`,
 `event`, `payload`, and optional `externalId`. The server SDK's
 `WebhookEvent` union is assignable to it.

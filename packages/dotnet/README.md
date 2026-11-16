@@ -467,7 +467,7 @@ The separate, unpublished `Polymorfa.Storage.MongoDb` package adds
 MongoDB driver. Pass a customer-owned `IMongoDatabase` and
 `new MongoDbStorageOptions(namespace)`. The caller configures credentials, TLS,
 server selection, connection and operation timeouts and owns client lifetime.
-The adapter derives sessions from that database's client, never reads Polymorfa
+The adapter derives connections from that database's client, never reads Polymorfa
 API credentials and requires a server app.
 
 ```csharp
@@ -783,11 +783,12 @@ same origin. The application owns login/logout handling, account changes,
 retention and deletion of its device data. Browser storage can be denied,
 limited or evicted; do not treat it as a guaranteed permanent archive.
 
-All 17 entity stores use schema version 2. Setup upgrades an existing version-1
-database without discarding its existing rows. An upgrade blocked by an older
-open connection returns a safe provider error; close that connection and retry.
-Native version changes close the old connection. Unsupported newer database
-versions fail to open. Index names and scopes come from the SDK's closed schema.
+All 17 entity stores use schema version 3. Ordinary setup opens a fresh database
+or an existing version-3 database. For a version-2 database, stop other writers
+and call `UpgradeSchema2Async` explicitly. Version 1 and newer unsupported
+versions are refused. An upgrade blocked by an older open connection returns a
+provider error; close that connection and retry. Native version changes close
+the old connection. Index names and scopes come from the SDK's closed schema.
 Queries scan the selected entity within `MaxQueryRows` (1-100000, default
 100000); exceeding that count fails before loading its rows. This adapter does
 not create native secondary indexes or claim unbounded query performance.
