@@ -88,7 +88,7 @@ release availability changes: the API continues enforcing permission, funding,
 enrollment and feature eligibility.
 
 The source also includes 30 campaign, customer-supplied audience profile and
-custody-default operations from API source `d3e21ffbb26360ff620164f0f72ca2058dc2e018`.
+custody-default operations from API source `15db8b1c9d88e2ceccb58c851e731feabb659a39`.
 These additions use `2026-10-14` when a call omits its API version; an explicit
 `RequestOptions::api_version` wins. Existing methods keep their baseline version.
 The supplement remains unpublished and does not establish deployed availability.

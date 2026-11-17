@@ -189,7 +189,7 @@ it("pins PATCH defaults, four-range step windows, and segment bounds to the chec
       "utf8",
     ),
   );
-  expect(contract.commit).toBe("d3e21ffbb26360ff620164f0f72ca2058dc2e018");
+  expect(contract.commit).toBe("15db8b1c9d88e2ceccb58c851e731feabb659a39");
   for (const source of Object.values(contract.sources) as {
     sourceSha256: string;
     schemas: Record<string, { properties: Record<string, unknown> }>;

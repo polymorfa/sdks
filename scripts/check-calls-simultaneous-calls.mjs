@@ -15,7 +15,7 @@ export function checkCallsSimultaneous() {
   assert.equal(inventory.published, false);
   assert.equal(
     json("contracts/source.json").commit,
-    "d3e21ffbb26360ff620164f0f72ca2058dc2e018",
+    "15db8b1c9d88e2ceccb58c851e731feabb659a39",
   );
   for (const source of Object.values(pin.sources)) {
     assert.match(source.sourceSha256, /^[a-f0-9]{64}$/);

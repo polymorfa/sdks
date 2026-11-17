@@ -840,8 +840,8 @@ fn types_match_pinned_supplements() {
         "../../../contracts/campaign-segments-drip.json"
     ))
     .unwrap();
-    assert_eq!(cap["commit"], "d3e21ffbb26360ff620164f0f72ca2058dc2e018");
-    assert_eq!(seg["commit"], "d3e21ffbb26360ff620164f0f72ca2058dc2e018");
+    assert_eq!(cap["commit"], "15db8b1c9d88e2ceccb58c851e731feabb659a39");
+    assert_eq!(seg["commit"], "15db8b1c9d88e2ceccb58c851e731feabb659a39");
     let keys = |v: Value| {
         let mut k: Vec<String> = v.as_object().unwrap().keys().cloned().collect();
         k.sort();
