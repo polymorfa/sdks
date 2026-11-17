@@ -572,6 +572,13 @@ from .official_round2 import (
 from .official_round2 import (
     MarketingMessagesStatus as MarketingMessagesStatus,
 )
+from .webhook_models import (
+    ChannelStatusPublication,
+    GroupStatusPublication,
+    PersonalStatusPublication,
+    ReceivedContent,
+    StatusPublicationPayload,
+)
 from .webhooks import (
     WebhookDelivery as WebhookDelivery,
 )
@@ -584,3 +591,11 @@ from .webhooks import (
 from .webhooks import (
     parse_verified_webhook_delivery as parse_verified_webhook_delivery,
 )
+
+__all__ += [
+    "ChannelStatusPublication",
+    "GroupStatusPublication",
+    "PersonalStatusPublication",
+    "ReceivedContent",
+    "StatusPublicationPayload",
+]

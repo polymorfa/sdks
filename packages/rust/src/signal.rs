@@ -118,6 +118,7 @@ pub struct SignalHistoryDescriptor {
 /// Plaintext stays in the caller's application. Never log the event body.
 #[derive(Clone, Deserialize)]
 pub struct SignalEvent {
+    pub status_scope: Option<String>,
     pub id: String,
     #[serde(rename = "type")]
     pub event_type: String,
@@ -136,6 +137,19 @@ pub struct SignalEvent {
     pub history: Option<SignalHistoryDescriptor>,
     #[serde(flatten)]
     pub additional: std::collections::BTreeMap<String, serde_json::Value>,
+}
+impl SignalEvent {
+    fn require_status_scope(&self) -> Result<()> {
+        if self.event_type == "status.received"
+            && !matches!(
+                self.status_scope.as_deref(),
+                Some("personal" | "group" | "channel")
+            )
+        {
+            return Err(malformed());
+        }
+        Ok(())
+    }
 }
 impl SignalMediaDescriptor {
     pub fn download_descriptor(&self) -> Result<crate::media::MediaDescriptor> {
@@ -376,6 +390,7 @@ impl SignalClient {
                 let Some(chunk)=next.map_err(|_|Error::local(ErrorKind::Timeout,"Signal event stream timed out.","request_timeout"))? else {parser.finish()?; break};
                 for message in parser.feed(&chunk.map_err(|_|network())?)? {
                     let event:SignalEvent=serde_json::from_str(&message.data).map_err(|_|malformed())?;
+                    event.require_status_scope()?;
                     if event.id.is_empty() || message.id.as_deref()!=Some(event.id.as_str()) || message.event!=event.event_type || expected_session.as_ref().is_some_and(|session| session != &event.session_id) {Err(malformed())?;}
                     yield event;
                 }
@@ -422,6 +437,7 @@ pub fn verify_signal_webhook(
         return Err(malformed());
     }
     let event: SignalEvent = serde_json::from_slice(body).map_err(|_| malformed())?;
+    event.require_status_scope()?;
     if event.id.is_empty() {
         return Err(malformed());
     }

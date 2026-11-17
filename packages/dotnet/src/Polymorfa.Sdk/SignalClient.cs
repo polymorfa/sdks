@@ -68,6 +68,7 @@ public sealed record SignalHistoryDescriptor
 }
 public sealed record SignalEvent
 {
+    public string? StatusScope { get; init; }
     public required string Id { get; init; }
     public required string Type { get; init; }
     public required string SessionId { get; init; }
@@ -185,6 +186,7 @@ public sealed class SignalClient : IDisposable
                 try { item = JsonSerializer.Deserialize<SignalEvent>(data.ToString(), Json) ?? throw InvalidResponse(); }
                 catch (JsonException) { throw InvalidResponse(); }
                 if (string.IsNullOrEmpty(item.Id) || item.Id != eventId || item.Type != kind || session is not null && item.SessionId != session) throw InvalidResponse();
+                RequireStatusScope(item);
                 yield return item;
             }
             data.Clear(); eventId = null; kind = null;
@@ -202,8 +204,12 @@ public sealed class SignalClient : IDisposable
         mac.AppendData(Encoding.ASCII.GetBytes(timestamp.ToString(System.Globalization.CultureInfo.InvariantCulture) + ".")); mac.AppendData(body);
         if (!CryptographicOperations.FixedTimeEquals(mac.GetHashAndReset(), received)) throw BadSignature();
         if (body.Length > BodyLimit) throw InvalidResponse();
-        try { var item = JsonSerializer.Deserialize<SignalEvent>(body, Json) ?? throw InvalidResponse(); if (string.IsNullOrEmpty(item.Id)) throw InvalidResponse(); return item; }
+        try { var item = JsonSerializer.Deserialize<SignalEvent>(body, Json) ?? throw InvalidResponse(); if (string.IsNullOrEmpty(item.Id)) throw InvalidResponse(); RequireStatusScope(item); return item; }
         catch (JsonException) { throw InvalidResponse(); }
+    }
+    private static void RequireStatusScope(SignalEvent item)
+    {
+        if (item.Type == "status.received" && item.StatusScope is not ("personal" or "group" or "channel")) throw InvalidResponse();
     }
     private static PolymorfaException BadSignature() => new("Invalid Signal webhook signature or timestamp.", "invalid_signature");
     private static PolymorfaException InvalidResponse() => new PolymorfaServerException("Signal service returned an invalid response.", "invalid_response");

@@ -28,7 +28,11 @@ raises(fn () => iterator_to_array($exports->exportAll(['cursor' => 'again'])), P
 $listener = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
 $address = stream_socket_get_name($listener, false);
 fclose($listener);
-$process = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/call-export-server.php'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes);
+$httpLog = tmpfile();
+if ($httpLog === false) {
+    throw new RuntimeException('Cannot create fixture server log.');
+}
+$process = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/call-export-server.php'], [0 => ['pipe','r'],1 => $httpLog,2 => $httpLog], $pipes);
 try {
     $http = new GuzzleHttp\Client(['http_errors' => false]);
     for ($attempt = 0;$attempt < 100;$attempt++) {
@@ -48,4 +52,5 @@ try {
     foreach ($pipes as $pipe) {
         fclose($pipe);
     } proc_close($process);
+    fclose($httpLog);
 }

@@ -284,6 +284,18 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         ),
         ("message.reaction", cloud()),
         ("message.received", linked()),
+        (
+            "status.received",
+            json!({"id":"123","whatsapp_ids":ids(),"scope":"personal","publisher":identity(),"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"text","text":"publication"}}),
+        ),
+        (
+            "status.update",
+            json!({"id":"123","whatsapp_ids":ids(),"scope":"group","publisher":identity(),"group":identity(),"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"text","text":"publication"}}),
+        ),
+        (
+            "status.revoked",
+            json!({"id":"123","whatsapp_ids":ids(),"scope":"channel","channel":identity(),"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"revoke","revokedId":"456"}}),
+        ),
         ("message.revoked", linked()),
         (
             "message.sent",
@@ -368,6 +380,12 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
         pinned["sourceSdkCommit"],
         "ff51567105b64bf6997e7330ba8eb502d875e7b9"
     );
+    let status_candidate: Value = serde_json::from_str(include_str!(
+        "../../../contracts/status-publications.candidate.json"
+    ))
+    .unwrap();
+    assert_eq!(status_candidate["sourceAccepted"], false);
+    assert_eq!(status_candidate["published"], false);
     assert_eq!(
         KNOWN_EVENT_TYPES.iter().copied().collect::<BTreeSet<_>>(),
         pinned["events"]
@@ -375,6 +393,13 @@ fn every_pinned_known_event_has_a_typed_verified_payload_and_unknown_events_pres
             .unwrap()
             .iter()
             .map(|event| event.as_str().unwrap())
+            .chain(
+                status_candidate["events"]
+                    .as_object()
+                    .unwrap()
+                    .keys()
+                    .map(String::as_str)
+            )
             .collect()
     );
     for (event, expected) in cases {
@@ -446,4 +471,33 @@ fn cloud_variants_and_payment_method_selections_preserve_distinct_shapes() {
     ))
     .unwrap();
     assert_eq!(encoded["payload"]["timestamp"], "1800000000");
+}
+
+#[test]
+fn status_sticker_packs_decode_through_the_verified_event_parser() {
+    use polymorfa_sdk::webhook_payloads::LinkedDeviceMessageType;
+    let event = signed(
+        "status.received",
+        json!({"id":"123","whatsapp_ids":{"linked_devices":"authored-pack"},"scope":"personal","publisher":{"id":"456"},"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"sticker_pack","stickerPack":{"name":"authored"}}}),
+    );
+    let WebhookEvent::Known {
+        payload: KnownWebhookPayload::StatusReceived(payload),
+        ..
+    } = event
+    else {
+        panic!("status classification lost")
+    };
+    assert!(matches!(
+        payload.content.message_type,
+        LinkedDeviceMessageType::StickerPack
+    ));
+}
+
+#[test]
+fn existing_message_fields_remain_owned_and_mutable() {
+    use polymorfa_sdk::webhook_payloads::LinkedDeviceMessagePayload;
+    let mut payload: LinkedDeviceMessagePayload = serde_json::from_value(linked()).unwrap();
+    payload.text = Some("authored direct mutation".into());
+    let moved = payload.text;
+    assert_eq!(moved.as_deref(), Some("authored direct mutation"));
 }

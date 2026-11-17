@@ -719,6 +719,22 @@ CASES += [
     ),
 ]
 
+CASES += [
+    (
+        ("status.received", "status.update", "status.revoked"),
+        {
+            "id": "123",
+            "whatsapp_ids": IDS,
+            "scope": "personal",
+            "publisher": IDENTITY,
+            "fromMe": False,
+            "timestamp": 1700000000,
+            "pushName": "Authored",
+            "content": {"type": "text", "text": "publication"},
+        },
+    ),
+]
+
 EXPANDED = [(event_type, payload) for types, payload in CASES for event_type in types]
 
 

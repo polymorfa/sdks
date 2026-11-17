@@ -6,7 +6,7 @@ namespace Polymorfa;
 
 final readonly class SignalEvent implements \JsonSerializable
 {
-    public function __construct(public string $id, public string $type, public string $sessionId, #[\SensitiveParameter] public string $chat, #[\SensitiveParameter] public string $sender, public string $messageId, public int $timestamp, public bool $isFromMe, public bool $redelivered, public bool $identityChanged, #[\SensitiveParameter] public string $messageProto, #[\SensitiveParameter] public string $rawJson, #[\SensitiveParameter] public ?string $senderAlt = null, #[\SensitiveParameter] public ?string $text = null, public ?SignalMediaDescriptor $media = null, public ?SignalHistoryDescriptor $history = null)
+    public function __construct(public string $id, public string $type, public string $sessionId, #[\SensitiveParameter] public string $chat, #[\SensitiveParameter] public string $sender, public string $messageId, public int $timestamp, public bool $isFromMe, public bool $redelivered, public bool $identityChanged, #[\SensitiveParameter] public string $messageProto, #[\SensitiveParameter] public string $rawJson, #[\SensitiveParameter] public ?string $senderAlt = null, #[\SensitiveParameter] public ?string $text = null, public ?SignalMediaDescriptor $media = null, public ?SignalHistoryDescriptor $history = null, public ?string $statusScope = null)
     {
     }
     public static function fromJson(#[\SensitiveParameter] string $raw): self
@@ -15,9 +15,11 @@ final readonly class SignalEvent implements \JsonSerializable
         $id = SignalCodec::string($data, 'id');
         $type = SignalCodec::string($data, 'type');
         $session = SignalCodec::string($data, 'session_id');
-        if ($id === '' || $session === '' || !in_array($type, ['message','history.sync'], true)) {
+        if ($id === '' || $session === '' || !in_array($type, ['message','history.sync','status.received'], true)) {
             SignalCodec::invalid();
         }
+        $statusScope = SignalCodec::optionalString($data, 'status_scope');
+        if ($type === 'status.received' && !in_array($statusScope, ['personal','group','channel'], true)) { SignalCodec::invalid(); }
         $media = $history = null;
         foreach (['media','history'] as $field) {
             if (array_key_exists($field, $data)) {
@@ -34,7 +36,7 @@ final readonly class SignalEvent implements \JsonSerializable
         if ($type === 'history.sync' && ($history === null || $proto !== '')) {
             SignalCodec::invalid();
         }
-        return new self($id, $type, $session, SignalCodec::string($data, 'chat'), SignalCodec::string($data, 'sender'), SignalCodec::string($data, 'message_id'), SignalCodec::integer($data, 'timestamp'), SignalCodec::boolean($data, 'is_from_me'), SignalCodec::boolean($data, 'redelivered'), SignalCodec::boolean($data, 'identity_changed'), $proto, $raw, SignalCodec::optionalString($data, 'sender_alt'), SignalCodec::optionalString($data, 'text'), $media, $history);
+        return new self($id, $type, $session, SignalCodec::string($data, 'chat'), SignalCodec::string($data, 'sender'), SignalCodec::string($data, 'message_id'), SignalCodec::integer($data, 'timestamp'), SignalCodec::boolean($data, 'is_from_me'), SignalCodec::boolean($data, 'redelivered'), SignalCodec::boolean($data, 'identity_changed'), $proto, $raw, SignalCodec::optionalString($data, 'sender_alt'), SignalCodec::optionalString($data, 'text'), $media, $history, $statusScope);
     }
     /** @return array{redacted:true} */public function __debugInfo(): array
     {

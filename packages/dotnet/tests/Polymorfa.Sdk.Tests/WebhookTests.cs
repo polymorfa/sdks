@@ -7,6 +7,8 @@ internal static class WebhookTests
 {
     public static void Run()
     {
+        var status = Parse<StatusPublicationPayload>("status.received", """{"id":"123","whatsapp_ids":{"linked_devices":"authored-status"},"scope":"group","publisher":{"id":"456"},"group":{"id":"789"},"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"text","text":"publication","futureMediaField":123}}""");
+        Check(status.Scope == "group" && status.Group?.Id == "789" && status.Content.Text == "publication" && status.Content.AdditionalFields?["futureMediaField"].GetInt32() == 123, "separate status publication with shared content");
         var linked = Parse<LinkedDeviceMessagePayload>("message.received", """{"id":"m1","whatsapp_ids":{"linked_devices":"wa1"},"conversation":{"id":"peer","sender":{"id":"lid","bsuid":"US.123"}},"fromMe":false,"timestamp":1726170122,"pushName":"Zoë 🐈","isGroup":true,"type":"text","text":"héllo","edited":false,"pollOptions":[{"name":"A","hash":"abc"}],"future":{"enabled":true}}""");
         Check(linked.WhatsAppIds.LinkedDevices == "wa1" && linked.Text == "héllo" && linked.Timestamp == 1726170122 && linked.Conversation.Sender?.Bsuid == "US.123" && linked.AdditionalFields?["future"].GetProperty("enabled").GetBoolean() == true, "linked-device payload");
         var cloud = Parse<CloudMessagePayload>("message.reaction", """{"id":"m2","whatsapp_ids":{"official_api":"wa2"},"conversation":{"id":"peer"},"timestamp":"1726170122","type":"interactive","senderName":"Zoë","nativeFlowResponse":{"name":"flow","paramsJson":"{\"choice\":false}","version":3},"referral":{"source_type":"ad","ctwa_clid":"click","future":"kept"},"interactive":{"button_reply":{"id":"yes"}}}""");
@@ -47,7 +49,7 @@ internal static class WebhookTests
         try { Webhooks.ConstructEvent(invalid, new string('0', 64), "secret"); throw new Exception("signature accepted"); } catch (WebhookSignatureException) { }
         var signature = Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes("secret"), invalid));
         try { Webhooks.ConstructEvent(invalid, signature, "secret"); throw new Exception("invalid JSON accepted"); } catch (PolymorfaValidationException e) { Check(e.Code == "invalid_webhook_json", "JSON failure"); }
-        Check(Webhooks.KnownEventTypes.Count == 86, "known registry count");
+        Check(Webhooks.KnownEventTypes.Count == 89, "known registry count");
         var flow = Encoding.UTF8.GetBytes("{\"action\":\"INIT\",\"data\":{\"selected\":false}}");
         var time = DateTimeOffset.FromUnixTimeSeconds(1726170122);
         var signedFlow = Encoding.UTF8.GetBytes("1726170122.").Concat(flow).ToArray();

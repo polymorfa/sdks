@@ -23,6 +23,19 @@ internal static class SignalTests
             ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(key, 100, body, Sign(Encoding.ASCII.GetBytes("another-fixture-secret"), 100, body), 100, TimeSpan.FromSeconds(5))), "invalid_signature");
             ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(key, 100, body, Sign(key, 100, body), 106, TimeSpan.FromSeconds(5))), "invalid_signature");
         }
+        foreach (var scope in new string?[] { null, "", "future", "personal", "group", "channel" })
+        {
+            var fragment = scope is null ? "" : ",\"status_scope\":" + JsonSerializer.Serialize(scope);
+            var bytes = Encoding.UTF8.GetBytes(Event.Replace("\"type\":\"message\"", "\"type\":\"status.received\"" + fragment));
+            var key = Encoding.ASCII.GetBytes(Secret);
+            if (scope is "personal" or "group" or "channel") ResourceTests.Equal(SignalClient.VerifyWebhook(key, 100, bytes, Sign(key, 100, bytes), 100).StatusScope, scope);
+            else ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(key, 100, bytes, Sign(key, 100, bytes), 100)), "invalid_response");
+        }
+        var statusBody = Encoding.UTF8.GetBytes(Event.Replace("\"type\":\"message\"", "\"type\":\"status.received\",\"status_scope\":\"group\""));
+        var statusKey = Encoding.ASCII.GetBytes(Secret);
+        var statusEvent = SignalClient.VerifyWebhook(statusKey, 100, statusBody, Sign(statusKey, 100, statusBody), 100, TimeSpan.FromSeconds(5));
+        ResourceTests.Equal(statusEvent.Type, "status.received");
+        ResourceTests.Equal(statusEvent.StatusScope, "group");
         var valid = Enumerable.Repeat((byte)'k', 16).ToArray();
         var invalid = Encoding.UTF8.GetBytes("{not json");
         ResourceTests.Equal(Code(() => SignalClient.VerifyWebhook(valid, 100, invalid, Sign(valid, 100, invalid), 100, TimeSpan.FromSeconds(5))), "invalid_response");

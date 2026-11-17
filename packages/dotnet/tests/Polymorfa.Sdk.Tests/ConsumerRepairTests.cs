@@ -44,6 +44,15 @@ internal static class ConsumerRepairTests
             await using var peer = new Peer((request, stream, _) => { SignalHeaders(request); return SignalReply(stream, ": keepalive\r\n\r\n" + SignalFrame("s")); });
             using var client = new SignalClient(new(peer.Url, SignalSecret)); var events = new List<SignalEvent>(); await foreach (var item in client.EventsAsync(filter)) events.Add(item); Check(events.Count == 1 && events[0].SessionId == "s", "Valid Signal filter/EOF changed");
         }
+        foreach (var scope in new string?[] { null, "", "future", "personal", "group", "channel" })
+        {
+            var fragment = scope is null ? "" : ",\"status_scope\":" + JsonSerializer.Serialize(scope);
+            var frame = SignalFrame("s").Replace("event: message", "event: status.received").Replace("\"type\":\"message\"", "\"type\":\"status.received\"" + fragment);
+            await using var peer = new Peer((request, stream, _) => { SignalHeaders(request); return SignalReply(stream, frame); });
+            using var client = new SignalClient(new(peer.Url, SignalSecret));
+            if (scope is "personal" or "group" or "channel") { var events = new List<SignalEvent>(); await foreach (var item in client.EventsAsync("s")) events.Add(item); Check(events.Count == 1 && events[0].StatusScope == scope, "Valid status scope changed"); }
+            else { try { await foreach (var _ in client.EventsAsync("s")) throw new Exception("Invalid status scope escaped"); throw new Exception("Missing status scope error"); } catch (PolymorfaServerException error) { Check(error.Code == "invalid_response", "Status scope error changed"); } }
+        }
         Console.WriteLine("PASS public Signal: session filtering and unfiltered/clean EOF controls");
     }
     public static async Task SignalTruncationAsync()

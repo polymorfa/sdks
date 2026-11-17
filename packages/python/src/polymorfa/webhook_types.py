@@ -10,6 +10,15 @@ from .webhook_models import TypedWebhookEvent
 
 @overload
 def is_event(
+    event: TypedWebhookEvent[str, object],
+    event_type: Literal["status.received", "status.update", "status.revoked"],
+) -> TypeGuard[
+    TypedWebhookEvent[
+        Literal["status.received", "status.update", "status.revoked"], m.StatusPublicationPayload
+    ]
+]: ...
+@overload
+def is_event(
     event: TypedWebhookEvent[str, object], event_type: Literal["marketing.onboarding_updated"]
 ) -> TypeGuard[
     TypedWebhookEvent[Literal["marketing.onboarding_updated"], m.MarketingOnboardingUpdatedPayload]

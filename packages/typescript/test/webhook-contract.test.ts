@@ -88,14 +88,30 @@ const messaging: OpenApiDocument = {
     },
   },
 };
+const statusCandidate = JSON.parse(
+  readFileSync(
+    resolve(root, "contracts/status-publications.candidate.json"),
+    "utf8",
+  ),
+) as OpenApiDocument;
+
 const platform = load("platform");
 
 function resolveRef(document: OpenApiDocument, schema: Schema): Schema {
   if (schema.$ref === undefined) return schema;
-  const name = schema.$ref.split("/").pop()!;
-  const target = document.components.schemas[name];
+  const parts = schema.$ref
+    .slice(2)
+    .split("/")
+    .map((part) => part.replaceAll("~1", "/").replaceAll("~0", "~"));
+  let target: unknown =
+    parts[0] === "components" ? document : document.components.schemas;
+  for (const part of parts) {
+    if (target === null || typeof target !== "object")
+      throw new Error(`Unresolved ${schema.$ref}`);
+    target = (target as Record<string, unknown>)[part];
+  }
   if (target === undefined) throw new Error(`Unresolved ${schema.$ref}`);
-  return resolveRef(document, target);
+  return resolveRef(document, target as Schema);
 }
 
 /** Validates a value against the OpenAPI subset used by webhook schemas. */
@@ -246,8 +262,83 @@ const PAYLOADS: {
     K in Exclude<KnownWebhookEventType, LegacyEventType>
   ]: K extends "template.status"
     ? Shape<RuntimeTemplateStatusPayload>
-    : Shape<P[K]>;
+    : K extends `status.${string}`
+      ? Shape<Extract<P[K], { scope: "personal" }>>
+      : Shape<P[K]>;
 } = {
+  "status.received": shape<
+    Extract<P["status.received"], { scope: "personal" }>
+  >()(
+    {
+      id: "739182640518204",
+      whatsapp_ids: { linked_devices: "AUTHORED-STATUS" },
+      whatsapp_id: "AUTHORED-STATUS",
+      scope: "personal",
+      publisher: { id: "739182640518205" },
+      fromMe: false,
+      timestamp: 1794700800,
+      pushName: "Authored",
+      content: { type: "text", text: "authored publication" },
+    },
+    [
+      "id",
+      "whatsapp_ids",
+      "scope",
+      "publisher",
+      "fromMe",
+      "timestamp",
+      "pushName",
+      "content",
+    ],
+  ),
+  "status.update": shape<Extract<P["status.update"], { scope: "personal" }>>()(
+    {
+      id: "739182640518204",
+      whatsapp_ids: { linked_devices: "AUTHORED-STATUS" },
+      whatsapp_id: "AUTHORED-STATUS",
+      scope: "personal",
+      publisher: { id: "739182640518205" },
+      fromMe: false,
+      timestamp: 1794700800,
+      pushName: "Authored",
+      content: { type: "text", text: "authored publication" },
+    },
+    [
+      "id",
+      "whatsapp_ids",
+      "scope",
+      "publisher",
+      "fromMe",
+      "timestamp",
+      "pushName",
+      "content",
+    ],
+  ),
+  "status.revoked": shape<
+    Extract<P["status.revoked"], { scope: "personal" }>
+  >()(
+    {
+      id: "739182640518204",
+      whatsapp_ids: { linked_devices: "AUTHORED-STATUS" },
+      whatsapp_id: "AUTHORED-STATUS",
+      scope: "personal",
+      publisher: { id: "739182640518205" },
+      fromMe: false,
+      timestamp: 1794700800,
+      pushName: "Authored",
+      content: { type: "revoke", revokedId: "739182640518206" },
+    },
+    [
+      "id",
+      "whatsapp_ids",
+      "scope",
+      "publisher",
+      "fromMe",
+      "timestamp",
+      "pushName",
+      "content",
+    ],
+  ),
   "session.capabilities_updated": shape<P["session.capabilities_updated"]>()(
     {
       session: "support",
@@ -821,6 +912,7 @@ const PAYLOADS: {
 type LegacyEventType = Exclude<
   KnownWebhookEventType,
   | `customer.${string}`
+  | `status.${string}`
   | "contact.opted_in"
   | "contact.opted_out"
   | `bansafe.${string}`
@@ -848,6 +940,16 @@ function specEvents(): Map<string, string> {
     const payload = schema.properties?.payload;
     if (event?.enum?.length !== 1 || payload?.$ref === undefined) continue;
     events.set(String(event.enum[0]), payload.$ref.split("/").pop()!);
+  }
+  for (const schema of Object.values(statusCandidate.components.schemas)) {
+    const event = schema.properties?.event;
+    const payload = schema.properties?.payload;
+    if (
+      event?.enum?.length === 1 &&
+      String(event.enum[0]).startsWith("status.") &&
+      payload?.$ref !== undefined
+    )
+      events.set(String(event.enum[0]), payload.$ref.split("/").pop()!);
   }
   return events;
 }
@@ -915,7 +1017,32 @@ describe("webhook catalog contract", () => {
           type,
         ).toContain(`#/components/schemas/${variant}`);
       }
-      expectShape(messaging, variant ?? schemaName!, fixture);
+      if (type.startsWith("status.")) {
+        const union = resolveRef(statusCandidate, { $ref: `#/${schemaName!}` });
+        const matches = (union.oneOf ?? union.anyOf ?? [])
+          .map((part) => resolveRef(statusCandidate, part))
+          .filter(
+            (part) =>
+              violations(statusCandidate, part, fixture.value).length === 0,
+          );
+        expect(
+          matches,
+          JSON.stringify(
+            (union.oneOf ?? union.anyOf ?? []).map((part) =>
+              violations(statusCandidate, part, fixture.value),
+            ),
+          ),
+        ).toHaveLength(1);
+        expect(Object.keys(fixture.value).sort()).toEqual(
+          Object.keys(matches[0]!.properties ?? {}).sort(),
+        );
+        expect([...fixture.required].sort()).toEqual(
+          [...(matches[0]!.required ?? [])].sort(),
+        );
+        expect(violations(statusCandidate, union, fixture.value)).toEqual([]);
+      } else {
+        expectShape(messaging, variant ?? schemaName!, fixture);
+      }
     },
   );
 

@@ -14,6 +14,7 @@ import (
 
 func TestKnownWebhookPayloadFamilies(t *testing.T) {
 	families := []struct{ events, kind, body, field string }{
+		{"status.received status.update status.revoked", "StatusPublicationPayload", `{"id":"123","whatsapp_ids":{"linked_devices":"authored-status"},"scope":"personal","publisher":{"id":"456"},"fromMe":false,"timestamp":1700000000,"pushName":"Authored","content":{"type":"text","text":"publication"}}`, "content.text"},
 		{"bansafe.action", "BanSafeActionPayload", `{"rung":"throttle","health":null,"requires":[{"findingKey":"risk","severity":"warning"}]}`, "requires.0.findingKey"},
 		{"bansafe.claim", "BanSafeClaimPayload", `{"amountCents":0.123456,"decidedAt":null}`, "amountCents"},
 		{"bansafe.health_threshold", "BanSafeHealthThresholdPayload", `{"policyVersion":2,"healthSource":"ml_model","modelVersion":null}`, "policyVersion"},

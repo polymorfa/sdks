@@ -5388,6 +5388,14 @@
       "language": "python",
       "baselineUnchanged": true,
       "published": false
+    },
+    "statusPublicationsCandidate": {
+      "inventory": "contracts/status-publications.candidate.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "sourceAccepted": false,
+      "sourceCommit": "b7b3534c37a671344f291986e2329bb743b5cbdc",
+      "scope": "Only the three status publication events, shared received content and existing Signal event parser extensions; no whole-contract or deployment claim."
     }
   }
 }

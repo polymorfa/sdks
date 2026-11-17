@@ -279,7 +279,7 @@ class SignalHistoryDescriptor:
 @dataclass(frozen=True, repr=False)
 class SignalNodeEvent:
     id: str
-    type: Literal["message", "history.sync"]
+    type: Literal["message", "history.sync", "status.received"]
     session_id: str
     chat: str
     sender: str
@@ -294,6 +294,7 @@ class SignalNodeEvent:
     media: SignalMediaDescriptor | None = None
     history: SignalHistoryDescriptor | None = None
     raw: dict[str, Json] = field(default_factory=dict)
+    status_scope: str | None = None
 
     def __repr__(self) -> str:
         return "SignalNodeEvent(<redacted>)"
@@ -302,11 +303,16 @@ class SignalNodeEvent:
     def from_wire(cls, value: object) -> SignalNodeEvent:
         data = _record(value)
         kind = data.get("type")
-        if kind not in ("message", "history.sync"):
+        if kind not in ("message", "history.sync", "status.received"):
+            raise _invalid()
+        scope = data.get("status_scope")
+        if scope is not None and not isinstance(scope, str):
+            raise _invalid()
+        if kind == "status.received" and scope not in ("personal", "group", "channel"):
             raise _invalid()
         return cls(
             _string(data.get("id")),
-            cast(Literal["message", "history.sync"], kind),
+            cast(Literal["message", "history.sync", "status.received"], kind),
             _string(data.get("session_id")),
             _string(data.get("chat")),
             _string(data.get("sender")),
@@ -325,6 +331,7 @@ class SignalNodeEvent:
             if data.get("history") is not None
             else None,
             data,
+            scope,
         )
 
     def message_bytes(self) -> bytes:

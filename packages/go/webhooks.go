@@ -57,6 +57,7 @@ func ParseVerifiedWebhookEvent(body []byte) (WebhookEvent, error) {
 func (e WebhookEvent) Known() bool { _, ok := knownWebhookEvents[e.Event]; return ok }
 
 var knownWebhookEvents = map[string]struct{}{
+	"status.received": {}, "status.update": {}, "status.revoked": {},
 	"marketing.onboarding_updated": {}, "contact.marketing_preference_updated": {},
 	"bansafe.action": {}, "bansafe.claim": {}, "bansafe.health_threshold": {}, "bansafe.incident": {}, "blocklist.update": {}, "business.quick_reply.update": {},
 	"call.accepted": {}, "call.connection_joined": {}, "call.connection_left": {}, "call.ended": {}, "call.missed": {}, "call.participant_joined": {}, "call.participant_left": {}, "call.participant_state": {}, "call.permission_changed": {}, "call.received": {}, "call.rejected": {}, "call.telemetry": {},

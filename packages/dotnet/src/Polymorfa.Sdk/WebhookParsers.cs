@@ -68,6 +68,7 @@ public static partial class Webhooks
         "message.ack" => Typed<MessageAckPayload>(envelope),
         "message.delete" => Typed<MessageDeletePayload>(envelope),
         "message.echo" => Typed<MessageEchoPayload>(envelope),
+        "status.received" or "status.update" or "status.revoked" => Typed<StatusPublicationPayload>(envelope),
         "message.edited" or "message.revoked" or "message.update" => Typed<LinkedDeviceMessagePayload>(envelope),
         "message.failed" => Typed<MessageFailedPayload>(envelope),
         "message.reaction" or "message.received" => Field(envelope, "timestamp") is not null ? Typed<CloudMessagePayload>(envelope) : Typed<LinkedDeviceMessagePayload>(envelope),

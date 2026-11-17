@@ -105,6 +105,7 @@ func (v SignalHistoryDescriptor) GoString() string           { return v.String()
 func (SignalHistoryDescriptor) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
 
 type SignalEvent struct {
+	StatusScope     *StatusScope             `json:"status_scope,omitempty"`
 	ID              string                   `json:"id"`
 	Type            string                   `json:"type"`
 	SessionID       string                   `json:"session_id"`
@@ -159,7 +160,10 @@ func parseSignalEvent(raw []byte) (SignalEvent, error) {
 		return SignalEvent{}, signalInvalid()
 	}
 	var event SignalEvent
-	if json.Unmarshal(raw, &event) != nil || event.ID == "" || event.SessionID == "" || (event.Type != "message" && event.Type != "history.sync") {
+	if json.Unmarshal(raw, &event) != nil || event.ID == "" || event.SessionID == "" || (event.Type != "message" && event.Type != "history.sync" && event.Type != "status.received") {
+		return SignalEvent{}, signalInvalid()
+	}
+	if event.Type == "status.received" && (event.StatusScope == nil || (*event.StatusScope != StatusPersonal && *event.StatusScope != StatusGroup && *event.StatusScope != StatusChannel)) {
 		return SignalEvent{}, signalInvalid()
 	}
 	if event.Type == "history.sync" && (event.History == nil || len(event.MessageProto) != 0) {

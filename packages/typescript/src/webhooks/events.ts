@@ -23,6 +23,9 @@ import type {
 import type { SessionCapabilities } from "../platform/types.js";
 
 export const KNOWN_WEBHOOK_EVENT_TYPES = [
+  "status.received",
+  "status.update",
+  "status.revoked",
   "bansafe.action",
   "bansafe.claim",
   "bansafe.health_threshold",
@@ -160,12 +163,13 @@ export type LinkedDeviceMessageType =
   | "list_reply"
   | "poll"
   | "sticker"
+  | "sticker_pack"
   | "reaction"
   | "revoke"
   | "edited"
   | "unknown";
 
-export interface LinkedDeviceMessagePayload {
+export interface LinkedDeviceMessagePayload extends ReceivedContent {
   readonly order?: IncomingOrderCart;
   readonly id: string;
   readonly whatsapp_ids: WhatsAppMessageIds;
@@ -176,6 +180,9 @@ export interface LinkedDeviceMessagePayload {
   readonly timestamp: number;
   readonly pushName: string;
   readonly isGroup: boolean;
+}
+
+export interface ReceivedContent {
   readonly type: LinkedDeviceMessageType;
   readonly text?: string;
   readonly caption?: string;
@@ -200,6 +207,24 @@ export interface LinkedDeviceMessagePayload {
   readonly parentMessageId?: string;
   readonly [key: string]: unknown;
 }
+
+export type StatusPublicationPayload = {
+  readonly id: string;
+  readonly whatsapp_ids: WhatsAppMessageIds;
+  readonly whatsapp_id?: string;
+  readonly fromMe: boolean;
+  readonly timestamp: number;
+  readonly pushName: string;
+  readonly content: ReceivedContent;
+} & (
+  | { readonly scope: "personal"; readonly publisher: IdentityReference }
+  | {
+      readonly scope: "group";
+      readonly publisher: IdentityReference;
+      readonly group: IdentityReference;
+    }
+  | { readonly scope: "channel"; readonly channel: IdentityReference }
+);
 
 export type MessagePayload = LinkedDeviceMessagePayload;
 
@@ -1255,6 +1280,9 @@ export interface UsageRecordedPayload {
 }
 
 export interface WebhookPayloadMap {
+  readonly "status.received": StatusPublicationPayload;
+  readonly "status.update": StatusPublicationPayload;
+  readonly "status.revoked": StatusPublicationPayload;
   readonly "bansafe.action": BanSafeActionPayload;
   readonly "bansafe.claim": BanSafeClaimPayload;
   readonly "bansafe.health_threshold": BanSafeHealthThresholdPayload;

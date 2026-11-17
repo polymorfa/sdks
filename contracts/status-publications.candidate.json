@@ -1,0 +1,703 @@
+{
+  "schemaVersion": 1,
+  "sourceAccepted": false,
+  "published": false,
+  "apiVersion": "2026-09-22",
+  "candidateSource": {
+    "repository": "polymorfa/polymorfa",
+    "commit": "b7b3534c37a671344f291986e2329bb743b5cbdc",
+    "branch": "fix/status-stanza-delivery",
+    "pullRequest": "https://github.com/polymorfa/polymorfa/pull/1026",
+    "files": [
+      {
+        "path": "apps/api/docs/openapi.json",
+        "sha256": "bb7810211838dda0a1a3280b0fb5b5e2401ddae1b6bf40d0d0f417a05f4461f6"
+      }
+    ]
+  },
+  "acceptance": {
+    "staging": null,
+    "production": null
+  },
+  "scope": "Only the three native status publication events and their schema closure. Existing accepted API and SDK source pins are unchanged.",
+  "events": {
+    "status.received": "StatusReceivedEvent",
+    "status.update": "StatusUpdateEvent",
+    "status.revoked": "StatusRevokedEvent"
+  },
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Status publication candidate",
+    "version": "2026-09-22"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "IdentityRef": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "phoneNumber": {
+            "type": "string"
+          },
+          "bsuid": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string"
+          },
+          "parentBsuid": {
+            "type": "string",
+            "description": "Parent business-scoped user ID (`CC.ENT.\u2026`), present only when WhatsApp reports one for this person. It identifies the person across the business portfolios enrolled in one parent account. It cannot be used to send messages or block people; use `id` or `bsuid`.",
+            "example": "US.ENT.11815799212886844830"
+          }
+        },
+        "required": ["id"]
+      },
+      "LinkPreview": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "description": "The URL the preview describes, as matched in the message text."
+          },
+          "title": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "previewType": {
+            "type": "string",
+            "description": "WhatsApp's preview kind in lower case, such as `none`, `video` or `image`."
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/MediaThumbnail"
+          }
+        },
+        "required": ["url"],
+        "description": "Preview the sender attached to a text message containing a URL."
+      },
+      "MediaThumbnail": {
+        "type": "object",
+        "properties": {
+          "contentType": {
+            "type": "string",
+            "enum": ["image/jpeg"]
+          },
+          "data": {
+            "type": "string",
+            "description": "Base64-encoded JPEG bytes, at most 16 KiB decoded."
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true
+          }
+        },
+        "required": ["contentType", "data"],
+        "description": "Low-resolution JPEG preview embedded in the message. Present only when the sender embedded one of at most 16 KiB; previews WhatsApp stores separately are not fetched."
+      },
+      "MessageAssociation": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": ["hd_image", "hd_video"]
+          },
+          "parentMessageId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "`id` of the standard-quality message this HD message belongs to. It can arrive before that message.",
+            "example": "739182640518203"
+          }
+        },
+        "required": ["type", "parentMessageId"],
+        "description": "Present on the HD half of an HD media pair. Show it in place of the standard message it names."
+      },
+      "PollOption": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "hash": {
+            "type": "string"
+          }
+        },
+        "required": ["name", "hash"]
+      },
+      "ReceivedContent": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "type": "string",
+            "enum": [
+              "text",
+              "image",
+              "video",
+              "audio",
+              "document",
+              "location",
+              "contact",
+              "phone_number_shared",
+              "native_flow_response",
+              "button_reply",
+              "list_reply",
+              "poll",
+              "sticker",
+              "sticker_pack",
+              "reaction",
+              "revoke",
+              "edited",
+              "unknown"
+            ]
+          },
+          "text": {
+            "type": "string"
+          },
+          "caption": {
+            "type": "string"
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "ptt": {
+            "type": "boolean"
+          },
+          "filename": {
+            "type": "string"
+          },
+          "latitude": {
+            "type": "number"
+          },
+          "longitude": {
+            "type": "number"
+          },
+          "displayName": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "reaction": {
+            "type": "string"
+          },
+          "reactionTo": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "revokedId": {
+            "type": "string",
+            "pattern": "^[1-9][0-9]{0,18}$",
+            "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+            "example": "739182640518203"
+          },
+          "nativeFlowResponse": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              },
+              "paramsJson": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 262144
+              },
+              "version": {
+                "type": "integer",
+                "minimum": 0
+              }
+            },
+            "required": ["name", "paramsJson"]
+          },
+          "replyChoice": {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": ["button", "list"],
+                "description": "Reply control the contact used: a reply or quick-reply button, or a list row."
+              },
+              "id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 256,
+                "description": "ID you assigned to the selected button or list row. It is never the visible label, except for a template quick-reply button sent without a payload, where WhatsApp returns the button text."
+              }
+            },
+            "required": ["kind", "id"],
+            "description": "Present when the contact selects a reply button or list row."
+          },
+          "parentMessageId": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 128,
+            "description": "WhatsApp ID of the message this one quotes, when WhatsApp supplies one. It is not necessarily a message you sent."
+          },
+          "media": {
+            "type": "string"
+          },
+          "mediaUrl": {
+            "type": "string"
+          },
+          "edited": {
+            "type": "boolean"
+          },
+          "pollOptions": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/PollOption"
+            }
+          },
+          "unavailable": {
+            "type": "boolean"
+          },
+          "unavailableReason": {
+            "type": "string"
+          },
+          "stickerType": {
+            "type": "string",
+            "enum": ["static", "animated", "lottie"]
+          },
+          "origin": {
+            "type": "string",
+            "enum": ["avatar", "ai"]
+          },
+          "emojis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accessibilityLabel": {
+            "type": "string"
+          },
+          "stickerPack": {
+            "$ref": "#/components/schemas/StickerPackMetadata"
+          },
+          "width": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Image, video or sticker width in pixels, as declared by the sender."
+          },
+          "height": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Image, video or sticker height in pixels, as declared by the sender."
+          },
+          "seconds": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Audio or video duration in seconds."
+          },
+          "waveform": {
+            "type": "array",
+            "items": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 1
+            },
+            "maxItems": 64,
+            "description": "Voice-note waveform: up to 64 samples from 0 to 1."
+          },
+          "pageCount": {
+            "type": "integer",
+            "minimum": 0,
+            "exclusiveMinimum": true,
+            "description": "Document page count, as declared by the sender."
+          },
+          "thumbnail": {
+            "$ref": "#/components/schemas/MediaThumbnail"
+          },
+          "linkPreview": {
+            "$ref": "#/components/schemas/LinkPreview"
+          },
+          "association": {
+            "$ref": "#/components/schemas/MessageAssociation"
+          },
+          "quality": {
+            "type": "string",
+            "enum": ["standard", "hd"],
+            "description": "`hd` on the HD half of a pair; `standard` on a standard message that announced an HD half."
+          }
+        },
+        "required": ["type"]
+      },
+      "StatusPublicationPayload": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$",
+                "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+                "example": "739182640518203"
+              },
+              "whatsapp_ids": {
+                "$ref": "#/components/schemas/WhatsAppMessageIds"
+              },
+              "whatsapp_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+                "deprecated": true
+              },
+              "fromMe": {
+                "type": "boolean"
+              },
+              "timestamp": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "pushName": {
+                "type": "string"
+              },
+              "content": {
+                "$ref": "#/components/schemas/ReceivedContent"
+              },
+              "scope": {
+                "type": "string",
+                "enum": ["personal"]
+              },
+              "publisher": {
+                "$ref": "#/components/schemas/IdentityRef"
+              }
+            },
+            "required": [
+              "id",
+              "whatsapp_ids",
+              "fromMe",
+              "timestamp",
+              "pushName",
+              "content",
+              "scope",
+              "publisher"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$",
+                "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+                "example": "739182640518203"
+              },
+              "whatsapp_ids": {
+                "$ref": "#/components/schemas/WhatsAppMessageIds"
+              },
+              "whatsapp_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+                "deprecated": true
+              },
+              "fromMe": {
+                "type": "boolean"
+              },
+              "timestamp": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "pushName": {
+                "type": "string"
+              },
+              "content": {
+                "$ref": "#/components/schemas/ReceivedContent"
+              },
+              "scope": {
+                "type": "string",
+                "enum": ["group"]
+              },
+              "publisher": {
+                "$ref": "#/components/schemas/IdentityRef"
+              },
+              "group": {
+                "$ref": "#/components/schemas/IdentityRef"
+              }
+            },
+            "required": [
+              "id",
+              "whatsapp_ids",
+              "fromMe",
+              "timestamp",
+              "pushName",
+              "content",
+              "scope",
+              "publisher",
+              "group"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "pattern": "^[1-9][0-9]{0,18}$",
+                "description": "Opaque Polymorfa resource ID. Keep this value as a string.",
+                "example": "739182640518203"
+              },
+              "whatsapp_ids": {
+                "$ref": "#/components/schemas/WhatsAppMessageIds"
+              },
+              "whatsapp_id": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512,
+                "description": "Temporary singular provider reference for older consumers. Use whatsapp_ids for transport-specific references.",
+                "deprecated": true
+              },
+              "fromMe": {
+                "type": "boolean"
+              },
+              "timestamp": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "pushName": {
+                "type": "string"
+              },
+              "content": {
+                "$ref": "#/components/schemas/ReceivedContent"
+              },
+              "scope": {
+                "type": "string",
+                "enum": ["channel"]
+              },
+              "channel": {
+                "$ref": "#/components/schemas/IdentityRef"
+              }
+            },
+            "required": [
+              "id",
+              "whatsapp_ids",
+              "fromMe",
+              "timestamp",
+              "pushName",
+              "content",
+              "scope",
+              "channel"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "StatusReceivedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier",
+            "example": "0190f2a4-6c1e-7b9d-9f3a-2e8c4d5b6a71"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event",
+            "example": "739182640518203"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp",
+            "example": "2026-10-19T14:03:22.000Z"
+          },
+          "event": {
+            "type": "string",
+            "enum": ["status.received"],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/StatusPublicationPayload"
+          }
+        },
+        "required": ["id", "session", "timestamp", "event", "payload"]
+      },
+      "StatusRevokedEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier",
+            "example": "0190f2a4-6c1e-7b9d-9f3a-2e8c4d5b6a71"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event",
+            "example": "739182640518203"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp",
+            "example": "2026-10-19T14:03:22.000Z"
+          },
+          "event": {
+            "type": "string",
+            "enum": ["status.revoked"],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/StatusPublicationPayload"
+          }
+        },
+        "required": ["id", "session", "timestamp", "event", "payload"]
+      },
+      "StatusUpdateEvent": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "Unique event identifier",
+            "example": "0190f2a4-6c1e-7b9d-9f3a-2e8c4d5b6a71"
+          },
+          "session": {
+            "type": "string",
+            "description": "Session that produced this event",
+            "example": "739182640518203"
+          },
+          "externalId": {
+            "type": "string",
+            "description": "Integrator reference from the QuickLink that created this session. Included on session lifecycle events when supplied."
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 timestamp",
+            "example": "2026-10-19T14:03:22.000Z"
+          },
+          "event": {
+            "type": "string",
+            "enum": ["status.update"],
+            "description": "Event type"
+          },
+          "payload": {
+            "$ref": "#/components/schemas/StatusPublicationPayload"
+          }
+        },
+        "required": ["id", "session", "timestamp", "event", "payload"]
+      },
+      "StickerPackItem": {
+        "type": "object",
+        "properties": {
+          "fileName": {
+            "type": "string"
+          },
+          "stickerType": {
+            "type": "string",
+            "enum": ["static", "animated", "lottie"]
+          },
+          "mimeType": {
+            "type": "string"
+          },
+          "emojis": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "accessibilityLabel": {
+            "type": "string"
+          },
+          "premium": {
+            "type": "integer"
+          }
+        },
+        "required": ["fileName", "stickerType", "mimeType"]
+      },
+      "StickerPackMetadata": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "trayIconFileName": {
+            "type": "string"
+          },
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/StickerPackItem"
+            }
+          }
+        },
+        "required": ["id", "name", "publisher", "items"]
+      },
+      "WhatsAppMessageIds": {
+        "anyOf": [
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": ["linked_devices"],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "linked_devices": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              },
+              "official_api": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 512
+              }
+            },
+            "required": ["official_api"],
+            "additionalProperties": false
+          }
+        ],
+        "description": "Exact message references observed through Linked Devices, the Official API, or both. Use the Polymorfa message id for actions and replies. Unknown provider references are omitted."
+      }
+    }
+  }
+}
