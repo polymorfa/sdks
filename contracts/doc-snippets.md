@@ -42,8 +42,8 @@ recipe. Its schemas and union branches are validated against the pinned OpenAPI.
 No optional request fields are included in this initial catalog.
 
 There are **31 operations per language**, 186 complete programs. The TypeScript
-coverage ledger contains 459 covered operations (**428 omitted**) and each
-native ledger 453 (**422 omitted**). The initial recipes cover text sends, message actions, Connection
+coverage ledger contains 460 covered operations (**429 omitted**) and each
+native ledger 454 (**423 omitted**). The initial recipes cover text sends, message actions, Connection
 lifecycle, business profiles/catalogs/collections and project event listing.
 The remaining operations have no verified recipe in this catalog and retain
 cURL fallback. Coverage of a method does not imply a verified documentation
