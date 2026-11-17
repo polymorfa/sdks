@@ -16,6 +16,7 @@ export {
   type MediaVariant,
   type MessageAttachment,
   type MessageDirection,
+  type MessageSender,
   type MessageStatus,
   type OutgoingMessage,
 } from "./conversation.js";

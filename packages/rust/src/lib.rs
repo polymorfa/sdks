@@ -45,6 +45,7 @@ pub mod platform;
 pub mod platform_sessions;
 pub mod policies;
 pub mod raw;
+pub mod session_calls;
 pub mod settings;
 pub mod signal;
 pub mod sip;

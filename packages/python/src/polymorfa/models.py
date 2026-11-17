@@ -722,5 +722,47 @@ class RejectSessionCall(TypedDict):
     from_: str
 
 
+class SessionCallPeer(TypedDict, total=False):
+    """The other party: user ID, phone number or username, as the call reported them."""
+
+    id: str
+    phoneNumber: str
+    username: str
+
+
+class SessionCallRecord(TypedDict):
+    """One call on a number, read from the number's data region."""
+
+    callId: str
+    projectId: str
+    sessionId: str
+    direction: Literal["inbound", "outbound"]
+    upstream: Literal["linked_device", "cloud_api"]
+    outcome: Literal["answered", "missed", "declined", "failed", "in_progress"]
+    state: Literal["offered", "accepted", "rejected", "missed", "ended"]
+    hasVideo: bool
+    peer: SessionCallPeer | None
+    startedAt: str
+    connectedAt: str | None
+    endedAt: str | None
+    durationSeconds: int | None
+    endReason: str | None
+
+
+class SessionCallsParams(TypedDict, total=False):
+    limit: int
+    cursor: str
+    direction: Literal["inbound", "outbound"]
+    outcome: Literal["answered", "missed", "declined", "failed", "in_progress"]
+    since: str
+    until: str
+
+
+class SessionCallsPage(TypedDict):
+    success: Literal[True]
+    data: list[SessionCallRecord]
+    nextCursor: str | None
+
+
 class RejectedSessionCall(TypedDict):
     status: Literal["REJECTED"]

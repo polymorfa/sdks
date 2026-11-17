@@ -23,8 +23,25 @@ CustomerAction = Literal[
     "chats_manage",
     "contact_write",
     "contact_delete",
+    "voip_place",
+    "voip_answer",
+    "voip_signal",
+    "groups_read",
+    "groups_manage",
+    "read_calls",
+    "conversations_read",
+    "conversations_manage",
+    "labels_read",
+    "labels_manage",
+    "contacts_manage",
+    "profile_read",
+    "profile_manage",
+    "channels_read",
+    "channels_manage",
+    "business_read",
+    "presence_write",
 ]
-SessionAction = CustomerAction | Literal["mcp", "voip_place", "voip_answer", "voip_signal"]
+SessionAction = CustomerAction | Literal["mcp"]
 RecipientMode = Literal["conversation", "any", "none"]
 
 
