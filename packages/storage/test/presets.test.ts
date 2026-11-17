@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Pool } from "pg";
+import { Client, Pool } from "pg";
 import mysql from "mysql2/promise";
 import { drizzle as pgDrizzle } from "drizzle-orm/node-postgres";
 import { drizzle as mysqlDrizzle } from "drizzle-orm/mysql2";
@@ -24,6 +24,41 @@ const pgOptions = {
   password: "synthetic_fixture_only",
   database: "storage_fixture",
 };
+function validateRoleProofFixture(connectionString: string): void {
+  const target = new URL(connectionString);
+  const resolved = new Client({ connectionString });
+  if (
+    !["127.0.0.1", "localhost", "[::1]"].includes(target.hostname) ||
+    target.pathname !== "/sdk_customer_rls_tests" ||
+    !["127.0.0.1", "localhost", "::1"].includes(resolved.host) ||
+    resolved.database !== "sdk_customer_rls_tests"
+  ) {
+    throw new Error(
+      "Supabase role proof requires its dedicated loopback fixture database",
+    );
+  }
+}
+it.each([
+  "postgres://127.0.0.1/sdk_customer_rls_tests?host=remote.example.test",
+  "postgres://localhost/sdk_customer_rls_tests?host=127.0.0.1&host=remote.example.test",
+  "postgres://127.0.0.1/sdk_customer_rls_tests?host=%2Fprivate%2Fpostgres",
+  "postgres://remote.example.test/sdk_customer_rls_tests",
+  "postgres://127.0.0.1/another_database",
+])(
+  "refuses a non-fixture PostgreSQL target %s before opening a pool",
+  (target) => {
+    expect(() => validateRoleProofFixture(target)).toThrow(
+      "Supabase role proof requires its dedicated loopback fixture database",
+    );
+  },
+);
+it.each([
+  "postgres://127.0.0.1/sdk_customer_rls_tests",
+  "postgres://localhost/sdk_customer_rls_tests?host=127.0.0.1",
+  "postgres://[::1]/sdk_customer_rls_tests",
+])("accepts a resolved loopback fixture target %s", (target) => {
+  expect(() => validateRoleProofFixture(target)).not.toThrow();
+});
 const batch = {
   connectionId: "orm",
   operations: [
@@ -87,15 +122,7 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       ? { connectionString: process.env.POLYMORFA_STORAGE_RLS_POSTGRES_URL }
       : pgOptions;
     if ("connectionString" in options) {
-      const target = new URL(options.connectionString!);
-      if (
-        !["127.0.0.1", "localhost", "[::1]"].includes(target.hostname) ||
-        target.pathname !== "/sdk_customer_rls_tests"
-      ) {
-        throw new Error(
-          "Supabase role proof requires its dedicated loopback fixture database",
-        );
-      }
+      validateRoleProofFixture(options.connectionString!);
     }
     const pool = new Pool(options);
     const writerOptions =
