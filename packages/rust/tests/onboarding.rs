@@ -54,9 +54,9 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
         "POST",
         "/messaging/support/test-events",
         Some(
-            json!({"event":"message.received","overrides":{"text":"Hello","mediaType":"image","caption":"Caption"},"fromNumber":"other"})
+            json!({"event":"message.received","overrides":{"text":"Hello","mediaType":"image","caption":"Caption"},"fromConnection":"other"})
         ),
-        json!({"event":"message.received","session":"support","delivery":"simulated","eventId":null,"source":"runtime"}),
+        json!({"event":"message.received","connection":"support","delivery":"simulated","eventId":null,"source":"runtime"}),
         client.testing().trigger_event(
             "support",
             &TriggerTestEventRequest {
@@ -67,7 +67,7 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
                     caption: Some("Caption".into()),
                     ..Default::default()
                 }),
-                from_number: Some("other".into())
+                from_connection: Some("other".into())
             },
             RequestOptions::default()
         )
@@ -77,7 +77,7 @@ async fn embedded_signup_and_simulated_event_history_resources_native_wire() {
         "GET",
         "/messaging/test-events/fixtures",
         None,
-        json!({"fixtures":[{"name":"message.received","description":"Inbound message","overrides":["text","from","mediaType","caption"]},{"name":"session.status","description":"Status","overrides":["status","statusReason"]}]}),
+        json!({"fixtures":[{"name":"message.received","description":"Inbound message","overrides":["text","from","mediaType","caption"]},{"name":"connection.status","description":"Status","overrides":["status","statusReason"]}]}),
         client
             .testing()
             .list_event_fixtures(RequestOptions::default())
@@ -90,7 +90,7 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
         "GET",
         "/messaging/support/phone",
         None,
-        json!({"session":"support","phone":"+15551234567","online":true,"devices":[{"deviceId":1},{"deviceId":2}]}),
+        json!({"connection":"support","phone":"+15551234567","online":true,"devices":[{"deviceId":1},{"deviceId":2}]}),
         client
             .testing()
             .get_phone("support", RequestOptions::default())
@@ -101,7 +101,7 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
         "POST",
         "/messaging/support/phone/messages",
         Some(json!({"to":"+15551234568","text":"Hello"})),
-        json!({"session":"support","to":"+15551234568","messageId":"wamessage"}),
+        json!({"connection":"support","to":"+15551234568","messageId":"wamessage"}),
         client.testing().send_phone_message(
             "support",
             &SendTestingPhoneMessageRequest {
@@ -116,7 +116,7 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
         "POST",
         "/messaging/support/phone/devices/2/unlink",
         None,
-        json!({"session":"support","deviceId":2,"unlinked":true}),
+        json!({"connection":"support","deviceId":2,"unlinked":true}),
         client
             .testing()
             .unlink_phone_device("support", 2, RequestOptions::default())
@@ -135,7 +135,7 @@ async fn simulated_phone_supplemental_native_wire_and_invalid_device_guard() {
     }
 }
 #[tokio::test]
-async fn resolved_project_and_session_observation_policies_native_wire() {
+async fn resolved_project_and_connection_observation_policies_native_wire() {
     wire_messaging!(
         client,
         "GET",
@@ -151,9 +151,9 @@ async fn resolved_project_and_session_observation_policies_native_wire() {
         "GET",
         "/messaging/support/observation-policy",
         None,
-        json!({"success":true,"data":{"sessionName":"support","projectId":"project","project":{"presenceMode":"events","typingMode":"off","labelMode":"project","quickReplyMode":"cache"},"override":{"presenceMode":"inherit","typingMode":"cache","labelMode":"events","quickReplyMode":"off"},"effective":{"presenceMode":"events","typingMode":"cache","labelMode":"events","quickReplyMode":"off"}}}),
+        json!({"success":true,"data":{"connectionName":"support","projectId":"project","project":{"presenceMode":"events","typingMode":"off","labelMode":"project","quickReplyMode":"cache"},"override":{"presenceMode":"inherit","typingMode":"cache","labelMode":"events","quickReplyMode":"off"},"effective":{"presenceMode":"events","typingMode":"cache","labelMode":"events","quickReplyMode":"off"}}}),
         client
             .observation_policies()
-            .retrieve_for_session("support", RequestOptions::default())
+            .retrieve_for_connection("support", RequestOptions::default())
     );
 }

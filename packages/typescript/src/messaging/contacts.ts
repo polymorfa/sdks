@@ -16,83 +16,93 @@ export class ContactsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListContactsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: contactsPath(session),
+      path: contactsPath(connection),
       ...options,
     });
   }
 
   check(
-    session: string,
+    connection: string,
     phone: string | readonly string[],
     options: RequestOptions = {},
   ): Promise<ApiResponse<CheckContactsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${contactsPath(session)}/check`,
+      path: `${contactsPath(connection)}/check`,
       query: { phone: typeof phone === "string" ? phone : phone.join(",") },
       ...options,
     });
   }
 
   blocklist(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBlocklistResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${contactsPath(session)}/blocked`,
+      path: `${contactsPath(connection)}/blocked`,
       ...options,
     });
   }
 
   retrieve(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetContactResponse>> {
     return this.transport.request({
       method: "GET",
-      path: contactPath(session, contactId),
+      path: contactPath(connection, contactId),
       ...options,
     });
   }
 
   picture(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetContactPictureResponse>> {
-    return this.getContactSubresource(session, contactId, "picture", options);
+    return this.getContactSubresource(
+      connection,
+      contactId,
+      "picture",
+      options,
+    );
   }
 
   info(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetUserInfoResponse>> {
-    return this.getContactSubresource(session, contactId, "info", options);
+    return this.getContactSubresource(connection, contactId, "info", options);
   }
 
   devices(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetUserDevicesResponse>> {
-    return this.getContactSubresource(session, contactId, "devices", options);
+    return this.getContactSubresource(
+      connection,
+      contactId,
+      "devices",
+      options,
+    );
   }
 
   businessProfile(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetBusinessProfileResponse>> {
     return this.getContactSubresource(
-      session,
+      connection,
       contactId,
       "business-profile",
       options,
@@ -100,52 +110,52 @@ export class ContactsResource {
   }
 
   block(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.updateBlockState(session, contactId, "block", options);
+    return this.updateBlockState(connection, contactId, "block", options);
   }
 
   unblock(
-    session: string,
+    connection: string,
     contactId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.updateBlockState(session, contactId, "unblock", options);
+    return this.updateBlockState(connection, contactId, "unblock", options);
   }
 
   private getContactSubresource<T>(
-    session: string,
+    connection: string,
     contactId: string,
     resource: "picture" | "info" | "devices" | "business-profile",
     options: RequestOptions,
   ): Promise<ApiResponse<T>> {
     return this.transport.request({
       method: "GET",
-      path: `${contactPath(session, contactId)}/${resource}`,
+      path: `${contactPath(connection, contactId)}/${resource}`,
       ...options,
     });
   }
 
   private updateBlockState(
-    session: string,
+    connection: string,
     contactId: string,
     action: "block" | "unblock",
     options: RequestOptions,
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `${contactPath(session, contactId)}/${action}`,
+      path: `${contactPath(connection, contactId)}/${action}`,
       ...options,
     });
   }
 }
 
-function contactsPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/contacts`;
+function contactsPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/contacts`;
 }
 
-function contactPath(session: string, contactId: string): string {
-  return `${contactsPath(session)}/${encodeURIComponent(contactId)}`;
+function contactPath(connection: string, contactId: string): string {
+  return `${contactsPath(connection)}/${encodeURIComponent(contactId)}`;
 }

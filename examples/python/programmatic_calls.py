@@ -9,7 +9,7 @@ from polymorfa import CallsClient
 async def main() -> None:
     async with CallsClient(
         os.environ["POLYMORFA_API_KEY"],
-        os.environ["POLYMORFA_SESSION"],
+        os.environ["POLYMORFA_CONNECTION"],
         participant="voice-worker",
     ) as client:
         async for call in client.incoming_calls():

@@ -82,7 +82,7 @@ The server verifies that initial binding. Rebinding the same project-token
 client to a different project fails before transport. A project view exposes
 only owner-bound management resources; team resources such as
 `projects`, `members`, and `billing` stay on the team client.
-`MessagingClient` remains separate because its session APIs and credentials
+`MessagingClient` remains separate because its connection APIs and credentials
 have a different authorization boundary.
 
 Messaging credentials are explicit: `apiKey` for a team server key,
@@ -140,7 +140,7 @@ await project.signalCustody.updateCustomer(customerId, {
 Read the Customer's own custody revision with `retrieveCustomer(customerId)`
 before updating it. Customer `null` restores inheritance; Project updates
 require an explicit mode. Defaults apply to future reservations and never
-convert existing Numbers or move Signal keys.
+convert existing Connections or move Signal keys.
 
 `testSend` captures an idempotency key and body for retries. On methods that
 generate a key, the explicit `idempotencyKey` option takes precedence; otherwise
@@ -192,14 +192,14 @@ await messaging.quickLinks.create({
     historySync: { consent: "ask", delivery: "descriptor" },
   },
 });
-await project.sessionConfiguration.update({
+await project.connectionConfiguration.update({
   revision: 0,
   configuration: { set: { historySync: { delivery: "descriptor" } } },
 });
 ```
 
 QuickLink `signalMode` belongs only to initial invitations. Supplementary
-`add_connection` invitations require an existing session and `addConnection`;
+`add_method` invitations require an existing connection and `addMethod`;
 they cannot change custody or Customer ownership. Never put custody aliases in
 generic configuration. New mode or descriptor intent selects 2026-10-14 only
 when request `apiVersion` is absent. Explicit versions are preserved. Ordinary
@@ -256,8 +256,8 @@ Bridge request.
 ## Customers
 
 Use `Client.customers` to manage project-owned Customers and their
-Numbers. The resource covers the complete Customers contract, including
-enablement, profile lifecycle, pairing links, recent events, and Number
+Connections. The resource covers the complete Customers contract, including
+enablement, profile lifecycle, pairing links, recent events, and Connection
 transfers.
 
 ```ts
@@ -297,7 +297,7 @@ const health = await platform.banSafe.getHealth("support");
 const telemetry = await platform.banSafe.getTelemetry("support");
 const actions = await platform.banSafe.listHealthActions({
   projectId: "project_123",
-  session: "support",
+  connection: "support",
   status: "succeeded",
 });
 
@@ -309,7 +309,7 @@ console.log(
 ```
 
 Use `platform.projects` for project Safe Mode, warm-up, Ban Insurance evidence,
-and Health policy settings. Use `platform.sessions` for one number's Safe Mode
+and Health policy settings. Use `platform.connections` for one Connection's Safe Mode
 override. `MessagingClient.banSafe` exposes the same settings on the Messaging
 API for team keys and project tokens; its responses carry
 `success: true` beside `data`. Browser client tokens fail before any request.
@@ -317,7 +317,7 @@ API for team keys and project tokens; its responses carry
 Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
 up to six decimal places, not integer cents. A claim with verdict
 `simultaneous_calls` opens `denied` with amount 0 because simultaneous calls
-were on for the number during the 30 days before the ban;
+were on for the Connection during the 30 days before the ban;
 `evidence.simultaneousCalls` reports that state for every claim. The verdict
 `linked_device_interactive` (an interactive message sent from a linked device)
 also opens `denied` with amount 0 when the send falls in that window;
@@ -332,7 +332,7 @@ await platform.projects.updateHealthPolicy("project_123", {
   version: policy.data.data.version,
   enabled: true,
   threshold: 50,
-  sessionAction: "slow_down",
+  connectionAction: "slow_down",
   slowDownMps: 0.5,
   emailNotification: true,
   webhookNotification: true,
@@ -344,7 +344,7 @@ const messaging = new MessagingClient({
     value: process.env.POLYMORFA_PROJECT_TOKEN!,
   },
 });
-const safeMode = await messaging.banSafe.getSessionSafeMode("support");
+const safeMode = await messaging.banSafe.getConnectionSafeMode("support");
 console.log(safeMode.data.data.effective.presence);
 ```
 
@@ -354,20 +354,20 @@ user. The team-key SDK does not expose those two mutations.
 ## Browser client tokens
 
 `MessagingClient.clientTokens` mints short-lived tokens and manages the live
-session rules that authorize them. Use it only on the server. The browser-safe
+connection rules that authorize them. Use it only on the server. The browser-safe
 transport and allowed-action resources live in `@polymorfa/ui-kit`; the
 Next.js-compatible route adapter lives in `@polymorfa/nextjs`.
 
-Minting a client token and updating its session rules require all six client
-delegation scopes: `sessions:manage`, `messages:write`, `contacts:read`,
+Minting a client token and updating its connection rules require all six client
+delegation scopes: `connections:manage`, `messages:write`, `contacts:read`,
 `presence:read`, `presence:observe`, and `mcp`. The issuing key must cover
-every action that the session rules can delegate to the browser token.
+every action that the connection rules can delegate to the browser token.
 `clientTokens.mint` (`POST /platform/client-tokens`) is the only token issuer,
 including for Calls; there are no call-specific tokens or tickets.
 
 ### Customer-scoped tokens (beta)
 
-Pass a Polymorfa Customer ID in `customer` instead of `session` to mint one
+Pass a Polymorfa Customer ID in `customer` instead of `connection` to mint one
 token for the numbers a Customer owns. The issuing key also needs
 `customers:read`, and the team must be enrolled in the Customer-scoped client
 tokens beta.
@@ -384,38 +384,37 @@ const { data } = await messaging.clientTokens.mint({
 The token covers the numbers the Customer owns at mint time. A number moved
 to another Customer stops working with the token on the next request; a
 number moved to this Customer needs a new token. Each request is still
-limited by that session's client rules, and `allow` (typed as
+limited by that connection's client rules, and `allow` (typed as
 `CustomerClientTokenAction`) narrows it further. Customer-scoped tokens can't
 use Calls or MCP. Never pass your own external ID as `customer`; look up the
 Customer on your server first. The SDK throws `PolymorfaConfigurationError`
-before sending if both or neither of `session` and `customer` are set, or if
+before sending if both or neither of `connection` and `customer` are set, or if
 `allow` is set without `customer`.
 
-## Session connection lifecycle
+## Connection lifecycle
 
-Session administration uses Platform routes and requires a server credential.
-The existing `MessagingClient.sessions` method names remain available.
-Start an existing Linked Device session, then retrieve its connection status with
-`sessions.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
-pairing-code routes require `sessions:manage` plus an explicit team
+Connection administration uses Platform routes and requires a server credential.
+Start an existing Linked Device connection, then retrieve its connection status with
+`connections.retrieve`. The standard pairing flow is QuickLink. Direct JSON QR and phone
+pairing-code routes require `connections:manage` plus an explicit team
 entitlement; without it, the API returns `403` and the application must create
 a QuickLink. Follow a returned operation ID with `Client.operations.get` or
 `Client.operations.wait`.
 
 ```ts
-const started = await messaging.sessions.start("support", {
+const started = await messaging.connections.start("support", {
   idempotencyKey: "start-support",
 });
 
 console.log(started.data.data.started);
-console.log((await messaging.sessions.retrieve("support")).data);
+console.log((await messaging.connections.retrieve("support")).data);
 ```
 
-`sessions.retrieve` is the typed source of session connection status. The
-pinned API contract does not expose session logs or a separate
-connection-status endpoint. The API no longer emits `session.qr` webhook
+`connections.retrieve` is the typed source of Connection status. The
+pinned API contract does not expose connection logs or a separate
+connection-status endpoint. The API no longer emits `connection.qr` webhook
 events. Applications must observe QuickLink state through the QuickLink flow;
-the entitlement-gated `sessions.qr` and `sessions.requestPairingCode` methods
+the entitlement-gated `connections.qr` and `connections.requestPairingCode` methods
 remain available only for teams that have direct pairing enabled.
 
 ## Project templates
@@ -443,7 +442,7 @@ await messaging.templates.preview("support", created.data.data.id, {
 });
 
 await messaging.templates.submit("support", created.data.data.id, {
-  session: "number_123",
+  connection: "number_123",
 });
 ```
 
@@ -451,7 +450,7 @@ Keep this client on the server. Browser builders use an application-owned
 route, such as `createTemplateBuilderRoute` from `@polymorfa/nextjs`.
 Submission validates the saved definition before making one provider attempt.
 A successful response records the submission; it does not establish approval.
-If the request times out or loses its response, read the Number's template
+If the request times out or loses its response, read the Connection's template
 catalog before deciding whether another submission is needed. Local preview
 does not ask Meta to validate the template.
 
@@ -475,17 +474,17 @@ const draft = await flows.create({
   definition: flowJson,
 });
 const uploaded = await flows.upload(draft.data.id, {
-  sessionId: "support",
+  connectionId: "support",
   categories: ["APPOINTMENT_BOOKING"],
   requestId: crypto.randomUUID(),
 });
 console.log(uploaded.data.operation?.state);
 ```
 
-`upload`, `publish`, `deprecate`, `discard`, and `sync` operate on a Number in the
+`upload`, `publish`, `deprecate`, `discard`, and `sync` operate on a Connection in the
 same project; `receipts` reads its recorded operations. Reads require
-`sessions:read`; mutations require `sessions:manage`. Provider actions require
-the API's beta access and a compatible Number. Publishing uses the validated
+`connections:read`; mutations require `connections:manage`. Provider actions require
+the API's beta access and a compatible Connection. Publishing uses the validated
 upload. Discard removes a provider draft; delete removes the local draft.
 
 Writes make one transport attempt even with retry options or an Idempotency-Key.
@@ -495,17 +494,17 @@ reconcile provider state, preserving the original request identity. Do not repea
 an uncertain write with a new ID. No provider lifecycle method enrolls a project
 or establishes deployed availability.
 
-## Official API Numbers
+## Official API Connections
 
 These server methods require the matching API deployment and the team's beta
 access. An SDK method does not enroll a team. Keep server credentials out of
 browser code.
 
 `messaging.cloudTemplates` lists, retrieves, creates, edits and deletes Meta templates
-for a Number. It is separate from `messaging.templates`, which manages project
+for a Connection. It is separate from `messaging.templates`, which manages project
 drafts. Use a team key or project token; the SDK rejects browser
 client tokens before sending any of these requests. The native template API
-requires an enabled Official API connection. For a Hybrid Number it uses that
+requires an enabled Official API connection. For a Hybrid Connection it uses that
 exact connection and its WABA; a retired or disabled
 Official connection cannot supply authority. Retrieval accepts
 an optional language; the API defaults to `en_US`.
@@ -532,7 +531,7 @@ const template = await messaging.cloudTemplates.retrieve(
 Official API: `list`, `create`, `retrieve`, `update`, `delete`,
 `getInviteLink`, `resetInviteLink`, `removeParticipants`, `listJoinRequests`,
 `approveJoinRequests`, `rejectJoinRequests` and `pin`. Groups require team
-enrollment and a Number whose WhatsApp Business Account is an Official Business
+enrollment and a Connection whose WhatsApp Business Account is an Official Business
 Account; otherwise the API returns `whatsapp_groups_ineligible`. People join
 with the invite link and cannot be added. A group holds at most 8 participants
 besides your business. `create` returns a `requestId`; the group's conversation
@@ -555,29 +554,29 @@ await messaging.officialGroups.approveJoinRequests("support", groupId, [
 
 `messaging.cloudCatalogs.list(wabaId, { version: "v26.0", limit: 25, after })`
 reads catalog IDs and names visible to the connected WABA credentials. It
-requires `sessions:read` and Graph access. The response retains opaque cursors;
+requires `connections:read` and Graph access. The response retains opaque cursors;
 it does not expose upstream pagination URLs or grant merchant ownership. Use
 a team key or project token, with the latter confined to its project.
 
 `messaging.cloudCatalogs.listProducts(wabaId, catalogId, { version: "v26.0", limit: 25, after })`
 reads a page of product IDs, optional retailer IDs, names, and availability
 from a catalog linked to that WABA. It has the same server-credential and
-`sessions:read` requirements. Use the returned opaque `paging.cursors.after`
+`connections:read` requirements. Use the returned opaque `paging.cursors.after`
 to request the next page. The API rejects catalogs it cannot verify as linked;
 listing products does not grant permission to send them.
 
 `messaging.cloudMarketing.status(wabaId, { version: "v26.0" })` reads Meta's
 raw `marketing_messages_lite_api_status` and
-`marketing_messages_onboarding_status` strings through an Official API Number
-in the credential's project. It requires `sessions:read` and a team
+`marketing_messages_onboarding_status` strings through an Official API Connection
+in the credential's project. It requires `connections:read` and a team
 API key or project token. The fields do not establish terms acceptance,
 recipient permission, eligibility, or permission to send.
 
 `messaging.flowEncryption.retrieve(phoneNumberId, { version: "v26.0" })` reads
-the registered public key and Meta signature status with `sessions:read`.
+the registered public key and Meta signature status with `connections:read`.
 `messaging.flowEncryption.register(phoneNumberId,
 { businessPublicKey: publicKeyPem }, { version: "v26.0" })` replaces the key
-with `sessions:manage` on an eligible Official API Number. It makes one
+with `connections:manage` on an eligible Official API Connection. It makes one
 upstream attempt. Retain the matching private key on your endpoint and read the
 registered key after an uncertain outcome. Registration affects every dynamic
 Flow on the phone number; it does not enable dynamic Flow publishing.
@@ -588,17 +587,17 @@ submits an edit to one template language. A `202` response contains
 Read the template again to inspect its status.
 
 `messaging.messages.setTyping(number, { conversation, state: "typing", id })`
-requires an inbound message ID on Official Numbers. It marks that message read
-and displays typing until a reply is sent or 25 seconds pass. Official Numbers
-reject `recording` and `paused`; Linked Device Numbers retain those states and
+requires an inbound message ID on Official Connections. It marks that message read
+and displays typing until a reply is sent or 25 seconds pass. Official Connections
+reject `recording` and `paused`; Linked Device Connections retain those states and
 do not require `id`.
 
 `messaging.quickLinks.retrieve(id)` preserves `onboarding.sync` request receipts
-and history-delivery observations. A connected Number does not establish that
+and history-delivery observations. A connected Connection does not establish that
 contacts or history were delivered. Accepted requests and `unknown` outcomes
 remain distinct; do not repeat a one-time sync request based on an unknown state.
 
-Narrow `session.status` payloads by `source: "meta"` before reading account
+Narrow `connection.status` payloads by `source: "meta"` before reading account
 notifications. They have `kind`, optional `wabaId`, and `value`, without a runtime
 `status`. Cloud `template.status` payloads have `kind` and optional provider
 fields such as `event`, `language`, `previousQualityScore`, and `newQualityScore`.
@@ -610,17 +609,17 @@ or `unknown` with observation timestamps. It requires `chats:read` and service
 window beta enrollment, without requiring HMS. `unknown` does not establish
 permission to send; Meta still decides.
 
-`messaging.sessions.getMetaPricing(number, { since, until })` returns counts
-grouped by Meta's reported pricing classification. It requires `sessions:read`
+`messaging.connections.getMetaPricing(number, { since, until })` returns counts
+grouped by Meta's reported pricing classification. It requires `connections:read`
 and the same beta access. Dates are ISO 8601, the default period is 30 days and
 the maximum is 93 days. Counts contain no invoice amounts or Polymorfa charges.
 Official API `message.ack` events can include `pricing`, typed as
 `MetaPricingReport`, preserving Meta's field names and optional values.
 
-`messaging.sessions.getCloudCredentialHealth(number)` returns redacted token,
-permission, registration and subscription checks with `sessions:read`.
-`messaging.sessions.reauthorizeCloudCredentials(number)` creates a QuickLink
-for the same Number and phone with `quicklink:manage`. The Number must already
+`messaging.connections.getCloudCredentialHealth(number)` returns redacted token,
+permission, registration and subscription checks with `connections:read`.
+`messaging.connections.reauthorizeCloudCredentials(number)` creates a QuickLink
+for the same Connection and phone with `quicklink:manage`. The Connection must already
 be stopped or disconnected and use a standalone Official API connection;
 the method never stops it. Reauthorization makes one attempt and does not
 automatically open or share the returned URL.
@@ -650,7 +649,7 @@ console.log(contacts.data.data, contacts.metadata.requestId);
 
 The resource also provides `retrieve`, `picture`, `info`, `devices`,
 `businessProfile`, `blocklist`, and `unblock`. Contact operations are not
-available for Cloud API sessions.
+available for Cloud API connections.
 
 ## Polymorfa Calls
 
@@ -659,7 +658,7 @@ until a participant accepts or rejects it; nothing answers automatically.
 
 ```ts
 const placed = await messaging.voip.place(
-  { session: "support", to: "+15551234567", participant: "agent-7" },
+  { connection: "support", to: "+15551234567", participant: "agent-7" },
   { idempotencyKey: "place-order-1042" },
 );
 
@@ -676,7 +675,7 @@ await messaging.voip.leave(incomingCallId, { connectionId: "conn_desk_1" });
 await messaging.voip.end(placed.data.data.callId);
 ```
 
-- `place` requires `session` with a server credential and accepts `video`,
+- `place` requires `connection` with a server credential and accepts `video`,
   `exclusive`, and `participant`. Send an idempotency key to retry safely.
 - `accept` answers a ringing call. Later accepts from other participants join
   the call unless a participant claimed it with `exclusive: true`; those
@@ -693,11 +692,11 @@ A server credential acts as `server:<participant>`; `participant` matches
 own participant, so the SDK rejects `participant` for client tokens. The SDK
 checks `participant` and `connectionId` (`[A-Za-z0-9_-]{8,64}`) before sending.
 
-`voip.retrieveCallSettings(session)` and `voip.updateCallSettings(session,
+`voip.retrieveCallSettings(connection)` and `voip.updateCallSettings(connection,
 { conferenceMode, inboundRoute, sipTrunkId, sipClaim, hostCloudApiCalls,
 simultaneousCalls, acknowledgeRisk })` read and change the
-session's call settings through `/platform/sessions/{session}/call-settings`.
-`callsEnabled: false` turns calling off for the session: placing, answering,
+connection's call settings through `/platform/connections/{connection}/call-settings`.
+`callsEnabled: false` turns calling off for the connection: placing, answering,
 joining, inviting and media fail with `PolymorfaAuthorizationError`
 (`calls_disabled`), incoming calls are declined, and calls in progress
 continue. `conferenceMode` (default `true`) lets every participant you connect
@@ -707,10 +706,10 @@ party. The WhatsApp party always hears all of your participants, and nobody
 hears their own audio in either mode. `inboundRoute` is `clients` (the default) or
 `sip_trunk`, which also sends incoming calls to `sipTrunkId`; `sipClaim`
 (default `true`) makes the trunk's answer claim the call. On a Cloud API
-session, `hostCloudApiCalls: true` has Polymorfa Calls answer incoming calls;
+connection, `hostCloudApiCalls: true` has Polymorfa Calls answer incoming calls;
 with the default `false`, your Graph API integration answers them.
-`simultaneousCalls` (default `false`) lets a linked-device Number hold
-unlimited concurrent calls, incoming, placed and campaign; Cloud API Numbers
+`simultaneousCalls` (default `false`) lets a linked-device Connection hold
+unlimited concurrent calls, incoming, placed and campaign; Cloud API Connections
 ignore it. WhatsApp's own apps never hold two calls at once, so this is unusual
 behavior for a WhatsApp account, and it voids Ban Insurance: a ban whose 30-day
 window overlaps any period the setting was on is not refunded. Turning it on
@@ -806,9 +805,9 @@ await platform.callOptOuts.delete(added.data.id);
 The list is matched on what you supply: an entry for a phone number does not
 block a call to the same person addressed only by user ID.
 
-### Call permission on Cloud API Numbers
+### Call permission on Cloud API Connections
 
-WhatsApp requires a person's permission before a Cloud API Number calls them.
+WhatsApp requires a person's permission before a Cloud API Connection calls them.
 Ask for it with `callPermissionRequest` content:
 
 ```ts
@@ -843,29 +842,29 @@ state.expiresAt; // when a temporary permission ends
 state.actions?.requestPermission?.limits;
 
 const check = await messaging.voip.check({
-  session: "support",
+  connection: "support",
   to: "+14155550123",
 });
 check.data.data.allowed;
 check.data.data.refusal; // null, or the first reason a call would fail
 ```
 
-- `retrieveCallPermission(session, to)` takes a public user ID or an E.164
+- `retrieveCallPermission(connection, to)` takes a public user ID or an E.164
   phone number and encodes it for you. It asks WhatsApp on every request and
   returns its limits in `actions`. When WhatsApp cannot be reached, it returns
   the stored state with `fresh: false` and `actions: null`. It needs
-  `sessions:read`.
-- `check({ session, to })` runs the checks a placement runs without placing a
+  `connections:read`.
+- `check({ connection, to })` runs the checks a placement runs without placing a
   call or reserving anything. `refusal` is `calls_disabled`,
   `call_recipient_opted_out`, `call_destination_blocked`,
   `call_permission_required`, or `call_limit_reached`. `permission` is `null`
-  on linked-device Numbers. A placement made afterwards runs the same checks
+  on linked-device Connections. A placement made afterwards runs the same checks
   again. If required check state is unavailable, it raises
   `PolymorfaServerError` (`503 service_unavailable`) without an allow or
   refusal result.
 - Both require a server credential. `retrieveCallPermission` fails with
-  `409 unsupported_for_connection` on a linked-device Number; `check` supports
-  linked-device Numbers and returns `permission: null` for them.
+  `409 unsupported_for_connection` on a linked-device Connection; `check` supports
+  linked-device Connections and returns `permission: null` for them.
 
 Permission changes arrive as the `call.permission_changed` webhook event with a
 `CallPermissionChangedPayload`: the `conversation`, the new `status`, the
@@ -888,7 +887,7 @@ const { data } = await project.sipTrunks.create({
   name: "Head office PBX",
   direction: "both",
   outbound: { targetUri: "sips:pbx.example.com", transport: "tls" },
-  inbound: { session: "support", allowedAddresses: ["203.0.113.10"] },
+  inbound: { connection: "support", allowedAddresses: ["203.0.113.10"] },
 });
 // Store data.inboundCredentials now; the password is not returned again.
 await project.sipTrunks.update(data.trunk.id, {
@@ -905,7 +904,7 @@ them without a cast. `SipEndpointNotHosted` carries `status`
 `sip_not_hosted`, a `null` `host` and `rtp`, and no transports, which is a
 successful response, not an error. The address is the same for every project
 and trunk, team and project clients call it without a project, and it needs
-`sessions:read`.
+`connections:read`.
 
 ```ts
 const { data: address } = await platform.sipTrunks.endpoint();
@@ -988,7 +987,7 @@ filters by `status`. `waitUntilReady` polls until the asset is `ready` or
 minutes) has passed, cancelling a read still in flight; in production, prefer the
 `voice.asset_ready` and `voice.asset_failed` webhooks, typed as
 `VoiceAssetReadyPayload` and `VoiceAssetFailedPayload`. These events are
-project-scoped and arrive with an empty `session`.
+project-scoped and arrive with an empty `connection`.
 
 `voice.providerCredentials` stores your own ElevenLabs or OpenAI keys for
 text-to-speech:
@@ -1048,12 +1047,12 @@ console.log(detail.data.history.events);
 ```
 
 `Client.calls` reads call statistics and call detail records. It needs
-`sessions:read`. A team client covers every project of the team unless you
+`connections:read`. A team client covers every project of the team unless you
 pass `projectId`; a project client reads only its own project, and the SDK
 refuses another `projectId` before sending. A project token that names a
 different project gets `PolymorfaNotFoundError` from the API.
 
-Every method accepts the same filters: `sessionId`, `direction` (`inbound` or
+Every method accepts the same filters: `connectionId`, `direction` (`inbound` or
 `outbound`), `upstream` (`linked_device` or `cloud_api`), `outcome`
 (`answered`, `missed`, `declined`, `failed`, or `in_progress`), and `since` and
 `until` as RFC 3339 date-time strings with `Z` or an offset, or `Date` objects.
@@ -1077,7 +1076,7 @@ for await (const call of await platform.calls.list({ outcome: "missed" })) {
 - `stats(params)` returns `CallStats`: `totals`, one `groups` entry per
   bucket, and a 168-cell `heatmap` of calls by ISO day of week (Monday is 1)
   and hour. `groupBy` is `day` (the default, up to 366 days), `hour` (up to 31
-  days), `session` (the 500 busiest numbers; `groupsTruncated` reports more),
+  days), `connection` (the 500 busiest Connections; `groupsTruncated` reports more),
   or `outcome`. `timezone` is an IANA name, including single-name zones such
   as `CET` and `GMT`, and defaults to `UTC`. The API matches names in any case
   and refuses UTC offsets. Without `since` and `until` the range is the last 7 days. A
@@ -1166,13 +1165,13 @@ follow the same period, so treat it as an open list of strings.
 
 The `calls`, `identities`, and `users` resources use public Polymorfa user IDs.
 Identity resolution accepts an ID, phone number, or BSUID. Calling and security
-code checks require a connected Linked Device Number; identity resolution also
-supports Cloud Numbers when their business portfolio is configured.
+code checks require a connected Linked Device Connection; identity resolution also
+supports Cloud Connections when their business portfolio is configured.
 
-The source-only `messaging.calls.list(session, params)` method requires a
+The source-only `messaging.calls.list(connection, params)` method requires a
 matching package release and regional call-history API deployment. It returns
-one page of the number's calls, newest first, with the other party in `peer`
-(user ID, phone number, username). The records are served from the number's data region. Filter by
+one page of the Connection's calls, newest first, with the other party in `peer`
+(user ID, phone number, username). The records are served from the Connection's data region. Filter by
 `direction`, `outcome`, `since` and `until`, and pass `nextCursor` as
 `cursor` for the next page. Client tokens need the `read_calls` action.
 
@@ -1209,7 +1208,7 @@ characters and the JSON `from` field must contain the incoming caller's
 public Polymorfa user ID or E.164 phone number. Path identifiers are URL-encoded.
 The SDK sends an idempotency key
 when supplied and only permits automatic retries of this POST when that key is
-nonempty. This session-scoped route is separate from the Polymorfa Calls
+nonempty. This connection-scoped route is separate from the Polymorfa Calls
 routes on `MessagingClient.voip`.
 
 The pinned OpenAPI declares a generic synchronous `SuccessResponse` for call
@@ -1278,7 +1277,7 @@ The resource includes create and retrieve, invite-code lookup and revocation,
 join-info lookup, join and leave, participant add/remove/promote/demote,
 subject and description updates, profile pictures, and all four group
 permission settings. `delete` maps the API's DELETE leave alias; it does not
-delete the remote group for every participant. Group identifiers and session
+delete the remote group for every participant. Group identifiers and connection
 names are encoded as path segments, and every mutation accepts idempotency,
 timeout, cancellation, and API-version request options.
 
@@ -1332,7 +1331,7 @@ message history is read through `MessagingClient.chats` as described below.
 ### Brazil payment orders beta
 
 Teams enrolled in the beta can send Brazil orders with Pix, payment link or
-boleto instructions from Official API Numbers that Meta has made eligible for
+boleto instructions from Official API Connections that Meta has made eligible for
 payments in Brazil. Polymorfa validates and relays the order; it does not
 collect, hold or confirm funds. Amounts are centavos with `offset: 100`, and
 with an itemized `order` the total must equal subtotal + tax + shipping -
@@ -1372,9 +1371,9 @@ outside the beta receive `403 feature_unavailable`.
 
 ### Hosted message history beta
 
-`MessagingClient.chats.list(session, params)` lists stored conversations;
-`retrieve(session, conversation)` reads one. `listMessages(session,
-conversation, params)` and `retrieveMessage(session, conversation, messageId)`
+`MessagingClient.chats.list(connection, params)` lists stored conversations;
+`retrieve(connection, conversation)` reads one. `listMessages(connection,
+conversation, params)` and `retrieveMessage(connection, conversation, messageId)`
 read stored messages. A conversation can be a public ID or E.164 phone number;
 the SDK encodes it in the path. Keep message IDs and cursors as opaque strings.
 
@@ -1397,18 +1396,18 @@ console.log(page.metadata.headers["polymorfa-data-region"]);
 ```
 
 These conversation and message reads require a team key or project token, a visible
-Number with hosted message storage enabled, team enrollment in
+Connection with hosted message storage enabled, team enrollment in
 `messaging.history`, and `chats:read` or `messages:read` as appropriate. The
 feature is an unreleased enrolled beta; an SDK method does not grant access.
-Client tokens are refused before transport. A disabled HMS Number yields
+Client tokens are refused before transport. A disabled HMS Connection yields
 `404 hms_not_enabled`; absent beta access yields `403 permission_denied`, and
 an unavailable regional read yields `503 service_unavailable`.
 
 For Official API media, `message.mediaRetrieval.state` reports whether a copy
 is `pending`, `stored`, or in a final state without a copy. A `stored` message
 has a media entry whose `url` is a message-scoped API path, not a signed URL.
-Download that copy with `messaging.chats.downloadMessageMedia(session, conversation, message.id)`
-or stream it with `downloadMessageMediaStream(session, conversation, message.id)`. These reads
+Download that copy with `messaging.chats.downloadMessageMedia(connection, conversation, message.id)`
+or stream it with `downloadMessageMediaStream(connection, conversation, message.id)`. These reads
 require both `messages:read` and `media:read`; a missing copy returns 404.
 `downloadMessageMedia` buffers the whole file, so prefer the stream for large
 media. Linked-device media paths still use `messaging.media.download(mediaId)`.
@@ -1476,7 +1475,7 @@ you send again with a new key.
 ## Messaging media
 
 `MessagingClient.media` is distinct from `Client.media`. It covers the
-Messaging Media tag for Linked Device sessions. Every download method requires
+Messaging Media tag for Linked Device connections. Every download method requires
 a server credential with `media:read`; client tokens cannot call media routes.
 
 | Method                             | Result                                                                                                            |
@@ -1686,7 +1685,7 @@ the typed observation envelope.
 The Labels tag also includes the cross-cutting policy routes exposed as
 `MessagingClient.observationPolicies`. Project methods require
 `presence:read` or `presence:observe`; setting `labelMode` additionally requires
-`labels:manage`. Session methods carry the same scopes and are Linked Device
+`labels:manage`. Connection methods carry the same scopes and are Linked Device
 only. Policy updates replace the supplied presence and typing modes while the
 label mode remains optional in the pinned request schema.
 
@@ -1742,10 +1741,10 @@ undocumented policy update field.
 Quick-reply routes are absent from the browser client-token action allowlist.
 Use a server API key with the required profile scope.
 
-## Session profile
+## Connection profile
 
 `MessagingClient.profile` exposes the complete five-operation Profile tag for
-Linked Device sessions. `get` requires `profile:read`; `setName`, `setStatus`,
+Linked Device connections. `get` requires `profile:read`; `setName`, `setStatus`,
 `setPicture`, and `deletePicture` require `profile:write`.
 
 ```ts
@@ -1780,7 +1779,7 @@ history, picture download, or standalone upload operation.
 ## Privacy
 
 `MessagingClient.privacy` exposes the complete three-operation Privacy tag for
-Linked Device sessions. `get` requires `profile:read`; `set` and
+Linked Device connections. `get` requires `profile:read`; `set` and
 `setDefaultDisappearingTimer` require `profile:write`.
 
 ```ts
@@ -1827,7 +1826,7 @@ history, allowlist/blacklist member-management, or pagination operation.
 ## Presence
 
 `MessagingClient.presence` exposes the complete four-operation Presence tag
-for Linked Device sessions. `get` and `getForChat` require `presence:read`,
+for Linked Device connections. `get` and `getForChat` require `presence:read`,
 `set` requires `presence:write`, and `subscribe` requires `presence:observe`.
 
 ```ts
@@ -1880,7 +1879,7 @@ source exposes no stream, watch, history, polling helper, or unsubscribe route.
 Browser client tokens can call `get` and `getForChat` with the
 `read_presence` action and `subscribe` with `subscribe_presence`. They cannot
 call `set`; that route requires a server API key. Client-token rules also bind
-the request to the token's session. The server SDK accepts either credential
+the request to the token's connection. The server SDK accepts either credential
 kind and leaves the live action check to the API.
 
 The pinned OpenAPI describes the synchronous `set` result as a generic
@@ -1894,7 +1893,7 @@ send `Prefer: respond-async`.
 
 `MessagingClient.business` exposes the 25 credential-compatible Business App
 operations outside the separately maintained `quickReplies` resource. Every
-operation requires a connected Linked Device session. Cloud API sessions,
+operation requires a connected Linked Device connection. Cloud API connections,
 project credentials, browser client tokens, dashboard sessions, and staff
 credentials cannot use this resource.
 
@@ -1978,7 +1977,7 @@ fields, not offset pages, and the SDK does not synthesize `hasMore`.
 `getCollection` accepts `after` and a product `limit`, but the pinned response
 contains only the collection and products—no next cursor. The SDK preserves
 that source limitation rather than claiming automatic pagination. Product,
-collection, business-owner, order, cover-photo, and session identifiers are
+collection, business-owner, order, cover-photo, and connection identifiers are
 encoded by the SDK. Cursors and order tokens remain query/body values rather
 than path data.
 
@@ -2031,7 +2030,7 @@ key-bearing media descriptors. Describing a notification does not verify or
 persist its compressed history content.
 
 `MessagingClient.channels` exposes the complete 13-operation Channels tag for
-connected Linked Device sessions. Channels are WhatsApp newsletters in the
+connected Linked Device connections. Channels are WhatsApp newsletters in the
 protocol layer, but the SDK keeps the public API's `channels` terminology and
 does not merge them with chats or groups.
 
@@ -2103,7 +2102,7 @@ The pinned source has two request/response discrepancies:
 The public reaction schema permits at most 32 characters. The runner performs
 a second check against 32 UTF-8 bytes, so a multibyte reaction can pass route
 validation and still receive a 400 response. Empty reaction text is preserved
-and removes the caller's reaction upstream. Channel, session, and public
+and removes the caller's reaction upstream. Channel, connection, and public
 message identifiers are URL-encoded by the SDK.
 
 ## Messaging campaigns
@@ -2381,7 +2380,7 @@ await messaging.chats.setDisappearingTimer(
 The duration is typed to the four values accepted by the API: disabled, one
 day, one week, or 90 days. The resource also provides `deleteMessage`,
 `archive`, and `unarchive`. Chat operations are not available for Cloud API
-sessions.
+connections.
 
 ## Webhooks and events
 
@@ -2440,7 +2439,7 @@ if (isEvent(event, "history.sync")) {
 } else if (isEvent(event, "campaign.stopped")) {
   console.log(event.payload.campaignId, event.payload.abandonedCount);
 } else if (isEvent(event, "customer.pairing_link.connected")) {
-  console.log(event.payload.customerId, event.payload.sessionId);
+  console.log(event.payload.customerId, event.payload.connectionId);
 }
 ```
 
@@ -2459,7 +2458,7 @@ and `retryAfter` in seconds. Unknown event names still parse as
 `contact.sync` delivers a Meta Cloud API contact batch as
 `{ kind: "contacts", value }`. `message.echo` reports a message sent from the
 WhatsApp Business app on a connected Meta Cloud API number as
-`{ source: "whatsapp_business_app", value }`. Events for a session created by a
+`{ source: "whatsapp_business_app", value }`. Events for a connection created by a
 QuickLink include its optional `externalId`.
 
 Cloud API `message.received` payloads may include a `referral` object with
@@ -2493,9 +2492,9 @@ team and project scope:
 - `operations.list`, `get`, `listTransitions`, `cancel`, and `wait`
 
 `platform.webhooks.test` accepts `TestTeamWebhookInput`, which has an
-optional `eventType` and no body or session ID. A project-bound client accepts
+optional `eventType` and no body or connection ID. A project-bound client accepts
 `TestProjectWebhookInput`; when you supply a native event body, supply its
-project session ID too. Both methods send an `Idempotency-Key` for each test:
+project connection ID too. Both methods send an `Idempotency-Key` for each test:
 
 ```ts
 await platform.webhooks.test(
@@ -2582,7 +2581,7 @@ without enrollment the iterator throws `PolymorfaAuthorizationError` with code
 ```ts
 const controller = new AbortController();
 const stream = client.project(projectId).events.stream({
-  types: ["message.*", "session.connected"],
+  types: ["message.*", "connection.connected"],
   since: savedCursor, // optional: resume after this cursor
   signal: controller.signal,
   onGap: (gap) => console.warn(`${gap.missedEvents} events expired`),
@@ -2657,8 +2656,8 @@ used by the server client.
 
 ## Metered call usage and gates
 
-`Client.usage` reads the merged usage API. It needs `sessions:read`.
-Team clients can read team usage or filter by project and session;
+`Client.usage` reads the merged usage API. It needs `connections:read`.
+Team clients can read team usage or filter by project and connection;
 project clients read only their bound project's usage. Gate state is team-wide:
 `listGates()` requires a team key, and the API returns 403 for
 project credentials.
@@ -2673,7 +2672,9 @@ for await (const record of platform.usage.iterateRecords({
   console.log(record.id, record.revision, record.quantity);
 }
 
-const { data: state } = await platform.usage.listGates({ session: "support" });
+const { data: state } = await platform.usage.listGates({
+  connection: "support",
+});
 console.log(state.gates);
 ```
 
@@ -2691,7 +2692,7 @@ does not change prices, modes or customer access. Package publication and live a
 ## Billing and usage
 
 `Client.billing` exposes the complete team-key billing family.
-Balance, usage, transaction and pricing reads require `sessions:read`.
+Balance, usage, transaction and pricing reads require `connections:read`.
 Spending limits and priority reads require `billing:read`; changes require
 `billing:manage` and Pay-As-You-Go. Project and client credentials cannot use
 these financial controls. Credit quantities, including fields ending in
@@ -2723,15 +2724,18 @@ only after the customer accepts. Upgrades buy a fresh 24-hour window and replace
 the remaining paid time. Downgrades apply when the paid window ends.
 
 ```ts
-const reviewed = await platform.sessions.quoteTierChange(sessionId, {
+const reviewed = await platform.connections.quoteTierChange(connectionId, {
   tierOverride: "pro",
 });
 const quote = reviewed.data.data;
 console.log(quote.quote.amountCents, quote.quote.effectiveAtMs);
 
 // After the customer confirms this exact quote:
-await platform.sessions.setTierOverride(sessionId, { quoteId: quote.id });
-const result = await platform.sessions.retrieveTierChange(sessionId, quote.id);
+await platform.connections.setTierOverride(connectionId, { quoteId: quote.id });
+const result = await platform.connections.retrieveTierChange(
+  connectionId,
+  quote.id,
+);
 console.log(result.data.data.status);
 ```
 
@@ -2742,70 +2746,70 @@ purchase a replacement. Set `tierOverride: null` when quoting to restore project
 inheritance. The old `setTierOverride({tierOverride})` request and
 `billing.updateReminderSettings` method are removed.
 
-#### Hybrid Link Numbers
+#### Hybrid Link Connections
 
-A Hybrid Link Number (Linked Devices and Official API on one Number) needs a
+A Hybrid Link Connection (Linked Devices and Official API on one Connection) needs a
 choice before it leaves Pro. Without `hybridResolution`, the quote fails with
 `PolymorfaConflictError` and `code === "hybrid_choice_required"`. This
 includes `tierOverride: null` when the project default lacks Hybrid Link.
 
 ```ts
-// Keep one connection; the other is disconnected when Pro ends.
-await platform.sessions.quoteTierChange(sessionId, {
+// Keep one method; the other is disconnected when Pro ends.
+await platform.connections.quoteTierChange(connectionId, {
   tierOverride: "standard",
   hybridResolution: { action: "keep", transport: "linked_devices" },
 });
 
-// Split into two Standard Numbers. This Number keeps the Official API; Linked
-// Devices moves to a new Number named "support-linked" without re-pairing.
-await platform.sessions.quoteTierChange(sessionId, {
+// Split into two Standard Connections. This Connection keeps the Official API; Linked
+// Devices moves to a new Connection named "support-linked" without re-pairing.
+await platform.connections.quoteTierChange(connectionId, {
   tierOverride: "standard",
   hybridResolution: {
     action: "split",
-    existingNumberTransport: "official_api",
-    newNumberName: "support-linked",
+    existingConnectionTransport: "official_api",
+    newConnectionName: "support-linked",
   },
 });
 ```
 
-The choice runs when the paid Pro window ends. To merge two Numbers that are
-the same WhatsApp Business number into one Hybrid Link Number, list the pairs
-and quote Pro on the Number that keeps its ID:
+The choice runs when the paid Pro window ends. To merge two Connections that are
+the same WhatsApp Business number into one Hybrid Link Connection, list the pairs
+and quote Pro on the Connection that keeps its ID:
 
 ```ts
 const pairs = await platform.projects.listHybridMergeCandidates(projectId);
 const pair = pairs.data.data.find((candidate) => candidate.eligible);
 if (pair) {
-  // A Number with hosted message storage cannot be absorbed; keep it instead.
-  const [first, second] = pair.numbers;
+  // A Connection with hosted message storage cannot be absorbed; keep it instead.
+  const [first, second] = pair.connections;
   const [keep, absorb] = second.canBeAbsorbed
     ? [first, second]
     : [second, first];
-  await platform.sessions.quoteTierChange(keep.id, {
+  await platform.connections.quoteTierChange(keep.id, {
     tierOverride: "pro",
-    hybridMerge: { absorbNumberId: absorb.id },
+    hybridMerge: { absorbConnectionId: absorb.id },
   });
 }
 ```
 
 Send either `hybridResolution` or `hybridMerge`, never both; the SDK rejects
 both before sending. `quote.hybridTransition` echoes the plan (`keep`, `split`
-or `merge`), the surviving Number and the effective time. After confirmation,
+or `merge`), the surviving Connection and the effective time. After confirmation,
 `retrieveTierChange` reports `hybridTransition.status` (`scheduled`, `running`,
 `completed`, `failed` or `cancelled`) separately from the tier change status,
-plus `failureReason`, `newNumberId` for a completed split, and
+plus `failureReason`, `newConnectionId` for a completed split, and
 `metaDisconnectRequired`. A queued change that the API rejects at apply time
 because no choice is recorded reports `status: "rejected"` with
 `failureReason: "hybrid_choice_required"`; quote again with a choice. When that flag is true, disconnect the Official API in
 the WhatsApp Business app under Settings > Account > Business Platform. An
-ineligible pair or Number fails with `hybrid_transition_ineligible`; the reason
+ineligible pair or Connection fails with `hybrid_transition_ineligible`; the reason
 appears only in the error message. A candidate's `ineligibleReason` explains why
 a pair cannot merge now. Listing candidates and merging require Hybrid Link
 access; without it the API returns `403 feature_unavailable`.
 
 ## Team access and security
 
-The team view exposes key metadata, members, audit logs, session bans,
+The team view exposes key metadata, members, audit logs, connection bans,
 security incidents, and project-token metadata:
 
 ```ts
@@ -2813,11 +2817,11 @@ const [keys, members, audit, bans, incidents, tokens] = await Promise.all([
   platform.apiKeys.list(),
   platform.members.list(),
   platform.auditLogs.list({
-    action: "session.stop",
-    resource: "session",
+    action: "connection.stop",
+    resource: "connection",
     limit: 100,
   }),
-  platform.sessionBans.listActive(),
+  platform.connectionBans.listActive(),
   platform.securityIncidents.list(),
   platform.projectTokens.list("018f0000-0000-7000-8000-000000000002"),
 ]);
@@ -2830,8 +2834,8 @@ await platform.apiKeys.deactivate(keys.data.data[0]!.keyId, {
 });
 ```
 
-These read operations require `sessions:read`. API-key deactivation and incident
-acknowledgement require `sessions:manage`. The two mutations are direct
+These read operations require `connections:read`. API-key deactivation and incident
+acknowledgement require `connections:manage`. The two mutations are direct
 team-scoped writes rather than asynchronous operations. The SDK retries
 them only when an idempotency key is supplied, but the pinned handlers do not
 persist that header. Incident acknowledgement is repeatable; an API-key
@@ -2880,7 +2884,7 @@ The resource accepts team keys or project tokens with
 `quicklink:manage`. It rejects browser client tokens before transport. An
 team key can select `projectId` when creating a link; a project token
 is bound by the server. `cancel()` invalidates a pending link and removes its
-pending session. Connected links cannot be cancelled. The source exposes no
+pending connection. Connected links cannot be cancelled. The source exposes no
 list, recover, or history operation.
 
 `Client.quickLinkSettings.retrieve` and `update` map the management
@@ -2913,44 +2917,44 @@ destinations; the API copies them into each link when it is issued, and link
 creation has no callback override. `allowPhoneChange` lets recipients replace a
 prefilled number and defaults to `false`. `hideWatermark: true` requires an active Branded QuickLink
 add-on. Saved settings have no redirect-URI allowlist. `externalId` on
-creation is an integrator correlation value copied to the resulting session; it
+creation is an integrator correlation value copied to the resulting connection; it
 can repeat across invitations and does not grant access.
 
-## Management session lifecycle
+## Management connection lifecycle
 
-The team client's `sessions.start` requests a start for one stopped or
-failed session. It accepts a session UUID or stable slug and an optional project
+The team client's `connections.start` requests a start for one stopped or
+failed connection. It accepts a connection UUID or stable slug and an optional project
 context:
 
 ```ts
-const start = await platform.sessions.start(
+const start = await platform.connections.start(
   "support",
   { projectId: "11111111-2222-4333-8444-555555555555" },
   { idempotencyKey: "start-support" },
 );
 ```
 
-The returned `SessionStartResult` confirms that the start request was accepted;
-it does not claim that the session has connected. A paid start first reserves
+The returned `ConnectionStartResult` confirms that the start request was accepted;
+it does not claim that the connection has connected. A paid start first reserves
 credit. An HTTP 402 response throws `PolymorfaPaymentRequiredError`, preserving
 the API's error code, message, and request ID. It is not automatically retried;
 resolve the funding or entitlement problem before submitting another start.
-The charge is committed on successful connection. `sessions.stopMany` and
+The charge is committed on successful connection. `connections.stopMany` and
 `deleteMany` cover the two bounded batch operations. All three require
-`sessions:manage`. Batch methods accept `sessionIds` plus an optional
+`connections:manage`. Batch methods accept `connectionIds` plus an optional
 `projectId`:
 
 ```ts
-const stop = await platform.sessions.stopMany(
+const stop = await platform.connections.stopMany(
   {
     projectId: "11111111-2222-4333-8444-555555555555",
-    sessionIds: ["support", "sales"],
+    connectionIds: ["support", "sales"],
   },
   { idempotencyKey: "stop-support-sales" },
 );
 
-const removal = await platform.sessions.deleteMany(
-  { sessionIds: ["old-support", "old-sales"] },
+const removal = await platform.connections.deleteMany(
+  { connectionIds: ["old-support", "old-sales"] },
   { idempotencyKey: "delete-old-support-sales" },
 );
 ```
@@ -2959,7 +2963,7 @@ The source accepts 1–100 UUIDs or stable slugs. It trims identifiers and the
 live handler deduplicates repeats, while OpenAPI declares the array unique.
 Only matching rows contribute to `{ stopping }` or `{ removed }`; the API does
 not return per-item results or errors for missing identifiers. Batch stop
-requires session-control publishing and queues fire-and-forget stop commands.
+requires connection-control publishing and queues fire-and-forget stop commands.
 Batch delete removes rows first, then best-effort queues kill commands for
 rows that were not disconnected. Neither route returns a durable operation ID,
 stream, watcher, or completion status.
@@ -2970,15 +2974,15 @@ enqueue another stop command; a repeated delete reports only rows still found.
 QuickLink settings updates are state upserts and can safely converge on the
 same supplied values.
 
-## Number capabilities (beta)
+## Connection capabilities (beta)
 
-`sessions.getCapabilities` reads which WhatsApp features WhatsApp has enabled
-for one number, and the limits it applies, as of the number's last
-configuration sync. It needs `sessions:read` and team enrollment in the number
+`connections.getCapabilities` reads which WhatsApp features WhatsApp has enabled
+for one Connection, and the limits it applies, as of the Connection's last
+configuration sync. It needs `connections:read` and team enrollment in the number
 capabilities beta; until then it throws `PolymorfaAuthorizationError` (403).
 
 ```ts
-const { data } = await platform.sessions.getCapabilities("support");
+const { data } = await platform.connections.getCapabilities("support");
 if (data.data.status === "synced") {
   for (const capability of data.data.capabilities) {
     if (capability.kind === "feature")
@@ -2995,11 +2999,10 @@ WhatsApp sent the setting (`server`), left its default (`client_default`) or
 the capability does not apply to the account type (`account_type`). Ignore
 keys you do not recognize; new keys can be added.
 
-## Session creation and configuration
+## Connection creation and configuration
 
-Create new sessions with `MessagingClient.quickLinks.create`. Direct
-`sessions.create` and Platform `sessions.createTesting` have been removed in this
-breaking contract update. Reconnect and delete still operate on existing sessions.
+Create new Connections with `MessagingClient.quickLinks.create`. Reconnect and
+delete operate on existing Connections.
 
 ```ts
 const link = await messaging.quickLinks.create({
@@ -3016,8 +3019,8 @@ Page text, appearance, legal links, and callbacks belong in saved
 `expiresAt`; new invitations remain usable until completion or cancellation.
 Free-tier real-account pairing is available only in the authenticated Console.
 
-Use `Client.sessionConfiguration` for team defaults and
-`client.project(projectId).sessionConfiguration` for project defaults. Session
+Use `Client.connectionConfiguration` for team defaults and
+`client.project(projectId).connectionConfiguration` for project defaults. Connection
 updates take `{revision, configuration: {set, reset}}`; resets remove explicit
 overrides so later defaults continue to apply. Reads expose effective values,
 sources, consent restrictions, and pending runtime application.
@@ -3026,7 +3029,7 @@ For simulation, create a QuickLink with `configuration.testing`, including initi
 `configuration` and the explicit `editable` subset delegated to the recipient.
 Test access is checked independently; simulation cannot contact real accounts.
 
-Test history content is uploaded separately from session configuration:
+Test history content is uploaded separately from connection configuration:
 
 ```ts
 const fixture = await messaging.testing.createHistoryFixture(projectId, {
@@ -3048,15 +3051,15 @@ const invitation = await messaging.quickLinks.create({
 });
 ```
 
-Fixture senders must be existing simulated numbers in that project. Test-number
+Fixture senders must be existing simulated Connections in that project. Test Connection
 entitlements and history consent still apply; uploading a fixture does not enable
 hosted message storage.
 
 ### Trigger test events
 
-Fire a named, signed test event for a Test number. The event reaches your
+Fire a named, signed test event for a Test Connection. The event reaches your
 webhooks and event history with `source: "test"` and does not change the Test
-number. Real Numbers return `404 resource_not_found` (`PolymorfaNotFoundError`), and each
+Connection. Real Connections return `404 resource_not_found` (`PolymorfaNotFoundError`), and each
 project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
 
 ```ts
@@ -3077,13 +3080,13 @@ await messaging.testing.triggerEvent("my-test-number", {
 const { data } = await messaging.testing.listEventFixtures();
 ```
 
-Set `fromNumber` on a `message.received` request to send a simulated text
-from another connected Test number in the same project instead; the response
-has `delivery: "simulated"` and the event arrives as ordinary Test number
+Set `fromConnection` on a `message.received` request to send a simulated text
+from another connected Test connection in the same project instead; the response
+has `delivery: "simulated"` and the event arrives as ordinary Test connection
 activity. Both methods require a team key or project token with
-`sandbox:write` (trigger) or `sandbox:read` (list) and Test numbers access.
+`sandbox:write` (trigger) or `sandbox:read` (list) and Test Connections access.
 
-Use `session.restriction_updated` with `{ restrictionActive: false }` to
+Use `connection.restriction_updated` with `{ restrictionActive: false }` to
 test a restriction ending, or `true` to test one starting. The `call.ended`
 fixture accepts `callEndReason: "call_restricted"` for a restricted call.
 
@@ -3093,9 +3096,9 @@ ID, so a retry after an uncertain response never creates a second event or
 duplicate webhook deliveries. With a key, the SDK also retries network and
 5xx failures.
 
-### Test number phone
+### Test Connection phone
 
-Each Test number has a simulated phone that acts as its main device. Use it
+Each Test Connection has a simulated phone that acts as its main device. Use it
 to see which companions are linked, to send a message as the phone, or to
 unlink a companion as a person would from Linked devices.
 
@@ -3103,7 +3106,7 @@ unlink a companion as a person would from Linked devices.
 const { data: phone } = await messaging.testing.getPhone("my-test-number");
 console.log(phone.online, phone.devices); // [{ deviceId: 33 }, ...]
 
-// Sent over the simulated network to another connected Test number in the
+// Sent over the simulated network to another connected Test Connection in the
 // same project. The sender's companions receive the sent copy.
 await messaging.testing.sendPhoneMessage("my-test-number", {
   to: "+15550100002",
@@ -3115,7 +3118,7 @@ await messaging.testing.unlinkPhoneDevice("my-test-number", 74);
 
 `getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
 need `sandbox:write`. All three need a team key or project token
-and Test numbers access. Real Numbers return `404 resource_not_found`
+and Test connections access. Real Connections return `404 resource_not_found`
 (`PolymorfaNotFoundError`). An offline phone and invalid recipients return
 `400` (`PolymorfaValidationError`); a Test key hides unknown, real, and
 other-project recipients with `404 resource_not_found`. Phone messages share
@@ -3125,15 +3128,15 @@ cannot be unlinked.
 Trusted servers continue an issued Meta Cloud API invitation with
 `messaging.cloudOnboarding.advance({ quicklinkId, projectId, result })`.
 `result` contains the Embedded Signup authorization code, selected WABA and phone
-IDs, and Coexistence/history choices. This method does not create a session or
+IDs, and Coexistence/history choices. This method does not create a connection or
 accept Meta app secrets. Its progress response is not proof that messaging is
 ready; inspect the QuickLink status.
 
 ## Contract update notes
 
-The typed webhook catalog includes `session.restriction_updated` with
+The typed webhook catalog includes `connection.restriction_updated` with
 `type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
-`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`connection.logged_out` requires a numeric `code` and a `reason` of `banned`,
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
@@ -3197,13 +3200,13 @@ customer log output are not retained. List responses contain `items` and
 
 ## WhatsApp business analytics
 
-Source builds expose `client.analytics.get({ projectId, sessionId, start, end })`.
-Requires `sessions:read`; project-bound clients cannot read another project.
+Source builds expose `client.analytics.get({ projectId, connectionId, start, end })`.
+Requires `connections:read`; project-bound clients cannot read another project.
 A team owner or admin enables Analytics in the Console. Disabled results contain
 no business aggregates.
 
 ```ts
-const { data } = await client.analytics.get({ sessionId: numberId });
+const { data } = await client.analytics.get({ connectionId: connectionId });
 console.log(data.summary?.engagement.replyRate);
 console.log(data.summary?.calls.answerRate);
 console.log(data.summary?.calls.followUp);
@@ -3233,7 +3236,7 @@ const { data, metadata } = await client.analytics.metrics({
 ```
 
 `data` is the metrics text; `metadata` retains HTTP status, request ID and headers.
-The method validates UUID filters and the 1–168-hour window. It uses `sessions:read`
+The method validates UUID filters and the 1–168-hour window. It uses `connections:read`
 and the same Analytics opt-in. All metrics are gauges over completed UTC hours;
 never apply `rate()` or `increase()`. Disabled exports contain enablement and window
 metadata only. [Collector setup and definitions](https://docs.polymorfa.com/console/analytics-collectors).
@@ -3279,7 +3282,7 @@ await platform.billing.setResourceControls("customer", customerId, {
 ```
 
 Both revisions are required; a conflict leaves both settings unchanged. Project
-priority takes precedence. Numbers inherit customer priority; a higher number
+priority takes precedence. Connections inherit customer priority; a higher Connection
 priority overrides it within the project. A customer's assigned numbers share
 its monthly cap. `getLimits({scope:"project"})` and
 `getPriorities({scope:"project"})` avoid downloading number/customer directories.
@@ -3321,7 +3324,7 @@ bypasses a spending cap.
 
 ### Group capabilities (enrolled beta)
 
-`messaging.groups.getCapabilities(session, groupId)` reads the linked number's
+`messaging.groups.getCapabilities(connection, groupId)` reads the linked number's
 stored group configuration. It requires `groups:read`, current group membership,
 and enrollment in the number-capabilities beta. `unknown` returns null values
 until a successful group configuration sync for the current linked account.
@@ -3331,7 +3334,7 @@ The three feature keys are `polls.endTime`, `polls.hideVoters`, and
 `polls.creatorEdit`. Each combines the number's gate with the group gate. They
 describe WhatsApp configuration; they do not grant permission to edit polls.
 
-`session.capabilities_updated` carries `SessionCapabilitiesUpdatedPayload`:
+`connection.capabilities_updated` carries `ConnectionCapabilitiesUpdatedPayload`:
 the canonical number capability view and `changedKeys`. Routine checks and
 configuration changes that do not change capabilities produce no event. Treat
 the event ID as the deduplication key. Eligibility is checked before publication
@@ -3499,7 +3502,7 @@ mix with URL/call controls; copy and catalog controls cannot mix with replies.
 Image, video and document headers use exactly one URL or base64 source.
 
 ```ts
-await messaging.messages.send(sessionId, {
+await messaging.messages.send(connectionId, {
   conversation: { phoneNumber: "+15551234567" },
   content: {
     buttons: {
@@ -3544,8 +3547,8 @@ does not establish API deployment or package publication.
 
 ## Direct passkey relay (unreleased)
 
-Use server credentials with `sessions:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+Use server credentials with `connections:manage` for every operation, including reads.
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -3570,13 +3573,13 @@ The matching API source is accepted. Package qualification and publication are
 still required before using a released package.
 
 ```ts
-const ticket = await client.passkeys.issueChallenge(session);
-await client.passkeys.getChallenge(session, ticket.data.data.ticket);
-await client.passkeys.submitAssertion(session, suppliedAssertion);
-const state = await client.passkeys.getConfirmation(session);
+const ticket = await client.passkeys.issueChallenge(connection);
+await client.passkeys.getChallenge(connection, ticket.data.data.ticket);
+await client.passkeys.submitAssertion(connection, suppliedAssertion);
+const state = await client.passkeys.getConfirmation(connection);
 // Invoke only after the caller verifies the current state and makes its decision.
 const confirmExplicitly = () =>
-  client.passkeys.confirm(session, suppliedConfirmation);
+  client.passkeys.confirm(connection, suppliedConfirmation);
 ```
 
 ### Authenticated HTTP moderation (unreleased)
@@ -3588,10 +3591,15 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.

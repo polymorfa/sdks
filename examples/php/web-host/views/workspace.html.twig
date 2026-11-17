@@ -3,7 +3,7 @@
 {% endif %}
 <main id="app"><h1>Messaging workspace</h1>
 {% if authenticated %}
-{% if localTest %}<p><strong>Local test numbers. Simulated WhatsApp transport.</strong></p>{% endif %}<p>Text messages use the server-assigned number and recipient. Conversation state is kept in this example's private state directory.</p><p id="native-status" role="status">Waiting for the native SDK conversation.</p><form method="post" action="/api/logout" hx-post="/api/logout" hx-target="#app" hx-swap="outerHTML"><button type="submit">Sign out</button></form><pmfa-inbox></pmfa-inbox>
+{% if localTest %}<p><strong>Local test Connections. Simulated WhatsApp transport.</strong></p>{% endif %}<p>Text messages use the server-assigned Connection and recipient. Conversation state is kept in this example's private state directory.</p><p id="native-status" role="status">Waiting for the native SDK conversation.</p><form method="post" action="/api/logout" hx-post="/api/logout" hx-target="#app" hx-swap="outerHTML"><button type="submit">Sign out</button></form><pmfa-inbox></pmfa-inbox>
 {% else %}
 <p>Sign in with the local example application's configured account.</p><form method="post" action="/api/login" hx-post="/api/login" hx-target="#app" hx-swap="outerHTML"><label>Username<input name="username" autocomplete="username" required></label><label>Password<input name="password" type="password" autocomplete="current-password" required></label><button type="submit">Sign in</button></form>
 {% endif %}

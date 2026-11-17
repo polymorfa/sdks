@@ -98,7 +98,7 @@ pub async fn apply_event(
 ) -> StorageResult<engine::ApplyResult> {
     if event.event == "history.sync" && event.payload.get("delivery").is_some() {
         history_descriptor::validate(&event.payload)?;
-        if storage.has_event(&event.session, &event.id).await? {
+        if storage.has_event(&event.connection, &event.id).await? {
             return Ok(engine::ApplyResult {
                 applied: false,
                 writes: 0,
@@ -118,7 +118,7 @@ pub async fn apply_event(
             .await
             .map_err(|_| StorageError::Invalid("Failed to decode history descriptor."))?;
         let history = reduce_history_chunk(&HistoryChunkInput {
-            session_id: event.session.clone(),
+            connection_id: event.connection.clone(),
             chunk,
             identities: None,
             chunk_id: None,
@@ -131,7 +131,7 @@ pub async fn apply_event(
     let mut batch = reduce_event(event);
     if event.event == "history.sync" && event.payload["kind"] != "history" {
         if let Some(decoder) = options.decode_history {
-            if storage.has_event(&event.session, &event.id).await? {
+            if storage.has_event(&event.connection, &event.id).await? {
                 return Ok(engine::ApplyResult {
                     applied: false,
                     writes: 0,
@@ -139,7 +139,7 @@ pub async fn apply_event(
             }
             if let Some(chunk) = decoder.decode(&event.payload, event).await? {
                 let history = reduce_history_chunk(&HistoryChunkInput {
-                    session_id: event.session.clone(),
+                    connection_id: event.connection.clone(),
                     chunk,
                     identities: Some(history_identity_index(&event.payload)),
                     chunk_id: None,
@@ -182,7 +182,7 @@ where
     }
 }
 pub struct StorageSyncOptions<'a> {
-    pub checkpoint_session: String,
+    pub checkpoint_connection: String,
     pub checkpoint_stream: String,
     pub types: Vec<String>,
     pub require_payload: bool,
@@ -193,7 +193,7 @@ pub struct StorageSyncOptions<'a> {
 impl Default for StorageSyncOptions<'_> {
     fn default() -> Self {
         Self {
-            checkpoint_session: "*".into(),
+            checkpoint_connection: "*".into(),
             checkpoint_stream: "events".into(),
             types: STORED_EVENT_TYPES.iter().map(|s| s.to_string()).collect(),
             require_payload: true,
@@ -212,7 +212,7 @@ pub async fn sync_to_storage(
     stop: &StorageSyncStop,
 ) -> StorageResult<usize> {
     let saved = storage
-        .checkpoint(&options.checkpoint_session, &options.checkpoint_stream)
+        .checkpoint(&options.checkpoint_connection, &options.checkpoint_stream)
         .await?;
     let mut expected = saved.map(|s| s.cursor);
     let mut stream = source.stream(StorageStreamParams {
@@ -260,11 +260,11 @@ pub async fn sync_to_storage(
         }
         storage
             .apply(&OperationBatch {
-                session_id: options.checkpoint_session.clone(),
+                connection_id: options.checkpoint_connection.clone(),
                 event_id: None,
                 event_type: None,
                 operations: vec![StorageOperation::Checkpoint {
-                    session_id: options.checkpoint_session.clone(),
+                    connection_id: options.checkpoint_connection.clone(),
                     stream: options.checkpoint_stream.clone(),
                     cursor: item.cursor.clone(),
                     expected_cursor: Some(expected.clone()),

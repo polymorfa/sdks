@@ -488,7 +488,7 @@ describe("call permissions", () => {
     expect(state.actions?.startCall?.allowed).toBe(true);
   });
 
-  it("requires a server credential and a session", () => {
+  it("requires a server credential and a connection", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     expect(() =>
       messagingClient(fetch, "clientToken").voip.retrieveCallPermission(
@@ -523,7 +523,7 @@ describe("call permissions", () => {
       Response.json({ success: true, data: check }),
     );
     const result = await messagingClient(fetch).voip.check({
-      session: "support",
+      connection: "support",
       to: "+14155550123",
     });
 
@@ -531,7 +531,7 @@ describe("call permissions", () => {
     const sent = request(fetch);
     expect(sent.method).toBe("POST");
     expect(sent.url.pathname).toBe("/messaging/voip/calls/check");
-    expect(sent.body).toEqual({ session: "support", to: "+14155550123" });
+    expect(sent.body).toEqual({ connection: "support", to: "+14155550123" });
   });
 
   it("surfaces unavailable call-check state as a typed server error", async () => {
@@ -546,7 +546,7 @@ describe("call permissions", () => {
       ),
     );
     const failure = await messagingClient(fetch)
-      .voip.check({ session: "support", to: "+14155550123" })
+      .voip.check({ connection: "support", to: "+14155550123" })
       .catch((error: unknown) => error);
 
     expect(failure).toBeInstanceOf(PolymorfaServerError);
@@ -562,14 +562,14 @@ describe("call permissions", () => {
     const fetch = vi.fn<typeof globalThis.fetch>();
     const messaging = messagingClient(fetch);
     expect(() =>
-      messaging.voip.check({ session: "", to: "+14155550123" }),
+      messaging.voip.check({ connection: "", to: "+14155550123" }),
     ).toThrow(PolymorfaValidationError);
-    expect(() => messaging.voip.check({ session: "support", to: "" })).toThrow(
-      PolymorfaValidationError,
-    );
+    expect(() =>
+      messaging.voip.check({ connection: "support", to: "" }),
+    ).toThrow(PolymorfaValidationError);
     expect(() =>
       messagingClient(fetch, "clientToken").voip.check({
-        session: "support",
+        connection: "support",
         to: "+14155550123",
       }),
     ).toThrow(PolymorfaConfigurationError);
@@ -691,7 +691,7 @@ describe("refused placements", () => {
       }),
     );
     const failure = await messagingClient(fetch)
-      .voip.place({ session: "support", to: "+14155550123" })
+      .voip.place({ connection: "support", to: "+14155550123" })
       .catch((error: unknown) => error);
 
     expect(failure).toBeInstanceOf(PolymorfaAuthorizationError);

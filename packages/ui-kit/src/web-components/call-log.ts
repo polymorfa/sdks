@@ -30,7 +30,7 @@ function duration(seconds: number): string {
  * `CallLogEntry`, so your page places the call with its Calls client.
  *
  * Properties: `client`, `source` (defaults to the API,
- * `GET /messaging/{session}/calls` with `read_calls`), `controller`. Attribute
+ * `GET /messaging/{connection}/calls` with `read_calls`), `controller`. Attribute
  * `no-call-back` hides call-back buttons. Put extra header content in
  * `slot="actions"`.
  */
@@ -288,7 +288,9 @@ export class PolymorfaCallLogElement extends ClientElement<CallLogSnapshot> {
         : {
             id: entry.conversationId,
             kind: "direct",
-            ...(entry.session === undefined ? {} : { session: entry.session }),
+            ...(entry.connection === undefined
+              ? {}
+              : { connection: entry.connection }),
             ...(entry.peer.name === undefined ? {} : { name: entry.peer.name }),
             ...(entry.peer.phoneNumber === undefined
               ? {}

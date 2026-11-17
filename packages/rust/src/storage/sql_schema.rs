@@ -155,7 +155,7 @@ pub(super) fn table(
     }
     Ok(t)
 }
-/// Schema-2 DDL compatible with the TypeScript storage producer. No connection secrets enter the script.
+/// Schema-3 DDL compatible with the TypeScript storage producer. No connection secrets enter the script.
 pub fn schema_statements(
     dialect: SqlDialect,
     options: &SqlStorageOptions,
@@ -257,7 +257,7 @@ pub fn schema_statements(
         "CREATE TABLE IF NOT EXISTS {meta} ({id} {} PRIMARY KEY, {version} integer NOT NULL)",
         dialect.key_type(false)
     ));
-    statements.push(match dialect{SqlDialect::MySql=>format!("INSERT INTO {meta} ({id},{version}) VALUES ('storage',2) ON DUPLICATE KEY UPDATE {version}=VALUES({version})"),_=>format!("INSERT INTO {meta} ({id},{version}) VALUES ('storage',2) ON CONFLICT ({id}) DO UPDATE SET {version}=excluded.{version}")});
+    statements.push(match dialect{SqlDialect::MySql=>format!("INSERT INTO {meta} ({id},{version}) VALUES ('storage',3) ON DUPLICATE KEY UPDATE {id}={id}"),_=>format!("INSERT INTO {meta} ({id},{version}) VALUES ('storage',3) ON CONFLICT ({id}) DO NOTHING")});
     Ok(statements)
 }
 

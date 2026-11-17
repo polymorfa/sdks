@@ -9,7 +9,7 @@ use Polymorfa\{MessagingClient,RequestOptions,WebhookEvent};
 /** Private application-owned example state. Never HMS; bounded and manually reset. */
 final class Conversation
 {
-    public function __construct(private string $directory, private string $session, private string $peer, private MessagingClient $client) {}
+    public function __construct(private string $directory, private string $connection, private string $peer, private MessagingClient $client) {}
 
     private function update(callable $operation): mixed
     {
@@ -18,8 +18,8 @@ final class Conversation
         try {
             if ($lock === false || !flock($lock, LOCK_EX)) { throw new \RuntimeException('State unavailable.'); }
             $path = $this->directory.'/conversation.json';
-            $state = is_file($path) ? json_decode((string)file_get_contents($path), true, flags:JSON_THROW_ON_ERROR) : ['scope'=>hash('sha256',$this->session.':'.$this->peer),'messages'=>[],'attempts'=>[],'eventIds'=>[],'peerId'=>'','receivedEvents'=>0,'lastEvent'=>''];
-            if (($state['scope']??null)!==hash('sha256',$this->session.':'.$this->peer)) { throw new \RuntimeException('Use a distinct state directory for this Number and recipient.'); }
+            $state = is_file($path) ? json_decode((string)file_get_contents($path), true, flags:JSON_THROW_ON_ERROR) : ['scope'=>hash('sha256',$this->connection.':'.$this->peer),'messages'=>[],'attempts'=>[],'eventIds'=>[],'peerId'=>'','receivedEvents'=>0,'lastEvent'=>''];
+            if (($state['scope']??null)!==hash('sha256',$this->connection.':'.$this->peer)) { throw new \RuntimeException('Use a distinct state directory for this Connection and recipient.'); }
             $result = $operation($state);
             if (file_put_contents($path,json_encode($state,JSON_THROW_ON_ERROR),LOCK_EX) === false) { throw new \RuntimeException('State unavailable.'); }
             return $result;
@@ -30,7 +30,7 @@ final class Conversation
     }
     public function snapshot(): array
     {
-        return $this->update(fn(array &$state): array => ['messages'=>$state['messages'],'peer'=>$this->peer,'session'=>$this->session,'receivedEvents'=>$state['receivedEvents'],'lastEvent'=>$state['lastEvent']]);
+        return $this->update(fn(array &$state): array => ['messages'=>$state['messages'],'peer'=>$this->peer,'connection'=>$this->connection,'receivedEvents'=>$state['receivedEvents'],'lastEvent'=>$state['lastEvent']]);
     }
     public function send(string $raw, string $key): array
     {
@@ -53,7 +53,7 @@ final class Conversation
             });
             if ($prior!==null) { return $prior; }
             try {
-                $response=$this->client->messages->send($this->session,['conversation'=>['phoneNumber'=>$this->peer],'content'=>['text'=>$body['text']]],new RequestOptions(timeout:60,idempotencyKey:$key));
+                $response=$this->client->messages->send($this->connection,['conversation'=>['phoneNumber'=>$this->peer],'content'=>['text'=>$body['text']]],new RequestOptions(timeout:60,idempotencyKey:$key));
                 $receipt=$response->data['data'];$timestamp=strtotime($receipt['timestamp']);
                 if (!$response->data['success'] || !$receipt['id'] || $timestamp===false) { throw new \RuntimeException('Invalid receipt.'); }
                 $message=['id'=>$receipt['id'],'clientId'=>$key,'text'=>$body['text'],'createdAt'=>$timestamp*1000,'direction'=>'outbound','status'=>'sent','receipt'=>$receipt['status']];
@@ -72,7 +72,7 @@ final class Conversation
     }
     public function receive(WebhookEvent $event): void
     {
-        if ($event->session!==$this->session || !is_array($event->payload)) { return; }
+        if ($event->connection!==$this->connection || !is_array($event->payload)) { return; }
         $this->update(function(array &$state) use($event): void {
             if (in_array($event->id,$state['eventIds'],true)) { return; }
             $p=$event->payload;$c=$p['conversation']??[];

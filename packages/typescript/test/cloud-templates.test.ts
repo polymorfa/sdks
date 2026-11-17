@@ -47,7 +47,7 @@ describe("Cloud templates", () => {
     const template = {
       id: "tpl_1",
       tenantId: "team_1",
-      session: "support/eu",
+      connection: "support/eu",
       wabaId: "12345678901234567890",
       name: "delivery/name",
       language: "pt_BR",
@@ -175,7 +175,7 @@ describe("Cloud templates", () => {
       client(server).templates.submit(
         "support",
         "tpl/1",
-        { session: "number_123" },
+        { connection: "number_123" },
         { idempotencyKey: "customer-key", maxNetworkRetries: 3 },
       ),
     ).rejects.toMatchObject({ status: 500 });

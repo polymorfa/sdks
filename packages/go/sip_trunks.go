@@ -16,7 +16,7 @@ type SIPTrunkOutbound struct {
 type SIPTrunkInbound struct {
 	Username            string   `json:"username"`
 	Realm               string   `json:"realm"`
-	Session             *string  `json:"session"`
+	Connection          *string  `json:"connection"`
 	AllowedAddresses    []string `json:"allowedAddresses"`
 	AllowedDestinations []string `json:"allowedDestinations"`
 }
@@ -79,7 +79,7 @@ func (c SIPOutboundInput) String() string   { return "SIPOutboundInput[redacted]
 func (c SIPOutboundInput) GoString() string { return c.String() }
 
 type SIPInboundInput struct {
-	Session             *Nullable[string] `json:"session,omitempty"`
+	Connection          *Nullable[string] `json:"connection,omitempty"`
 	AllowedAddresses    []string          `json:"allowedAddresses"`
 	AllowedDestinations *[]string         `json:"allowedDestinations,omitempty"`
 }
@@ -104,7 +104,7 @@ func (c SIPOutboundPatch) String() string   { return "SIPOutboundPatch[redacted]
 func (c SIPOutboundPatch) GoString() string { return c.String() }
 
 type SIPInboundPatch struct {
-	Session             *Nullable[string] `json:"session,omitempty"`
+	Connection          *Nullable[string] `json:"connection,omitempty"`
 	AllowedAddresses    *[]string         `json:"allowedAddresses,omitempty"`
 	AllowedDestinations *[]string         `json:"allowedDestinations,omitempty"`
 }

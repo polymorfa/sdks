@@ -9,7 +9,7 @@ async fn voip_call_control_wire_contracts() {
         destination: CallDestination::To {
             to: "+15551234567".into(),
         },
-        session: Some("s".into()),
+        connection: Some("s".into()),
         video: Some(false),
         exclusive: None,
         participant: Some("bot".into()),
@@ -18,8 +18,8 @@ async fn voip_call_control_wire_contracts() {
         client,
         "POST",
         "/messaging/voip/calls",
-        Some(json!({"to":"+15551234567","session":"s","video":false,"participant":"bot"})),
-        json!({"success":true,"data":{"callId":"call","session":"s","video":false}}),
+        Some(json!({"to":"+15551234567","connection":"s","video":false,"participant":"bot"})),
+        json!({"success":true,"data":{"callId":"call","connection":"s","video":false}}),
         client.voip().place(&place, RequestOptions::default())
     );
     wire_messaging!(
@@ -169,11 +169,11 @@ async fn voip_link_permission_settings_wire_contracts() {
         client,
         "POST",
         "/messaging/voip/call-links",
-        Some(json!({"session":"s","video":true})),
-        json!({"success":true,"data":{"session":"s","token":"private_token","url":"https://call.whatsapp.com/private_token","video":true}}),
+        Some(json!({"connection":"s","video":true})),
+        json!({"success":true,"data":{"connection":"s","token":"private_token","url":"https://call.whatsapp.com/private_token","video":true}}),
         client.voip().create_call_link(
             &CreateCallLinkRequest {
-                session: "s".into(),
+                connection: "s".into(),
                 video: Some(true)
             },
             RequestOptions::default()
@@ -183,11 +183,11 @@ async fn voip_link_permission_settings_wire_contracts() {
         client,
         "POST",
         "/messaging/voip/call-links/preview",
-        Some(json!({"session":"s","token":"private_token","video":true})),
-        json!({"success":true,"data":{"session":"s","video":true,"creator":{"id":"creator"},"approvalRequired":false,"isAdmin":true}}),
+        Some(json!({"connection":"s","token":"private_token","video":true})),
+        json!({"success":true,"data":{"connection":"s","video":true,"creator":{"id":"creator"},"approvalRequired":false,"isAdmin":true}}),
         client.voip().preview_call_link(
             &PreviewCallLinkRequest {
-                session: "s".into(),
+                connection: "s".into(),
                 token: "private_token".into(),
                 video: Some(true)
             },
@@ -198,7 +198,7 @@ async fn voip_link_permission_settings_wire_contracts() {
     wire_messaging!(
         client,
         "GET",
-        "/platform/sessions/s/call-settings",
+        "/platform/connections/s/call-settings",
         None,
         json!({"success":true,"data":settings}),
         client
@@ -208,16 +208,16 @@ async fn voip_link_permission_settings_wire_contracts() {
     wire_messaging!(
         client,
         "PUT",
-        "/platform/sessions/s/call-settings",
+        "/platform/connections/s/call-settings",
         Some(json!({"conferenceMode":false,"sipTrunkId":null,"expectedRevision":0})),
         json!({"success":true,"data":settings}),
         client.voip().update_call_settings(
             "s",
-            &UpdateSessionCallSettingsRequest {
+            &UpdateConnectionCallSettingsRequest {
                 conference_mode: Some(false),
                 sip_trunk_id: Some(None),
                 expected_revision: Some(0),
-                ..UpdateSessionCallSettingsRequest::default()
+                ..UpdateConnectionCallSettingsRequest::default()
             },
             RequestOptions::default()
         )
@@ -239,11 +239,11 @@ async fn voip_link_permission_settings_wire_contracts() {
         client,
         "POST",
         "/messaging/voip/calls/check",
-        Some(json!({"session":"s","to":"+15551234567"})),
+        Some(json!({"connection":"s","to":"+15551234567"})),
         json!({"success":true,"data":{"allowed":true,"refusal":null,"permission":permission}}),
         client.voip().check(
             &CheckCallRequest {
-                session: "s".into(),
+                connection: "s".into(),
                 to: "+15551234567".into()
             },
             RequestOptions::default()
@@ -257,7 +257,7 @@ async fn voip_validation_prevents_invalid_network_requests() {
     for to in ["", "+0", "12345678901234567890", "+1555@server", "012345"] {
         let body = PlaceCallRequest {
             destination: CallDestination::To { to: to.into() },
-            session: Some("s".into()),
+            connection: Some("s".into()),
             video: None,
             exclusive: None,
             participant: None,
@@ -306,7 +306,7 @@ async fn simultaneous_calls_preserves_presence() {
         (true, None),
         (true, Some(false)),
     ] {
-        let body = UpdateSessionCallSettingsRequest {
+        let body = UpdateConnectionCallSettingsRequest {
             simultaneous_calls: Some(enabled),
             acknowledge_risk: ack,
             ..Default::default()
@@ -318,7 +318,7 @@ async fn simultaneous_calls_preserves_presence() {
         wire_messaging!(
             client,
             "PUT",
-            "/platform/sessions/s/call-settings",
+            "/platform/connections/s/call-settings",
             Some(expected),
             json!({"success":true,"data":{"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":false,"hostCloudApiCalls":false,"simultaneousCalls":enabled,"revision":2,"updatedAt":null}}),
             client

@@ -22,8 +22,10 @@ fn timestamps_keep_positive_half_rounding_without_changing_large_integers() {
 }
 #[test]
 fn exact_producer_batches_cover_all_twenty_four_events_and_decoded_history() {
-    let f: Value =
-        serde_json::from_str(include_str!("../fixtures/reducer-batches-3bac.json")).unwrap();
+    let f: Value = serde_json::from_str(include_str!(
+        "../fixtures/reducer-batches-connections-v3.json"
+    ))
+    .unwrap();
     let mut seen = std::collections::BTreeSet::new();
     for case in f["events"].as_array().unwrap() {
         let event: StorageEvent = serde_json::from_value(case["input"].clone()).unwrap();
@@ -50,7 +52,8 @@ fn exact_producer_batches_cover_all_twenty_four_events_and_decoded_history() {
 }
 #[tokio::test]
 async fn exact_portable_fixture_rows_and_replay() {
-    let f: Value = serde_json::from_str(include_str!("../fixtures/storage-3bac.json")).unwrap();
+    let f: Value =
+        serde_json::from_str(include_str!("../fixtures/storage-connections-v3.json")).unwrap();
     for mode in ["events", "history"] {
         let adapter = Arc::new(MemoryAdapter::new());
         let storage = Storage::new(adapter.clone(), StorageOptions::default()).unwrap();
@@ -63,7 +66,7 @@ async fn exact_portable_fixture_rows_and_replay() {
                 .collect::<Vec<_>>()
         } else {
             vec![reduce_history_chunk(&HistoryChunkInput {
-                session_id: "portable-fixture".into(),
+                connection_id: "portable-fixture".into(),
                 chunk: serde_json::from_value(f["history"].clone()).unwrap(),
                 identities: None,
                 chunk_id: None,

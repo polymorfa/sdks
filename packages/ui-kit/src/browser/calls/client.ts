@@ -23,13 +23,13 @@ import {
 import { CallsSignalingClient } from "./signaling.js";
 
 export interface BrowserCallsOptions extends BrowserTransportOptions {
-  /** Local call identity. Requests use the client token's bound session. */
-  readonly session: string;
+  /** Local call identity. Requests use the client token's bound connection. */
+  readonly connection: string;
   /**
    * Set when the client token is Customer-scoped: the number it acts for,
-   * sent as `?session=` on Calls requests and the lifecycle socket.
+   * sent as `?connection=` on Calls requests and the lifecycle socket.
    */
-  readonly clientTokenSession?: string;
+  readonly clientTokenConnection?: string;
   readonly WebSocket?: CallsClientOptions["WebSocket"];
   readonly controller?: CallsControllerOptions;
   /**
@@ -88,17 +88,17 @@ export function createBrowserCalls(
   const options = publicOptions as InternalBrowserCallsOptions;
   const base = new BrowserTransport(options);
   const transport =
-    options.clientTokenSession === undefined
+    options.clientTokenConnection === undefined
       ? base
-      : withSessionQuery(base, options.clientTokenSession);
+      : withConnectionQuery(base, options.clientTokenConnection);
   const api = new BrowserCallsApi(transport);
   const clientOptions: InternalCallsClientOptions = {
-    session: options.session,
+    connection: options.connection,
     api,
     mediaMode: "external",
-    ...(options.clientTokenSession === undefined
+    ...(options.clientTokenConnection === undefined
       ? {}
-      : { clientTokenSession: options.clientTokenSession }),
+      : { clientTokenConnection: options.clientTokenConnection }),
     ...(options.WebSocket === undefined
       ? {}
       : { WebSocket: options.WebSocket }),
@@ -184,7 +184,7 @@ export function createBrowserCalls(
     },
     leave: async (id, _connectionId, signal) => {
       signal.throwIfAborted();
-      // The call's own connection id is the one the media session used.
+      // The call's own connection id is the one the media connection used.
       await requireCall(id).leave();
     },
     hangup: async (id, signal) => {
@@ -322,7 +322,7 @@ export function createBrowserCalls(
           );
       // Media failed locally: leave the connection; the call continues for
       // others. The platform requires a connection id; the call's own id is
-      // the one the media session offers with.
+      // the one the media connection offers with.
       else
         void api.leave(call.id, call.connectionId).catch((cause: unknown) =>
           options.onError?.({
@@ -373,10 +373,10 @@ function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : "Call operation failed.";
 }
 
-/** Adds `?session=` to every Calls request, for Customer-scoped tokens. */
-function withSessionQuery(
+/** Adds `?connection=` to every Calls request, for Customer-scoped tokens. */
+function withConnectionQuery(
   transport: BrowserTransport,
-  session: string,
+  connection: string,
 ): BrowserTransport {
   return new Proxy(transport, {
     get(target, property) {
@@ -387,7 +387,7 @@ function withSessionQuery(
       return (request: Parameters<BrowserTransport["request"]>[0]) =>
         target.request({
           ...request,
-          query: { ...request.query, session },
+          query: { ...request.query, connection },
         });
     },
   });

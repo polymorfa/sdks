@@ -9,7 +9,7 @@ use tokio::{
 };
 
 fn operation(project: bool, status: &str, sequence: u64) -> serde_json::Value {
-    json!({"id":"operation","teamId":"team","projectId":if project { Some("project") } else { None },"kind":"session_lifecycle","resource":{"type":"session","id":"s"},"status":status,"sequence":sequence,"capabilities":{"cancellable":true,"watchable":true},"progress":{"code":"starting","current":1,"total":2},"result":null,"error":null,"actionRequired":null,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z","completedAt":null})
+    json!({"id":"operation","teamId":"team","projectId":if project { Some("project") } else { None },"kind":"connection_lifecycle","resource":{"type":"connection","id":"s"},"status":status,"sequence":sequence,"capabilities":{"cancellable":true,"watchable":true},"progress":{"code":"starting","current":1,"total":2},"result":null,"error":null,"actionRequired":null,"createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z","completedAt":null})
 }
 #[tokio::test]
 async fn team_and_project_operation_public_methods_native_wire_contracts() {
@@ -22,7 +22,7 @@ async fn team_and_project_operation_public_methods_native_wire_contracts() {
         let expected = operation(project, "running", 1);
         let (base, server) = support::wire(
             "GET",
-            &format!("{prefix}/operations?kind=session_lifecycle&limit=1&status=running"),
+            &format!("{prefix}/operations?kind=connection_lifecycle&limit=1&status=running"),
             None,
             json!({"data":[expected],"page":{"nextCursor":null,"hasMore":false}}),
         )
@@ -37,7 +37,7 @@ async fn team_and_project_operation_public_methods_native_wire_contracts() {
         let page = resource
             .list(
                 &ListOperationsParameters {
-                    kind: Some("session_lifecycle".into()),
+                    kind: Some("connection_lifecycle".into()),
                     limit: Some(1),
                     status: Some("running".into()),
                     ..ListOperationsParameters::default()

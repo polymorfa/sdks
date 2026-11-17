@@ -118,7 +118,7 @@ export interface TemplateRouteResource {
   submit(
     projectSlug: string,
     templateId: string,
-    body: { readonly session: string },
+    body: { readonly connection: string },
     options: { readonly signal: AbortSignal },
   ): Promise<SdkResponse<unknown>>;
 }
@@ -132,7 +132,7 @@ export interface TemplateBuilderRouteOptions {
     subject: TemplateRouteSubject,
     request: Request,
   ) => string | Promise<string>;
-  readonly resolveSubmissionSession: (
+  readonly resolveSubmissionConnection: (
     subject: TemplateRouteSubject,
     request: Request,
   ) => string | Promise<string>;
@@ -242,15 +242,15 @@ export function createTemplateBuilderRoute(
           return json({ preview: responseData(response) });
         }
         case "submit": {
-          const session = await options.resolveSubmissionSession(
+          const connection = await options.resolveSubmissionConnection(
             subject,
             request,
           );
-          requireString(session, "submission_session_required");
+          requireString(connection, "submission_connection_required");
           const response = await options.templates.submit(
             projectSlug,
             action.templateId,
-            { session },
+            { connection },
             signalOptions,
           );
           return json({ template: responseData(response) });
@@ -388,7 +388,7 @@ function validateOptions(options: TemplateBuilderRouteOptions): void {
   if (
     typeof options.authorize !== "function" ||
     typeof options.resolveProjectSlug !== "function" ||
-    typeof options.resolveSubmissionSession !== "function" ||
+    typeof options.resolveSubmissionConnection !== "function" ||
     typeof options.templates?.create !== "function" ||
     typeof options.templates?.retrieve !== "function" ||
     typeof options.templates?.update !== "function" ||

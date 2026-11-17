@@ -36,7 +36,7 @@ function nativeInbox(inbox) {
     const last = snapshot.messages.at(-1);
     return {
       id: snapshot.peer,
-      session: snapshot.session,
+      connection: snapshot.connection,
       name: "Assigned recipient",
       phoneNumber: snapshot.peer,
       lastActivity: last?.createdAt ?? 0,
@@ -68,7 +68,7 @@ function nativeInbox(inbox) {
       const label = document.querySelector("#transport-label");
       if (label)
         label.textContent = snapshot.localTest
-          ? "Local test numbers. Simulated WhatsApp transport."
+          ? "Local test Connections. Simulated WhatsApp transport."
           : "";
       const status = document.querySelector("#native-status");
       if (status) {

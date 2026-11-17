@@ -30,10 +30,10 @@ export interface RouteContext {
   readonly body: Body;
   readonly url: URL;
   /**
-   * The session this operator may address: the body's `session` field (the
-   * `?session=` query for GET), or the default session.
+   * The connection this operator may address: the body's `connection` field (the
+   * `?connection=` query for GET), or the default connection.
    */
-  readonly sessionOf: (body: Body) => string;
+  readonly connectionOf: (body: Body) => string;
 }
 
 const privateHeaders = { "Cache-Control": "no-store, private" };
@@ -54,8 +54,8 @@ export function route(
       if (role === "admin" && operator.role !== "admin") {
         return problem(403, "forbidden");
       }
-      // GET reads take the session from `?session=`, checked by `sessionOf`
-      // exactly like a mutation's `session` field.
+      // GET reads take the connection from `?connection=`, checked by `connectionOf`
+      // exactly like a mutation's `connection` field.
       const body =
         request.method === "GET" ? queryBody(request) : await readBody(request);
       // Without credentials, SDK routes answer with sample data so the UI
@@ -77,7 +77,7 @@ export function route(
         operator,
         body,
         url: new URL(request.url),
-        sessionOf: (input) => sessionOf(input, operator.role),
+        connectionOf: (input) => connectionOf(input, operator.role),
       });
       if (result instanceof Response) return result;
       return Response.json(unwrap(result), { headers: privateHeaders });
@@ -121,8 +121,8 @@ function isApiResponse(value: unknown): value is ApiResponse<unknown> {
 }
 
 function queryBody(request: Request): Body {
-  const session = new URL(request.url).searchParams.get("session");
-  return session === null ? {} : { session };
+  const connection = new URL(request.url).searchParams.get("connection");
+  return connection === null ? {} : { connection };
 }
 
 async function readBody(request: Request): Promise<Body> {
@@ -281,17 +281,17 @@ export function idempotencyKey(request: Request): string {
 }
 
 /**
- * Agents may only address the default session or one listed in
- * POLYMORFA_AGENT_SESSIONS; admins may address any session.
+ * Agents may only address the default connection or one listed in
+ * POLYMORFA_AGENT_CONNECTIONS; admins may address any connection.
  */
-function sessionOf(body: Body, role: Role): string {
-  const requested = optionalText(body, "session");
-  const fallback = env.session();
+function connectionOf(body: Body, role: Role): string {
+  const requested = optionalText(body, "connection");
+  const fallback = env.connection();
   if (requested === undefined || requested === fallback) return fallback;
-  if (role === "admin" || env.agentSessions().includes(requested)) {
+  if (role === "admin" || env.agentConnections().includes(requested)) {
     return requested;
   }
-  throw new InputError("session is not available to this operator.");
+  throw new InputError("connection is not available to this operator.");
 }
 
 /** Accepts `{ chat: { phoneNumber } }`, `{ chat: { id } }` or `{ chat: { bsuid } }`. */

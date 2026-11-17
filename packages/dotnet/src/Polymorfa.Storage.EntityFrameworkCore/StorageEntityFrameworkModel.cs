@@ -10,7 +10,7 @@ using Polymorfa.Storage.Sql;
 
 namespace Polymorfa.Storage.EntityFrameworkCore;
 
-/// <summary>Schema-2 property-bag models. Configuration performs no database access or schema installation.</summary>
+/// <summary>Schema-3 property-bag models. Configuration performs no database access or schema installation.</summary>
 public static class StorageEntityFrameworkModel
 {
     public static string EntityName(StorageEntity entity) => "Polymorfa.Storage." + StorageSchema.Definition(entity).Name;

@@ -10,5 +10,5 @@ function s3InvalidUsage(S3MediaStore $store, WhatsAppMedia $media, MediaDescript
     new S3ArchiveOptions(123);
     new S3MediaStore('invalid', 'bucket');
     $store->archive($descriptor, new RequestOptions());
-    $store->uploadToWhatsApp($media, 'session', 'key', new S3ArchiveOptions('key'));
+    $store->uploadToWhatsApp($media, 'connection', 'key', new S3ArchiveOptions('key'));
 }

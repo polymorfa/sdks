@@ -47,11 +47,11 @@ export class CloudMarketingResource {
     private readonly credentialType: MessagingCredential["type"],
   ) {}
 
-  /** Beta, sessions:read. Terms acceptance happens in WhatsApp Manager.
+  /** Beta, connections:read. Terms acceptance happens in WhatsApp Manager.
    * feature_unavailable means the team has no access; unknown never means eligible.
    */
   getStatus(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<
     ApiResponse<{
@@ -64,18 +64,18 @@ export class CloudMarketingResource {
         "Marketing Messages status requires a team API key or project token.",
         "credential",
       );
-    if (!session.trim() || session.length > 128)
+    if (!connection.trim() || connection.length > 128)
       throw new PolymorfaValidationError(
-        "Provide a Number ID of 1 to 128 characters.",
+        "Provide a Connection ID of 1 to 128 characters.",
       );
     return this.transport.request({
       method: "GET",
-      path: `/messaging/${encodeURIComponent(session)}/marketing-messages/status`,
+      path: `/messaging/${encodeURIComponent(connection)}/marketing-messages/status`,
       ...options,
     });
   }
 
-  /** Read raw WABA status fields through a project-owned Official API Number. */
+  /** Read raw WABA status fields through a project-owned Official API Connection. */
   status(
     wabaId: string,
     params: GetCloudMarketingStatusParams,

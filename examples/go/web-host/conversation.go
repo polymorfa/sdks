@@ -86,7 +86,7 @@ func (a *app) sendMessage(w http.ResponseWriter, r *http.Request) {
 		attempt = &sendAttempt{text: input.Text}
 		s.attempts[key] = attempt
 	}
-	result, err := a.client.Messages().Send(r.Context(), a.session, polymorfa.SendMessageRequest{
+	result, err := a.client.Messages().Send(r.Context(), a.connection, polymorfa.SendMessageRequest{
 		Conversation: polymorfa.ConversationReference{PhoneNumber: a.peer}, Content: polymorfa.MessageContent{Text: &input.Text},
 	}, polymorfa.RequestOptions{IdempotencyKey: key, Timeout: 60 * time.Second})
 	if err != nil || !result.Data.Success || result.Data.Data.ID == "" {
@@ -125,7 +125,7 @@ func (s *conversationState) upsert(message conversationMessage) {
 }
 
 func (a *app) receiveEvent(_ *http.Request, event polymorfa.WebhookEvent) error {
-	if event.Session != a.session {
+	if event.Connection != a.connection {
 		return nil
 	}
 	payload, known, err := event.TypedPayload()
@@ -202,5 +202,5 @@ func (a *app) conversationSnapshot(w http.ResponseWriter, r *http.Request) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	messages := append([]conversationMessage{}, s.messages...)
-	writeJSON(w, map[string]any{"messages": messages, "peer": a.peer, "session": a.session, "receivedEvents": s.received, "lastEvent": s.lastEvent})
+	writeJSON(w, map[string]any{"messages": messages, "peer": a.peer, "connection": a.connection, "receivedEvents": s.received, "lastEvent": s.lastEvent})
 }

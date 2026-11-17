@@ -31,7 +31,7 @@ import type { MessagePage } from "./history.js";
 
 export interface InboundMessage {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly phone: string;
   readonly name?: string;
   readonly text: string;

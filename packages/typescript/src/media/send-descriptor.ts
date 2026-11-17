@@ -5,7 +5,7 @@ import { contractFields } from "../campaign-contract-validation.js";
 
 /**
  * A pre-uploaded attachment for a message send. Binary fields are standard
- * base64. `mediaKey` decrypts the file: standard sessions send it to Polymorfa's send API
+ * base64. `mediaKey` decrypts the file: standard connections send it to Polymorfa's send API
  * and never log it.
  * @experimental Requires the 2026-10-14 API contract.
  */

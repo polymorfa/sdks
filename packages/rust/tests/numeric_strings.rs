@@ -8,7 +8,7 @@ use polymorfa_sdk::storage::{
 use serde_json::{json, Value};
 use std::{collections::BTreeMap, sync::Arc};
 fn fixture() -> Value {
-    serde_json::from_str(include_str!("fixtures/numeric-storage/fixture.json")).unwrap()
+    serde_json::from_str(include_str!("fixtures/numeric-storage/fixture.v3.json")).unwrap()
 }
 #[test]
 fn public_numeric_string_bits() {
@@ -28,7 +28,7 @@ async fn public_numeric_reducer_memory_rows_replay_watermarks_and_strict_schema(
         let a = Arc::new(MemoryAdapter::new());
         let s = Storage::new(a.clone(), Default::default()).unwrap();
         let b = reduce_history_chunk(&HistoryChunkInput {
-            session_id: "numeric".into(),
+            connection_id: "numeric".into(),
             chunk: serde_json::from_value(h["chunk"].clone()).unwrap(),
             identities: None,
             chunk_id: Some(h["name"].as_str().unwrap().into()),
@@ -43,7 +43,7 @@ async fn public_numeric_reducer_memory_rows_replay_watermarks_and_strict_schema(
         for (i, c) in h["cleanup"].as_array().unwrap().iter().enumerate() {
             let ops = serde_json::from_value(c["operations"].clone()).unwrap();
             s.apply(&OperationBatch {
-                session_id: "numeric".into(),
+                connection_id: "numeric".into(),
                 operations: ops,
                 event_id: None,
                 event_type: None,
@@ -59,11 +59,11 @@ async fn public_numeric_reducer_memory_rows_replay_watermarks_and_strict_schema(
     let a = Arc::new(MemoryAdapter::new());
     let s = Storage::new(a, Default::default()).unwrap();
     let key = RowKey::from([
-        ("sessionId".into(), "numeric".into()),
+        ("connectionId".into(), "numeric".into()),
         ("messageId".into(), "strict".into()),
     ]);
     let b = OperationBatch {
-        session_id: "numeric".into(),
+        connection_id: "numeric".into(),
         event_id: None,
         event_type: None,
         operations: vec![StorageOperation::Upsert {

@@ -10,6 +10,7 @@ namespace Polymorfa;
  * @implements \IteratorAggregate<int,array{event:StreamedEvent,webhook:?WebhookEvent,cursor:string,streamId:string,sequence:int}> */
 final class EventStream implements \IteratorAggregate
 {
+
     private bool $closed = false;
     private ?\Psr\Http\Message\StreamInterface $activeBody = null;
     public ?ResponseMetadata $metadata = null;
@@ -121,7 +122,7 @@ final class EventStream implements \IteratorAggregate
                                         if ($payload === false) {
                                             throw new ValidationException('Invalid event payload encoding.', 'invalid_response');
                                         }
-                                        $webhook = Webhooks::parseVerifiedEvent($payload);
+                                        $webhook = Webhooks::parseRetainedStreamEvent($payload);
                                     } catch (ValidationException) {
                                         throw new ServerException('Invalid streamed webhook payload.', 'invalid_response', metadata: $metadata);
                                     }

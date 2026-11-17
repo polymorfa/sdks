@@ -34,10 +34,10 @@ optional_model!(ValidationPointer {
 optional_model!(ValidationIssue {line_start:u32,line_end:u32,column_start:u32,column_end:u32,error:String,error_type:String,message:String,pointers:Vec<ValidationPointer>});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct FlowNumberLink {
-    pub session: String,
+pub struct FlowConnectionLink {
+    pub connection: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session_id: Option<String>,
+    pub connection_id: Option<String>,
     pub waba_id: String,
     pub meta_flow_id: String,
     pub status: String,
@@ -54,7 +54,7 @@ pub struct FlowNumberLink {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub simulated: Option<bool>,
 }
-model!(FlowSummary {id:String,name:String,status:FlowDraftStatus,version:String,screen_count:u32,meta_links:Vec<FlowNumberLink>,created_at:u64,updated_at:u64});
+model!(FlowSummary {id:String,name:String,status:FlowDraftStatus,version:String,screen_count:u32,meta_links:Vec<FlowConnectionLink>,created_at:u64,updated_at:u64});
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct FlowDraft {
     #[serde(flatten)]
@@ -83,15 +83,15 @@ pub struct UpdateFlowRequest {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct FlowProviderRequest {
-    pub session_id: String,
+    pub connection_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub categories: Option<Vec<FlowCategory>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub request_id: Option<String>,
 }
-model!(FlowProviderOperation {id:String,request_id:Option<String>,flow_id:String,flow_name:String,session_id:String,session:String,action:ProviderAction,state:ProviderState,resolution:Option<ProviderResolution>,waba_id:Option<String>,meta_flow_id:Option<String>,definition_digest:Option<String>,provider_status:Option<String>,error_code:Option<String>,provider_code:Option<i64>,provider_subcode:Option<i64>,created_at:u64,updated_at:u64,completed_at:Option<u64>});
+model!(FlowProviderOperation {id:String,request_id:Option<String>,flow_id:String,flow_name:String,connection_id:String,connection:String,action:ProviderAction,state:ProviderState,resolution:Option<ProviderResolution>,waba_id:Option<String>,meta_flow_id:Option<String>,definition_digest:Option<String>,provider_status:Option<String>,error_code:Option<String>,provider_code:Option<i64>,provider_subcode:Option<i64>,created_at:u64,updated_at:u64,completed_at:Option<u64>});
 model!(FlowProviderResult {operation:Option<FlowProviderOperation>,flow:FlowDraft});
-model!(FlowEndpoint {id:String,team_id:String,project_id:String,flow_id:String,session_id:String,mode:FlowEndpointMode,url:Option<String>,function_id:Option<String>,deployment_id:Option<String>,enabled:bool,revision:u64,endpoint_uri:String,created_at:u64,updated_at:u64});
+model!(FlowEndpoint {id:String,team_id:String,project_id:String,flow_id:String,connection_id:String,mode:FlowEndpointMode,url:Option<String>,function_id:Option<String>,deployment_id:Option<String>,enabled:bool,revision:u64,endpoint_uri:String,created_at:u64,updated_at:u64});
 model!(ManagedEncryptionKey {id:String,state:ManagedKeyState,fingerprint:String,public_key:String,error_code:Option<String>,created_at:u64,activated_at:Option<u64>,retire_after:Option<u64>});
 model!(FlowEncryptionCustody {custody:EncryptionCustody,active_key_id:Option<String>,keys:Vec<ManagedEncryptionKey>});
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -113,7 +113,7 @@ pub struct FlowEndpointSetResult {
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct EndpointCommon {
-    pub session_id: String,
+    pub connection_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub enabled: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -146,12 +146,14 @@ pub enum SetFlowEndpointRequest {
         url: String,
     },
 }
-model!(FlowNumberRequest { session_id: String });
+model!(FlowConnectionRequest {
+    connection_id: String
+});
 optional_model!(ListEndpointReceiptsParameters {
-    session_id: String,
+    connection_id: String,
     limit: u32
 });
-model!(FlowEndpointReceipt {id:String,flow_id:String,endpoint_id:String,session_id:String,mode:ReceiptMode,action:Option<ReceiptAction>,outcome:ReceiptOutcome,http_status:Option<u16>,error_code:Option<String>,key_id:Option<String>,function_invocation_id:Option<String>,duration_ms:Option<f64>,created_at:u64,completed_at:Option<u64>});
+model!(FlowEndpointReceipt {id:String,flow_id:String,endpoint_id:String,connection_id:String,mode:ReceiptMode,action:Option<ReceiptAction>,outcome:ReceiptOutcome,http_status:Option<u16>,error_code:Option<String>,key_id:Option<String>,function_invocation_id:Option<String>,duration_ms:Option<f64>,created_at:u64,completed_at:Option<u64>});
 fn invalid(message: &str) -> Error {
     Error::local(ErrorKind::Validation, message, "invalid_flow_input")
 }
@@ -164,7 +166,7 @@ fn path(id: &str) -> Result<String> {
 }
 fn number(value: &str) -> Result<()> {
     if value.trim().is_empty() {
-        Err(invalid("sessionId is required"))
+        Err(invalid("connectionId is required"))
     } else {
         Ok(())
     }
@@ -361,10 +363,10 @@ impl Flows<'_> {
     pub async fn endpoint(
         &self,
         id: &str,
-        p: &FlowNumberRequest,
+        p: &FlowConnectionRequest,
         o: RequestOptions,
     ) -> Result<ApiResponse<FlowEndpointState>> {
-        number(&p.session_id)?;
+        number(&p.connection_id)?;
         self.request(
             Method::GET,
             &format!("/platform/flows{}/endpoint", path(id)?),
@@ -406,7 +408,7 @@ impl Flows<'_> {
                 common
             }
         };
-        number(&common.session_id)?;
+        number(&common.connection_id)?;
         if common.expected_revision == Some(0) {
             return Err(invalid("expectedRevision must be positive"));
         }
@@ -421,10 +423,10 @@ impl Flows<'_> {
     pub async fn delete_endpoint(
         &self,
         id: &str,
-        p: &FlowNumberRequest,
+        p: &FlowConnectionRequest,
         o: RequestOptions,
     ) -> Result<ApiResponse<crate::functions::FunctionMutationResult>> {
-        number(&p.session_id)?;
+        number(&p.connection_id)?;
         self.request(
             Method::DELETE,
             &format!("/platform/flows{}/endpoint", path(id)?),
@@ -452,19 +454,19 @@ impl Flows<'_> {
     }
     pub async fn encryption_key(
         &self,
-        p: &FlowNumberRequest,
+        p: &FlowConnectionRequest,
         o: RequestOptions,
     ) -> Result<ApiResponse<FlowEncryptionCustody>> {
-        number(&p.session_id)?;
+        number(&p.connection_id)?;
         self.request(Method::GET, "/platform/flow-encryption-keys", p, o)
             .await
     }
     pub async fn rotate_encryption_key(
         &self,
-        b: &FlowNumberRequest,
+        b: &FlowConnectionRequest,
         o: RequestOptions,
     ) -> Result<ApiResponse<EncryptionKeyRotation>> {
-        number(&b.session_id)?;
+        number(&b.connection_id)?;
         self.request(Method::POST, "/platform/flow-encryption-keys/rotate", b, o)
             .await
     }

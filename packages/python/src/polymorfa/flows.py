@@ -25,10 +25,10 @@ def _path(value: str) -> str:
     return "/" + segment(value)
 
 
-def _number(params: F.NumberInput) -> F.NumberInput:
-    if not isinstance(params.get("sessionId"), str) or not params["sessionId"].strip():
-        raise ValidationError("sessionId is required.")
-    return {"sessionId": params["sessionId"]}
+def _number(params: F.ConnectionInput) -> F.ConnectionInput:
+    if not isinstance(params.get("connectionId"), str) or not params["connectionId"].strip():
+        raise ValidationError("connectionId is required.")
+    return {"connectionId": params["connectionId"]}
 
 
 class Flows(PlatformResource):
@@ -129,7 +129,7 @@ class Flows(PlatformResource):
         return await self._call("GET", _path(flow_id) + "/receipts", None, options)
 
     async def endpoint(
-        self, flow_id: str, params: F.NumberInput, *, options: RequestOptions = O
+        self, flow_id: str, params: F.ConnectionInput, *, options: RequestOptions = O
     ) -> ApiResponse[F.EndpointState]:
         return await self._call("GET", _path(flow_id) + "/endpoint", _number(params), options)
 
@@ -167,7 +167,7 @@ class Flows(PlatformResource):
         return await self._call("PUT", _path(flow_id) + "/endpoint", body, options)
 
     async def delete_endpoint(
-        self, flow_id: str, params: F.NumberInput, *, options: RequestOptions = O
+        self, flow_id: str, params: F.ConnectionInput, *, options: RequestOptions = O
     ) -> ApiResponse[F.Deleted]:
         return await self._call("DELETE", _path(flow_id) + "/endpoint", _number(params), options)
 
@@ -188,14 +188,14 @@ class Flows(PlatformResource):
         return await self._call("GET", _path(flow_id) + "/endpoint/receipts", params, options)
 
     async def encryption_key(
-        self, params: F.NumberInput, *, options: RequestOptions = O
+        self, params: F.ConnectionInput, *, options: RequestOptions = O
     ) -> ApiResponse[F.Custody]:
         return await self._call(
             "GET", "", _number(params), options, "/platform/flow-encryption-keys"
         )
 
     async def rotate_encryption_key(
-        self, body: F.NumberInput, *, options: RequestOptions = O
+        self, body: F.ConnectionInput, *, options: RequestOptions = O
     ) -> ApiResponse[F.Rotation]:
         return await self._call(
             "POST", "", _number(body), options, "/platform/flow-encryption-keys/rotate"

@@ -29,25 +29,40 @@ pub struct StatusResult {
     pub status: String,
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ConnectionType {
+    Whatsapp,
+}
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ConnectionMethod {
+    LinkedDevice,
+    CloudApi,
+    Hybrid,
+}
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Session {
+pub struct Connection {
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
         deserialize_with = "crate::campaign_contracts::optional_nonnull"
     )]
     pub signal_mode: Option<crate::campaign_contracts::SignalCustodyMode>,
-    pub session_id: String,
+    pub connection_id: String,
     pub name: String,
     pub external_id: Option<String>,
     pub tenant_id: String,
     #[serde(rename = "type")]
-    pub connection_type: String,
+    pub connection_type: ConnectionType,
+    pub method: ConnectionMethod,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub phone_number_id: Option<String>,
     pub test_mode: bool,
     pub status: String,
     pub status_reason: Option<String>,
-    pub configuration: Option<crate::configuration::SessionConfigurationView>,
+    pub configuration: Option<crate::configuration::ConnectionConfigurationView>,
     pub new_chat_capping: Option<NewChatCapping>,
     pub created_at: String,
     pub updated_at: String,
@@ -68,13 +83,13 @@ pub struct NewChatCapping {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct PlatformSession {
+pub struct PlatformConnection {
     #[serde(rename = "_id")]
     pub id: String,
     #[serde(rename = "_creationTime")]
     pub creation_time: u64,
     pub project_id: String,
-    pub session_id: String,
+    pub connection_id: String,
     pub name: String,
     pub phone: Option<String>,
     pub platform: Option<String>,
@@ -88,21 +103,21 @@ pub struct PlatformSession {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionStartResult {
+pub struct ConnectionStartResult {
     pub starting: bool,
-    pub session_id: String,
+    pub connection_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionStopResult {
+pub struct ConnectionStopResult {
     pub stopping: bool,
-    pub session_id: String,
+    pub connection_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionRemoveResult {
+pub struct ConnectionRemoveResult {
     pub removed: bool,
-    pub session_id: String,
+    pub connection_id: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct PairCodeRequest {
@@ -452,7 +467,7 @@ pub struct CreateQuickLinkRequest {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "crate::campaign_contracts::optional_nonnull"
     )]
-    pub session: Option<String>,
+    pub connection: Option<String>,
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -482,7 +497,7 @@ pub struct CreateQuickLinkRequest {
         skip_serializing_if = "Option::is_none",
         deserialize_with = "crate::campaign_contracts::optional_nonnull"
     )]
-    pub add_connection: Option<ConnectionKind>,
+    pub add_method: Option<ConnectionKind>,
     #[serde(
         default,
         skip_serializing_if = "Option::is_none",
@@ -500,13 +515,13 @@ pub struct CreateQuickLinkRequest {
 #[serde(rename_all = "snake_case")]
 pub enum CreateQuickLinkPurpose {
     Initial,
-    AddConnection,
+    AddMethod,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum QuickLinkPurpose {
     Initial,
-    AddConnection,
+    AddMethod,
     Reauthorization,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -576,10 +591,10 @@ pub struct QuickLinkHistorySync {
 pub struct QuickLink {
     pub purpose: QuickLinkPurpose,
     pub connection_goal: ConnectionGoal,
-    pub add_connection: Option<ConnectionKind>,
+    pub add_method: Option<ConnectionKind>,
     pub id: String,
     pub url: String,
-    pub session: String,
+    pub connection: String,
     pub expires_at: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -587,11 +602,11 @@ pub struct QuickLink {
 pub struct QuickLinkStatus {
     pub purpose: QuickLinkPurpose,
     pub connection_goal: ConnectionGoal,
-    pub add_connection: Option<ConnectionKind>,
+    pub add_method: Option<ConnectionKind>,
     pub hybrid_phase: Option<String>,
     pub id: String,
     pub status: String,
-    pub session: String,
+    pub connection: String,
     pub expires_at: Option<String>,
     pub opened_at: Option<String>,
     pub connected_at: Option<String>,
@@ -603,8 +618,8 @@ pub struct QuickLinkStatus {
 #[serde(rename_all = "camelCase")]
 pub struct HybridQuickLinkAvailability {
     pub allowed: bool,
-    pub add_connection: Option<ConnectionKind>,
-    pub connections: Vec<ConnectionStatus>,
+    pub add_method: Option<ConnectionKind>,
+    pub methods: Vec<ConnectionStatus>,
     pub resume_quick_link_id: Option<String>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -631,7 +646,7 @@ pub struct WebhookHeader {
 pub struct Webhook {
     pub id: String,
     pub tenant_id: String,
-    pub session: Option<String>,
+    pub connection: Option<String>,
     pub url: String,
     pub events: Vec<String>,
     pub retries: WebhookRetryConfig,
@@ -645,7 +660,7 @@ pub struct Webhook {
 pub struct CreateWebhookRequest {
     pub url: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session: Option<String>,
+    pub connection: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub events: Option<Vec<String>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -729,8 +744,8 @@ pub struct ProjectWithStats {
     pub default_tier: String,
     pub is_active: bool,
     pub stage: String,
-    pub active_sessions: u64,
-    pub total_sessions: u64,
+    pub active_connections: u64,
+    pub total_connections: u64,
     pub total_messages: u64,
     pub last_activity: Option<u64>,
     pub icon_url: Option<String>,
@@ -893,7 +908,7 @@ pub struct EventReplayReceipt {
 #[serde(rename_all = "camelCase")]
 pub struct MessagingMediaInfo {
     pub id: String,
-    pub session: String,
+    pub connection: String,
     pub message_id: String,
     pub mime_type: String,
     pub file_length: u64,

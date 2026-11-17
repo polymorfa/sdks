@@ -21,7 +21,7 @@ server key or project token
 stays in that terminal's environment and never enters the browser:
 
 ```bash
-export POLYMORFA_SESSION=support
+export POLYMORFA_CONNECTION=support
 export POLYMORFA_EPHEMERAL_ID=calls-example-1
 read -rs 'POLYMORFA_SERVER_KEY?Staging server key: '; echo
 export POLYMORFA_SERVER_KEY
@@ -30,7 +30,7 @@ unset POLYMORFA_SERVER_KEY
 ```
 
 Paste the printed token into the page. The issuing credential needs the six client
-delegation scopes (`sessions:manage`, `messages:write`, `contacts:read`,
+delegation scopes (`connections:manage`, `messages:write`, `contacts:read`,
 `presence:read`, `presence:observe`, `mcp`) and authority over every action
 allowed by this session's rules. The rules need `voip_place`, `voip_answer`,
 and `voip_signal` for the flows here. If the rules restrict origins, allow
@@ -38,7 +38,7 @@ and `voip_signal` for the flows here. If the rules restrict origins, allow
 its project must have calling access. Use a fresh ephemeral ID for each browser.
 The mint helper reads client rules and reports missing Calls actions or a
 blocked local origin before minting. On a rules 404 it also checks the Number
-ID when the key has `sessions:read`. A project token must belong to the
+ID when the key has `connections:read`. A project token must belong to the
 Number's project. If the key cannot read the Number, a rules 404 can mean an
 inaccessible Number or missing rules. The browser authenticates the Calls
 socket with its client token in the first WebSocket frame. The SDK can reuse a
@@ -51,7 +51,7 @@ If the Number has no client rules, the example can install narrow rules for a
 local test. Set `POLYMORFA_TEST_CALLEE` to the E.164 number you intend to call:
 
 ```bash
-export POLYMORFA_SESSION=support
+export POLYMORFA_CONNECTION=support
 export POLYMORFA_TEST_CALLEE=+12025550123
 read -rs 'POLYMORFA_SERVER_KEY?Staging server key: '; echo
 export POLYMORFA_SERVER_KEY
@@ -99,7 +99,7 @@ Connect each Number separately with its own session, display label and browser
 client token. The page keeps an independent Calls client and token provider per
 entry, only in memory. Choose **Outgoing Number** before dialing; **Call from**
 shows the selected source. Each Number has its own labeled incoming-call
-surface, so changing the outgoing choice never hides another Number's call.
+surface, so changing the outgoing choice never hides another Connection's call.
 The selector and disconnect buttons lock while any Number is placing, answering
 or carrying a call. Finish that call before changing the outgoing Number.
 

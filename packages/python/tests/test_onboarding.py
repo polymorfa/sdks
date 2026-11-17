@@ -64,7 +64,7 @@ CASES = [
         },
         {
             "event": "message.received",
-            "session": "support",
+            "connection": "support",
             "delivery": "generated",
             "eventId": "event_1",
             "source": "test",
@@ -86,16 +86,16 @@ CASES = [
     (
         "POST",
         "/messaging/support/test-events",
-        {"event": "message.received", "fromNumber": "sales"},
+        {"event": "message.received", "fromConnection": "sales"},
         {
             "event": "message.received",
-            "session": "support",
+            "connection": "support",
             "delivery": "simulated",
             "eventId": None,
             "source": "runtime",
         },
         lambda c: c.testing.trigger_event(
-            "support", {"event": "message.received", "fromNumber": "sales"}
+            "support", {"event": "message.received", "fromConnection": "sales"}
         ),
     ),
     (
@@ -119,7 +119,7 @@ CASES = [
         "/messaging/support/phone",
         None,
         {
-            "session": "support",
+            "connection": "support",
             "phone": "+15551234567",
             "online": True,
             "devices": [{"deviceId": 1}, {"deviceId": 2}],
@@ -130,17 +130,43 @@ CASES = [
         "POST",
         "/messaging/support/phone/messages",
         {"to": "+15551234568", "text": "Hello"},
-        {"session": "support", "to": "+15551234568", "messageId": None},
+        {"connection": "support", "to": "+15551234568", "messageId": None},
         lambda c: c.testing.send_phone_message("support", {"to": "+15551234568", "text": "Hello"}),
     ),
     (
         "POST",
         "/messaging/support/phone/devices/2/unlink",
         None,
-        {"session": "support", "deviceId": 2, "unlinked": True},
+        {"connection": "support", "deviceId": 2, "unlinked": True},
         lambda c: c.testing.unlink_phone_device("support", 2),
     ),
 ]
+
+
+TESTING_LINK = {
+    "configuration": {
+        "testing": {"configuration": {"accountType": "business_app", "primaryPlatform": "ios"}}
+    }
+}
+CASES.append(
+    (
+        "POST",
+        "/messaging/quicklinks",
+        TESTING_LINK,
+        {
+            "success": True,
+            "data": {
+                "purpose": "initial",
+                "connectionGoal": "single",
+                "id": "ql_testing",
+                "url": "https://example.invalid/testing",
+                "connection": "stable-session-id",
+                "expiresAt": None,
+            },
+        },
+        lambda c: c.quick_links.create(TESTING_LINK),
+    )
+)
 
 
 @pytest.mark.parametrize("method,path,body,fixture,invoke", CASES)
@@ -195,7 +221,7 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
             200,
             json={
                 "event": "call.missed",
-                "session": "support",
+                "connection": "support",
                 "delivery": "generated",
                 "eventId": "event_2",
                 "source": "test",
@@ -216,3 +242,57 @@ async def test_unlink_companion_bounds_and_keyed_fixture_retry():
         )
         assert result.data["eventId"] == "event_2" and result.metadata.attempts == 2
     assert len(requests) == 2
+
+
+@pytest.mark.parametrize("method,path,body,fixture,invoke", CASES)
+async def test_onboarding_methods_over_native_http(method, path, body, fixture, invoke):
+    import asyncio
+
+    receipt = asyncio.get_running_loop().create_future()
+
+    async def serve(reader, writer):
+        try:
+            head = (await reader.readuntil(b"\r\n\r\n")).decode("ascii").split("\r\n")
+            headers = {
+                k.lower(): v.strip()
+                for line in head[1:]
+                if ":" in line
+                for k, v in [line.split(":", 1)]
+            }
+            assert head[0] == f"{method} {path} HTTP/1.1"
+            assert headers["authorization"] == "Bearer pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"
+            assert headers["polymorfa-version"] == "2026-09-22"
+            raw = await reader.readexactly(int(headers.get("content-length", "0")))
+            assert (json.loads(raw) if raw else None) == body
+            payload = json.dumps(fixture).encode()
+            status = 202 if path.endswith("/phone/messages") else 200
+            writer.write(
+                f"HTTP/1.1 {status} Fixture\r\nContent-Type: application/json\r\nx-request-id: native-onboarding\r\nContent-Length: {len(payload)}\r\nConnection: close\r\n\r\n".encode()
+                + payload
+            )
+            await writer.drain()
+            receipt.set_result(True)
+        except (
+            AssertionError,
+            OSError,
+            ValueError,
+            KeyError,
+            asyncio.IncompleteReadError,
+            asyncio.LimitOverrunError,
+        ) as error:
+            receipt.set_exception(error)
+        finally:
+            writer.close()
+            await writer.wait_closed()
+
+    server = await asyncio.start_server(serve, "127.0.0.1", 0)
+    async with server:
+        port = server.sockets[0].getsockname()[1]
+        async with AsyncMessagingClient(
+            Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+            base_url=f"http://127.0.0.1:{port}",
+            max_network_retries=0,
+        ) as client:
+            response = await invoke(client)
+            assert response.metadata.request_id == "native-onboarding"
+            assert await asyncio.wait_for(receipt, 5)

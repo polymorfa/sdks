@@ -62,7 +62,7 @@ RoutingReason = Literal[
     "template",
     "target_reference",
     "only_eligible_transport",
-    "session_rule",
+    "connection_rule",
     "project_rule",
     "team_rule",
     "default_linked_devices",
@@ -128,12 +128,14 @@ class MessageOperation(TypedDict):
     receipt: NotRequired[OperationReceipt]
 
 
-class Session(TypedDict):
+class Connection(TypedDict):
     signalMode: NotRequired[SignalCustodyMode]
-    sessionId: str
+    connectionId: str
     name: str
     tenantId: str
-    type: Literal["linked_device", "cloud_api"]
+    type: Literal["whatsapp"]
+    method: Literal["linked_device", "cloud_api", "hybrid"]
+    phoneNumberId: NotRequired[str]
     testMode: bool
     status: str
     createdAt: str
@@ -144,7 +146,7 @@ class Session(TypedDict):
     newChatCapping: NotRequired[NewChatCapping | None]
 
 
-class SessionUpdate(TypedDict):
+class ConnectionUpdate(TypedDict):
     configuration: ConfigurationPatch
     revision: int
 
@@ -183,7 +185,7 @@ class WebhookInput(TypedDict):
 
 
 class WebhookCreate(WebhookInput, total=False):
-    session: str
+    connection: str
     events: list[str]
     hmacKey: str
     retries: WebhookRetries
@@ -204,7 +206,7 @@ class WebhookUpdate(TypedDict, total=False):
 class Webhook(TypedDict):
     id: str
     tenantId: str
-    session: NotRequired[str]
+    connection: NotRequired[str]
     format: NotRequired[Literal["native", "meta"]]
     url: str
     events: list[str]
@@ -427,7 +429,7 @@ class HistoryMessagesParams(TypedDict, total=False):
 
 
 class CallPlacement(TypedDict, total=False):
-    session: str
+    connection: str
     to: str
     participants: list[str]
     groupId: str
@@ -444,7 +446,7 @@ class CallAcceptance(TypedDict, total=False):
 
 class CallPlacementResult(TypedDict):
     callId: str
-    session: str
+    connection: str
     video: bool
 
 
@@ -656,11 +658,11 @@ class NewChatCapping(TypedDict):
     observedAt: str
 
 
-class PlatformSession(TypedDict):
+class PlatformConnection(TypedDict):
     _id: str
     _creationTime: int
     projectId: str
-    sessionId: str
+    connectionId: str
     name: str
     phone: str | None
     platform: str | None
@@ -673,22 +675,22 @@ class PlatformSession(TypedDict):
     paidUntil: int | None
 
 
-class SessionStarting(TypedDict):
+class ConnectionStarting(TypedDict):
     starting: Literal[True]
-    sessionId: str
+    connectionId: str
 
 
-class SessionStopping(TypedDict):
+class ConnectionStopping(TypedDict):
     stopping: Literal[True]
-    sessionId: str
+    connectionId: str
 
 
-class SessionRemoved(TypedDict):
+class ConnectionRemoved(TypedDict):
     removed: Literal[True]
-    sessionId: str
+    connectionId: str
 
 
-class SessionAccount(Conversation):
+class ConnectionAccount(Conversation):
     pushName: str
     businessName: NotRequired[str]
     phonePlatform: NotRequired[Literal["android", "ios", "meta_cloud", "unknown"]]
@@ -710,7 +712,7 @@ class DataEnvelope(TypedDict, Generic[T]):
 
 class MessagingMediaInfo(TypedDict):
     id: str
-    session: str
+    connection: str
     messageId: str
     mimeType: str
     fileLength: int
@@ -718,11 +720,11 @@ class MessagingMediaInfo(TypedDict):
     s3Url: NotRequired[str | None]
 
 
-class RejectSessionCall(TypedDict):
+class RejectConnectionCall(TypedDict):
     from_: str
 
 
-class SessionCallPeer(TypedDict, total=False):
+class ConnectionCallPeer(TypedDict, total=False):
     """The other party: user ID, phone number or username, as the call reported them."""
 
     id: str
@@ -730,18 +732,18 @@ class SessionCallPeer(TypedDict, total=False):
     username: str
 
 
-class SessionCallRecord(TypedDict):
-    """One call on a number, read from the number's data region."""
+class ConnectionCallRecord(TypedDict):
+    """One call on a Connection, read from the Connection's data region."""
 
     callId: str
     projectId: str
-    sessionId: str
+    connectionId: str
     direction: Literal["inbound", "outbound"]
     upstream: Literal["linked_device", "cloud_api"]
     outcome: Literal["answered", "missed", "declined", "failed", "in_progress"]
     state: Literal["offered", "accepted", "rejected", "missed", "ended"]
     hasVideo: bool
-    peer: SessionCallPeer | None
+    peer: ConnectionCallPeer | None
     startedAt: str
     connectedAt: str | None
     endedAt: str | None
@@ -749,7 +751,7 @@ class SessionCallRecord(TypedDict):
     endReason: str | None
 
 
-class SessionCallsParams(TypedDict, total=False):
+class ConnectionCallsParams(TypedDict, total=False):
     limit: int
     cursor: str
     direction: Literal["inbound", "outbound"]
@@ -758,11 +760,11 @@ class SessionCallsParams(TypedDict, total=False):
     until: str
 
 
-class SessionCallsPage(TypedDict):
+class ConnectionCallsPage(TypedDict):
     success: Literal[True]
-    data: list[SessionCallRecord]
+    data: list[ConnectionCallRecord]
     nextCursor: str | None
 
 
-class RejectedSessionCall(TypedDict):
+class RejectedConnectionCall(TypedDict):
     status: Literal["REJECTED"]

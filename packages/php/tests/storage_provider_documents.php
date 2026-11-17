@@ -20,16 +20,16 @@ function storageDocumentProof(Adapter $adapter, string $name): void
     storageCheck($engine->apply($batch)->applied && !$engine->apply($batch)->applied, $name.' history replay');
     storageExpected($engine, $fixture['historyRows']);
     foreach ([null,false,0,0.0,1.2345678901234567,1e-30,'','0',[],new stdClass(),(object)['0' => 'only'],(object)['0' => 'first','1' => 'second'],(object)['$oid' => 'literal','$date' => 'literal','0' => 'zero','a.b' => 'dot'],(object)['nested' => [false,0,null,(object)['empty' => []],new stdClass()]]] as $i => $value) {
-        $engine->apply(new Batch('json', [new Upsert('messages', ['sessionId' => 'json','messageId' => (string)$i], ['extra' => new FieldWrite($value, 0)])]));
-        $id = Schema::encodeKey('messages', ['sessionId' => 'json','messageId' => (string)$i]);
+        $engine->apply(new Batch('json', [new Upsert('messages', ['connectionId' => 'json','messageId' => (string)$i], ['extra' => new FieldWrite($value, 0)])]));
+        $id = Schema::encodeKey('messages', ['connectionId' => 'json','messageId' => (string)$i]);
         storageCheck(Rows::canonical($adapter->get('messages', [$id])[$id]['extra']) === Rows::canonical($value), $name.' exact JSON scalar/object/list '.$i);
     }
     $engine->apply(HistoryReducer::reduce('large', $large, chunkId:'large'));
     $count = 0;
     foreach ($large['conversations'] as $conversation) {
-        $count += count($engine->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'large','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
+        $count += count($engine->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'large','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
     } storageCheck($count === 2000, $name.' full2000');
-    $scope = ['sessionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']];
+    $scope = ['connectionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']];
     $first = $adapter->query('messages', ['index' => 'by_chat','equals' => $scope,'order' => 'desc','limit' => 25]);
     storageCheck(count($first) === 25, $name.' descending page');
     $last = $first[count($first) - 1];
@@ -39,10 +39,10 @@ function storageDocumentProof(Adapter $adapter, string $name): void
         storageCheck((Rows::compare($row['timestamp'], $last['timestamp']) ?: Rows::compare($row['_id'], $last['_id'])) < 0, $name.' descending cursor order');
     }
 
-    $engine->apply(new Batch('cas', [new Upsert('messages', ['sessionId' => 'cas','messageId' => 'one'], ['text' => new FieldWrite('original', 0)])]));
-    $id = Schema::encodeKey('messages', ['sessionId' => 'cas','messageId' => 'one']);
+    $engine->apply(new Batch('cas', [new Upsert('messages', ['connectionId' => 'cas','messageId' => 'one'], ['text' => new FieldWrite('original', 0)])]));
+    $id = Schema::encodeKey('messages', ['connectionId' => 'cas','messageId' => 'one']);
     $before = $adapter->get('messages', [$id])[$id];
-    $two = Rows::empty('messages', ['sessionId' => 'cas','messageId' => 'two']);
+    $two = Rows::empty('messages', ['connectionId' => 'cas','messageId' => 'two']);
     $two['_rev'] = 1;
     $changed = $before;
     $changed['_rev']++;
@@ -52,11 +52,11 @@ function storageDocumentProof(Adapter $adapter, string $name): void
     storageRaises(fn () => $engine->apply(new Batch('cas', [new Checkpoint('cas', 'events', 'two', expectedCursor:null)])), 'storage_checkpoint_conflict');
     storageCheck($engine->getCheckpoint('cas', 'events')['cursor'] === 'one', $name.' stale checkpoint refused');
     storageRaises(fn () => $adapter->commit([['kind' => 'delete','entity' => 'messages','id' => $id]]), 'storage_delete_revision_required');
-    $leaseId = Schema::encodeKey('leases', ['sessionId' => 'cas']);
+    $leaseId = Schema::encodeKey('leases', ['connectionId' => 'cas']);
     $lease = $adapter->get('leases', [$leaseId])[$leaseId];
     $next = $lease;
     $next['_rev']++;
-    storageCheck($adapter->commit([['kind' => 'delete','entity' => 'messages','id' => $id],['kind' => 'put','entity' => 'leases','row' => $next,'expectedRev' => $lease['_rev']]])['ok'] && $adapter->get('messages', [$id]) === [], $name.' same session lease fenced delete');
+    storageCheck($adapter->commit([['kind' => 'delete','entity' => 'messages','id' => $id],['kind' => 'put','entity' => 'leases','row' => $next,'expectedRev' => $lease['_rev']]])['ok'] && $adapter->get('messages', [$id]) === [], $name.' same connection lease fenced delete');
     storageCheck($adapter->commit([['kind' => 'put','entity' => 'messages','row' => $two,'expectedRev' => null]])['ok'], $name.' child before stale writer');
     $stale = $next;
     $stale['_rev']++;
@@ -85,9 +85,9 @@ if ($metadata !== false && $metadata !== '' && class_exists(MongoDB\Client::clas
         storageDocumentProof($adapter, 'mongodb');
         $bounded = new MongodbAdapter($client, $database, $namespace, maxQueryRows:1);
         $bounded->setup();
-        storageRaises(fn () => $bounded->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']],'limit' => 1]), 'storage_query_bound_exceeded');
+        storageRaises(fn () => $bounded->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']],'limit' => 1]), 'storage_query_bound_exceeded');
         storageCheck($database->command(['ping' => 1])->toArray() !== [], 'Mongo borrower remains usable');
-        $physical = $database->selectCollection('polymorfa_'.$namespace.'_messages')->findOne(['sessionId' => 'json']);
+        $physical = $database->selectCollection('polymorfa_'.$namespace.'_messages')->findOne(['connectionId' => 'json']);
         storageCheck(isset($physical['_id'],$physical['_rev'],$physical['_v']) && !isset($physical['data']), 'Mongo exact raw producer layout');
         $meta = $database->selectCollection('polymorfa_'.$namespace.'_storage_schema');
         $meta->updateOne(['_id' => 'storage'], ['$set' => ['version' => 1]]);
@@ -110,7 +110,7 @@ if ($metadata !== false && $metadata !== '' && class_exists(Aws\DynamoDb\DynamoD
         storageDocumentProof($adapter, 'dynamodb');
         $bounded = new Polymorfa\Storage\DynamodbAdapter($client, 'portable', $table, maxQueryRows:1);
         $bounded->setup();
-        storageRaises(fn () => $bounded->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']],'limit' => 1]), 'storage_query_bound_exceeded');
+        storageRaises(fn () => $bounded->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']],'limit' => 1]), 'storage_query_bound_exceeded');
         storageCheck($client->describeTable(['TableName' => $table])['Table']['TableStatus'] === 'ACTIVE', 'Dynamo borrower usable');
         $physical = $client->getItem(['TableName' => $table,'Key' => ['pk' => ['S' => 'portable:messages'],'sk' => ['S' => 'kjson:0']],'ConsistentRead' => true])['Item'];
         storageCheck(isset($physical['row']['M']['_id'],$physical['row']['M']['_rev'],$physical['row']['M']['_v']) && !isset($physical['data']), 'Dynamo exact raw producer layout');
@@ -132,20 +132,20 @@ if ($endpoint !== false && $endpoint !== '' && class_exists(Google\Cloud\Firesto
         storageDocumentProof($adapter, 'firestore');
         $bounded = new Polymorfa\Storage\FirestoreAdapter($rpc, $namespace, 'sdk-fixture-go', maxQueryRows:1);
         $bounded->setup();
-        storageRaises(fn () => $bounded->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']],'limit' => 1]), 'storage_query_bound_exceeded');
+        storageRaises(fn () => $bounded->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'large','chatId' => 'wa:'.$large['conversations'][0]['id']],'limit' => 1]), 'storage_query_bound_exceeded');
         $unsupported = new Engine($bounded);
-        storageRaises(fn () => $unsupported->apply(new Batch('unsupported', [new Upsert('messages', ['sessionId' => 'unsupported','messageId' => 'nested'], ['extra' => new FieldWrite([[1]], 0)])], 'unsupported-event', 'message.received')), 'storage_firestore_failed');
-        storageCheck($bounded->get('events', [Schema::encodeKey('events', ['sessionId' => 'unsupported','eventId' => 'unsupported-event'])]) === [], 'Firestore unsupported native value never marks event completed');
+        storageRaises(fn () => $unsupported->apply(new Batch('unsupported', [new Upsert('messages', ['connectionId' => 'unsupported','messageId' => 'nested'], ['extra' => new FieldWrite([[1]], 0)])], 'unsupported-event', 'message.received')), 'storage_firestore_failed');
+        storageCheck($bounded->get('events', [Schema::encodeKey('events', ['connectionId' => 'unsupported','eventId' => 'unsupported-event'])]) === [], 'Firestore unsupported native value never marks event completed');
         // Explicit typed RPCs retain atomicity beyond the high-level driver's20-write flush.
         $atomic = new Polymorfa\Storage\FirestoreAdapter($rpc, $namespace, 'sdk-fixture-go');
         $atomic->setup();
         storageCheck($atomic->capabilities()['maxCommitSize'] === 250, 'Firestore verified native write limit');
-        $existing = Rows::empty('messages', ['sessionId' => 'threshold','messageId' => 'existing']);
+        $existing = Rows::empty('messages', ['connectionId' => 'threshold','messageId' => 'existing']);
         $existing['_rev'] = 1;
         storageCheck($atomic->commit([['kind' => 'put','entity' => 'messages','row' => $existing,'expectedRev' => null]])['ok'], 'Firestore threshold existing');
         $writes = [];
         for ($i = 0;$i < 249;$i++) {
-            $row = Rows::empty('messages', ['sessionId' => 'threshold','messageId' => (string)$i]);
+            $row = Rows::empty('messages', ['connectionId' => 'threshold','messageId' => (string)$i]);
             $row['_rev'] = 1;
             $writes[] = ['kind' => 'put','entity' => 'messages','row' => $row,'expectedRev' => null];
         }
@@ -157,7 +157,7 @@ if ($endpoint !== false && $endpoint !== '' && class_exists(Google\Cloud\Firesto
         storageCheck(count($atomic->get('messages', array_column(array_column($writes, 'row'), '_id'))) === 249, 'Firestore all250 committed');
         $oversized = [];
         for ($i = 0;$i < 251;$i++) {
-            $row = Rows::empty('messages', ['sessionId' => 'overlimit','messageId' => (string)$i]);
+            $row = Rows::empty('messages', ['connectionId' => 'overlimit','messageId' => (string)$i]);
             $row['_rev'] = 1;
             $oversized[] = ['kind' => 'put','entity' => 'messages','row' => $row,'expectedRev' => null];
         }

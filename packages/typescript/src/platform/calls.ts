@@ -36,7 +36,7 @@ export type CallOutcome =
 /** Call state. `offered` and `accepted` calls may still be live. */
 export type CallRecordState =
   "offered" | "accepted" | "rejected" | "missed" | "ended";
-export type CallStatsGroupBy = "day" | "hour" | "session" | "outcome";
+export type CallStatsGroupBy = "day" | "hour" | "connection" | "outcome";
 export type CallExportFormat = "csv" | "ndjson";
 
 /** One call detail record. The other party appears only as `peerRef`. */
@@ -44,8 +44,8 @@ export interface CallRecord {
   readonly callId: string;
   /** Owning project when known, preserved after the number is deleted. */
   readonly projectId: string | null;
-  /** Session name of the number that placed or received the call. */
-  readonly sessionId: string;
+  /** Connection name of the number that placed or received the call. */
+  readonly connectionId: string;
   readonly direction: CallDirection;
   readonly upstream: CallUpstream;
   readonly outcome: CallOutcome;
@@ -161,7 +161,7 @@ export interface CallRecordAppReports {
 /** A call summary in the stored detail. */
 export interface CallRecordSummary {
   callId: string;
-  sessionId: string;
+  connectionId: string;
   projectId: string | null;
   direction: "inbound" | "outbound";
   state: "offered" | "accepted" | "rejected" | "missed" | "ended";
@@ -193,7 +193,7 @@ export interface CallRecordDetail {
     events: Array<{ eventId: string; type: string; occurredAt: string }>;
     truncated: boolean;
   };
-  correlation: { callId: string; sessionId: string };
+  correlation: { callId: string; connectionId: string };
 }
 
 export interface CallStatsMetrics {
@@ -216,10 +216,10 @@ export interface CallStatsMetrics {
 export interface CallStatsGroup extends CallStatsMetrics {
   /**
    * Local date (`2026-09-18`) for `day`, local hour (`2026-09-18T14:00`) for
-   * `hour`, session name for `session`, or the outcome for `outcome`.
+   * `hour`, connection name for `connection`, or the outcome for `outcome`.
    */
   readonly key: string;
-  /** Start of the day or hour bucket; `null` for `session` and `outcome` groups. */
+  /** Start of the day or hour bucket; `null` for `connection` and `outcome` groups. */
   readonly start: string | null;
 }
 
@@ -239,7 +239,7 @@ export interface CallStats {
   readonly groupBy: CallStatsGroupBy;
   readonly totals: CallStatsMetrics;
   readonly groups: readonly CallStatsGroup[];
-  /** True when a `session` grouping left out numbers beyond the first 500. Totals still count every call. */
+  /** True when a `connection` grouping left out numbers beyond the first 500. Totals still count every call. */
   readonly groupsTruncated: boolean;
   /** 168 cells, Monday 00:00 first. */
   readonly heatmap: readonly CallStatsHeatmapCell[];
@@ -247,8 +247,8 @@ export interface CallStats {
 
 /** Filters shared by call statistics, call records and the export. */
 export interface CallFilters {
-  /** Session name of one number (1 to 128 characters). */
-  readonly sessionId?: string;
+  /** Connection name of one number (1 to 128 characters). */
+  readonly connectionId?: string;
   readonly direction?: CallDirection;
   readonly upstream?: CallUpstream;
   readonly outcome?: CallOutcome;
@@ -329,7 +329,7 @@ const OUTCOMES: readonly CallOutcome[] = [
 const GROUP_BY: readonly CallStatsGroupBy[] = [
   "day",
   "hour",
-  "session",
+  "connection",
   "outcome",
 ];
 const FORMATS: readonly CallExportFormat[] = ["csv", "ndjson"];
@@ -339,7 +339,7 @@ const CONTENT_TYPES: Readonly<Record<CallExportFormat, string>> = {
 };
 
 /**
- * Call analytics and call detail records (`sessions:read`). Team clients
+ * Call analytics and call detail records (`connections:read`). Team clients
  * cover every project unless they pass `projectId`; project clients read
  * their own project.
  */
@@ -551,8 +551,8 @@ export class PlatformCallsResource<O extends ClientOwner> {
     } else if (params.projectId !== undefined) {
       query.projectId = text(params.projectId, "projectId", 64);
     }
-    if (params.sessionId !== undefined) {
-      query.sessionId = text(params.sessionId, "sessionId", 128);
+    if (params.connectionId !== undefined) {
+      query.connectionId = text(params.connectionId, "connectionId", 128);
     }
     if (params.direction !== undefined) {
       query.direction = oneOf(params.direction, DIRECTIONS, "direction");

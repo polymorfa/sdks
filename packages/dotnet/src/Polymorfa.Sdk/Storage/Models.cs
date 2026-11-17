@@ -9,7 +9,7 @@ public sealed class StorageLeaseLostException() : StorageException("Storage leas
 public sealed class StorageCheckpointConflictException() : StorageException("Storage checkpoint changed; resume from the saved checkpoint.");
 public sealed class StorageConflictException(IReadOnlyList<string> ids) : StorageException($"Storage kept conflicting ({ids.Count} rows).") { public IReadOnlyList<string> Ids { get; } = ids; }
 public sealed record StorageFieldWrite(JsonElement Value, double Version) { public override string ToString() => "StorageFieldWrite(redacted)"; }
-public sealed record StorageGuard(string SessionId, string ChatId, double Timestamp);
+public sealed record StorageGuard(string ConnectionId, string ChatId, double Timestamp);
 [JsonPolymorphic(TypeDiscriminatorPropertyName = "kind")]
 [JsonDerivedType(typeof(StorageUpsert), "upsert")]
 [JsonDerivedType(typeof(StoragePatch), "patch")]
@@ -20,9 +20,9 @@ public abstract record StorageOperation;
 public sealed record StorageUpsert(StorageEntity Entity, IReadOnlyDictionary<string, string> Key, IReadOnlyDictionary<string, StorageFieldWrite> Fields, StorageGuard? Guard = null) : StorageOperation;
 public sealed record StoragePatch(StorageEntity Entity, IReadOnlyDictionary<string, string> Key, IReadOnlyDictionary<string, StorageFieldWrite> Fields, StorageGuard? Guard = null) : StorageOperation;
 public sealed record StorageDelete(StorageEntity Entity, IReadOnlyDictionary<string, string> Key) : StorageOperation;
-public sealed record StorageClearChat(string SessionId, string ChatId, double UpTo) : StorageOperation;
-public sealed record StorageCheckpoint(string SessionId, string Stream, string Cursor, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> ExpectedCursor = default, JsonElement? Position = null, double? UpdatedAt = null) : StorageOperation;
-public sealed record StorageBatch(string SessionId, IReadOnlyList<StorageOperation> Operations, string? EventId = null, string? EventType = null);
+public sealed record StorageClearChat(string ConnectionId, string ChatId, double UpTo) : StorageOperation;
+public sealed record StorageCheckpoint(string ConnectionId, string Stream, string Cursor, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> ExpectedCursor = default, JsonElement? Position = null, double? UpdatedAt = null) : StorageOperation;
+public sealed record StorageBatch(string ConnectionId, IReadOnlyList<StorageOperation> Operations, string? EventId = null, string? EventType = null);
 [JsonConverter(typeof(StorageRowConverter))]
 public sealed record StorageRow(string Id, long Revision, IReadOnlyDictionary<string, double> Versions, IReadOnlyDictionary<string, JsonElement> Fields)
 {

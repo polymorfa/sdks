@@ -110,7 +110,7 @@ does not include a picture picker.
 
 ## Call log
 
-`<CallLog/>` lists the number's calls from `GET /messaging/{session}/calls`
+`<CallLog/>` lists the Connection's calls from `GET /messaging/{connection}/calls`
 with the client token (`read_calls`): newest first, consecutive calls with
 the same person merged with a count, missed incoming calls in red, an
 All/Missed filter, call back and open chat. `<Inbox/>` shows it behind a
@@ -289,7 +289,7 @@ import {
 
 // Create once in the browser; call dispose() when the app releases it.
 const calls = createBrowserCalls({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
 });
 await calls.connect();
@@ -368,23 +368,23 @@ and its camera and microphone choices. A failed answer shows a notice on the
 incoming card: on the call itself when it is still ringing, or on the next
 waiting call when the answered call's media failed.
 
-### Choosing an outgoing Number
+### Choosing an outgoing Connection
 
-`CallNumberPicker` selects an application-authorized Number. Each option has a
+`CallConnectionPicker` selects an application-authorized Connection. Each option has a
 unique `id`, a display `label`, and the `controller` of a separate
 `createBrowserCalls` instance. Supply `value` and `onChange`; use the selected
-instance for `DialPad` and keep each active `CallSurface` under its fixed Number
+instance for `DialPad` and keep each active `CallSurface` under its fixed Connection
 label. The picker locks while any supplied client places, answers, or carries a
 call and rechecks state in its change handler.
 
-The component does not discover Numbers or mint credentials. Give each client
-its own token provider, authorized for that Number's session. Selection must
-never replace the token or session on an existing client. The session option
-does not override the session bound to the client token.
+The component does not discover Connections or mint credentials. Give each client
+its own token provider, authorized for that Connection's connection. Selection must
+never replace the token or connection on an existing client. The connection option
+does not override the connection bound to the client token.
 
 The picker includes its own styles and follows the provider's appearance and
 locale. Use `className` for its root or `classNames` and appearance element
-styles for `callNumberPicker`, `callNumberLabel` and `callNumberSelect`.
+styles for `callConnectionPicker`, `callConnectionLabel` and `callConnectionSelect`.
 An unstyled provider skips the bundled stylesheet.
 
 ## Controlled inbox rows
@@ -439,7 +439,7 @@ apply to reply snippets and exclude stale body/media content. `OrderCartView`
 and `ContentUnavailable` are available separately.
 
 `ChatDetails` accepts customer fields such as `name`, `phoneNumber`, `observedName`,
-`labels`, `sendingNumber`, `lastActivity` and `retentionDays`. Use `onContact` and
+`labels`, `sendingConnection`, `lastActivity` and `retentionDays`. Use `onContact` and
 `onClose` for host navigation. Its `children` slot can hold developer details
 without exposing raw identifiers in the default view.
 

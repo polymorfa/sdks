@@ -46,7 +46,7 @@ pub async fn snapshot(State(app): State<Arc<App>>, headers: HeaderMap) -> Respon
         return StatusCode::UNAUTHORIZED.into_response();
     }
     let s = app.conversation.lock().unwrap();
-    ([(header::CACHE_CONTROL,"no-store")],Json(json!({"messages":s.messages,"peer":app.peer,"session":app.session,"receivedEvents":s.received,"lastEvent":s.last_event,"localTest":app.local_test}))).into_response()
+    ([(header::CACHE_CONTROL,"no-store")],Json(json!({"messages":s.messages,"peer":app.peer,"connection":app.connection,"receivedEvents":s.received,"lastEvent":s.last_event,"localTest":app.local_test}))).into_response()
 }
 #[derive(Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -98,7 +98,7 @@ pub async fn send(State(app): State<Arc<App>>, headers: HeaderMap, body: Bytes) 
         .client
         .messages()
         .send(
-            &app.session,
+            &app.connection,
             &SendMessageRequest::text(ConversationReference::phone(&app.peer), &input.text),
             RequestOptions {
                 idempotency_key: Some(key.into()),
@@ -147,7 +147,7 @@ pub async fn webhook(State(app): State<Arc<App>>, headers: HeaderMap, body: Byte
         return StatusCode::BAD_REQUEST.into_response();
     };
     let envelope = event.envelope();
-    if envelope.session != app.session {
+    if envelope.connection != app.connection {
         return Json(json!({"received":true})).into_response();
     }
     let mut s = app.conversation.lock().unwrap();

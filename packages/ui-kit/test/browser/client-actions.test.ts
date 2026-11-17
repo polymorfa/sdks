@@ -40,7 +40,7 @@ describe("BrowserMessagingClient", () => {
   it("adds an Idempotency-Key to sends and reactions", async () => {
     const headers: Headers[] = [];
     const client = new BrowserMessagingClient({
-      session: "support",
+      connection: "support",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       maxNetworkRetries: 0,
@@ -63,13 +63,13 @@ describe("BrowserMessagingClient", () => {
     expect(keys[0]).not.toBe(keys[1]);
     expect(keys[2]).toBeNull();
   });
-  it("binds message actions to one encoded session", async () => {
+  it("binds message actions to one encoded connection", async () => {
     const requests: Array<{
       url: string;
       init: RequestInit | undefined;
     }> = [];
     const client = new BrowserMessagingClient({
-      session: "support/eu",
+      connection: "support/eu",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       maxNetworkRetries: 0,
@@ -124,7 +124,7 @@ describe("BrowserMessagingClient", () => {
   it("maps the exact presence and contact read allowlist", async () => {
     const urls: string[] = [];
     const client = new BrowserMessagingClient({
-      session: "support",
+      connection: "support",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       fetch: async (url) => {
@@ -161,7 +161,7 @@ describe("BrowserMessagingClient", () => {
       init: RequestInit | undefined;
     }> = [];
     const client = new BrowserMessagingClient({
-      session: "widget-1",
+      connection: "widget-1",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       baseUrl: "https://api.example.test",
       fetch: async (url, init) => {
@@ -189,7 +189,7 @@ describe("BrowserMessagingClient", () => {
   it("adapts text composer sends while keeping uploads application-owned", async () => {
     const bodies: string[] = [];
     const client = new BrowserMessagingClient({
-      session: "support",
+      connection: "support",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch: async (url, init) => {
         void url;

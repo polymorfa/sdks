@@ -4,7 +4,7 @@ using Polymorfa.Sdk;
 internal static class CallsClientTests
 {
     private static string Event(string name, string id, string payload = "{}") => "{\"type\":\"event\",\"event\":\"" + name + "\",\"callId\":\"" + id + "\",\"payload\":" + payload + ",\"timestamp\":\"2026-09-22T00:00:00Z\"}";
-    private static CallsClientOptions Options(WebSocketFixture socket, WireFixture http) => new() { Session = "support", Participant = "agent", Http = new() { BaseUrl = http.Url, MaxNetworkRetries = 0 }, Socket = new() { BaseUrl = socket.Url, Heartbeat = TimeSpan.Zero }, Diagnostics = false, MinBackoff = TimeSpan.FromMilliseconds(20), MaxBackoff = TimeSpan.FromMilliseconds(40) };
+    private static CallsClientOptions Options(WebSocketFixture socket, WireFixture http) => new() { Connection = "support", Participant = "agent", Http = new() { BaseUrl = http.Url, MaxNetworkRetries = 0 }, Socket = new() { BaseUrl = socket.Url, Heartbeat = TimeSpan.Zero }, Diagnostics = false, MinBackoff = TimeSpan.FromMilliseconds(20), MaxBackoff = TimeSpan.FromMilliseconds(40) };
     private static async Task<CallsClientEvent> Next(IAsyncEnumerator<CallsClientEvent> events, Func<CallsClientEvent, bool> predicate) { using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(5)); while (await events.MoveNextAsync().AsTask().WaitAsync(timeout.Token)) { if (predicate(events.Current)) return events.Current; } throw new Exception("Calls event stream ended."); }
     public static async Task RunAsync()
     {
@@ -19,7 +19,7 @@ internal static class CallsClientTests
         await using var client = new CallsClient("pmfa_ct_Zml4dHVyZQ", Options(ws, http)); var opening = client.ConnectAsync();
         using var lifecycle = await ws.AcceptAsync("/voip/ws"); await WebSocketFixture.ReceiveJsonAsync(lifecycle); await WebSocketFixture.TextAsync(lifecycle, "{\"type\":\"ready\"}"); await opening;
         await using var events = client.EventsAsync().GetAsyncEnumerator(); await Next(events, e => e is CallsReady);
-        var serving = http.ServeAsync("POST", "/messaging/voip/calls", "{\"groupId\":\"group\",\"video\":false}", "{\"success\":true,\"data\":{\"callId\":\"out1\",\"session\":\"support\",\"video\":false}}");
+        var serving = http.ServeAsync("POST", "/messaging/voip/calls", "{\"groupId\":\"group\",\"video\":false}", "{\"success\":true,\"data\":{\"callId\":\"out1\",\"connection\":\"support\",\"video\":false}}");
         var placing = client.PlaceGroupAsync("group"); await received.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await WebSocketFixture.TextAsync(lifecycle, Event("call.ended", "out1", "{\"reason\":\"remote_hangup\"}"));
         // The subsequent event establishes that the lifecycle reader processed the earlier terminal event.

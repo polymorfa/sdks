@@ -187,12 +187,12 @@ pub(crate) fn clear(names: &[&str]) -> FieldWrites {
 }
 pub(crate) fn upsert(
     entity: Entity,
-    session: &str,
+    connection: &str,
     ids: &[(&str, &str)],
     fields: FieldWrites,
     guard: Option<ChatWatermarkGuard>,
 ) -> StorageOperation {
-    let mut key = RowKey::from([("sessionId".into(), session.into())]);
+    let mut key = RowKey::from([("connectionId".into(), connection.into())]);
     key.extend(ids.iter().map(|(k, v)| ((*k).into(), (*v).into())));
     StorageOperation::Upsert {
         entity,
@@ -202,12 +202,12 @@ pub(crate) fn upsert(
     }
 }
 pub(crate) fn guard(
-    session: &str,
+    connection: &str,
     chat: &str,
     timestamp: Option<f64>,
 ) -> Option<ChatWatermarkGuard> {
     timestamp.map(|timestamp| ChatWatermarkGuard {
-        session_id: session.into(),
+        connection_id: connection.into(),
         chat_id: chat.into(),
         timestamp,
     })

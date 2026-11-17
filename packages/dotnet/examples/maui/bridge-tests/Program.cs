@@ -95,7 +95,7 @@ try
     Check((await bridge.RequestAsync("conversations")).Body.Contains("nextCursor"), "App-owned authorized history");
     Check((await bridge.RequestAsync("connect")).Status == 200, "App-owned authorized connect");
     var before = requests.Count;
-    foreach (var action in new[] { "https://example.com/", "../token", "token?session=foreign", "/api/polymorfa/token", "Token" })
+    foreach (var action in new[] { "https://example.com/", "../token", "token?connection=foreign", "/api/polymorfa/token", "Token" })
     {
         try { await bridge.RequestAsync(action); throw new Exception("Unknown action accepted"); } catch (ArgumentException) { }
     }

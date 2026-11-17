@@ -69,7 +69,7 @@ async fn team_optout_keyword_settings_and_legacy_open_objects_native_wire() {
     );
 }
 #[tokio::test]
-async fn platform_media_and_session_ban_metadata_native_wire() {
+async fn platform_media_and_connection_ban_metadata_native_wire() {
     let body: PlatformPayload = [
         ("filename".into(), json!("file.pdf")),
         ("contentType".into(), json!("application/pdf")),
@@ -106,15 +106,17 @@ async fn platform_media_and_session_ban_metadata_native_wire() {
         "GET",
         "/platform/bans",
         None,
-        json!({"data":[{"id":"ban","sessionName":"support","banCode":403,"banReason":"restricted","banExpiresAt":null,"occurredAt":1000,"status":"active"}]}),
-        client.session_bans().list(RequestOptions::default())
+        json!({"data":[{"id":"ban","connectionName":"support","banCode":403,"banReason":"restricted","banExpiresAt":null,"occurredAt":1000,"status":"active"}]}),
+        client.connection_bans().list(RequestOptions::default())
     );
     wire_team!(
         client,
         "GET",
         "/platform/bans/active",
         None,
-        json!({"data":[{"id":"ban","sessionName":"support","banCode":403,"banReason":"restricted","banExpiresAt":2000,"occurredAt":1000,"status":"active"}]}),
-        client.session_bans().list_active(RequestOptions::default())
+        json!({"data":[{"id":"ban","connectionName":"support","banCode":403,"banReason":"restricted","banExpiresAt":2000,"occurredAt":1000,"status":"active"}]}),
+        client
+            .connection_bans()
+            .list_active(RequestOptions::default())
     );
 }

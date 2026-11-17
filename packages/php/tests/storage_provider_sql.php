@@ -39,12 +39,12 @@ foreach ($connections as $dialect => $pdo) {
     $engine->apply(HistoryReducer::reduce('large', $large, chunkId:'large'));
     $count = 0;
     foreach ($large['conversations'] as $conversation) {
-        $count += count($engine->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'large','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
+        $count += count($engine->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'large','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
     } storageCheck($count === 2000, 'native '.$dialect.' 2000 messages');
-    $engine->apply(new Batch('cas', [new Upsert('messages', ['sessionId' => 'cas','messageId' => 'one'], ['text' => new FieldWrite('original', 0)])]));
-    $id = Schema::encodeKey('messages', ['sessionId' => 'cas','messageId' => 'one']);
+    $engine->apply(new Batch('cas', [new Upsert('messages', ['connectionId' => 'cas','messageId' => 'one'], ['text' => new FieldWrite('original', 0)])]));
+    $id = Schema::encodeKey('messages', ['connectionId' => 'cas','messageId' => 'one']);
     $before = $adapter->get('messages', [$id])[$id];
-    $two = Rows::empty('messages', ['sessionId' => 'cas','messageId' => 'two']);
+    $two = Rows::empty('messages', ['connectionId' => 'cas','messageId' => 'two']);
     $two['_rev'] = 1;
     $changed = $before;
     $changed['_rev']++;
@@ -53,13 +53,13 @@ foreach ($connections as $dialect => $pdo) {
     $engine->apply(new Batch('cas', [new Checkpoint('cas', 'events', 'one', expectedCursor:null)]));
     storageRaises(fn () => $engine->apply(new Batch('cas', [new Checkpoint('cas', 'events', 'two', expectedCursor:null)])), 'storage_checkpoint_conflict');
     storageCheck($engine->getCheckpoint('cas', 'events')['cursor'] === 'one', 'native '.$dialect.' checkpoint retained');
-    // No revision-free delete can evade the same-session lease CAS in its transaction.
+    // No revision-free delete can evade the same-connection lease CAS in its transaction.
     storageRaises(fn () => $adapter->commit([['kind' => 'delete','entity' => 'messages','id' => $id]]), 'storage_delete_revision_required');
-    $leaseId = Schema::encodeKey('leases', ['sessionId' => 'cas']);
+    $leaseId = Schema::encodeKey('leases', ['connectionId' => 'cas']);
     $lease = $adapter->get('leases', [$leaseId])[$leaseId];
     $next = $lease;
     $next['_rev']++;
-    storageCheck($adapter->commit([['kind' => 'delete','entity' => 'messages','id' => $id],['kind' => 'put','entity' => 'leases','row' => $next,'expectedRev' => $lease['_rev']]])['ok'] && $adapter->get('messages', [$id]) === [], 'native '.$dialect.' same-session fenced child delete');
+    storageCheck($adapter->commit([['kind' => 'delete','entity' => 'messages','id' => $id],['kind' => 'put','entity' => 'leases','row' => $next,'expectedRev' => $lease['_rev']]])['ok'] && $adapter->get('messages', [$id]) === [], 'native '.$dialect.' same-connection fenced child delete');
     $pdo->beginTransaction();
     storageRaises(fn () => $adapter->setup(), 'storage_borrowed_transaction_active');
     storageCheck($pdo->inTransaction(), 'setup never commits caller transaction');
@@ -69,7 +69,7 @@ foreach ($connections as $dialect => $pdo) {
     $pdo->exec('UPDATE '.$quote($prefix.'storage_schema').' SET '.$quote('version').'=1');
     storageRaises(fn () => $adapter->setup(), 'storage_schema_mismatch');
     storageCheck((int)$pdo->query('SELECT '.$quote('version').' FROM '.$quote($prefix.'storage_schema'))->fetchColumn() === 1, 'schema mismatch never overwrites version');
-    $pdo->exec('UPDATE '.$quote($prefix.'storage_schema').' SET '.$quote('version').'=2');
+    $pdo->exec('UPDATE '.$quote($prefix.'storage_schema').' SET '.$quote('version').'=3');
     $adapter->setup();
     if ($dialect === 'mysql') {
         $mode = $pdo->query('SELECT @@SESSION.sql_mode')->fetchColumn();
@@ -78,10 +78,10 @@ foreach ($connections as $dialect => $pdo) {
         $pdo->exec('SET SESSION sql_mode='.$pdo->quote($mode));
         // MyISAM's own 1000-byte key ceiling requires a smaller synthetic key
         // before constructing the nontransactional negative fixture.
-        $pdo->exec('ALTER TABLE '.$quote($prefix.'sessions').' MODIFY '.$quote('_id').' varchar(191) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, ENGINE=MyISAM');
+        $pdo->exec('ALTER TABLE '.$quote($prefix.'connections').' MODIFY '.$quote('_id').' varchar(191) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, ENGINE=MyISAM');
         storageRaises(fn () => $adapter->setup(), 'storage_mysql_innodb_required');
-        $pdo->exec('ALTER TABLE '.$quote($prefix.'sessions').' ENGINE=InnoDB');
-        $pdo->exec('ALTER TABLE '.$quote($prefix.'sessions').' MODIFY '.$quote('_id').' varchar(1024) CHARACTER SET ascii COLLATE ascii_bin NOT NULL');
+        $pdo->exec('ALTER TABLE '.$quote($prefix.'connections').' ENGINE=InnoDB');
+        $pdo->exec('ALTER TABLE '.$quote($prefix.'connections').' MODIFY '.$quote('_id').' varchar(1024) CHARACTER SET ascii COLLATE ascii_bin NOT NULL');
         $adapter->setup();
     }
     $adapter->close();

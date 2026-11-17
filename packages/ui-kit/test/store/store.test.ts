@@ -12,9 +12,9 @@ describe("createPolymorfaStore routing", () => {
   it("keeps Meta account notices separate and applies provider template status and quality", async () => {
     const store = await openStore();
     await store.ingest([
-      event("session.status", { status: "connected" }, { at: 1000 }),
+      event("connection.status", { status: "connected" }, { at: 1000 }),
       event(
-        "session.status",
+        "connection.status",
         {
           source: "meta",
           kind: "account_alerts",
@@ -54,7 +54,7 @@ describe("createPolymorfaStore routing", () => {
         { at: 2500 },
       ),
     ]);
-    expect(await store.sessions.get("support")).toMatchObject({
+    expect(await store.connections.get("support")).toMatchObject({
       status: "connected",
       cloudAccountNotification: {
         kind: "account_alerts",
@@ -165,7 +165,7 @@ describe("createPolymorfaStore routing", () => {
     store.close();
   });
 
-  it("applies chat, contact, presence, label, session, template, and group events", async () => {
+  it("applies chat, contact, presence, label, connection, template, and group events", async () => {
     const store = await openStore();
     await store.ingest([
       received("m1", "hi", { at: 1_000 }),
@@ -203,13 +203,13 @@ describe("createPolymorfaStore routing", () => {
         messageId: "m1",
         starred: true,
       }),
-      event("session.connected", {
+      event("connection.connected", {
         phoneNumber: "+15559999",
         pushName: "Support",
         phonePlatform: "android",
         accountType: "business",
       }),
-      event("session.status", { status: "ready" }),
+      event("connection.status", { status: "ready" }),
       event("template.status", {
         templateName: "welcome",
         templateId: "t1",
@@ -245,7 +245,7 @@ describe("createPolymorfaStore routing", () => {
       color: 3,
     });
     expect(await store.messages.get("m1")).toMatchObject({ starred: true });
-    expect(await store.sessions.get("support")).toMatchObject({
+    expect(await store.connections.get("support")).toMatchObject({
       status: "ready",
       phoneNumber: "+15559999",
     });
@@ -371,11 +371,17 @@ describe("idempotency and ordering", () => {
     store.close();
   });
 
-  it("ignores malformed envelopes and other sessions", async () => {
-    const store = await openStore({ session: "support" });
+  it("ignores malformed envelopes and other connections", async () => {
+    const store = await openStore({ connection: "support" });
     const result = await store.ingest([
-      { id: "", session: "support", timestamp: "x", event: "a", payload: {} },
-      event("contact.update", { id: "c" }, { session: "sales" }),
+      {
+        id: "",
+        connection: "support",
+        timestamp: "x",
+        event: "a",
+        payload: {},
+      },
+      event("contact.update", { id: "c" }, { connection: "sales" }),
     ]);
     expect(result).toEqual({ accepted: 0, duplicates: 0, ignored: 2 });
     store.close();

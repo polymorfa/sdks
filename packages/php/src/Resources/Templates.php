@@ -41,7 +41,7 @@ final class Templates extends Resource
     public function preview(string $projectSlug, string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{success:true,data:array<string,mixed>}> */ return $this->request('POST', $this->path($projectSlug, $id).'/preview', $body === [] ? new \stdClass() : $body, options:$options);
     }
-    /** @param array{session:string} $body
+    /** @param array{connection:string} $body
      * @return ApiResponse<array{success:true,data:array<string,mixed>}> */
     public function submit(string $projectSlug, string $id, array $body, ?RequestOptions $options = null): ApiResponse
     { /** @var ApiResponse<array{success:true,data:array<string,mixed>}> */ return $this->request('POST', $this->path($projectSlug, $id).'/submit', $body, options:($options ?? new RequestOptions())->withoutRetries());

@@ -33,7 +33,7 @@ export interface CreateStorageOptions {
   readonly maxRetries?: number;
   /** Rows deleted per page by `clearChat`. Default 200. */
   readonly clearPageSize?: number;
-  /** Fenced per-session lease duration. Default 30 seconds. */
+  /** Fenced per-connection lease duration. Default 30 seconds. */
   readonly leaseDurationMs?: number;
   /** Maximum wait to acquire a busy lease. Default 30 seconds. */
   readonly leaseWaitMs?: number;
@@ -71,8 +71,11 @@ export interface Storage {
     key: RowKey,
   ): Promise<Record<string, FieldValue> | null>;
   query(entity: EntityName, query: IndexQuery): Promise<QueryPage>;
-  getCheckpoint(sessionId: string, stream: string): Promise<Checkpoint | null>;
-  hasEvent(sessionId: string, eventId: string): Promise<boolean>;
+  getCheckpoint(
+    connectionId: string,
+    stream: string,
+  ): Promise<Checkpoint | null>;
+  hasEvent(connectionId: string, eventId: string): Promise<boolean>;
 }
 
 export class StorageLeaseLostError extends Error {
@@ -131,20 +134,20 @@ export function createStorage(
   )
     throw new TypeError("Storage retry and clear-page bounds are invalid.");
   const commitSize = adapter.capabilities.maxCommitSize - 1;
-  // Scoped by the durable session lease, not by a process-local mutex.
+  // Scoped by the durable connection lease, not by a process-local mutex.
   interface Lease {
     row: StoredRow;
     lost: boolean;
   }
-  async function acquire(sessionId: string): Promise<Lease> {
-    const id = encodeKey(STORAGE_SCHEMA.leases, { sessionId });
+  async function acquire(connectionId: string): Promise<Lease> {
+    const id = encodeKey(STORAGE_SCHEMA.leases, { connectionId });
     const owner = crypto.randomUUID();
     const deadline = performance.now() + leaseWait;
     for (;;) {
       const existing = (await adapter.get("leases", [id])).get(id);
       if (!existing || !existing.owner || Number(existing.expiresAt) <= now()) {
         const row: StoredRow = {
-          ...(existing ?? emptyRow(STORAGE_SCHEMA.leases, { sessionId })),
+          ...(existing ?? emptyRow(STORAGE_SCHEMA.leases, { connectionId })),
           owner,
           expiresAt: now() + leaseDuration,
           _rev: (existing?._rev ?? 0) + 1,
@@ -261,7 +264,7 @@ export function createStorage(
           const base =
             current ??
             emptyRow(definition, {
-              sessionId: operation.sessionId,
+              connectionId: operation.connectionId,
               stream: operation.stream,
             });
           stored.set(slot, {
@@ -358,7 +361,10 @@ export function createStorage(
     for (;;) {
       const messages = await adapter.query("messages", {
         index: "by_chat",
-        equals: { sessionId: operation.sessionId, chatId: operation.chatId },
+        equals: {
+          connectionId: operation.connectionId,
+          chatId: operation.chatId,
+        },
         range: { lte: operation.upTo },
         order: "asc",
         limit: clearPageSize,
@@ -367,7 +373,7 @@ export function createStorage(
       const deletes: RowOperation[] = [];
       for (const message of messages) {
         const messageId = String(message.messageId);
-        const key = { sessionId: operation.sessionId, messageId };
+        const key = { connectionId: operation.connectionId, messageId };
         deletes.push({ kind: "delete", entity: "media", key });
         for (const entity of ["reactions", "receipts", "poll_votes"] as const) {
           for (;;) {
@@ -414,7 +420,7 @@ export function createStorage(
         operation.guard
       ) {
         const key = {
-          sessionId: operation.guard.sessionId,
+          connectionId: operation.guard.connectionId,
           chatId: operation.guard.chatId,
         };
         chatIds.set(encodeKey(STORAGE_SCHEMA.chats, key), key);
@@ -430,7 +436,7 @@ export function createStorage(
         return true;
       const chat = chats.get(
         encodeKey(STORAGE_SCHEMA.chats, {
-          sessionId: operation.guard.sessionId,
+          connectionId: operation.guard.connectionId,
           chatId: operation.guard.chatId,
         }),
       );
@@ -446,21 +452,21 @@ export function createStorage(
   const storage: Storage = {
     adapter,
     async apply(batch) {
-      if (!batch.sessionId)
-        throw new TypeError("A storage session is required.");
+      if (!batch.connectionId)
+        throw new TypeError("A storage connection is required.");
       for (const operation of batch.operations) {
-        const session =
+        const connection =
           operation.kind === "clearChat" || operation.kind === "checkpoint"
-            ? operation.sessionId
-            : operation.key.sessionId;
+            ? operation.connectionId
+            : operation.key.connectionId;
         if (
-          session !== batch.sessionId ||
+          connection !== batch.connectionId ||
           ((operation.kind === "upsert" || operation.kind === "patch") &&
             operation.guard &&
-            operation.guard.sessionId !== batch.sessionId)
+            operation.guard.connectionId !== batch.connectionId)
         )
           throw new TypeError(
-            "A storage batch cannot write a foreign session.",
+            "A storage batch cannot write a foreign connection.",
           );
         if (
           operation.kind !== "clearChat" &&
@@ -469,12 +475,15 @@ export function createStorage(
         )
           throw new TypeError("Storage lease rows are owned by the engine.");
       }
-      const lease = await acquire(batch.sessionId);
+      const lease = await acquire(batch.connectionId);
       try {
         const eventsDefinition = STORAGE_SCHEMA.events;
         let marker: RowWrite[] = [];
         if (batch.eventId !== undefined) {
-          const key = { sessionId: batch.sessionId, eventId: batch.eventId };
+          const key = {
+            connectionId: batch.connectionId,
+            eventId: batch.eventId,
+          };
           const id = encodeKey(eventsDefinition, key);
           const existing = await adapter.get("events", [id]);
           if (existing.has(id)) return { applied: false, writes: 0 };
@@ -546,8 +555,8 @@ export function createStorage(
             : undefined,
       };
     },
-    async getCheckpoint(sessionId, stream) {
-      const row = await storage.get("checkpoints", { sessionId, stream });
+    async getCheckpoint(connectionId, stream) {
+      const row = await storage.get("checkpoints", { connectionId, stream });
       if (!row || typeof row.cursor !== "string") return null;
       return {
         cursor: row.cursor,
@@ -555,8 +564,8 @@ export function createStorage(
         updatedAt: typeof row.updatedAt === "number" ? row.updatedAt : null,
       };
     },
-    async hasEvent(sessionId, eventId) {
-      return (await storage.get("events", { sessionId, eventId })) !== null;
+    async hasEvent(connectionId, eventId) {
+      return (await storage.get("events", { connectionId, eventId })) !== null;
     },
   };
   return storage;
@@ -569,7 +578,7 @@ function operationEntity(operation: RowOperation): EntityName {
 function operationId(operation: RowOperation): string {
   if (operation.kind === "checkpoint")
     return encodeKey(STORAGE_SCHEMA.checkpoints, {
-      sessionId: operation.sessionId,
+      connectionId: operation.connectionId,
       stream: operation.stream,
     });
   return encodeKey(entityDefinition(operation.entity), operation.key);

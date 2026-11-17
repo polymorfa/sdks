@@ -29,7 +29,7 @@ internal static class StorageLeaseScanTests
             LeaseDuration = TimeSpan.FromSeconds(10),
             Now = () => Interlocked.Read(ref adapter.Clock)
         });
-        var key = new Dictionary<string, string> { { "sessionId", "slow" }, { "messageId", "m" } };
+        var key = new Dictionary<string, string> { { "connectionId", "slow" }, { "messageId", "m" } };
         var fields = new Dictionary<string, StorageFieldWrite>
         {
             { "chatId", new(JsonSerializer.SerializeToElement("chat"), 1) },
@@ -48,7 +48,7 @@ internal static class StorageLeaseScanTests
         var storage = new CustomerStorage(adapter, new() { LeaseDuration = TimeSpan.FromSeconds(10), Now = () => Interlocked.Read(ref adapter.Clock) });
         var entities = new[] { StorageEntity.Chats, StorageEntity.Messages, StorageEntity.Contacts };
         var operations = entities.Select(entity => (StorageOperation)new StorageUpsert(entity,
-            StorageSchema.Definition(entity).Key.ToDictionary(name => name, name => name == "sessionId" ? "slow" : "one"),
+            StorageSchema.Definition(entity).Key.ToDictionary(name => name, name => name == "connectionId" ? "slow" : "one"),
             new Dictionary<string, StorageFieldWrite>())).ToArray();
         await storage.ApplyAsync(new("slow", operations, "planned"));
         ResourceTests.True(adapter.Clock > 10000);

@@ -15,9 +15,9 @@ describe("placement recipient serialization", () => {
       credential: { type: "apiKey", value: TEAM_API_KEY },
       fetch,
     });
-    expect(() => client.voip.place({ session: "support", ...targets })).toThrow(
-      PolymorfaValidationError,
-    );
+    expect(() =>
+      client.voip.place({ connection: "support", ...targets }),
+    ).toThrow(PolymorfaValidationError);
     expect(fetch).not.toHaveBeenCalled();
   });
 });

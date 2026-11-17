@@ -6,7 +6,7 @@ internal static class CampaignFollowUpTests
 {
     private static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
     private const string Report = """{"total":12,"waiting":1,"scheduled":2,"sending":3,"sent":4,"delivered":5,"read":6,"replied":7,"cancelled":8,"expired":9,"failed":10,"unknown":11,"nextDueAt":9007199254740993}""";
-    private const string Summary = """{"id":"follow-up","numberId":"number","status":"outcome_unknown","anchorKind":"read","firstDeliveredAt":9007199254740993,"firstReadAt":9007199254740994,"dueAt":null,"expiresAt":9007199254740995,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":"wait_expired","commandId":null}""";
+    private const string Summary = """{"id":"follow-up","connectionId":"number","status":"outcome_unknown","anchorKind":"read","firstDeliveredAt":9007199254740993,"firstReadAt":9007199254740994,"dueAt":null,"expiresAt":9007199254740995,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":"wait_expired","commandId":null}""";
     public static async Task RunAsync()
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);

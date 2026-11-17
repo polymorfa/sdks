@@ -9,12 +9,12 @@ export type HybridRoutingPolicyScope =
   | { readonly scope: "team" }
   | { readonly scope: "project"; readonly projectId: string }
   | {
-      readonly scope: "session";
+      readonly scope: "connection";
       readonly projectId: string;
-      readonly session: string;
+      readonly connection: string;
     };
 export interface HybridRoutingPolicy {
-  readonly scope: "team" | "project" | "session";
+  readonly scope: "team" | "project" | "connection";
   readonly revision: string;
   readonly prefer: HybridConnectionKind | null;
   readonly allowedTransports: readonly HybridConnectionKind[];
@@ -71,18 +71,18 @@ export class HybridLinkResource {
     });
   }
   state(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<HybridLinkState>>> {
     this.assertServerCredential();
     return this.transport.request({
       method: "GET",
-      path: this.path(session),
+      path: this.path(connection),
       ...options,
     });
   }
   setPaused(
-    session: string,
+    connection: string,
     body: SetHybridLinkPausedRequest,
     options: RequestOptions = {},
   ): Promise<
@@ -91,13 +91,13 @@ export class HybridLinkResource {
     this.assertServerCredential();
     return this.transport.request({
       method: "PUT",
-      path: this.path(session),
+      path: this.path(connection),
       body,
       ...options,
     });
   }
-  private path(session: string): string {
-    return `/messaging/${encodeURIComponent(session)}/hybrid-link`;
+  private path(connection: string): string {
+    return `/messaging/${encodeURIComponent(connection)}/hybrid-link`;
   }
   private assertServerCredential(): void {
     if (this.credentialType === "clientToken")

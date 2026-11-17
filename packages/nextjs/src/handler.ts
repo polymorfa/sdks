@@ -122,11 +122,11 @@ const CUSTOMER_TOKEN_ACTIONS: ReadonlySet<string> = new Set([
  * explicit.
  */
 export type PolymorfaGrantInput = (
-  | { readonly session: string; readonly customer?: never }
+  | { readonly connection: string; readonly customer?: never }
   | {
       /** Polymorfa Customer ID (beta). Never your own external ID. */
       readonly customer: string;
-      readonly session?: never;
+      readonly connection?: never;
     }
 ) & {
   /** Conversation IDs the user may read, or `"all"` for every one. */
@@ -141,7 +141,7 @@ export type PolymorfaGrantInput = (
 
 /** The grant as the handler resolved it. */
 export interface PolymorfaGrant {
-  readonly session?: string;
+  readonly connection?: string;
   readonly customer?: string;
   readonly conversations: "all" | readonly string[];
   readonly allow: readonly PolymorfaPermission[];
@@ -160,7 +160,7 @@ export interface PolymorfaRouteContext<User> {
 /** One conversation list row, as `<Inbox/>` renders it. */
 export interface HistoryConversation {
   readonly id: string;
-  readonly session?: string;
+  readonly connection?: string;
   readonly name?: string;
   readonly phoneNumber?: string;
   readonly avatarUrl?: string;
@@ -212,7 +212,7 @@ export interface HistoryPage<T> {
 /** A webhook event envelope for the events relay. */
 export interface RelayEvent {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly event: string;
   readonly timestamp: string;
   readonly payload: unknown;
@@ -220,7 +220,7 @@ export interface RelayEvent {
 
 /** What the handler sends to `POST /platform/client-tokens`. */
 export interface ClientTokenMintInput {
-  readonly session?: string;
+  readonly connection?: string;
   readonly customer?: string;
   readonly allow?: readonly string[];
   readonly ephemeralId: string;
@@ -318,7 +318,7 @@ export interface PolymorfaHandlerOptions<User extends { readonly id: string }> {
   };
   /**
    * `GET /events` as server-sent events, gated by `subscribe_events`.
-   * Events outside the grant's session and conversations are dropped.
+   * Events outside the grant's connection and conversations are dropped.
    */
   readonly events?: (
     context: PolymorfaRouteContext<User> & { readonly lastEventId?: string },
@@ -335,7 +335,7 @@ export interface PolymorfaHandlerOptions<User extends { readonly id: string }> {
     readonly projectSlug: (
       context: PolymorfaRouteContext<User>,
     ) => string | Promise<string>;
-    readonly submissionSession: (
+    readonly submissionConnection: (
       context: PolymorfaRouteContext<User>,
     ) => string | Promise<string>;
   };
@@ -474,8 +474,8 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
             },
             resolveProjectSlug: (_subject, request) =>
               options.templates!.projectSlug(contexts.get(request)!),
-            resolveSubmissionSession: (_subject, request) =>
-              options.templates!.submissionSession(contexts.get(request)!),
+            resolveSubmissionConnection: (_subject, request) =>
+              options.templates!.submissionConnection(contexts.get(request)!),
           });
           return async (request: Request) => {
             contexts.set(request, await resolve(request, "manage_templates"));
@@ -532,9 +532,9 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
   async function mintToken(request: Request): Promise<Response> {
     const { grant } = await resolve(request);
     let body: ClientTokenMintInput;
-    if (grant.session !== undefined)
+    if (grant.connection !== undefined)
       body = {
-        session: grant.session,
+        connection: grant.connection,
         // Wrapper-only permissions stay on this handler. An empty API action
         // set is an explicit zero ceiling, never omission/follow-live-rules.
         allow: grant.allow.filter((action) =>
@@ -545,7 +545,7 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
       };
     else {
       // The API narrows Customer tokens to these actions. Omitting allow
-      // would fall back to the session rules, so an empty list is refused.
+      // would fall back to the connection rules, so an empty list is refused.
       const allow = grant.allow.filter((action) =>
         CUSTOMER_TOKEN_ACTIONS.has(action),
       );
@@ -578,7 +578,9 @@ export function createPolymorfaHandler<User extends { readonly id: string }>(
       expiresAt,
       scopes: grant.allow,
       grant: {
-        ...(grant.session === undefined ? {} : { session: grant.session }),
+        ...(grant.connection === undefined
+          ? {}
+          : { connection: grant.connection }),
         ...(grant.customer === undefined ? {} : { customer: grant.customer }),
         conversations: grant.conversations,
         allow: grant.allow,
@@ -780,12 +782,14 @@ function normalizeGrant(
   input: PolymorfaGrantInput,
   userId: string,
 ): PolymorfaGrant {
-  const hasSession =
-    typeof input.session === "string" && input.session.length > 0;
+  const hasConnection =
+    typeof input.connection === "string" && input.connection.length > 0;
   const hasCustomer =
     typeof input.customer === "string" && input.customer.length > 0;
-  if (hasSession === hasCustomer)
-    throw new TypeError("mint must return exactly one of session or customer.");
+  if (hasConnection === hasCustomer)
+    throw new TypeError(
+      "mint must return exactly one of connection or customer.",
+    );
   if (
     !Array.isArray(input.allow) ||
     input.allow.length === 0 ||
@@ -816,8 +820,8 @@ function normalizeGrant(
   if (typeof ephemeralId !== "string" || ephemeralId.length === 0)
     throw new TypeError("ephemeralId must be a non-empty string.");
   return Object.freeze({
-    ...(hasSession
-      ? { session: input.session! }
+    ...(hasConnection
+      ? { connection: input.connection! }
       : { customer: input.customer! }),
     conversations:
       conversations === "all" ? "all" : Object.freeze([...conversations]),
@@ -835,7 +839,7 @@ function eventAllowed(event: RelayEvent, grant: PolymorfaGrant): boolean {
     typeof event.event !== "string"
   )
     return false;
-  if (grant.session !== undefined && event.session !== grant.session)
+  if (grant.connection !== undefined && event.connection !== grant.connection)
     return false;
   if (grant.conversations === "all") return true;
   const conversationId = conversationOf(event);
@@ -843,7 +847,7 @@ function eventAllowed(event: RelayEvent, grant: PolymorfaGrant): boolean {
   // `from: null`, or telemetry) may belong to any conversation.
   if (conversationId === undefined && event.event.startsWith("call."))
     return false;
-  // Other session-level events carry no conversation and pass the session check.
+  // Other connection-level events carry no conversation and pass the connection check.
   return (
     conversationId === undefined || grant.conversations.includes(conversationId)
   );

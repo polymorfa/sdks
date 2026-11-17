@@ -23,7 +23,7 @@ export type CloudTemplateStatus =
 export interface CloudTemplate {
   readonly id: string;
   readonly tenantId: string;
-  readonly session: string;
+  readonly connection: string;
   readonly wabaId: string;
   readonly name: string;
   readonly language: string;
@@ -64,7 +64,7 @@ export type ListCloudTemplatesResponse = SuccessEnvelope<
   readonly CloudTemplate[]
 >;
 
-/** Meta templates for a Number created on an Official API connection, separate from project drafts. */
+/** Meta templates for a Connection created on an Official API connection, separate from project drafts. */
 export class CloudTemplatesResource {
   constructor(
     private readonly transport: HttpTransport,
@@ -82,19 +82,19 @@ export class CloudTemplatesResource {
 
   /** Refresh the complete Meta catalog before returning the saved templates. */
   list(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListCloudTemplatesResponse>> {
     this.requireServerCredential();
     return this.transport.request({
       method: "GET",
-      path: templatesPath(session),
+      path: templatesPath(connection),
       ...options,
     });
   }
 
   retrieve(
-    session: string,
+    connection: string,
     name: string,
     params: RetrieveCloudTemplateParams = {},
     options: RequestOptions = {},
@@ -102,7 +102,7 @@ export class CloudTemplatesResource {
     this.requireServerCredential();
     return this.transport.request({
       method: "GET",
-      path: templatePath(session, name),
+      path: templatePath(connection, name),
       query: { language: params.language },
       ...options,
     });
@@ -115,14 +115,14 @@ export class CloudTemplatesResource {
    * unknown, list templates before deciding whether another write is safe.
    */
   create(
-    session: string,
+    connection: string,
     body: CreateCloudTemplateRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CloudTemplateResponse>> {
     this.requireServerCredential();
     return this.transport.request({
       method: "POST",
-      path: templatesPath(session),
+      path: templatesPath(connection),
       body,
       ...options,
       maxNetworkRetries: 0,
@@ -131,7 +131,7 @@ export class CloudTemplatesResource {
 
   /** Acceptance is not approval. Read the template before retrying an uncertain edit. */
   update(
-    session: string,
+    connection: string,
     name: string,
     body: EditCloudTemplateRequest,
     params: RetrieveCloudTemplateParams = {},
@@ -140,7 +140,7 @@ export class CloudTemplatesResource {
     this.requireServerCredential();
     return this.transport.request({
       method: "PATCH",
-      path: templatePath(session, name),
+      path: templatePath(connection, name),
       query: { language: params.language },
       body,
       ...options,
@@ -154,24 +154,24 @@ export class CloudTemplatesResource {
    * templates to reconcile an unknown outcome.
    */
   delete(
-    session: string,
+    connection: string,
     name: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     this.requireServerCredential();
     return this.transport.request({
       method: "DELETE",
-      path: templatePath(session, name),
+      path: templatePath(connection, name),
       ...options,
       maxNetworkRetries: 0,
     });
   }
 }
 
-function templatesPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/templates`;
+function templatesPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/templates`;
 }
 
-function templatePath(session: string, name: string): string {
-  return `${templatesPath(session)}/${encodeURIComponent(name)}`;
+function templatePath(connection: string, name: string): string {
+  return `${templatesPath(connection)}/${encodeURIComponent(name)}`;
 }

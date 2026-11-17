@@ -109,7 +109,7 @@ impl EventStream {
                                             None=>None,
                                             Some(payload)=>{
                                                 let body=STANDARD.decode(&payload.data).map_err(|_|Error::local(ErrorKind::Server,"Malformed event stream payload.","invalid_response"))?;
-                                                Some(serde_json::from_slice(&body).map_err(|_|Error::local(ErrorKind::Server,"Malformed event stream webhook.","invalid_response"))?)
+                                                Some(crate::webhooks::parse_retained_stream_envelope(&body)?)
                                             }
                                         };
                                         let cursor=value["cursor"].as_str().ok_or_else(||Error::local(ErrorKind::Server,"Event stream cursor is missing.","invalid_response"))?.to_owned();
@@ -327,5 +327,53 @@ impl EventSubscription {
 impl Drop for EventSubscription {
     fn drop(&mut self) {
         self.unsubscribe();
+    }
+}
+
+#[cfg(test)]
+mod retained_selector_tests {
+    use crate::webhooks::parse_retained_stream_envelope as parse_stream_webhook;
+    #[test]
+    fn retained_view_keeps_active_schema_strict() {
+        let raw = br#"{"id":"retained","session":"support.old","timestamp":"now","event":"future.event","payload":{"opaque":[false,42]}}"#;
+        let before = raw.to_vec();
+        let view = parse_stream_webhook(raw).unwrap();
+        assert_eq!(view.connection, "support.old");
+        assert_eq!(view.payload, serde_json::json!({"opaque":[false,42]}));
+        assert_eq!(raw.as_slice(), before);
+        use base64::{engine::general_purpose::URL_SAFE_NO_PAD, Engine};
+        use hmac::{Hmac, Mac};
+        use sha2::Sha256;
+        let key = [7u8; 32];
+        let secret = URL_SAFE_NO_PAD.encode(key);
+        let mut mac = Hmac::<Sha256>::new_from_slice(&key).unwrap();
+        mac.update(b"1700000000.");
+        mac.update(raw);
+        let signature = format!(
+            "t=1700000000,v1={}",
+            hex::encode(mac.finalize().into_bytes())
+        );
+        let event =
+            crate::webhooks::construct_local_event(raw, &signature, &secret, 1700000000, 300)
+                .unwrap();
+        assert_eq!(event.envelope().connection, "support.old");
+        let mut changed = raw.to_vec();
+        changed.push(b' ');
+        assert!(crate::webhooks::construct_local_event(
+            &changed, &signature, &secret, 1700000000, 300
+        )
+        .is_err());
+
+        assert!(serde_json::from_slice::<crate::webhooks::WebhookEnvelope>(raw).is_err());
+        for selector in [
+            r#""session":null"#,
+            r#""session":1"#,
+            r#""session":"old","connection":"current"#,
+        ] {
+            let raw = format!(
+                r#"{{"id":"e","timestamp":"now","event":"future.event","payload":{{}},{selector}}}"#
+            );
+            assert!(parse_stream_webhook(raw.as_bytes()).is_err());
+        }
     }
 }

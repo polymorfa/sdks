@@ -15,7 +15,7 @@ const SelfID = "self"
 var contentFields = []string{"text", "caption", "mimeType", "fileName", "latitude", "longitude", "displayName", "title", "pollOptions", "extra"}
 var mediaSecrets = []string{"mediaKey", "descriptor", "directPath", "downloadUrl", "fileSha256", "fileEncSha256"}
 var statusRank = map[string]float64{"pending": 1, "failed": 2, "sent": 3, "delivered": 4, "read": 5, "played": 6}
-var StoredEventTypes = []string{"blocklist.update", "chat.archive", "chat.clear", "chat.delete", "chat.mute", "chat.read", "contact.update", "group.participant", "group.update", "history.sync", "labels.update", "message.ack", "message.delete", "message.edited", "message.reaction", "message.received", "message.revoked", "message.sent", "message.update", "message.vote", "newsletter.update", "session.connected", "session.logged_out", "session.status"}
+var StoredEventTypes = []string{"blocklist.update", "chat.archive", "chat.clear", "chat.delete", "chat.mute", "chat.read", "contact.update", "group.participant", "group.update", "history.sync", "labels.update", "message.ack", "message.delete", "message.edited", "message.reaction", "message.received", "message.revoked", "message.sent", "message.update", "message.vote", "newsletter.update", "connection.connected", "connection.logged_out", "connection.status"}
 
 func object(v any) map[string]any {
 	if x, ok := v.(map[string]any); ok {
@@ -145,8 +145,8 @@ func stringsFrom(f Fields, p map[string]any, names []string, version float64) {
 		putIf(f, name, nonempty(p[name]), version)
 	}
 }
-func rowOperation(entity, session string, key map[string]any, fields Fields, guard *Watermark) Operation {
-	k := map[string]any{"sessionId": session}
+func rowOperation(entity, connection string, key map[string]any, fields Fields, guard *Watermark) Operation {
+	k := map[string]any{"connectionId": connection}
 	for f, v := range key {
 		k[f] = v
 	}

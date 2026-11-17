@@ -25,7 +25,7 @@ function storageRaises(callable $run, string $code): void
 }
 function storageEvent(array $row): WebhookEvent
 {
-    return new WebhookEvent($row['id'], $row['session'], $row['timestamp'], $row['event'], $row['payload'], $row, true);
+    return new WebhookEvent($row['id'], $row['connection'], $row['timestamp'], $row['event'], $row['payload'], $row, true);
 }
 function storageExpected(Engine $engine, array $expected): void
 {
@@ -40,7 +40,7 @@ function storageExpected(Engine $engine, array $expected): void
     }
 }
 
-$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.json'), true, flags:JSON_THROW_ON_ERROR);
+$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.v3.json'), true, flags:JSON_THROW_ON_ERROR);
 foreach (['events','history'] as $kind) {
     $adapter = new StorageEngineMemory();
     $engine = new Engine($adapter);
@@ -76,7 +76,7 @@ $engine = new Engine($adapter);
 $engine->apply(HistoryReducer::reduce('s', $large, chunkId:'large'));
 $total = 0;
 foreach ($large['conversations'] as $conversation) {
-    $total += count($engine->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 's','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
+    $total += count($engine->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 's','chatId' => 'wa:'.$conversation['id']],'limit' => 1000])['rows']);
 }
 storageCheck($total === 2000, '2,000 history messages remain queryable');
 foreach ($adapter->commits as $writes) {
@@ -96,7 +96,7 @@ foreach ([true,false] as $details) {
     $engine = new Engine($adapter, maxRetries:0);
     $ops = [];
     foreach (['bad','good'] as $id) {
-        $ops[] = new Upsert('messages', ['sessionId' => 's','messageId' => $id], ['text' => new FieldWrite('body', 0)], new Watermark('s', 'chat', 1));
+        $ops[] = new Upsert('messages', ['connectionId' => 's','messageId' => $id], ['text' => new FieldWrite('body', 0)], new Watermark('s', 'chat', 1));
     }
     $batch = new Batch('s', $ops, 'event');
     storageRaises(fn () => $engine->apply($batch), 'storage_conflict');
@@ -110,7 +110,7 @@ $engine = new Engine($adapter);
 $guard = new Watermark('s', 'chat', 5);
 $ops = [];
 foreach (['messages','media','reactions','receipts','poll_votes'] as $entity) {
-    $key = ['sessionId' => 's','messageId' => 'm'];
+    $key = ['connectionId' => 's','messageId' => 'm'];
     foreach (Schema::definition($entity)['key'] as $keyName) {
         $key[$keyName] ??= 'child';
     } $fields = ['chatId' => new FieldWrite('chat', 0)];
@@ -121,27 +121,27 @@ foreach (['messages','media','reactions','receipts','poll_votes'] as $entity) {
     } $ops[] = new Upsert($entity, $key, $fields, $guard);
 }
 $engine->apply(new Batch('s', $ops));
-$engine->apply(new Batch('s', [new Upsert('chats', ['sessionId' => 's','chatId' => 'chat'], ['clearedAt' => new FieldWrite(10, 10)]),new ClearChat('s', 'chat', 10)]));
-storageCheck($engine->get('messages', ['sessionId' => 's','messageId' => 'm']) === null && $engine->get('media', ['sessionId' => 's','messageId' => 'm']) === null, 'clear deletes message and media');
+$engine->apply(new Batch('s', [new Upsert('chats', ['connectionId' => 's','chatId' => 'chat'], ['clearedAt' => new FieldWrite(10, 10)]),new ClearChat('s', 'chat', 10)]));
+storageCheck($engine->get('messages', ['connectionId' => 's','messageId' => 'm']) === null && $engine->get('media', ['connectionId' => 's','messageId' => 'm']) === null, 'clear deletes message and media');
 foreach (['reactions','receipts','poll_votes'] as $entity) {
-    storageCheck($engine->query($entity, ['index' => 'by_message','equals' => ['sessionId' => 's','messageId' => 'm'],'limit' => 100])['rows'] === [], 'clear deletes '.$entity);
+    storageCheck($engine->query($entity, ['index' => 'by_message','equals' => ['connectionId' => 's','messageId' => 'm'],'limit' => 100])['rows'] === [], 'clear deletes '.$entity);
 }
 foreach ([5,10] as $timestamp) {
-    $engine->apply(new Batch('s', [new Upsert('messages', ['sessionId' => 's','messageId' => 'm'], ['text' => new FieldWrite('late', 0)], new Watermark('s', 'chat', $timestamp))]));
-    storageCheck($engine->get('messages', ['sessionId' => 's','messageId' => 'm']) === null, 'watermark blocks older and equal timestamp');
+    $engine->apply(new Batch('s', [new Upsert('messages', ['connectionId' => 's','messageId' => 'm'], ['text' => new FieldWrite('late', 0)], new Watermark('s', 'chat', $timestamp))]));
+    storageCheck($engine->get('messages', ['connectionId' => 's','messageId' => 'm']) === null, 'watermark blocks older and equal timestamp');
 }
 
 $engine->apply(new Batch('s', [new Checkpoint('s', 'events', 'one', expectedCursor:null)]));
-$leaseId = Schema::encodeKey('leases', ['sessionId' => 's']);
+$leaseId = Schema::encodeKey('leases', ['connectionId' => 's']);
 $first = $adapter->rows['leases'][$leaseId]['_rev'];
 storageRaises(fn () => $engine->apply(new Batch('s', [new Checkpoint('s', 'events', 'two', expectedCursor:null)])), 'storage_checkpoint_conflict');
 storageCheck($engine->getCheckpoint('s', 'events')['cursor'] === 'one', 'stale checkpoint stays unchanged');
 storageCheck($adapter->rows['leases'][$leaseId]['_rev'] > $first && $adapter->rows['leases'][$leaseId]['owner'] === null, 'durable lease generation not reused');
-foreach ([new Upsert('messages', ['sessionId' => 'foreign','messageId' => 'm'], []),new Upsert('leases', ['sessionId' => 's'], []),new Upsert('messages', ['sessionId' => 's','messageId' => 'm'], [], new Watermark('foreign', 'chat', 1))] as $op) {
+foreach ([new Upsert('messages', ['connectionId' => 'foreign','messageId' => 'm'], []),new Upsert('leases', ['connectionId' => 's'], []),new Upsert('messages', ['connectionId' => 's','messageId' => 'm'], [], new Watermark('foreign', 'chat', 1))] as $op) {
     storageRaises(fn () => $engine->apply(new Batch('s', [$op])), 'invalid_storage_data');
 }
-$engine->apply(new Batch('s', [new Patch('messages', ['sessionId' => 's','messageId' => 'missing'], ['text' => new FieldWrite('patch', 1)])]));
-storageCheck($engine->get('messages', ['sessionId' => 's','messageId' => 'missing']) === null, 'patch does not create row');
+$engine->apply(new Batch('s', [new Patch('messages', ['connectionId' => 's','messageId' => 'missing'], ['text' => new FieldWrite('patch', 1)])]));
+storageCheck($engine->get('messages', ['connectionId' => 's','messageId' => 'missing']) === null, 'patch does not create row');
 
 $index = new HistoryIdentityIndex(conversations:['one@s.whatsapp.net' => 'chat-one','two@s.whatsapp.net' => 'chat-two'], messages:[['nativeId' => 'native','id' => 'a','chatId' => 'chat-one','fromMe' => false],['nativeId' => 'native','id' => 'b','chatId' => 'chat-one','fromMe' => true],['nativeId' => 'native','id' => 'c','chatId' => 'chat-two','fromMe' => false]]);
 $keys = new HistoryKeys($index);
@@ -152,7 +152,7 @@ foreach ([[1e-6,'0.000001'],[1e-7,'1e-7'],[1e21,'1e+21'],[-0.0,'0'],[1.25,'1.25'
     storageCheck(Rows::canonical($value) === $want, 'ECMAScript canonical number '.$want);
 }
 storageCheck(Rows::compare("\u{10000}", "\u{E000}") < 0, 'UTF16 string order');
-$row = Rows::empty('messages', ['sessionId' => 's','messageId' => 'merge']);
+$row = Rows::empty('messages', ['connectionId' => 's','messageId' => 'merge']);
 $a = ['text' => new FieldWrite('a', 1)];
 $b = ['text' => new FieldWrite('b', 1)];
 storageCheck(Rows::canonical(Rows::merge('messages', Rows::merge('messages', $row, $a), $b)) === Rows::canonical(Rows::merge('messages', Rows::merge('messages', $row, $b), $a)), 'equal-version merge is commutative');

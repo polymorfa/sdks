@@ -12,7 +12,7 @@ import (
 type CallRecord struct {
 	CallID          string   `json:"callId"`
 	ProjectID       *string  `json:"projectId"`
-	SessionID       string   `json:"sessionId"`
+	ConnectionID    string   `json:"connectionId"`
 	Direction       string   `json:"direction"`
 	Upstream        string   `json:"upstream"`
 	Outcome         string   `json:"outcome"`
@@ -85,7 +85,7 @@ type CallRecordAppReports struct {
 }
 type CallRecordSummary struct {
 	CallID          string               `json:"callId"`
-	SessionID       string               `json:"sessionId"`
+	ConnectionID    string               `json:"connectionId"`
 	ProjectID       *string              `json:"projectId"`
 	Direction       string               `json:"direction"`
 	State           string               `json:"state"`
@@ -111,8 +111,8 @@ type CallRecordHistory struct {
 	Truncated bool              `json:"truncated"`
 }
 type CallRecordCorrelation struct {
-	CallID    string `json:"callId"`
-	SessionID string `json:"sessionId"`
+	CallID       string `json:"callId"`
+	ConnectionID string `json:"connectionId"`
 }
 type CallRecordDetail struct {
 	Call         CallRecordSummary       `json:"call"`
@@ -155,7 +155,7 @@ type CallStats struct {
 	GroupsTruncated bool                   `json:"groupsTruncated"`
 	Heatmap         []CallStatsHeatmapCell `json:"heatmap"`
 }
-type CallFilters struct{ ProjectID, SessionID, Direction, Upstream, Outcome, Since, Until string }
+type CallFilters struct{ ProjectID, ConnectionID, Direction, Upstream, Outcome, Since, Until string }
 type ListCallRecordsParams struct {
 	CallFilters
 	ListParams
@@ -213,11 +213,11 @@ func (r *PlatformCalls) filters(p CallFilters) (url.Values, error) {
 		}
 		q.Set("projectId", p.ProjectID)
 	}
-	if p.SessionID != "" {
-		if err := callText(p.SessionID, "sessionId", 128); err != nil {
+	if p.ConnectionID != "" {
+		if err := callText(p.ConnectionID, "connectionId", 128); err != nil {
 			return nil, err
 		}
-		q.Set("sessionId", p.SessionID)
+		q.Set("connectionId", p.ConnectionID)
 	}
 	for _, v := range []struct {
 		s, key string
@@ -274,7 +274,7 @@ func (r *PlatformCalls) Stats(ctx context.Context, p CallStatsParams, o ...Reque
 		return Response[CallStats]{}, err
 	}
 	if p.GroupBy != "" {
-		if err = callEnum(p.GroupBy, "groupBy", "day", "hour", "session", "outcome"); err != nil {
+		if err = callEnum(p.GroupBy, "groupBy", "day", "hour", "connection", "outcome"); err != nil {
 			return Response[CallStats]{}, err
 		}
 		q.Set("groupBy", p.GroupBy)

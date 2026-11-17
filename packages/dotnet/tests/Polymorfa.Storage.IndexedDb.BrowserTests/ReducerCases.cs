@@ -17,7 +17,7 @@ internal static class ReducerCases
     internal static async Task Run(IJSRuntime runtime, string name, IJSObjectReference harness)
     {
         Check(new StorageHistoryNumber("0x20000000000003").ToNumber() == 9007199254740996d, "Wide radix history integer differs from TypeScript Number rounding");
-        using (var oracle = Fixture("reducer-batches-3bac.json"))
+        using (var oracle = Fixture("reducer-batches-connections-v3.json"))
         {
             Check(oracle.RootElement.GetProperty("source").GetString() == StorageSchema.SourceCommit, "Reducer oracle source differs");
             var events = 0; var histories = 0;
@@ -25,7 +25,7 @@ internal static class ReducerCases
             foreach (var test in oracle.RootElement.GetProperty("history").EnumerateArray()) { Compare(StorageReducers.ReduceHistoryChunk(test.GetProperty("input").Deserialize<StorageHistoryInput>(Json)!), test.GetProperty("batch"), "Native WASM history reducer differs from exact TypeScript oracle"); histories++; }
             Check(events == 43 && histories == 15, "Reducer oracle coverage changed");
         }
-        using var fixture = Fixture("storage-3bac.json");
+        using var fixture = Fixture("storage-connections-v3.json");
         var eventName = name + "_reducer-events";
         await using (var adapter = await IndexedDbStorageAdapter.ConnectAsync(runtime, new("browser-tests") { DatabaseName = eventName }))
         {
@@ -72,7 +72,7 @@ internal static class ReducerCases
             }
         };
         await storage.ApplyEventAsync(linked, options);
-        var saved = await storage.GetAsync(StorageEntity.Messages, new Dictionary<string, string> { { "sessionId", "browser-decoder" }, { "messageId", "platform-message" } });
+        var saved = await storage.GetAsync(StorageEntity.Messages, new Dictionary<string, string> { { "connectionId", "browser-decoder" }, { "messageId", "platform-message" } });
         Check(saved is not null && saved["chatId"].GetString() == "platform-chat" && saved["text"].GetString() == "mapped native history", "Browser decoded history lost platform identity or content");
         Check(!(await storage.ApplyEventAsync(linked, options)).Applied && calls == 1, "Browser history replay invoked decoder again");
         var webhookEvent = Webhooks.ParseVerifiedEvent(JsonSerializer.SerializeToUtf8Bytes(new WebhookEnvelope("browser-stream-event", "browser-stream", "2026-10-01T12:00:00Z", "message.received", JsonSerializer.SerializeToElement(new { id = "stream-message", conversation = new { id = "stream-chat" }, timestamp = 1790856000, type = "text", text = "stored before ACK" })), Json));
@@ -84,7 +84,7 @@ internal static class ReducerCases
             Check((await storage.CheckpointAsync("browser-stream-cursor", "events"))?.Cursor == ack.Cursor && ack.Cursor == "browser-cursor", "Browser ACK preceded native checkpoint");
             acknowledged = true;
         });
-        await using var sync = source.SyncToStorage(storage, new() { CheckpointSessionId = "browser-stream-cursor" }); await sync.Completion;
+        await using var sync = source.SyncToStorage(storage, new() { CheckpointConnectionId = "browser-stream-cursor" }); await sync.Completion;
         Check(acknowledged, "Browser application-owned stream was not acknowledged");
     }
     private sealed class SyntheticSource(EventStreamItem item, Func<string, EventStreamAcknowledgement, Task> acknowledge) : IStorageEventStreamSource

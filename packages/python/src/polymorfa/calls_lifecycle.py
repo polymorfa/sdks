@@ -62,7 +62,7 @@ class LifecycleEvent:
 
 @dataclass(frozen=True)
 class LifecycleReady:
-    session: str | None = None
+    connection: str | None = None
     participant: str | None = None
 
 
@@ -114,7 +114,7 @@ class LifecycleSocket:
         self,
         tokens: CallsTokenSource,
         *,
-        session: str | None = None,
+        connection: str | None = None,
         participant: str | None = None,
         base_url: str = "https://api.polymorfa.com",
         heartbeat_interval: float = 15,
@@ -134,10 +134,10 @@ class LifecycleSocket:
             or min(heartbeat_interval, connect_timeout, refresh_before_expiry) < 0
         ):
             raise ConfigurationError("lifecycle_socket")
-        self._tokens, self._base, self._session, self._participant = (
+        self._tokens, self._base, self._connection, self._participant = (
             tokens,
             socket_base_url(base_url),
-            session,
+            connection,
             participant,
         )
         self._interval, self._timeout = heartbeat_interval, connect_timeout
@@ -191,7 +191,7 @@ class LifecycleSocket:
                     query = {
                         key: value
                         for key, value in {
-                            "session": self._session,
+                            "connection": self._connection,
                             "participant": self._participant,
                         }.items()
                         if value is not None
@@ -207,7 +207,7 @@ class LifecycleSocket:
                         if frame.get("type") == "ready":
                             if any(
                                 key in frame and not isinstance(frame[key], str)
-                                for key in ("session", "participant")
+                                for key in ("connection", "participant")
                             ):
                                 continue
                             p = frame.get("participant")
@@ -215,10 +215,10 @@ class LifecycleSocket:
                                 self.participant = p
                             if self.ready.full():
                                 self.ready.get_nowait()
-                            session = frame.get("session")
+                            connection = frame.get("connection")
                             self.ready.put_nowait(
                                 LifecycleReady(
-                                    session if isinstance(session, str) else None,
+                                    connection if isinstance(connection, str) else None,
                                     p if isinstance(p, str) else None,
                                 )
                             )

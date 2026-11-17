@@ -189,20 +189,20 @@ final class DynamodbAdapter implements Adapter
      * @return array<string,mixed> */ private function item(string $entity, array $row): array
     {
         Schema::validateRow($entity, $row);
-        return DocumentRows::map(DocumentRows::call($this->marshaler, 'marshalItem', [self::numbers(['pk' => $this->partition($entity),'sk' => $row['_id'],'row' => DocumentRows::encode($entity, $row)])]));
+        return DocumentRows::map(DocumentRows::call($this->marshaler, 'marshalItem', [self::connections(['pk' => $this->partition($entity),'sk' => $row['_id'],'row' => DocumentRows::encode($entity, $row)])]));
     }
-    private static function numbers(mixed $value): mixed
+    private static function connections(mixed $value): mixed
     {
         if (is_float($value)) {
             return DocumentRows::construct('Aws\\DynamoDb\\NumberValue', [Rows::canonical($value)]);
         }
         if (is_array($value)) {
-            return array_map(self::numbers(...), $value);
+            return array_map(self::connections(...), $value);
         }
         if ($value instanceof \stdClass) {
             $result = new \stdClass();
             foreach ((array)$value as $key => $item) {
-                $result->{(string)$key} = self::numbers($item);
+                $result->{(string)$key} = self::connections($item);
             } return $result;
         }
         return $value;

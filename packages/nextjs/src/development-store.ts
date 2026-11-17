@@ -130,7 +130,7 @@ export function createDevelopmentInboxStore(
         : conversation.row.phoneNumber;
     conversation.row = {
       id: target.id,
-      session: event.session,
+      connection: event.connection,
       ...(name === undefined ? {} : { name }),
       ...(phone === undefined ? {} : { phoneNumber: phone }),
       lastMessage: { text, createdAt, direction },
@@ -234,12 +234,12 @@ function asEvent(value: unknown): RelayEvent | undefined {
   if (
     typeof event.id !== "string" ||
     typeof event.event !== "string" ||
-    typeof event.session !== "string"
+    typeof event.connection !== "string"
   )
     return undefined;
   return {
     id: event.id,
-    session: event.session,
+    connection: event.connection,
     event: event.event,
     timestamp:
       typeof event.timestamp === "string"

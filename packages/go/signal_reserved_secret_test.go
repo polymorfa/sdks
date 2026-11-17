@@ -54,7 +54,7 @@ func TestSignalReservedPolymorfaSecretsRejectedBeforeRequests(t *testing.T) {
 		t.Fatal("reserved secret configuration reached the network")
 	}
 	client := signalClient(t, server.URL, "synthetic-independent-application-secret")
-	if _, err := client.Sessions(context.Background()); err == nil || requests.Load() != 1 || bearer.Load() != "Bearer synthetic-independent-application-secret" {
+	if _, err := client.Connections(context.Background()); err == nil || requests.Load() != 1 || bearer.Load() != "Bearer synthetic-independent-application-secret" {
 		t.Fatal("independent secret control", err, requests.Load())
 	}
 }

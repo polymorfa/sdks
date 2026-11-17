@@ -26,7 +26,7 @@ $server->onHandshake(function (Server $server, Connection $connection, RequestIn
     }
     $path = $request->getUri()->getPath();
     if ($path === '/voip/ws') {
-        if ($request->getUri()->getQuery() !== 'session=support') {
+        if ($request->getUri()->getQuery() !== 'connection=support') {
             throw new RuntimeException('Wrong lifecycle query.');
         }
     } elseif (!preg_match('#^/voip/calls/(incoming_1|outbound_1|ended_1|claimed_1)/media$#', $path) || $request->getUri()->getQuery() !== '' || $response->getHeaderLine('Sec-WebSocket-Protocol') !== 'pmfa.calls.v2') {
@@ -48,7 +48,7 @@ $server->onText(function (Server $server, Connection $connection, Text $message)
                 throw new RuntimeException('Wrong lifecycle auth.');
             }
             $lifecycle = $connection;
-            $connection->text('{"type":"ready","session":"support","participant":"server:default"}');
+            $connection->text('{"type":"ready","connection":"support","participant":"server:default"}');
             $connection->text($event('call.ended', 'ghost', ['reason' => 'busy']));
             $connection->text($event('call.received', 'ghost', ['from' => '15550000003','direction' => 'incoming']));
             $connection->text($event('call.received', 'incoming_1', ['from' => '15550000001','direction' => 'incoming','hasVideo' => false,'capabilities' => ['video' => true,'invite' => true]]));

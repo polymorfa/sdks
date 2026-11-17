@@ -9,9 +9,9 @@ if ($server === false) {
 }
 echo json_encode(['url' => 'http://'.stream_socket_get_name($server, false)], JSON_THROW_ON_ERROR)."\n";
 flush();
-$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.json'), true, flags:JSON_THROW_ON_ERROR);
+$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.v3.json'), true, flags:JSON_THROW_ON_ERROR);
 $event = $fixture['events'][0];
-$event['session'] = 's';
+$event['connection'] = 's';
 $frame = ['type' => 'event','streamId' => 'native-stream','sequence' => 9,'cursor' => 'new','event' => ['id' => 'native-event','teamId' => 'team','projectId' => 'project','type' => $event['event'],'source' => 'runtime','environment' => 'development','createdAt' => $event['timestamp'],'payloadAvailability' => 'available','payload' => ['encoding' => 'base64','contentType' => 'application/json','data' => base64_encode(json_encode($event, JSON_THROW_ON_ERROR))],'replayableUntil' => null,'metadataExpiresAt' => $event['timestamp']]];
 $valid = true;
 $calls = [];

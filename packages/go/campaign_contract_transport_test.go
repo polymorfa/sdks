@@ -139,7 +139,7 @@ func TestCampaignContractStableTestSendReplay(t *testing.T) {
 	opts := RequestOptions{Headers: http.Header{"X-Custom": {"original"}}}
 	done := make(chan error, 1)
 	go func() {
-		_, e := c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123", Variables: &vars}, ProjectID: contractProject}, opts)
+		_, e := c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123", Variables: &vars}, ProjectID: contractProject}, opts)
 		done <- e
 	}()
 	<-received
@@ -204,13 +204,13 @@ func TestCampaignContractReplayAndErrors(t *testing.T) {
 					w.Header().Set("Idempotent-Replayed", "true")
 				}
 				w.WriteHeader(tc.status)
-				_, _ = io.WriteString(w, `{"error":{"code":"`+tc.code+`","param":"body.sessionId","message":"Safe refusal"}}`)
+				_, _ = io.WriteString(w, `{"error":{"code":"`+tc.code+`","param":"body.connectionId","message":"Safe refusal"}}`)
 			}))
 			defer s.Close()
 			c, _ := NewTeamClient(teamConfig(s.URL))
-			_, e := c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, RequestOptions{MaxNetworkRetries: cptr(0)})
+			_, e := c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123"}, ProjectID: contractProject}, RequestOptions{MaxNetworkRetries: cptr(0)})
 			var api *Error
-			if !errors.As(e, &api) || api.Code != tc.code || api.Status != tc.status || api.Field != "body.sessionId" || api.RequestID != "req-error" || api.Metadata.Headers.Get("X-Trace-ID") != "trace-error" {
+			if !errors.As(e, &api) || api.Code != tc.code || api.Status != tc.status || api.Field != "body.connectionId" || api.RequestID != "req-error" || api.Metadata.Headers.Get("X-Trace-ID") != "trace-error" {
 				t.Fatal(e)
 			}
 			if calls.Load() != 1 {
@@ -235,7 +235,7 @@ func TestCampaignContractReplayAndErrors(t *testing.T) {
 			}))
 			defer s.Close()
 			c, _ := NewTeamClient(teamConfig(s.URL))
-			_, _ = c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject})
+			_, _ = c.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123"}, ProjectID: contractProject})
 			if n.Load() != 1 {
 				t.Fatal(n.Load())
 			}

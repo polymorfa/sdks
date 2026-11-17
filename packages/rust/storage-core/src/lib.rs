@@ -1,7 +1,7 @@
 #![forbid(unsafe_code)]
 //! Portable customer-owned storage schema, merge rules and fenced engine.
-//! Contract source: 3bacf46f9c4213426314001586f5bae43aaa77de.
-pub const SOURCE_STORAGE_COMMIT: &str = "3bacf46f9c4213426314001586f5bae43aaa77de";
+//! Contract source: d80b581c9df122411e9149a7e39a33700a51571c.
+pub const SOURCE_STORAGE_COMMIT: &str = "d80b581c9df122411e9149a7e39a33700a51571c";
 mod runtime;
 pub mod schema;
 pub use schema::Entity;
@@ -42,7 +42,7 @@ pub struct FieldWrite {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ChatWatermarkGuard {
-    pub session_id: String,
+    pub connection_id: String,
     pub chat_id: String,
     pub timestamp: f64,
 }
@@ -68,16 +68,16 @@ pub enum StorageOperation {
         key: RowKey,
     },
     ClearChat {
-        #[serde(rename = "sessionId")]
-        session_id: String,
+        #[serde(rename = "connectionId")]
+        connection_id: String,
         #[serde(rename = "chatId")]
         chat_id: String,
         #[serde(rename = "upTo")]
         up_to: f64,
     },
     Checkpoint {
-        #[serde(rename = "sessionId")]
-        session_id: String,
+        #[serde(rename = "connectionId")]
+        connection_id: String,
         stream: String,
         cursor: String,
         #[serde(
@@ -96,7 +96,7 @@ pub enum StorageOperation {
 #[derive(Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct OperationBatch {
-    pub session_id: String,
+    pub connection_id: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub event_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

@@ -111,3 +111,5 @@ export {
   type SyncToStorageOptions,
 } from "./sync.js";
 export { memoryAdapter, type MemoryAdapter } from "./adapters/memory.js";
+
+export { upgradeSchema2Row } from "./schema3-upgrade.js";

@@ -7,9 +7,9 @@ import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   CallPermissionResponse,
-  SessionCallSettingsResponse,
+  ConnectionCallSettingsResponse,
   SuccessResponse,
-  UpdateSessionCallSettingsRequest,
+  UpdateConnectionCallSettingsRequest,
   VoipCheckCallRequest,
   VoipCheckCallResponse,
   VoipCallReportRequest,
@@ -73,7 +73,7 @@ const QUALITY_INTEGERS = {
  * Polymorfa Calls control routes. Every incoming call rings until a
  * participant accepts or rejects it. Server credentials act as
  * `server:<participant>` (default `default`); a client token acts as its own
- * participant. Mint browser tokens with `clientTokens.mint`; the session's
+ * participant. Mint browser tokens with `clientTokens.mint`; the connection's
  * client rules must grant `voip_place`, `voip_answer`, and `voip_signal`.
  */
 export class VoipResource {
@@ -97,7 +97,7 @@ export class VoipResource {
     });
   }
 
-  /** Reads a link through a Linked Device Number. The token stays in the POST body. */
+  /** Reads a link through a Linked Device Connection. The token stays in the POST body. */
   previewCallLink(
     body: VoipPreviewCallLinkRequest,
     options: RequestOptions = {},
@@ -124,12 +124,12 @@ export class VoipResource {
   ): void {
     this.assertServerCredential("Call links");
     if (
-      !nonEmpty(body?.session) ||
-      body.session.length > 128 ||
+      !nonEmpty(body?.connection) ||
+      body.connection.length > 128 ||
       (body.video !== undefined && typeof body.video !== "boolean")
     ) {
       throw new PolymorfaValidationError(
-        "Call links require a session and an optional boolean video flag.",
+        "Call links require a connection and an optional boolean video flag.",
       );
     }
     if (
@@ -149,9 +149,9 @@ export class VoipResource {
     body: VoipPlaceCallRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<VoipPlaceCallResponse>> {
-    if (this.credentialType !== "clientToken" && !nonEmpty(body?.session)) {
+    if (this.credentialType !== "clientToken" && !nonEmpty(body?.connection)) {
       throw new PolymorfaValidationError(
-        "Placing a call with a server credential requires a session.",
+        "Placing a call with a server credential requires a connection.",
       );
     }
     assertPlacementTargets(body.to, body.participants, body.groupId);
@@ -283,7 +283,7 @@ export class VoipResource {
       maxNetworkRetries: 0,
     });
   }
-  /** Set the Number's shared hand state on an attached call connection. */
+  /** Set the Connection's shared hand state on an attached call connection. */
   /** Uses current API authority. Inspect data.ok; unknown outcomes must not be replayed. */
   moderateWaitingRoom(
     callId: string,
@@ -368,18 +368,18 @@ export class VoipResource {
    * asked during the request: `fresh` is `false` when it could not be reached
    * and the stored state is returned instead. Linked-device numbers answer
    * `409 unsupported_for_connection`. Requires a server credential with
-   * `sessions:read`.
+   * `connections:read`.
    */
   retrieveCallPermission(
-    session: string,
+    connection: string,
     to: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CallPermissionResponse>> {
     this.assertServerCredential("Call permissions");
-    if (!nonEmpty(session)) {
+    if (!nonEmpty(connection)) {
       throw new PolymorfaConfigurationError(
-        "A session is required to read a call permission.",
-        "session",
+        "A connection is required to read a call permission.",
+        "connection",
       );
     }
     if (!nonEmpty(to)) {
@@ -390,7 +390,7 @@ export class VoipResource {
     }
     return this.transport.request({
       method: "GET",
-      path: `/messaging/${encodeURIComponent(session)}/call-permissions/${encodeURIComponent(to)}`,
+      path: `/messaging/${encodeURIComponent(connection)}/call-permissions/${encodeURIComponent(to)}`,
       ...options,
     });
   }
@@ -399,7 +399,7 @@ export class VoipResource {
    * Runs the checks a placement runs, without placing a call or reserving
    * anything. `refusal` names the first reason the call would fail: the team's
    * call policy (`call_recipient_opted_out`, `call_destination_blocked`), the
-   * session's calling switch (`calls_disabled`), or WhatsApp
+   * connection's calling switch (`calls_disabled`), or WhatsApp
    * (`call_permission_required`, `call_limit_reached`). Requires a server
    * credential. If required call-check state is unavailable, the API answers
    * `503 service_unavailable` rather than a possibly incomplete check.
@@ -412,9 +412,9 @@ export class VoipResource {
     if (typeof body !== "object" || body === null) {
       throw new PolymorfaValidationError("A call check must be an object.");
     }
-    if (!nonEmpty(body.session)) {
+    if (!nonEmpty(body.connection)) {
       throw new PolymorfaValidationError(
-        "session names the number that would place the call.",
+        "connection names the number that would place the call.",
       );
     }
     if (!nonEmpty(body.to)) {
@@ -430,32 +430,32 @@ export class VoipResource {
     });
   }
 
-  /** Reads a session's call settings. Requires a server credential. */
+  /** Reads a connection's call settings. Requires a server credential. */
   retrieveCallSettings(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SessionCallSettingsResponse>> {
-    this.assertServerCredential("Session call settings");
+  ): Promise<ApiResponse<ConnectionCallSettingsResponse>> {
+    this.assertServerCredential("Connection call settings");
     return this.transport.request({
       method: "GET",
-      path: callSettingsPath(session),
+      path: callSettingsPath(connection),
       ...options,
     });
   }
 
   /**
-   * Changes a session's call settings; omitted settings keep their values.
+   * Changes a connection's call settings; omitted settings keep their values.
    * Requires a server credential. Turning `simultaneousCalls` on (unlimited
-   * concurrent calls on a linked-device Number) requires
+   * concurrent calls on a linked-device Connection) requires
    * `acknowledgeRisk: true` and a team API key, and voids Ban Insurance for
-   * the Number.
+   * the Connection.
    */
   updateCallSettings(
-    session: string,
-    body: UpdateSessionCallSettingsRequest,
+    connection: string,
+    body: UpdateConnectionCallSettingsRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SessionCallSettingsResponse>> {
-    this.assertServerCredential("Session call settings");
+  ): Promise<ApiResponse<ConnectionCallSettingsResponse>> {
+    this.assertServerCredential("Connection call settings");
     if (typeof body !== "object" || body === null) {
       throw new PolymorfaValidationError("Call settings must be an object.");
     }
@@ -529,7 +529,7 @@ export class VoipResource {
     }
     return this.transport.request({
       method: "PUT",
-      path: callSettingsPath(session),
+      path: callSettingsPath(connection),
       body,
       ...options,
     });
@@ -654,8 +654,8 @@ function callPath(callId: string): string {
   return `/messaging/voip/calls/${encodeURIComponent(callId)}`;
 }
 
-function callSettingsPath(session: string): string {
-  return `/platform/sessions/${encodeURIComponent(session)}/call-settings`;
+function callSettingsPath(connection: string): string {
+  return `/platform/connections/${encodeURIComponent(connection)}/call-settings`;
 }
 
 function assertPlacementTargets(

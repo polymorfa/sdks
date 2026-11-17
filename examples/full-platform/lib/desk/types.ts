@@ -35,7 +35,7 @@ export interface Tag {
 export type HealthLevel = "healthy" | "watch" | "at_risk";
 
 export interface Connection {
-  /** Session name used in Messaging API paths. */
+  /** Connection name used in Messaging API paths. */
   readonly id: string;
   readonly name: string;
   readonly phone: string | null;

@@ -28,7 +28,7 @@ async fn mongo_namespace_and_bounds_are_checked_without_storage_commands() {
     options.max_query_rows = 0;
     assert!(MongoStorageAdapter::new(client.database("offline_fixture"), options).is_err());
     let key = BTreeMap::from([
-        ("sessionId".into(), "offline".into()),
+        ("connectionId".into(), "offline".into()),
         ("messageId".into(), "invalid-key".into()),
     ]);
     let mut row = polymorfa_sdk::storage::merge::empty_row(Entity::Messages, &key).unwrap();
@@ -73,7 +73,7 @@ async fn actual_replica_set_official_driver_full_schema2_conformance() {
     let adapter = Arc::new(MongoStorageAdapter::new(database.clone(), options).unwrap());
     storage_conformance::conformance(adapter.clone()).await;
     let literal_key = BTreeMap::from([
-        ("sessionId".into(), "literal-json".into()),
+        ("connectionId".into(), "literal-json".into()),
         ("messageId".into(), "tags".into()),
     ]);
     let mut literal =
@@ -102,7 +102,7 @@ async fn actual_replica_set_official_driver_full_schema2_conformance() {
             &IndexQuery {
                 index: "by_chat".into(),
                 equals: BTreeMap::from([
-                    ("sessionId".into(), "literal-json".into()),
+                    ("connectionId".into(), "literal-json".into()),
                     ("chatId".into(), "literal-chat".into()),
                 ]),
                 limit: 10,
@@ -125,11 +125,11 @@ async fn actual_replica_set_official_driver_full_schema2_conformance() {
         .await
         .unwrap()
         .unwrap();
-    let session = history.get_str("sessionId").unwrap();
+    let connection = history.get_str("connectionId").unwrap();
     let query = IndexQuery {
         index: "by_chat".into(),
         equals: BTreeMap::from([
-            ("sessionId".into(), session.into()),
+            ("connectionId".into(), connection.into()),
             ("chatId".into(), "chat".into()),
             (
                 "$where".into(),
@@ -167,11 +167,11 @@ async fn actual_replica_set_official_driver_full_schema2_conformance() {
     for (id, malformed) in [
         (
             "identity",
-            doc! {"_id":"ksafe:identity","_rev":1i64,"_v":{},"sessionId":"safe","messageId":"different"},
+            doc! {"_id":"ksafe:identity","_rev":1i64,"_v":{},"connectionId":"safe","messageId":"different"},
         ),
         (
             "date",
-            doc! {"_id":"ksafe:date","_rev":1i64,"_v":{},"sessionId":"safe","messageId":"date","extra":Bson::DateTime(::mongodb::bson::DateTime::from_millis(0))},
+            doc! {"_id":"ksafe:date","_rev":1i64,"_v":{},"connectionId":"safe","messageId":"date","extra":Bson::DateTime(::mongodb::bson::DateTime::from_millis(0))},
         ),
     ] {
         collection.insert_one(malformed).await.unwrap();
@@ -206,7 +206,7 @@ async fn actual_standalone_is_refused_without_partial_writes() {
         MongoStorageAdapter::new(database.clone(), MongoStorageOptions::new("app")).unwrap();
     assert!(adapter.setup().await.is_err());
     let key = BTreeMap::from([
-        ("sessionId".into(), "s".into()),
+        ("connectionId".into(), "s".into()),
         ("messageId".into(), "m".into()),
     ]);
     let mut row = polymorfa_sdk::storage::merge::empty_row(Entity::Messages, &key).unwrap();

@@ -51,7 +51,7 @@ export interface S3UploadToWhatsAppOptions extends Pick<
 > {
   /** Anything with the Messaging client's `whatsappMedia` resource. */
   readonly messaging: { readonly whatsappMedia: WhatsAppMediaResource };
-  readonly session: string;
+  readonly connection: string;
   /** Object key, relative to `prefix`. */
   readonly key: string;
   readonly mediaType: WhatsAppUploadMediaType;
@@ -165,7 +165,7 @@ export class S3MediaStore {
       },
     };
     const mimetype = options.mimetype ?? head.ContentType;
-    return options.messaging.whatsappMedia.upload(options.session, source, {
+    return options.messaging.whatsappMedia.upload(options.connection, source, {
       mediaType: options.mediaType,
       encryptor: nodeMediaEncryptor,
       ...(mimetype === undefined ? {} : { mimetype }),

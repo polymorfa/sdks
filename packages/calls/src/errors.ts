@@ -31,7 +31,7 @@ export class CallClaimedError extends CallsApiError {
 }
 
 /**
- * Calling is turned off for the session in its call settings. Placing,
+ * Calling is turned off for the connection in its call settings. Placing,
  * answering, joining, inviting and attaching media are refused until it is
  * turned back on; calls in progress continue.
  */
@@ -48,7 +48,9 @@ export class CallsDisabledError extends CallsApiError {
  * The client asks the token provider for a fresh token before reconnecting.
  */
 export class CallsAuthError extends CallsError {
-  constructor(message = "The credential no longer authorizes this session.") {
+  constructor(
+    message = "The credential no longer authorizes this connection.",
+  ) {
     super("unauthorized", message);
     this.name = "CallsAuthError";
   }

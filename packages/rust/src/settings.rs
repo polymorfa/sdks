@@ -1,6 +1,6 @@
 //! Immutable owner-bound defaults, QuickLink appearance and team call retention.
 use crate::{
-    configuration::{SessionConfigurationPatch, SessionConfigurationView},
+    configuration::{ConnectionConfigurationPatch, ConnectionConfigurationView},
     developer::request,
     models::DataEnvelope,
     transport::{configuration, HttpTransport},
@@ -10,8 +10,8 @@ use reqwest::Method;
 use serde::{Deserialize, Serialize};
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct UpdateSessionDefaults {
-    pub configuration: SessionConfigurationPatch,
+pub struct UpdateConnectionDefaults {
+    pub configuration: ConnectionConfigurationPatch,
     pub revision: u64,
 }
 #[derive(Serialize)]
@@ -22,18 +22,18 @@ struct OwnerInput<'a, T> {
     #[serde(skip_serializing_if = "Option::is_none")]
     project_id: Option<&'a str>,
 }
-pub struct SessionDefaults<'a> {
+pub struct ConnectionDefaults<'a> {
     pub(crate) http: &'a HttpTransport,
     pub(crate) project_id: Option<&'a str>,
 }
-impl SessionDefaults<'_> {
+impl ConnectionDefaults<'_> {
     pub async fn retrieve(
         &self,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SessionConfigurationView>> {
+    ) -> Result<ApiResponse<ConnectionConfigurationView>> {
         get_owned(
             self.http,
-            "/platform/session-configuration",
+            "/platform/connection-configuration",
             self.project_id,
             options,
         )
@@ -41,14 +41,14 @@ impl SessionDefaults<'_> {
     }
     pub async fn update(
         &self,
-        body: &UpdateSessionDefaults,
+        body: &UpdateConnectionDefaults,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SessionConfigurationView>> {
+    ) -> Result<ApiResponse<ConnectionConfigurationView>> {
         let options = body.configuration.options(options);
         request(
             self.http,
             Method::PUT,
-            "/platform/session-configuration",
+            "/platform/connection-configuration",
             Some(&OwnerInput {
                 input: body,
                 project_id: self.project_id,

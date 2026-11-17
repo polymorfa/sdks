@@ -25,9 +25,9 @@ export interface DeskCalls {
  * Real calling. The client token from /api/messaging/calls/token is the only
  * credential; the lifecycle stream delivers incoming calls and their answers.
  */
-function createLiveCalls(session: string): DeskCalls {
+function createLiveCalls(connection: string): DeskCalls {
   const calls = createBrowserCalls({
-    session,
+    connection,
     getClientToken: createClientTokenProvider({
       path: "/api/messaging/calls/token",
     }),
@@ -50,7 +50,7 @@ function createLiveCalls(session: string): DeskCalls {
 
 /**
  * Demo calling: a backend that rings, connects and hangs up on timers, and
- * media sessions with empty streams, so the call UI runs without a network.
+ * media connections with empty streams, so the call UI runs without a network.
  */
 function createDemoCalls(): DeskCalls {
   const listeners = new Set<(event: CallLifecycleEvent) => void>();
@@ -140,7 +140,7 @@ function createDemoCalls(): DeskCalls {
 
 export function createDeskCalls(options: {
   readonly demo: boolean;
-  readonly session: string;
+  readonly connection: string;
 }): DeskCalls {
-  return options.demo ? createDemoCalls() : createLiveCalls(options.session);
+  return options.demo ? createDemoCalls() : createLiveCalls(options.connection);
 }

@@ -58,14 +58,14 @@ var historyPath = regexp.MustCompile(`^/[A-Za-z0-9._~%/=&?+-]+$`)
 var historyToken = regexp.MustCompile(`^[A-Za-z0-9._~%/=+-]{1,512}$`)
 
 // RequestChunkRetry explicitly asks the phone for another history.sync event.
-// API authority enforces history consent and sessions:manage. No automatic retry.
-func (resource *HistorySyncResource) RequestChunkRetry(ctx context.Context, session string, body HistorySyncChunkRetryRequest, opts ...RequestOptions) (Response[Envelope[HistorySyncChunkRetryResult]], error) {
+// API authority enforces history consent and connections:manage. No automatic retry.
+func (resource *HistorySyncResource) RequestChunkRetry(ctx context.Context, connection string, body HistorySyncChunkRetryRequest, opts ...RequestOptions) (Response[Envelope[HistorySyncChunkRetryResult]], error) {
 	var zero Response[Envelope[HistorySyncChunkRetryResult]]
 	if err := serverOnly(resource.t); err != nil {
 		return zero, err
 	}
-	if session == "" {
-		return zero, configuration("session", "A session is required.")
+	if connection == "" {
+		return zero, configuration("connection", "A connection is required.")
 	}
 	switch body.SyncType {
 	case HistoryInitialBootstrap, HistoryInitialStatusV3, HistoryFull, HistoryRecent, HistoryPushName, HistoryNonBlockingData, HistoryOnDemand:
@@ -75,7 +75,7 @@ func (resource *HistorySyncResource) RequestChunkRetry(ctx context.Context, sess
 	if body.ChunkMessageID != "" && !historyMessageID.MatchString(body.ChunkMessageID) {
 		return zero, configuration("chunkMessageId", "Invalid history chunk message identifier.")
 	}
-	response, err := endpointEnvelope[HistorySyncChunkRetryResult](ctx, resource.t, "POST", "/messaging/"+escaped(session)+"/history/chunks/retry", nil, singleSubmission{body}, customerOwnedOptions(options(opts)))
+	response, err := endpointEnvelope[HistorySyncChunkRetryResult](ctx, resource.t, "POST", "/messaging/"+escaped(connection)+"/history/chunks/retry", nil, singleSubmission{body}, customerOwnedOptions(options(opts)))
 	if err == nil && (response.Data.Data.RequestID == "" || response.Data.Data.Status != "requested") {
 		return zero, uploadResponseError("The API returned an invalid history retry result.")
 	}
@@ -84,12 +84,12 @@ func (resource *HistorySyncResource) RequestChunkRetry(ctx context.Context, sess
 
 // DeleteChunk is explicit. Call only after durable local processing; it never
 // deletes the application's copy. Timeout/cancellation does not undo deletion.
-func (resource *HistorySyncResource) DeleteChunk(ctx context.Context, session string, body HistorySyncChunkDeleteRequest, opts ...RequestOptions) (Response[Envelope[HistorySyncChunkDeleteResult]], error) {
+func (resource *HistorySyncResource) DeleteChunk(ctx context.Context, connection string, body HistorySyncChunkDeleteRequest, opts ...RequestOptions) (Response[Envelope[HistorySyncChunkDeleteResult]], error) {
 	var zero Response[Envelope[HistorySyncChunkDeleteResult]]
 	if err := serverOnly(resource.t); err != nil {
 		return zero, err
 	}
-	if session == "" || len(body.DirectPath) > 1024 || !historyPath.MatchString(body.DirectPath) || len(body.FileEncSHA256) != 32 || (body.EncHandle != "" && !historyToken.MatchString(body.EncHandle)) || (body.CompanionMetaNonce != "" && !historyToken.MatchString(body.CompanionMetaNonce)) {
+	if connection == "" || len(body.DirectPath) > 1024 || !historyPath.MatchString(body.DirectPath) || len(body.FileEncSHA256) != 32 || (body.EncHandle != "" && !historyToken.MatchString(body.EncHandle)) || (body.CompanionMetaNonce != "" && !historyToken.MatchString(body.CompanionMetaNonce)) {
 		return zero, configuration("history", "Invalid history deletion descriptor.")
 	}
 	wire := map[string]any{"directPath": body.DirectPath, "fileEncSha256": base64.StdEncoding.EncodeToString(body.FileEncSHA256)}
@@ -99,7 +99,7 @@ func (resource *HistorySyncResource) DeleteChunk(ctx context.Context, session st
 	if body.CompanionMetaNonce != "" {
 		wire["companionMetaNonce"] = body.CompanionMetaNonce
 	}
-	response, err := endpointEnvelope[HistorySyncChunkDeleteResult](ctx, resource.t, "POST", "/messaging/"+escaped(session)+"/history/media/delete", nil, singleSubmission{wire}, customerOwnedOptions(options(opts)))
+	response, err := endpointEnvelope[HistorySyncChunkDeleteResult](ctx, resource.t, "POST", "/messaging/"+escaped(connection)+"/history/media/delete", nil, singleSubmission{wire}, customerOwnedOptions(options(opts)))
 	if err == nil && response.Data.Data.Status != "deleted" {
 		return zero, uploadResponseError("The API returned an invalid history deletion result.")
 	}

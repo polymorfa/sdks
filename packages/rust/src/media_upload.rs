@@ -162,7 +162,7 @@ pub struct MediaUploadResult {
 impl WhatsAppMediaResource<'_> {
     pub async fn upload_relay(
         &self,
-        session: &str,
+        connection: &str,
         source: MediaSource,
         options: MediaEncryptionOptions,
         request: RequestOptions,
@@ -170,7 +170,7 @@ impl WhatsAppMediaResource<'_> {
         let cancellation = request.cancellation.clone().unwrap_or_default();
         let prepared = tokio::select! {biased;_=cancellation.cancelled()=>return Err(crate::transport::cancelled()),p=prepare_upload(source,options)=>p?};
         let location = self
-            .upload_relay_prepared(session, &prepared, request)
+            .upload_relay_prepared(connection, &prepared, request)
             .await?;
         Ok(MediaUploadResult {
             info: prepared.info,
@@ -180,14 +180,14 @@ impl WhatsAppMediaResource<'_> {
     }
     pub(crate) async fn upload_relay_prepared(
         &self,
-        session: &str,
+        connection: &str,
         prepared: &PreparedUpload,
         request: RequestOptions,
     ) -> Result<UploadLocation> {
         let (body, failure) = watch(prepared.open(0).await?);
         let location = self
             .relay_upload(
-                session,
+                connection,
                 prepared.info.media_type,
                 &prepared.info.file_enc_sha256,
                 reqwest::Body::wrap_stream(body),
@@ -202,7 +202,7 @@ impl WhatsAppMediaResource<'_> {
     }
     pub async fn upload_direct(
         &self,
-        session: &str,
+        connection: &str,
         source: MediaSource,
         options: MediaEncryptionOptions,
         direct: DirectUploadOptions,
@@ -214,7 +214,7 @@ impl WhatsAppMediaResource<'_> {
         }
         let prepared = tokio::select! {biased;_=direct.cancellation.cancelled()=>return Err(crate::transport::cancelled()),p=prepare_upload(source,options)=>p?};
         let location = self
-            .upload_direct_prepared(session, &prepared, direct, request)
+            .upload_direct_prepared(connection, &prepared, direct, request)
             .await?;
         Ok(MediaUploadResult {
             info: prepared.info,
@@ -224,7 +224,7 @@ impl WhatsAppMediaResource<'_> {
     }
     pub(crate) async fn upload_direct_prepared(
         &self,
-        session: &str,
+        connection: &str,
         prepared: &PreparedUpload,
         direct: DirectUploadOptions,
         request: RequestOptions,
@@ -249,7 +249,7 @@ impl WhatsAppMediaResource<'_> {
             .map_err(|_| configuration("directUploadHttp"))?;
         let mut grant = self
             .create_upload_grant(
-                session,
+                connection,
                 prepared.info.media_type,
                 &prepared.info.file_enc_sha256,
                 request.clone(),
@@ -275,7 +275,7 @@ impl WhatsAppMediaResource<'_> {
                         {
                             grant = self
                                 .create_upload_grant(
-                                    session,
+                                    connection,
                                     prepared.info.media_type,
                                     &prepared.info.file_enc_sha256,
                                     request.clone(),
@@ -314,7 +314,7 @@ impl WhatsAppMediaResource<'_> {
             // Every final byte has been gated on complete second-pass validation before this call.
             retry_post(
                 self,
-                session,
+                connection,
                 prepared,
                 &mut grant,
                 &client,
@@ -343,7 +343,7 @@ impl WhatsAppMediaResource<'_> {
                 {
                     grant = self
                         .create_upload_grant(
-                            session,
+                            connection,
                             prepared.info.media_type,
                             &prepared.info.file_enc_sha256,
                             request.clone(),
@@ -577,7 +577,7 @@ async fn post(
 #[allow(clippy::too_many_arguments)]
 async fn retry_post(
     resource: &WhatsAppMediaResource<'_>,
-    session: &str,
+    connection: &str,
     prepared: &PreparedUpload,
     grant: &mut UploadGrant,
     client: &reqwest::Client,
@@ -595,7 +595,7 @@ async fn retry_post(
         {
             *grant = resource
                 .create_upload_grant(
-                    session,
+                    connection,
                     prepared.info.media_type,
                     &prepared.info.file_enc_sha256,
                     request.clone(),

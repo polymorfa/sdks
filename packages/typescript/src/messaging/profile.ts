@@ -15,67 +15,67 @@ export class ProfileResource {
   constructor(private readonly transport: HttpTransport) {}
 
   get(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetProfileResponse>> {
     return this.transport.request({
       method: "GET",
-      path: profilePath(session),
+      path: profilePath(connection),
       ...options,
     });
   }
 
   setName(
-    session: string,
+    connection: string,
     body: SetProfileNameRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetProfileNameResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: `${profilePath(session)}/name`,
+      path: `${profilePath(connection)}/name`,
       body,
       ...options,
     });
   }
 
   setStatus(
-    session: string,
+    connection: string,
     body: SetProfileStatusRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetProfileStatusResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: `${profilePath(session)}/status`,
+      path: `${profilePath(connection)}/status`,
       body,
       ...options,
     });
   }
 
   setPicture(
-    session: string,
+    connection: string,
     body: SetProfilePictureRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetProfilePictureResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: `${profilePath(session)}/picture`,
+      path: `${profilePath(connection)}/picture`,
       body,
       ...options,
     });
   }
 
   deletePicture(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DeleteProfilePictureResponse>> {
     return this.transport.request({
       method: "DELETE",
-      path: `${profilePath(session)}/picture`,
+      path: `${profilePath(connection)}/picture`,
       ...options,
     });
   }
 }
 
-function profilePath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/profile`;
+function profilePath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/profile`;
 }

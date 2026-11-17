@@ -49,6 +49,15 @@ class SqlDriver(Protocol):
     async def close(self) -> None: ...
 
 
+def _missing_table(error: Exception) -> bool:
+    sqlstate = getattr(error, "sqlstate", None)
+    if sqlstate is not None:
+        return sqlstate in ("42P01", "3F000")
+    return (bool(error.args) and error.args[0] in (1146, 1049)) or "no such table:" in str(
+        error
+    ).lower()
+
+
 class _Conflict(Exception):
     def __init__(self, identity: str) -> None:
         self.identity = identity
@@ -62,7 +71,7 @@ def _q(dialect: Dialect, value: str) -> str:
 def sql_schema_statements(
     dialect: Dialect, *, table_prefix: str = "polymorfa_", schema: str | None = None
 ) -> list[str]:
-    """Explicit schema2 DDL; these statements never migrate an existing version."""
+    """Explicit schema3 DDL; these statements never migrate an existing version."""
     result: list[str] = []
     if dialect not in ("postgres", "mysql", "sqlite"):
         raise ValueError("Unknown SQL dialect")
@@ -201,13 +210,8 @@ class SqlAdapter:
             else "?"
         )
 
-    async def setup(self) -> None:
-        async with self._driver.connection(transaction=True) as connection:
-            if self._create:
-                for statement in sql_schema_statements(
-                    self._driver.dialect, table_prefix=self._prefix, schema=self._schema
-                ):
-                    await connection.run(statement, [])
+    async def _version(self, connection: SqlConnection, *, allow_missing: bool = False) -> object:
+        try:
             rows = (
                 await connection.run(
                     "SELECT "
@@ -221,25 +225,68 @@ class SqlAdapter:
                     ["storage"],
                 )
             ).rows
-            if rows and rows[0]["version"] != STORAGE_SCHEMA_VERSION:
-                raise ValueError("Customer-owned storage requires an explicit schema2 migration")
-            if not rows:
-                if not self._create:
-                    raise ValueError("Customer-owned storage schema2 is not initialized")
-                await connection.run(
-                    "INSERT INTO "
-                    + self._table("storage_schema")
-                    + " ("
-                    + self._q("id")
-                    + ","
-                    + self._q("version")
-                    + ") VALUES ("
-                    + self._placeholder(1)
-                    + ","
-                    + self._placeholder(2)
-                    + ")",
-                    ["storage", STORAGE_SCHEMA_VERSION],
-                )
+        except Exception as error:
+            if allow_missing and _missing_table(error):
+                return None
+            raise
+        if not rows:
+            return None
+        if len(rows) != 1:
+            raise ValueError("Ambiguous storage schema marker")
+        return rows[0]["version"]
+
+    async def _verify(self, connection: SqlConnection) -> None:
+        if await self._version(connection) != STORAGE_SCHEMA_VERSION:
+            raise ValueError("Customer-owned storage requires an explicit schema-3 migration")
+
+    async def _preflight_setup(self) -> bool:
+        # Run before any DDL, including MySQL's implicitly committed CREATEs.
+        async with self._driver.connection() as connection:
+            version = await self._version(connection, allow_missing=True)
+            if version is not None:
+                await self._verify(connection)
+                for entity in ENTITY_NAMES:
+                    await connection.run(
+                        "SELECT connection_id FROM " + self._table(entity) + " LIMIT 0", []
+                    )
+                return False
+            if not self._create:
+                raise ValueError("Customer-owned storage schema-3 is not initialized")
+            for existing_table in (*ENTITY_NAMES, "sessions"):
+                try:
+                    await connection.run(
+                        "SELECT 1 FROM " + self._table(existing_table) + " LIMIT 0", []
+                    )
+                except Exception as error:
+                    if _missing_table(error):
+                        continue
+                    raise
+                raise ValueError("Existing storage tables require an explicit migration")
+        return True
+
+    async def setup(self) -> None:
+        if not await self._preflight_setup():
+            return
+        async with self._driver.connection(transaction=True) as connection:
+            for statement in sql_schema_statements(
+                self._driver.dialect, table_prefix=self._prefix, schema=self._schema
+            ):
+                await connection.run(statement, [])
+            await connection.run(
+                "INSERT INTO "
+                + self._table("storage_schema")
+                + " ("
+                + self._q("id")
+                + ","
+                + self._q("version")
+                + ") VALUES ("
+                + self._placeholder(1)
+                + ","
+                + self._placeholder(2)
+                + ")",
+                ["storage", STORAGE_SCHEMA_VERSION],
+            )
+            await self._verify(connection)
 
     def _decode(self, entity: EntityName, raw: Mapping[str, object]) -> StoredRow:
         definition = entity_definition(entity)
@@ -262,6 +309,7 @@ class SqlAdapter:
             raise ValueError("Invalid storage row identity")
         result = {}
         async with self._driver.connection() as connection:
+            await self._verify(connection)
             for offset in range(0, len(ids), 900):
                 batch = ids[offset : offset + 900]
                 rows = await connection.run(
@@ -298,6 +346,7 @@ class SqlAdapter:
         validate_commit(writes, self.capabilities.max_commit_size)
         try:
             async with self._driver.connection(transaction=True) as connection:
+                await self._verify(connection)
                 for write in writes:
                     identity = write.row.id if isinstance(write, RowPut) else write.id
                     table = self._table(write.entity)
@@ -415,6 +464,7 @@ class SqlAdapter:
             + p(query.limit)
         )
         async with self._driver.connection() as connection:
+            await self._verify(connection)
             result = await connection.run(sql, params)
         return [self._decode(entity, row) for row in result.rows]
 
@@ -562,7 +612,8 @@ class LibsqlAdapter(SqlAdapter):
         self._client = cast(Any, client)
 
     async def setup(self) -> None:
-        if self._create:
+        fresh = await self._preflight_setup()
+        if fresh:
             for statement in sql_schema_statements("sqlite", table_prefix=self._prefix):
                 await self._client.execute(statement)
             await self._client.execute(
@@ -580,9 +631,11 @@ class LibsqlAdapter(SqlAdapter):
             "SELECT version FROM " + self._table("storage_schema") + " WHERE id=?", ["storage"]
         )
         if len(result.rows) != 1 or result.rows[0][0] != STORAGE_SCHEMA_VERSION:
-            raise ValueError("Customer-owned storage requires an explicit schema2 migration")
+            raise ValueError("Customer-owned storage requires an explicit schema3 migration")
 
     async def commit(self, writes: Sequence[RowWrite]) -> CommitResult:
+        async with self._driver.connection() as connection:
+            await self._verify(connection)
         validate_commit(writes, 500)
         statements: list[tuple[str, list[SqlValue]]] = []
         guard = (

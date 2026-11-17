@@ -16,7 +16,7 @@ use tokio::{
 use tokio_util::sync::CancellationToken;
 const SECRET: &str = "application-fixture-secret";
 fn event() -> serde_json::Value {
-    serde_json::json!({"id":"event-fixture","type":"message","session_id":"s","chat":"111@s.whatsapp.net","sender":"111:1@s.whatsapp.net","message_id":"m","timestamp":100,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"","text":"private text ✓","future":{"retained":true}})
+    serde_json::json!({"id":"event-fixture","type":"message","connection_id":"s","chat":"111@s.whatsapp.net","sender":"111:1@s.whatsapp.net","message_id":"m","timestamp":100,"is_from_me":false,"redelivered":false,"identity_changed":false,"message_proto":"","text":"private text ✓","future":{"retained":true}})
 }
 async fn request(socket: &mut TcpStream) -> (String, serde_json::Value) {
     let mut bytes = Vec::new();
@@ -65,11 +65,11 @@ async fn native_sidecar_sends_and_streams_without_automatic_ack() {
     let server = tokio::spawn(async move {
         let (mut socket, _) = listener.accept().await.unwrap();
         let (header, _) = request(&mut socket).await;
-        assert!(header.starts_with("GET /v1/sessions "));
-        respond(&mut socket,200,"application/json",r#"{"node_id":"node","sessions":[{"id":"s","lease_generation":2,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}"#,"").await;
+        assert!(header.starts_with("GET /v1/connections "));
+        respond(&mut socket,200,"application/json",r#"{"node_id":"node","connections":[{"id":"s","lease_generation":2,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}"#,"").await;
         let (mut socket, _) = listener.accept().await.unwrap();
         let (header, body) = request(&mut socket).await;
-        assert!(header.starts_with("POST /v1/sessions/s%2F1/messages "));
+        assert!(header.starts_with("POST /v1/connections/s%2F1/messages "));
         assert_eq!(
             body,
             serde_json::json!({"to":"111@s.whatsapp.net","text":"private"})
@@ -84,7 +84,7 @@ async fn native_sidecar_sends_and_streams_without_automatic_ack() {
         .await;
         let (mut socket, _) = listener.accept().await.unwrap();
         let (header, _) = request(&mut socket).await;
-        assert!(header.starts_with("GET /v1/events?session_id=s%20one "));
+        assert!(header.starts_with("GET /v1/events?connection_id=s%20one "));
         respond(
             &mut socket,
             200,
@@ -93,7 +93,7 @@ async fn native_sidecar_sends_and_streams_without_automatic_ack() {
                 ": keepalive\r\n\r\nid: event-fixture\r\nevent: message\r\ndata: {}\r\n\r\n",
                 {
                     let mut value = event();
-                    value["session_id"] = "s one".into();
+                    value["connection_id"] = "s one".into();
                     value
                 }
             ),
@@ -109,7 +109,7 @@ async fn native_sidecar_sends_and_streams_without_automatic_ack() {
     let client = SignalClient::new(SignalClientOptions::new(url, SECRET)).unwrap();
     let stop = CancellationToken::new();
     assert_eq!(
-        client.sessions(&stop).await.unwrap().sessions[0].lease_generation,
+        client.connections(&stop).await.unwrap().connections[0].lease_generation,
         2
     );
     assert_eq!(
@@ -160,7 +160,7 @@ async fn sidecar_rejects_auth_errors_and_never_follows_redirects() {
             .await;
         });
         let client = SignalClient::new(SignalClientOptions::new(url, SECRET)).unwrap();
-        let error = match client.sessions(&CancellationToken::new()).await {
+        let error = match client.connections(&CancellationToken::new()).await {
             Ok(_) => panic!("non-success accepted"),
             Err(e) => e,
         };
@@ -301,7 +301,7 @@ fn webhook_rejects_weak_or_reserved_keys_before_authentication() {
 
 /// Optional integration against the exact private producer's synthetic local HTTP harness.
 #[tokio::test]
-async fn actual_service_auth_and_sessions_contract() {
+async fn actual_service_auth_and_connections_contract() {
     let Ok(directory) = std::env::var("POLYMORFA_SIGNAL_FIXTURE_DIRECTORY") else {
         return;
     };
@@ -314,16 +314,19 @@ async fn actual_service_auth_and_sessions_contract() {
     let base = meta["url"].as_str().unwrap();
     let secret = meta["applicationSecret"].as_str().unwrap();
     let client = SignalClient::new(SignalClientOptions::new(base, secret)).unwrap();
-    let sessions = client.sessions(&CancellationToken::new()).await.unwrap();
-    assert_eq!(sessions.sessions[0].id, meta["sessionId"].as_str().unwrap());
-    assert!(sessions.sessions[0].claimed);
+    let connections = client.connections(&CancellationToken::new()).await.unwrap();
+    assert_eq!(
+        connections.connections[0].id,
+        meta["connectionId"].as_str().unwrap()
+    );
+    assert!(connections.connections[0].claimed);
     let wrong = SignalClient::new(SignalClientOptions::new(
         base,
         "incorrect-synthetic-application-secret",
     ))
     .unwrap();
     assert_eq!(
-        match wrong.sessions(&CancellationToken::new()).await {
+        match wrong.connections(&CancellationToken::new()).await {
             Err(error) => error.kind,
             Ok(_) => panic!("Incorrect application secret accepted"),
         },
@@ -331,7 +334,7 @@ async fn actual_service_auth_and_sessions_contract() {
     );
     let http = reqwest::Client::new();
     let response = http
-        .get(format!("{base}/v1/sessions"))
+        .get(format!("{base}/v1/connections"))
         .bearer_auth(secret)
         .header("Origin", "null")
         .send()
@@ -357,7 +360,7 @@ async fn actual_service_auth_and_sessions_contract() {
     }
     let id = format!("rust-native-{}", uuid::Uuid::new_v4());
     let stop = CancellationToken::new();
-    let mut events = client.events(Some(meta["sessionId"].as_str().unwrap()), stop.clone());
+    let mut events = client.events(Some(meta["connectionId"].as_str().unwrap()), stop.clone());
     let receive = tokio::spawn(async move { events.next().await.unwrap().unwrap() });
     tokio::time::sleep(Duration::from_millis(100)).await;
     tokio::fs::write(
@@ -409,10 +412,10 @@ async fn client_rejects_reserved_polymorfa_secrets_before_requests() {
         "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string(),
         "pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k".to_string(),
         "pmfa_ct_synthetic-client-token-value".to_owned(),
-        "pmfa_ls_synthetic-link-session-value".to_owned(),
+        "pmfa_ls_synthetic-link-connection-value".to_owned(),
         "pmfa_at_synthetic-special-purpose-value".to_owned(),
         "pmfa_wst_synthetic-socket-ticket-value".to_owned(),
-        "pmfa_sd_synthetic-session-device-value".to_owned(),
+        "pmfa_sd_synthetic-connection-device-value".to_owned(),
         "pmfa_independent_looking_but_reserved".to_owned(),
     ] {
         let Err(error) = SignalClient::new(SignalClientOptions::new(url.clone(), secret.clone()))

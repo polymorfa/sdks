@@ -24,7 +24,7 @@ function shared(): SharedClientOptions {
   };
 }
 
-/** Project-scoped Messaging API client (sessions, messages, templates, calls, ...). */
+/** Project-scoped Messaging API client (connections, messages, templates, calls, ...). */
 export function messaging(): MessagingClient {
   assertServerRuntime();
   messagingClient ??= new MessagingClient({

@@ -1,0 +1,620 @@
+{
+  "repository": "polymorfa/polymorfa",
+  "commit": "87b25fd9e2494d90f01f7511fb47be6a28845fa1",
+  "note": "Receipt-timed campaign follow-up beta (PR #503). Adds followUp to Messaging and Platform campaigns and recipients, and followUps to campaign analytics; the full snapshots stay pinned to contracts/source.json until the next repin.",
+  "sources": {
+    "messaging": {
+      "sourcePath": "apps/api/docs/openapi.json",
+      "sourceSha256": "c30cd7523f3fbec9c83214f899781f6f43c7e3d5fd05dd828158d3dfb32df6cb",
+      "schemas": {
+        "CampaignFollowUpReport": {
+          "type": "object",
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "waiting": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "scheduled": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sending": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sent": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "delivered": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "read": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "replied": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cancelled": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expired": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "nextDueAt": {
+              "type": "number",
+              "nullable": true
+            }
+          },
+          "required": [
+            "total",
+            "waiting",
+            "scheduled",
+            "sending",
+            "sent",
+            "delivered",
+            "read",
+            "replied",
+            "cancelled",
+            "expired",
+            "failed",
+            "unknown",
+            "nextDueAt"
+          ],
+          "additionalProperties": false,
+          "description": "Follow-up outcomes, counted separately from the first message. All zero when the campaign has no follow-up."
+        }
+      },
+      "fields": {
+        "Campaign.followUp": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "delaySeconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 604800,
+              "default": 86400
+            },
+            "expirySeconds": {
+              "type": "integer",
+              "minimum": 86400,
+              "maximum": 2592000,
+              "default": 604800
+            },
+            "message": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["text"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16384
+                    }
+                  },
+                  "required": ["type", "text"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["template"]
+                    },
+                    "templateId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": ["type", "templateId"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["message"],
+          "additionalProperties": false,
+          "description": "One optional follow-up, sent from the Number that sent the first message. Null when the campaign has none. Content and timing freeze at launch."
+        },
+        "CreateCampaignRequest.followUp": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "delaySeconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 604800,
+              "default": 86400
+            },
+            "expirySeconds": {
+              "type": "integer",
+              "minimum": 86400,
+              "maximum": 2592000,
+              "default": 604800
+            },
+            "message": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["text"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16384
+                    }
+                  },
+                  "required": ["type", "text"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["template"]
+                    },
+                    "templateId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": ["type", "templateId"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["message"],
+          "additionalProperties": false,
+          "description": "One optional follow-up. A beta; a team that is not enrolled gets `403 feature_unavailable`. Requires a single first message: a campaign with a composed message sequence cannot launch with a follow-up. Follow-up text cannot contain tracked links."
+        },
+        "UpdateCampaignRequest.followUp": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "delaySeconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 604800,
+              "default": 86400
+            },
+            "expirySeconds": {
+              "type": "integer",
+              "minimum": 86400,
+              "maximum": 2592000,
+              "default": 604800
+            },
+            "message": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["text"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16384
+                    }
+                  },
+                  "required": ["type", "text"],
+                  "additionalProperties": false
+                },
+                {
+                  "type": "object",
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["template"]
+                    },
+                    "templateId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  },
+                  "required": ["type", "templateId"],
+                  "additionalProperties": false
+                }
+              ]
+            }
+          },
+          "required": ["message"],
+          "additionalProperties": false,
+          "description": "One follow-up, editable only before launch. Null removes it. A beta; a team that is not enrolled gets `403 feature_unavailable` when setting one. The first read takes precedence over the first delivery; replies and opt-outs cancel; an expired wait never sends."
+        },
+        "CampaignRecipient.followUp": {
+          "type": "object",
+          "nullable": true,
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "numberId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "waiting_receipt",
+                "scheduled",
+                "sending",
+                "sent",
+                "cancelled",
+                "expired",
+                "failed",
+                "outcome_unknown"
+              ]
+            },
+            "anchorKind": {
+              "type": "string",
+              "nullable": true,
+              "enum": ["delivered", "read", null]
+            },
+            "firstDeliveredAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "firstReadAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "dueAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "expiresAt": {
+              "type": "number"
+            },
+            "sentAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "deliveredAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "readAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "repliedAt": {
+              "type": "number",
+              "nullable": true
+            },
+            "reason": {
+              "type": "string",
+              "nullable": true
+            },
+            "commandId": {
+              "type": "string",
+              "nullable": true,
+              "format": "uuid"
+            }
+          },
+          "required": [
+            "id",
+            "numberId",
+            "status",
+            "anchorKind",
+            "firstDeliveredAt",
+            "firstReadAt",
+            "dueAt",
+            "expiresAt",
+            "sentAt",
+            "deliveredAt",
+            "readAt",
+            "repliedAt",
+            "reason",
+            "commandId"
+          ],
+          "additionalProperties": false
+        },
+        "CampaignAnalytics.followUps": {
+          "$ref": "#/components/schemas/CampaignFollowUpReport"
+        }
+      }
+    },
+    "platform": {
+      "sourcePath": "apps/api/docs/openapi.management.json",
+      "sourceSha256": "583b9d99426de8a13462eafa3a0095e3c7386282e73f23c14238f41a15ccab0d",
+      "schemas": {
+        "CampaignFollowUp": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["message"],
+          "description": "One optional receipt-timed follow-up, sent from the Number that sent the first message. A beta; a team that is not enrolled gets `403 feature_unavailable`. Expiry must exceed delay and is counted from the first send. Configuration freezes at launch. The first read takes precedence over the first delivery; additional reads do not move it. Replies and opt-outs cancel it. Without a delivery or read receipt it never arms, and an expired wait never sends. Requires a single first message, and the text cannot contain tracked links.",
+          "properties": {
+            "delaySeconds": {
+              "type": "integer",
+              "minimum": 60,
+              "maximum": 604800,
+              "default": 86400
+            },
+            "expirySeconds": {
+              "type": "integer",
+              "minimum": 86400,
+              "maximum": 2592000,
+              "default": 604800
+            },
+            "message": {
+              "oneOf": [
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "text"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["text"]
+                    },
+                    "text": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 16384
+                    }
+                  }
+                },
+                {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["type", "templateId"],
+                  "properties": {
+                    "type": {
+                      "type": "string",
+                      "enum": ["template"]
+                    },
+                    "templateId": {
+                      "type": "string",
+                      "format": "uuid"
+                    }
+                  }
+                }
+              ]
+            }
+          }
+        },
+        "CampaignFollowUpSummary": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "numberId",
+            "status",
+            "anchorKind",
+            "firstDeliveredAt",
+            "firstReadAt",
+            "dueAt",
+            "expiresAt",
+            "sentAt",
+            "deliveredAt",
+            "readAt",
+            "repliedAt",
+            "reason",
+            "commandId"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "numberId": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "status": {
+              "type": "string",
+              "enum": [
+                "waiting_receipt",
+                "scheduled",
+                "sending",
+                "sent",
+                "cancelled",
+                "expired",
+                "failed",
+                "outcome_unknown"
+              ]
+            },
+            "anchorKind": {
+              "type": "string",
+              "enum": ["delivered", "read", null],
+              "nullable": true
+            },
+            "firstDeliveredAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "firstReadAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "dueAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "sentAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "deliveredAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "readAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "repliedAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            },
+            "expiresAt": {
+              "type": "number",
+              "description": "Unix milliseconds."
+            },
+            "reason": {
+              "type": "string",
+              "nullable": true
+            },
+            "commandId": {
+              "type": "string",
+              "format": "uuid",
+              "nullable": true
+            }
+          }
+        },
+        "CampaignFollowUpReport": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "total",
+            "waiting",
+            "scheduled",
+            "sending",
+            "sent",
+            "delivered",
+            "read",
+            "replied",
+            "cancelled",
+            "expired",
+            "failed",
+            "unknown",
+            "nextDueAt"
+          ],
+          "properties": {
+            "total": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "waiting": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "scheduled": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sending": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "sent": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "delivered": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "read": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "replied": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "cancelled": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "expired": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "failed": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "unknown": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "nextDueAt": {
+              "type": "number",
+              "nullable": true,
+              "description": "Unix milliseconds."
+            }
+          }
+        }
+      },
+      "fields": {
+        "PlatformCampaign.followUp": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignFollowUp"
+            }
+          ]
+        },
+        "CreatePlatformCampaignRequest.followUp": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignFollowUp"
+            }
+          ]
+        },
+        "UpdatePlatformCampaignRequest.followUp": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignFollowUp"
+            }
+          ],
+          "description": "Only editable before launch. Null removes the optional follow-up."
+        },
+        "CampaignRecipient.followUp": {
+          "nullable": true,
+          "allOf": [
+            {
+              "$ref": "#/components/schemas/CampaignFollowUpSummary"
+            }
+          ],
+          "description": "Receipt-timed follow-up for this recipient; null when none was admitted."
+        },
+        "PlatformCampaignAnalytics.followUps": {
+          "$ref": "#/components/schemas/CampaignFollowUpReport",
+          "description": "Follow-up outcomes, counted separately from the first message. All zero when the campaign has no follow-up."
+        }
+      }
+    }
+  }
+}

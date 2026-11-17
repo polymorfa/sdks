@@ -16,7 +16,7 @@ impl Default for LibsqlStorageOptions {
         }
     }
 }
-/// Schema-2 DDL shared with the SQL adapters and TypeScript storage producer.
+/// Schema-3 DDL shared with the SQL adapters and TypeScript storage producer.
 pub fn schema_statements(options: &LibsqlStorageOptions) -> StorageResult<Vec<String>> {
     super::sql_schema::schema_statements(SqlDialect::Sqlite, &sql_options(options))
 }
@@ -57,6 +57,76 @@ impl LibsqlStorageAdapter {
             options,
             dialect: SqlDialect::Sqlite,
         })
+    }
+    async fn table_exists(&self, entity: &str) -> StorageResult<bool> {
+        let mut rows = self
+            .connection
+            .query(
+                "SELECT name FROM sqlite_master WHERE type='table' AND name=?",
+                [format!("{}{}", self.options.table_prefix, entity)],
+            )
+            .await
+            .map_err(|_| provider())?;
+        Ok(rows.next().await.map_err(|_| provider())?.is_some())
+    }
+    async fn schema_version(&self) -> StorageResult<Option<u32>> {
+        let meta = table(self.dialect, &sql_options(&self.options), "storage_schema")?;
+        let mut rows = self
+            .connection
+            .query(
+                &format!("SELECT version FROM {meta} WHERE id='storage'"),
+                (),
+            )
+            .await
+            .map_err(|_| provider())?;
+        let Some(row) = rows.next().await.map_err(|_| provider())? else {
+            return Ok(None);
+        };
+        if rows.next().await.map_err(|_| provider())?.is_some() {
+            return Err(provider());
+        }
+        let value = row.get::<i64>(0).map_err(|_| provider())?;
+        Ok(Some(u32::try_from(value).map_err(|_| provider())?))
+    }
+    async fn verify_schema(&self) -> StorageResult<()> {
+        if self.schema_version().await? != Some(schema::SCHEMA_VERSION) {
+            return Err(StorageError::Invalid(
+                "Customer storage requires an explicit schema-3 migration.",
+            ));
+        }
+        Ok(())
+    }
+    async fn preflight_setup(&self) -> StorageResult<bool> {
+        if self.table_exists("storage_schema").await? && self.schema_version().await?.is_some() {
+            self.verify_schema().await?;
+            for entity in schema::ALL_ENTITIES {
+                self.connection
+                    .query(
+                        &format!("SELECT connection_id FROM {} LIMIT 0", self.table(entity)?),
+                        (),
+                    )
+                    .await
+                    .map_err(|_| provider())?;
+            }
+            return Ok(false);
+        }
+        if !self.options.create_tables {
+            return Err(StorageError::Invalid(
+                "Customer storage is not initialized.",
+            ));
+        }
+        for entity in schema::ALL_ENTITIES
+            .iter()
+            .map(|entity| entity.definition().name)
+            .chain(std::iter::once("sessions"))
+        {
+            if self.table_exists(entity).await? {
+                return Err(StorageError::Invalid(
+                    "Existing storage requires an explicit migration.",
+                ));
+            }
+        }
+        Ok(true)
     }
     fn table(&self, entity: Entity) -> StorageResult<String> {
         table(
@@ -184,7 +254,7 @@ impl StorageAdapter for LibsqlStorageAdapter {
     }
     fn setup(&self) -> StorageFuture<'_, ()> {
         Box::pin(async {
-            if self.options.create_tables {
+            if self.preflight_setup().await? {
                 for statement in schema_statements(&self.options)? {
                     self.connection
                         .execute(&statement, ())
@@ -192,7 +262,7 @@ impl StorageAdapter for LibsqlStorageAdapter {
                         .map_err(|_| provider())?;
                 }
             }
-            Ok(())
+            self.verify_schema().await
         })
     }
     fn get<'a>(
@@ -201,6 +271,7 @@ impl StorageAdapter for LibsqlStorageAdapter {
         ids: &'a [String],
     ) -> StorageFuture<'a, BTreeMap<String, StoredRow>> {
         Box::pin(async move {
+            self.verify_schema().await?;
             let mut result = BTreeMap::new();
             for group in ids.chunks(500) {
                 let marks = vec!["?"; group.len()].join(",");
@@ -227,6 +298,7 @@ impl StorageAdapter for LibsqlStorageAdapter {
     fn commit<'a>(&'a self, writes: &'a [RowWrite]) -> StorageFuture<'a, CommitResult> {
         Box::pin(async move {
             memory::validate_commit(writes, 500)?;
+            self.verify_schema().await?;
             if writes.is_empty() {
                 return Ok(CommitResult {
                     ok: true,
@@ -389,6 +461,7 @@ impl StorageAdapter for LibsqlStorageAdapter {
     ) -> StorageFuture<'a, Vec<StoredRow>> {
         Box::pin(async move {
             let index = memory::validate_query(entity, query)?;
+            self.verify_schema().await?;
             let mut values = Vec::new();
             let mut clauses = Vec::new();
             let add = |value: Value, values: &mut Vec<Value>| {

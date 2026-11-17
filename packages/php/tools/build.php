@@ -7,7 +7,11 @@ $destination = getenv('POLYMORFA_BUILD_DIR') ?: $root . '/dist';
 if (!is_dir($destination)) {
     mkdir($destination, 0777, true);
 }
-$archive = new PharData($destination . '/polymorfa-sdk.tar');
+$archivePath = $destination . '/polymorfa-sdk.tar';
+if (is_file($archivePath)) {
+    unlink($archivePath);
+}
+$archive = new PharData($archivePath);
 foreach (['src', 'README.md', 'calls.md', 'composer.json', 'LICENSE', 'release-contract.json'] as $relative) {
     $path = $root . '/' . $relative;
     if (is_dir($path)) {

@@ -18,7 +18,7 @@ public interface IStorageEventStreamSource
 }
 public sealed record StorageSynchronizationOptions : StorageApplyEventOptions
 {
-    public string CheckpointSessionId { get; init; } = "*";
+    public string CheckpointConnectionId { get; init; } = "*";
     public string CheckpointStream { get; init; } = "events";
     public EventStreamOptions StreamOptions { get; init; } = new();
     public bool RequirePayload { get; init; } = true;
@@ -45,7 +45,7 @@ public sealed class StorageSynchronization : IAsyncDisposable, IDisposable
         try
         {
             StorageSynchronizationExtensions.ValidateDescriptorMode(options);
-            var saved = await storage.CheckpointAsync(options.CheckpointSessionId, options.CheckpointStream).ConfigureAwait(false); var expected = saved?.Cursor;
+            var saved = await storage.CheckpointAsync(options.CheckpointConnectionId, options.CheckpointStream).ConfigureAwait(false); var expected = saved?.Cursor;
             var parameters = options.StreamOptions with
             {
                 Types = options.StreamOptions.Types?.ToArray() ?? StorageReducers.StoredEventTypes,
@@ -67,7 +67,7 @@ public sealed class StorageSynchronization : IAsyncDisposable, IDisposable
                 if (item.Webhook is null && options.RequirePayload) throw new StorageValidationException("The event body is unavailable. The storage checkpoint and acknowledgement were not advanced.");
                 // Stream cancellation stops admission. An admitted event completes persistence and ACK using independent operation lifetimes.
                 var result = item.Webhook is { } webhook ? await StorageSynchronizationExtensions.ApplyEventAsync(storage, webhook, options).ConfigureAwait(false) : new StorageApplyResult(false, 0);
-                await storage.ApplyAsync(new(options.CheckpointSessionId, [new StorageCheckpoint(options.CheckpointSessionId, options.CheckpointStream, item.Cursor, PatchValue<string>.Set(expected), UpdatedAt: options.Now())])).ConfigureAwait(false);
+                await storage.ApplyAsync(new(options.CheckpointConnectionId, [new StorageCheckpoint(options.CheckpointConnectionId, options.CheckpointStream, item.Cursor, PatchValue<string>.Set(expected), UpdatedAt: options.Now())])).ConfigureAwait(false);
                 expected = item.Cursor;
                 await source.AcknowledgeAsync(item.StreamId, new(item.Cursor, item.Sequence)).ConfigureAwait(false);
                 options.OnApplied?.Invoke(item, result);
@@ -108,7 +108,7 @@ public static class StorageSynchronizationExtensions
                 TypedWebhookEvent<DirectHistorySyncInlinePayload> inline => inline.Payload,
                 _ => throw new StorageValidationException("Invalid history descriptor.")
             };
-            if (await storage.HasEventAsync(snapshot.Session, snapshot.Id, cancellation).ConfigureAwait(false)) return new(false, 0);
+            if (await storage.HasEventAsync(snapshot.Connection, snapshot.Id, cancellation).ConfigureAwait(false)) return new(false, 0);
             var descriptorBatch = StorageReducers.ReduceEvent(snapshot);
             if (options.HistoryDescriptorMode == StorageHistoryDescriptorMode.MetadataOnly)
                 return await storage.ApplyAsync(descriptorBatch, cancellation).ConfigureAwait(false);
@@ -118,7 +118,7 @@ public static class StorageSynchronizationExtensions
             {
                 var descriptorChunk = await descriptorDecoder(descriptor, webhookEvent, cancellation).ConfigureAwait(false) ?? throw new StorageValidationException("A non-null history descriptor chunk is required.");
                 ValidateDescriptorChunk(descriptorChunk);
-                history = StorageReducers.ReduceHistoryChunk(new(snapshot.Session, descriptorChunk));
+                history = StorageReducers.ReduceHistoryChunk(new(snapshot.Connection, descriptorChunk));
             }
             catch (Exception) { throw new StorageValidationException("Failed to decode history descriptor."); }
             return await storage.ApplyAsync(descriptorBatch with { Operations = history.Operations.Concat(descriptorBatch.Operations).ToArray() }, cancellation).ConfigureAwait(false);
@@ -126,10 +126,10 @@ public static class StorageSynchronizationExtensions
         var batch = StorageReducers.ReduceEvent(snapshot);
         if (snapshot.Event == "history.sync" && options?.DecodeHistory is { } decode && !(snapshot.Payload.ValueKind == System.Text.Json.JsonValueKind.Object && snapshot.Payload.TryGetProperty("kind", out var kind) && kind.ValueKind == System.Text.Json.JsonValueKind.String && kind.GetString() == "history"))
         {
-            if (await storage.HasEventAsync(snapshot.Session, snapshot.Id, cancellation).ConfigureAwait(false)) return new(false, 0);
+            if (await storage.HasEventAsync(snapshot.Connection, snapshot.Id, cancellation).ConfigureAwait(false)) return new(false, 0);
             var payload = System.Text.Json.JsonSerializer.Deserialize<LinkedHistorySyncPayload>(snapshot.Payload, HttpTransport.Json) ?? throw new StorageValidationException("Invalid linked history notification.");
             var chunk = await decode(payload, Webhooks.ParseVerifiedEvent(System.Text.Json.JsonSerializer.SerializeToUtf8Bytes(snapshot, HttpTransport.Json)), cancellation).ConfigureAwait(false);
-            if (chunk is not null) { var history = StorageReducers.ReduceHistoryChunk(new(snapshot.Session, chunk, StorageReducers.HistoryIdentityIndex(snapshot.Payload))); batch = batch with { Operations = history.Operations.Concat(batch.Operations).ToArray() }; }
+            if (chunk is not null) { var history = StorageReducers.ReduceHistoryChunk(new(snapshot.Connection, chunk, StorageReducers.HistoryIdentityIndex(snapshot.Payload))); batch = batch with { Operations = history.Operations.Concat(batch.Operations).ToArray() }; }
         }
         return await storage.ApplyAsync(batch, cancellation).ConfigureAwait(false);
     }

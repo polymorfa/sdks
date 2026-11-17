@@ -19,7 +19,7 @@ internal static class CloudOrderQuantityTests
     }
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
     private static string Order(string quantity) => "{\"catalogId\":\"123\",\"items\":[{\"productRetailerId\":\"sku\",\"quantity\":" + quantity + ",\"itemPrice\":0.125,\"currency\":\"USD\"}]}";
-    private static string Event(string id, string quantity) => "{\"id\":\"" + id + "\",\"session\":\"n\",\"timestamp\":\"2026-10-22T00:00:00Z\",\"event\":\"message.received\",\"payload\":{\"id\":\"m\",\"whatsapp_ids\":{\"official_api\":\"wamid.synthetic\"},\"conversation\":{\"id\":\"123\"},\"timestamp\":\"2026-10-22T00:00:00Z\",\"type\":\"order\",\"order\":" + Order(quantity) + "}}";
+    private static string Event(string id, string quantity) => "{\"id\":\"" + id + "\",\"connection\":\"n\",\"timestamp\":\"2026-10-22T00:00:00Z\",\"event\":\"message.received\",\"payload\":{\"id\":\"m\",\"whatsapp_ids\":{\"official_api\":\"wamid.synthetic\"},\"conversation\":{\"id\":\"123\"},\"timestamp\":\"2026-10-22T00:00:00Z\",\"type\":\"order\",\"order\":" + Order(quantity) + "}}";
     private static byte[] Batch(string quantity) => Encoding.UTF8.GetBytes("{\"object\":\"event_batch\",\"version\":1,\"id\":\"00000000-0000-4000-8000-000000000001\",\"events\":[" + Event("before", "1") + "," + Event("wide", quantity) + "," + Event("after", "2") + "]}");
     private static string Sign(byte[] body) => Convert.ToHexString(HMACSHA256.HashData(Encoding.UTF8.GetBytes(Secret), body));
     private static void Quantity(CloudOrder order, long expected)

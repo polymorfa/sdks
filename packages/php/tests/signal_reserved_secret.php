@@ -13,10 +13,10 @@ $reservedSignalSecrets = [
     'pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k',
     'pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k',
     'pmfa_ct_synthetic-client-token-value',
-    'pmfa_ls_synthetic-link-session-value',
+    'pmfa_ls_synthetic-link-connection-value',
     'pmfa_at_synthetic-special-purpose-value',
     'pmfa_wst_synthetic-socket-ticket-value',
-    'pmfa_sd_synthetic-session-device-value',
+    'pmfa_sd_synthetic-connection-device-value',
     'pmfa_independent_looking_but_reserved',
 ];
 $signalHistory = [];
@@ -29,10 +29,10 @@ foreach ($reservedSignalSecrets as $reserved) {
 }
 check($signalHistory === [], 'Reserved Signal secret configuration sends no request');
 $independent = new SignalSidecarClient('http://127.0.0.1:9', 'synthetic-independent-application-secret', $signalHttp);
-raises(fn () => $independent->sessions(), SignalSidecarException::class);
+raises(fn () => $independent->connections(), SignalSidecarException::class);
 check(count($signalHistory) === 1 && $signalHistory[0]['request']->getHeaderLine('Authorization') === 'Bearer synthetic-independent-application-secret', 'Independent Signal secret is sent as the application bearer');
 
-$signalVector = json_decode(file_get_contents(__DIR__.'/fixtures/signal-sidecar.json'), true, flags:JSON_THROW_ON_ERROR);
+$signalVector = json_decode(file_get_contents(__DIR__.'/fixtures/signal-sidecar.connections.json'), true, flags:JSON_THROW_ON_ERROR);
 foreach ([...$reservedSignalSecrets, $signalVector['secret']] as $key) {
     $signature = 'v1='.hash_hmac('sha256', $signalVector['timestamp'].'.'.$signalVector['rawBody'], $key);
     $verify = fn () => SignalWebhooks::constructEvent($signalVector['rawBody'], $signature, $signalVector['timestamp'], $signalVector['eventId'], $key, nowUnixSeconds:(int) $signalVector['timestamp']);

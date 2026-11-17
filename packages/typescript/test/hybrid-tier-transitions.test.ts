@@ -11,10 +11,10 @@ import {
   type HybridMergeIneligibleReason,
   type HybridResolution,
   type HybridTransport,
-  type NumberHybridTransition,
-  type NumberHybridTransitionStatus,
-  type NumberTierChange,
-  type NumberTierQuoteRequest,
+  type ConnectionHybridTransition,
+  type ConnectionHybridTransitionStatus,
+  type ConnectionTierChange,
+  type ConnectionTierQuoteRequest,
 } from "../src/index.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
@@ -38,9 +38,9 @@ const CREATED = "01994234-0000-7000-8000-00000000000c";
 const PROJECT = "01994234-0000-7000-8000-0000000000aa";
 
 function tierChange(
-  hybridTransition: NumberHybridTransition,
-  overrides: Partial<NumberTierChange> = {},
-): NumberTierChange {
+  hybridTransition: ConnectionHybridTransition,
+  overrides: Partial<ConnectionTierChange> = {},
+): ConnectionTierChange {
   return {
     id: "01994234-0000-7000-8000-000000000001",
     status: "quoted",
@@ -61,7 +61,7 @@ function tierChange(
 }
 
 describe("Hybrid Link tier transitions", () => {
-  it.each<[string, NumberTierQuoteRequest]>([
+  it.each<[string, ConnectionTierQuoteRequest]>([
     [
       "keep",
       {
@@ -75,8 +75,8 @@ describe("Hybrid Link tier transitions", () => {
         tierOverride: "standard",
         hybridResolution: {
           action: "split",
-          existingNumberTransport: "official_api",
-          newNumberName: "support-linked",
+          existingConnectionTransport: "official_api",
+          newConnectionName: "support-linked",
         },
       },
     ],
@@ -89,7 +89,7 @@ describe("Hybrid Link tier transitions", () => {
     ],
     [
       "merge",
-      { tierOverride: "pro", hybridMerge: { absorbNumberId: ABSORBED } },
+      { tierOverride: "pro", hybridMerge: { absorbConnectionId: ABSORBED } },
     ],
   ])("serializes a %s quote body exactly", async (_, body) => {
     const server = await startTestServer(() => ({
@@ -97,15 +97,15 @@ describe("Hybrid Link tier transitions", () => {
         data: tierChange({
           action: "keep",
           keepTransport: "linked_devices",
-          survivingNumberId: SURVIVOR,
+          survivingConnectionId: SURVIVOR,
         }),
       }),
     }));
-    await client(server).sessions.quoteTierChange(SURVIVOR, body);
+    await client(server).connections.quoteTierChange(SURVIVOR, body);
     expect(server.requests).toHaveLength(1);
     expect(server.requests[0]?.method).toBe("POST");
     expect(server.requests[0]?.path).toBe(
-      `/platform/sessions/${SURVIVOR}/tier-quotes`,
+      `/platform/connections/${SURVIVOR}/tier-quotes`,
     );
     expect(JSON.parse(server.requests[0]!.body)).toEqual(body);
   });
@@ -114,30 +114,30 @@ describe("Hybrid Link tier transitions", () => {
     const server = await startTestServer(() => ({ body: "{}" }));
     const sdk = client(server);
     expect(() =>
-      sdk.sessions.quoteTierChange(SURVIVOR, {
+      sdk.connections.quoteTierChange(SURVIVOR, {
         tierOverride: "pro",
         hybridResolution: { action: "keep", transport: "linked_devices" },
-        hybridMerge: { absorbNumberId: ABSORBED },
-      } as unknown as NumberTierQuoteRequest),
+        hybridMerge: { absorbConnectionId: ABSORBED },
+      } as unknown as ConnectionTierQuoteRequest),
     ).toThrow(PolymorfaValidationError);
     expect(server.requests).toHaveLength(0);
 
     // @ts-expect-error hybridResolution and hybridMerge are mutually exclusive.
-    const both: NumberTierQuoteRequest = {
+    const both: ConnectionTierQuoteRequest = {
       tierOverride: "pro",
       hybridResolution: { action: "keep", transport: "linked_devices" },
-      hybridMerge: { absorbNumberId: ABSORBED },
+      hybridMerge: { absorbConnectionId: ABSORBED },
     };
     // @ts-expect-error a split needs the new Number's name.
     const unnamed: HybridResolution = {
       action: "split",
-      existingNumberTransport: "official_api",
+      existingConnectionTransport: "official_api",
     };
     expect([both, unnamed]).toHaveLength(2);
   });
 
   it("reads split progress, the created Number and the Meta disconnect instruction", async () => {
-    const statuses: NumberHybridTransitionStatus[] = [
+    const statuses: ConnectionHybridTransitionStatus[] = [
       "scheduled",
       "running",
       "completed",
@@ -147,23 +147,23 @@ describe("Hybrid Link tier transitions", () => {
         data: tierChange(
           {
             action: "split",
-            existingNumberTransport: "linked_devices",
-            newNumberName: "support-official",
-            survivingNumberId: SURVIVOR,
+            existingConnectionTransport: "linked_devices",
+            newConnectionName: "support-official",
+            survivingConnectionId: SURVIVOR,
             status: statuses[index]!,
             failureReason: null,
             metaDisconnectRequired: false,
             effectiveAtMs: 1800000000000,
-            ...(index === 2 ? { newNumberId: CREATED } : {}),
+            ...(index === 2 ? { newConnectionId: CREATED } : {}),
           },
           { status: index === 0 ? "queued" : "applied" },
         ),
       }),
     }));
     const sdk = client(server);
-    const seen: NumberHybridTransition[] = [];
+    const seen: ConnectionHybridTransition[] = [];
     for (let i = 0; i < 3; i += 1) {
-      const read = await sdk.sessions.retrieveTierChange(
+      const read = await sdk.connections.retrieveTierChange(
         SURVIVOR,
         "01994234-0000-7000-8000-000000000001",
       );
@@ -173,8 +173,8 @@ describe("Hybrid Link tier transitions", () => {
     const done = seen[2]!;
     expect(done.action).toBe("split");
     if (done.action !== "split") throw new Error("narrowing");
-    expect(done.newNumberId).toBe(CREATED);
-    expect(done.newNumberName).toBe("support-official");
+    expect(done.newConnectionId).toBe(CREATED);
+    expect(done.newConnectionName).toBe("support-official");
     expect(done.metaDisconnectRequired).toBe(false);
   });
 
@@ -198,7 +198,7 @@ describe("Hybrid Link tier transitions", () => {
         },
       }),
     }));
-    const read = await client(server).sessions.retrieveTierChange(
+    const read = await client(server).connections.retrieveTierChange(
       SURVIVOR,
       "01994234-0000-7000-8000-000000000001",
     );
@@ -218,7 +218,7 @@ describe("Hybrid Link tier transitions", () => {
                 {
                   action: "keep",
                   keepTransport: "linked_devices",
-                  survivingNumberId: SURVIVOR,
+                  survivingConnectionId: SURVIVOR,
                   status: "failed",
                   failureReason: "hybrid_transition.runtime_unconfirmed",
                   metaDisconnectRequired: false,
@@ -228,29 +228,29 @@ describe("Hybrid Link tier transitions", () => {
               )
             : tierChange({
                 action: "merge",
-                absorbNumberId: ABSORBED,
-                survivingNumberId: SURVIVOR,
+                absorbConnectionId: ABSORBED,
+                survivingConnectionId: SURVIVOR,
                 effectiveAtMs: 1800000000000,
               }),
       }),
     }));
     const sdk = client(server);
-    const failed = (await sdk.sessions.retrieveTierChange(SURVIVOR, "q")).data
-      .data.quote.hybridTransition!;
+    const failed = (await sdk.connections.retrieveTierChange(SURVIVOR, "q"))
+      .data.data.quote.hybridTransition!;
     expect(failed).toMatchObject({
       action: "keep",
       status: "failed",
       failureReason: "hybrid_transition.runtime_unconfirmed",
     });
     const merge = (
-      await sdk.sessions.quoteTierChange(SURVIVOR, {
+      await sdk.connections.quoteTierChange(SURVIVOR, {
         tierOverride: "pro",
-        hybridMerge: { absorbNumberId: ABSORBED },
+        hybridMerge: { absorbConnectionId: ABSORBED },
       })
     ).data.data.quote.hybridTransition!;
     expect(merge.action).toBe("merge");
     if (merge.action !== "merge") throw new Error("narrowing");
-    expect(merge.absorbNumberId).toBe(ABSORBED);
+    expect(merge.absorbConnectionId).toBe(ABSORBED);
     expect(merge.status).toBeUndefined();
   });
 
@@ -285,7 +285,7 @@ describe("Hybrid Link tier transitions", () => {
         }),
       }));
       const error = await client(server)
-        .sessions.quoteTierChange(SURVIVOR, { tierOverride: "standard" })
+        .connections.quoteTierChange(SURVIVOR, { tierOverride: "standard" })
         .then(
           () => undefined,
           (caught: unknown) => caught,
@@ -305,18 +305,18 @@ describe("Hybrid Link tier transitions", () => {
   it("lists same-number merge candidates for a project", async () => {
     const candidates: HybridMergeCandidate[] = [
       {
-        numbers: [
+        connections: [
           {
             id: SURVIVOR,
             name: "support",
-            transport: "linked_devices",
+            method: "linked_device",
             status: "connected",
             canBeAbsorbed: false,
           },
           {
             id: ABSORBED,
             name: "support-cloud",
-            transport: "official_api",
+            method: "cloud_api",
             status: "connected",
             canBeAbsorbed: true,
           },
@@ -324,18 +324,18 @@ describe("Hybrid Link tier transitions", () => {
         eligible: true,
       },
       {
-        numbers: [
+        connections: [
           {
             id: CREATED,
             name: "sales",
-            transport: "linked_devices",
+            method: "linked_device",
             status: "disconnected",
             canBeAbsorbed: true,
           },
           {
             id: "01994234-0000-7000-8000-00000000000d",
             name: "sales-cloud",
-            transport: "official_api",
+            method: "cloud_api",
             status: "connected",
             canBeAbsorbed: true,
           },
@@ -413,9 +413,9 @@ it("surfaces missing Hybrid Link access on the candidate list as a typed 403", a
 describe("Hybrid tier transition types match the pinned Platform snapshot", () => {
   it("covers every request and response field and enum", () => {
     expect(
-      Object.keys(platform.NumberTierQuoteRequest!.properties!).sort(),
+      Object.keys(platform.ConnectionTierQuoteRequest!.properties!).sort(),
     ).toEqual(
-      unionKeys<NumberTierQuoteRequest>({
+      unionKeys<ConnectionTierQuoteRequest>({
         projectId: true,
         tierOverride: true,
         hybridResolution: true,
@@ -436,38 +436,38 @@ describe("Hybrid tier transition types match the pinned Platform snapshot", () =
       unionKeys<HybridResolution>({
         action: true,
         transport: true,
-        existingNumberTransport: true,
-        newNumberName: true,
+        existingConnectionTransport: true,
+        newConnectionName: true,
       }),
     );
     expect(Object.keys(platform.HybridMerge!.properties!)).toEqual([
-      "absorbNumberId",
+      "absorbConnectionId",
     ]);
 
-    const transition = platform.NumberHybridTransition!;
+    const transition = platform.ConnectionHybridTransition!;
     expect(Object.keys(transition.properties!).sort()).toEqual(
-      unionKeys<NumberHybridTransition>({
+      unionKeys<ConnectionHybridTransition>({
         action: true,
         keepTransport: true,
-        existingNumberTransport: true,
-        newNumberName: true,
-        absorbNumberId: true,
-        survivingNumberId: true,
-        newNumberId: true,
+        existingConnectionTransport: true,
+        newConnectionName: true,
+        absorbConnectionId: true,
+        survivingConnectionId: true,
+        newConnectionId: true,
         status: true,
         failureReason: true,
         metaDisconnectRequired: true,
         effectiveAtMs: true,
       }),
     );
-    expect(transition.required).toEqual(["action", "survivingNumberId"]);
+    expect(transition.required).toEqual(["action", "survivingConnectionId"]);
     expect(transition.properties!.action!.enum!.slice().sort()).toEqual([
       "keep",
       "merge",
       "split",
     ]);
     expect(transition.properties!.status!.enum!.slice().sort()).toEqual(
-      values<NumberHybridTransitionStatus>({
+      values<ConnectionHybridTransitionStatus>({
         scheduled: true,
         running: true,
         completed: true,
@@ -476,14 +476,14 @@ describe("Hybrid tier transition types match the pinned Platform snapshot", () =
       }),
     );
     expect(
-      platform.NumberTierChange!.properties!.quote!.properties!
+      platform.ConnectionTierChange!.properties!.quote!.properties!
         .hybridTransition!.$ref,
-    ).toBe("#/components/schemas/NumberHybridTransition");
+    ).toBe("#/components/schemas/ConnectionHybridTransition");
 
     const candidate = platform.HybridMergeCandidateList!.items!;
     expect(Object.keys(candidate.properties!).sort()).toEqual(
       unionKeys<HybridMergeCandidate>({
-        numbers: true,
+        connections: true,
         eligible: true,
         ineligibleReason: true,
       }),
@@ -503,9 +503,12 @@ describe("Hybrid tier transition types match the pinned Platform snapshot", () =
       }),
     );
     expect(
-      Object.keys(candidate.properties!.numbers!.items!.properties!).sort(),
-    ).toEqual(["canBeAbsorbed", "id", "name", "status", "transport"]);
-    expect(candidate.properties!.numbers!.items!.required).toContain(
+      Object.keys(candidate.properties!.connections!.items!.properties!).sort(),
+    ).toEqual(["canBeAbsorbed", "id", "method", "name", "status"]);
+    expect(
+      candidate.properties!.connections!.items!.properties!.method!.enum,
+    ).toEqual(["linked_device", "cloud_api"]);
+    expect(candidate.properties!.connections!.items!.required).toContain(
       "canBeAbsorbed",
     );
   });

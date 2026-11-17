@@ -21,8 +21,8 @@ internal static class PasskeyTests
         if (fixturePath is null)
         {
             DirectoryInfo? root = new DirectoryInfo(Directory.GetCurrentDirectory());
-            while (root is not null && !File.Exists(System.IO.Path.Combine(root.FullName, "contracts/fixtures/passkeys.candidate.json"))) root = root.Parent;
-            fixturePath = root is null ? throw new Exception("Passkey fixture root not found.") : System.IO.Path.Combine(root.FullName, "contracts/fixtures/passkeys.candidate.json");
+            while (root is not null && !File.Exists(System.IO.Path.Combine(root.FullName, "contracts/fixtures/connections/passkeys.candidate.json"))) root = root.Parent;
+            fixturePath = root is null ? throw new Exception("Passkey fixture root not found.") : System.IO.Path.Combine(root.FullName, "contracts/fixtures/connections/passkeys.candidate.json");
         }
         using var doc = JsonDocument.Parse(File.ReadAllText(fixturePath));
         var f = doc.RootElement;

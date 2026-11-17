@@ -113,13 +113,13 @@ class CloudCatalogs(Resource):
 
 class CloudMarketing(Resource):
     async def get_status(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[MarketingMessagesStatus]]:
         self._server()
-        if not session.strip() or len(session) > 128:
-            raise ValidationError("Provide a Number ID of 1 to 128 characters.")
+        if not connection.strip() or len(connection) > 128:
+            raise ValidationError("Provide a Connection ID of 1 to 128 characters.")
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/marketing-messages/status", options=options
+            "GET", f"/messaging/{segment(connection)}/marketing-messages/status", options=options
         )
 
     async def status(

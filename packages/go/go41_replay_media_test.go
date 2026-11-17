@@ -123,7 +123,7 @@ func TestGo41ClientRelayAndDirectPreIOGuard(t *testing.T) {
 				t.Fatal(e)
 			}
 			opts := sdk.UploadWhatsAppMediaOptions{EncryptMediaOptions: sdk.EncryptMediaOptions{MediaType: kind, MediaKey: key}}
-			if _, e := m.WhatsAppMedia().UploadBytes(context.Background(), "session /x", plain, opts); e != nil || calls != 1 {
+			if _, e := m.WhatsAppMedia().UploadBytes(context.Background(), "connection /x", plain, opts); e != nil || calls != 1 {
 				t.Fatalf("Client relay refused %v", e)
 			}
 			reads := 0
@@ -223,7 +223,7 @@ func TestGo41StickerIndependentWireAndRetrySnapshot(t *testing.T) {
 		io.WriteString(w, `{"success":true,"data":{"id":"18446744073709551615","type":"sticker","whatsapp_ids":{"linked_devices":"message-19"},"conversation":{"id":"chat"},"timestamp":"2026-10-16T00:00:00Z","status":"sent","content":{"sticker":{"descriptor":{"directPath":"/mms/sticker/path","url":"https://mmg.whatsapp.net/mms/sticker/path","mediaKey":"CQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQkJCQk=","fileSha256":"CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg=","fileEncSha256":"CAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAg=","fileLength":19,"mimeType":"image/webp","width":512,"height":512,"isAnimated":false}}}}}`)
 	})
 	one := 1
-	r, e := m.Messages().Send(context.Background(), "session /x", sdk.SendMessageRequest{Conversation: sdk.ConversationReference{ID: "chat"}, Content: sdk.MessageContent{Sticker: &sdk.StickerContent{Descriptor: &d}}}, sdk.RequestOptions{IdempotencyKey: "sticker-key", MaxNetworkRetries: &one})
+	r, e := m.Messages().Send(context.Background(), "connection /x", sdk.SendMessageRequest{Conversation: sdk.ConversationReference{ID: "chat"}, Content: sdk.MessageContent{Sticker: &sdk.StickerContent{Descriptor: &d}}}, sdk.RequestOptions{IdempotencyKey: "sticker-key", MaxNetworkRetries: &one})
 	if e != nil || len(bodies) != 2 || !bytes.Equal(bodies[0], bodies[1]) || r.Data.Data.ID != "18446744073709551615" || r.Data.Data.Type != "sticker" {
 		t.Fatalf("sticker retry/response %v", e)
 	}
@@ -247,7 +247,7 @@ func TestGo41RelayExplicitRetryStillSubmitsOnce(t *testing.T) {
 		io.WriteString(w, go41Relay)
 	})
 	one := 1
-	_, e := m.WhatsAppMedia().UploadBytes(context.Background(), "session /x", []byte("retry body"), sdk.UploadWhatsAppMediaOptions{EncryptMediaOptions: sdk.EncryptMediaOptions{MediaType: sdk.UploadImage, MediaKey: bytes.Repeat([]byte{4}, 32)}, RequestOptions: sdk.RequestOptions{IdempotencyKey: "relay-key", MaxNetworkRetries: &one}})
+	_, e := m.WhatsAppMedia().UploadBytes(context.Background(), "connection /x", []byte("retry body"), sdk.UploadWhatsAppMediaOptions{EncryptMediaOptions: sdk.EncryptMediaOptions{MediaType: sdk.UploadImage, MediaKey: bytes.Repeat([]byte{4}, 32)}, RequestOptions: sdk.RequestOptions{IdempotencyKey: "relay-key", MaxNetworkRetries: &one}})
 	// Identical bytes do not prove server deduplication for this held route.
 	if e == nil || len(bodies) != 1 || len(bodies[0]) != 26 {
 		t.Fatalf("unledgered encrypted relay submission %v attempts=%d", e, len(bodies))

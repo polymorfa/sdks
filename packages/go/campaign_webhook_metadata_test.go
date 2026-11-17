@@ -16,7 +16,7 @@ func TestCampaignWebhookMetadata(t *testing.T) {
 		BatchID string
 		Events  []json.RawMessage
 	}
-	data, err := os.ReadFile("../../contracts/fixtures/campaign-webhook-metadata.json")
+	data, err := os.ReadFile("../../contracts/fixtures/connections/campaign-webhook-metadata.json")
 	if err != nil {
 		t.Fatal(err)
 	}

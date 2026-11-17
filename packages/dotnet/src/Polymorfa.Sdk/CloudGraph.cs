@@ -17,11 +17,11 @@ public sealed record CloudMarketingTerms(string? Status = null, string? Time = n
 public sealed record CloudMarketingOwnerBusiness([property: JsonPropertyName("marketing_messages_onboarding_status")] CloudMarketingTerms? MarketingMessagesOnboardingStatus = null);
 public sealed class CloudGraph : Resource
 {
-    public Task<ApiResponse<SuccessEnvelope<MarketingMessagesStatus>>> GetMarketingMessagesStatusAsync(string session, RequestOptions? options = null)
+    public Task<ApiResponse<SuccessEnvelope<MarketingMessagesStatus>>> GetMarketingMessagesStatusAsync(string connection, RequestOptions? options = null)
     {
         Http.Credential.RequireServer();
-        if (string.IsNullOrWhiteSpace(session) || session.Length > 128) throw new PolymorfaValidationException("Provide a Number ID of 1 to 128 characters.", "invalid_parameter");
-        return Get<SuccessEnvelope<MarketingMessagesStatus>>("/messaging/" + E(session) + "/marketing-messages/status", options);
+        if (string.IsNullOrWhiteSpace(connection) || connection.Length > 128) throw new PolymorfaValidationException("Provide a Connection ID of 1 to 128 characters.", "invalid_parameter");
+        return Get<SuccessEnvelope<MarketingMessagesStatus>>("/messaging/" + E(connection) + "/marketing-messages/status", options);
     }
     internal CloudGraph(HttpTransport http) : base(http) { }
     private string Path(string id, string version) { Http.Credential.RequireServer(); if (string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(version)) throw new PolymorfaConfigurationException("Provide an identifier and Graph version."); return "/graph/whatsapp/" + E(version) + "/" + E(id); }

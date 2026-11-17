@@ -10,12 +10,12 @@ import type { MediaStateRequest, MediaStateReply } from "./media-state.js";
  *
  * 1. The **lifecycle socket** (`GET /voip/ws`) — one per client. No credential
  *    travels in the URL: the first frame is `{ type: "auth", token }` and the
- *    platform answers `ready`. Server credentials name the session with
- *    `?session=` (and optionally `&participant=`); client tokens send no query
+ *    platform answers `ready`. Server credentials name the connection with
+ *    `?connection=` (and optionally `&participant=`); client tokens send no query
  *    parameters. A later `auth` frame replaces an expiring token and must
- *    resolve to the same team, project, session and participant. The
+ *    resolve to the same team, project, connection and participant. The
  *    platform closes the socket with 4401 once the token stops authorizing
- *    the session.
+ *    the connection.
  *
  * 2. The **media socket** (`GET /voip/calls/{callId}/media`, subprotocol
  *    `pmfa.calls.v2`) — one per media connection. The first frame is
@@ -80,7 +80,7 @@ export interface TrickleCandidate {
 export type LifecycleFrame =
   | {
       readonly type: "ready";
-      readonly session?: string;
+      readonly connection?: string;
       /** Participant reference of the authenticated credential, when sent. */
       readonly participant?: string;
     }
@@ -116,7 +116,7 @@ export function parseLifecycleFrame(data: unknown): LifecycleFrame | undefined {
   if (f === undefined) return undefined;
   switch (f["type"]) {
     case "ready":
-      return optionalString(f["session"]) && optionalString(f["participant"])
+      return optionalString(f["connection"]) && optionalString(f["participant"])
         ? (f as LifecycleFrame)
         : undefined;
     case "event":

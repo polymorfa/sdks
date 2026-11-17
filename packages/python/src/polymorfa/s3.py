@@ -59,7 +59,7 @@ class S3MediaStore:
     async def upload_to_whatsapp(
         self,
         messaging: WhatsAppMedia,
-        session: str,
+        connection: str,
         key: str,
         *,
         media_type: UploadMediaType,
@@ -97,7 +97,7 @@ class S3MediaStore:
         if isinstance(egress, str) and egress not in ("relay", "direct"):
             raise ConfigurationError("egress")
         return await messaging.upload(
-            session,
+            connection,
             source,
             media_type=media_type,
             mimetype=mime,

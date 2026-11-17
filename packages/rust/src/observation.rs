@@ -1,4 +1,4 @@
-//! Resolved project and Number observation policies.
+//! Resolved project and Connection observation policies.
 use crate::{
     configuration::{LabelObservationMode, ObservationMode},
     models::SuccessEnvelope,
@@ -8,7 +8,7 @@ use crate::{
 use serde::{Deserialize, Serialize};
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionObservationMode {
+pub enum ConnectionObservationMode {
     Off,
     Events,
     Cache,
@@ -16,7 +16,7 @@ pub enum SessionObservationMode {
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
-pub enum SessionLabelObservationMode {
+pub enum ConnectionLabelObservationMode {
     Off,
     Events,
     Cache,
@@ -45,16 +45,16 @@ pub struct ObservationPolicyValues {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ObservationPolicyOverrides {
-    pub presence_mode: SessionObservationMode,
-    pub typing_mode: SessionObservationMode,
-    pub label_mode: SessionLabelObservationMode,
+    pub presence_mode: ConnectionObservationMode,
+    pub typing_mode: ConnectionObservationMode,
+    pub label_mode: ConnectionLabelObservationMode,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub quick_reply_mode: Option<SessionObservationMode>,
+    pub quick_reply_mode: Option<ConnectionObservationMode>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionObservationPolicy {
-    pub session_name: String,
+pub struct ConnectionObservationPolicy {
+    pub connection_name: String,
     pub project_id: String,
     pub project: ObservationPolicyValues,
     pub r#override: ObservationPolicyOverrides,
@@ -74,14 +74,14 @@ impl ObservationPolicies<'_> {
             )
             .await
     }
-    pub async fn retrieve_for_session(
+    pub async fn retrieve_for_connection(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<SessionObservationPolicy>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<ConnectionObservationPolicy>>> {
         self.0
             .get(
-                &format!("/messaging/{}/observation-policy", encode(session)),
+                &format!("/messaging/{}/observation-policy", encode(connection)),
                 options,
             )
             .await

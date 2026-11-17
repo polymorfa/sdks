@@ -9,24 +9,24 @@ import {
 
 const TIMERS = { off: 0, "24h": 86400, "7d": 604800, "90d": 7776000 } as const;
 
-export const POST = route("agent", async ({ body, sessionOf }) => {
+export const POST = route("agent", async ({ body, connectionOf }) => {
   const chats = messaging().chats;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   const chatId = text(body, "chatId");
   switch (action(body)) {
     case "editMessage":
-      return chats.editMessage(session, chatId, text(body, "messageId"), {
+      return chats.editMessage(connection, chatId, text(body, "messageId"), {
         text: text(body, "text"),
       });
     case "deleteMessage":
-      return chats.deleteMessage(session, chatId, text(body, "messageId"));
+      return chats.deleteMessage(connection, chatId, text(body, "messageId"));
     case "archive":
-      return chats.archive(session, chatId);
+      return chats.archive(connection, chatId);
     case "unarchive":
-      return chats.unarchive(session, chatId);
+      return chats.unarchive(connection, chatId);
     case "disappearing": {
       const timer = oneOf(body, "timer", ["off", "24h", "7d", "90d"]);
-      return chats.setDisappearingTimer(session, chatId, {
+      return chats.setDisappearingTimer(connection, chatId, {
         durationSeconds: TIMERS[timer],
       });
     }

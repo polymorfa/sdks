@@ -31,15 +31,15 @@ type PlaceCallRequest struct {
 	To           string   `json:"to,omitempty"`
 	Participants []string `json:"participants,omitempty"`
 	GroupID      string   `json:"groupId,omitempty"`
-	Session      string   `json:"session,omitempty"`
+	Connection   string   `json:"connection,omitempty"`
 	Video        *bool    `json:"video,omitempty"`
 	Exclusive    *bool    `json:"exclusive,omitempty"`
 	Participant  string   `json:"participant,omitempty"`
 }
 type PlacedCall struct {
-	CallID  string `json:"callId"`
-	Session string `json:"session"`
-	Video   bool   `json:"video"`
+	CallID     string `json:"callId"`
+	Connection string `json:"connection"`
+	Video      bool   `json:"video"`
 }
 type AcceptCallRequest struct {
 	Exclusive   *bool  `json:"exclusive,omitempty"`
@@ -110,27 +110,27 @@ type HandRaisedRequest struct {
 	Raised       bool   `json:"raised"`
 }
 type CreateCallLinkRequest struct {
-	Session string `json:"session"`
-	Video   *bool  `json:"video,omitempty"`
+	Connection string `json:"connection"`
+	Video      *bool  `json:"video,omitempty"`
 }
 type PreviewCallLinkRequest struct {
 	CreateCallLinkRequest
 	Token string `json:"token"`
 }
 type CreatedCallLink struct {
-	Session string `json:"session"`
-	Token   string `json:"token"`
-	URL     string `json:"url"`
-	Video   bool   `json:"video"`
+	Connection string `json:"connection"`
+	Token      string `json:"token"`
+	URL        string `json:"url"`
+	Video      bool   `json:"video"`
 }
 type PreviewedCallLink struct {
-	Session          string                `json:"session"`
+	Connection       string                `json:"connection"`
 	Video            bool                  `json:"video"`
 	Creator          ConversationReference `json:"creator"`
 	ApprovalRequired bool                  `json:"approvalRequired"`
 	IsAdmin          bool                  `json:"isAdmin"`
 }
-type SessionCallSettings struct {
+type ConnectionCallSettings struct {
 	// Read-only server projection. Nil is not a coverage guarantee.
 	SimultaneousCallsCoverageExcludedUntil *string `json:"simultaneousCallsCoverageExcludedUntil"`
 	SimultaneousCalls                      bool    `json:"simultaneousCalls"`
@@ -187,8 +187,8 @@ type CallPermission struct {
 	Conversation ConversationReference `json:"conversation"`
 }
 type CheckCallRequest struct {
-	Session string `json:"session"`
-	To      string `json:"to"`
+	Connection string `json:"connection"`
+	To         string `json:"to"`
 }
 type CallCheck struct {
 	Allowed    bool                 `json:"allowed"`
@@ -216,8 +216,8 @@ func (r *VoIP) participant(p string) error {
 }
 func callPath(id string) string { return "/messaging/voip/calls/" + escaped(id) }
 func (r *VoIP) Place(ctx context.Context, b PlaceCallRequest, o ...RequestOptions) (Response[Envelope[PlacedCall]], error) {
-	if r.t.config.Credential.Kind != ClientToken && strings.TrimSpace(b.Session) == "" {
-		return Response[Envelope[PlacedCall]]{}, validation("Server call placement requires session.")
+	if r.t.config.Credential.Kind != ClientToken && strings.TrimSpace(b.Connection) == "" {
+		return Response[Envelope[PlacedCall]]{}, validation("Server call placement requires connection.")
 	}
 	if err := r.participant(b.Participant); err != nil {
 		return Response[Envelope[PlacedCall]]{}, err
@@ -320,7 +320,7 @@ func (r *VoIP) RetrieveCallPermission(ctx context.Context, s, to string, o ...Re
 		return Response[Envelope[CallPermission]]{}, err
 	}
 	if strings.TrimSpace(s) == "" || strings.TrimSpace(to) == "" {
-		return Response[Envelope[CallPermission]]{}, validation("session and to are required.")
+		return Response[Envelope[CallPermission]]{}, validation("connection and to are required.")
 	}
 	return request[Envelope[CallPermission]](ctx, r.t, "GET", "/messaging/"+escaped(s)+"/call-permissions/"+escaped(to), nil, nil, options(o))
 }
@@ -328,35 +328,35 @@ func (r *VoIP) Check(ctx context.Context, b CheckCallRequest, o ...RequestOption
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[CallCheck]]{}, err
 	}
-	if strings.TrimSpace(b.Session) == "" || strings.TrimSpace(b.To) == "" {
-		return Response[Envelope[CallCheck]]{}, validation("session and to are required.")
+	if strings.TrimSpace(b.Connection) == "" || strings.TrimSpace(b.To) == "" {
+		return Response[Envelope[CallCheck]]{}, validation("connection and to are required.")
 	}
 	return request[Envelope[CallCheck]](ctx, r.t, "POST", "/messaging/voip/calls/check", nil, b, options(o))
 }
-func (r *VoIP) RetrieveCallSettings(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[SessionCallSettings]], error) {
+func (r *VoIP) RetrieveCallSettings(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[ConnectionCallSettings]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[SessionCallSettings]]{}, err
+		return Response[Envelope[ConnectionCallSettings]]{}, err
 	}
-	return request[Envelope[SessionCallSettings]](ctx, r.t, "GET", sessionPath(s)+"/call-settings", nil, nil, options(o))
+	return request[Envelope[ConnectionCallSettings]](ctx, r.t, "GET", connectionPath(s)+"/call-settings", nil, nil, options(o))
 }
-func (r *VoIP) UpdateCallSettings(ctx context.Context, s string, b UpdateCallSettingsRequest, o ...RequestOptions) (Response[Envelope[SessionCallSettings]], error) {
+func (r *VoIP) UpdateCallSettings(ctx context.Context, s string, b UpdateCallSettingsRequest, o ...RequestOptions) (Response[Envelope[ConnectionCallSettings]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[SessionCallSettings]]{}, err
+		return Response[Envelope[ConnectionCallSettings]]{}, err
 	}
 	if b.CallsEnabled == nil && b.ConferenceMode == nil && b.InboundRoute == "" && b.SIPTrunkID == nil && b.SIPClaim == nil && b.HostCloudAPICalls == nil && b.SimultaneousCalls == nil {
-		return Response[Envelope[SessionCallSettings]]{}, validation("Send at least one call setting.")
+		return Response[Envelope[ConnectionCallSettings]]{}, validation("Send at least one call setting.")
 	}
 	if b.InboundRoute != "" && b.InboundRoute != "clients" && b.InboundRoute != "sip_trunk" || b.ExpectedRevision != nil && *b.ExpectedRevision < 0 {
-		return Response[Envelope[SessionCallSettings]]{}, validation("Invalid inboundRoute or expectedRevision.")
+		return Response[Envelope[ConnectionCallSettings]]{}, validation("Invalid inboundRoute or expectedRevision.")
 	}
-	return request[Envelope[SessionCallSettings]](ctx, r.t, "PUT", sessionPath(s)+"/call-settings", nil, b, options(o))
+	return request[Envelope[ConnectionCallSettings]](ctx, r.t, "PUT", connectionPath(s)+"/call-settings", nil, b, options(o))
 }
 func (r *VoIP) assertLink(b CreateCallLinkRequest, o RequestOptions) error {
 	if err := serverOnly(r.t); err != nil {
 		return err
 	}
-	if strings.TrimSpace(b.Session) == "" || len(b.Session) > 128 {
-		return validation("Call links require a session of at most 128 characters.")
+	if strings.TrimSpace(b.Connection) == "" || len(b.Connection) > 128 {
+		return validation("Call links require a connection of at most 128 characters.")
 	}
 	if o.IdempotencyKey != "" || o.Headers.Get("Idempotency-Key") != "" {
 		return validation("Call links do not support Idempotency-Key; never retry an unknown outcome.")

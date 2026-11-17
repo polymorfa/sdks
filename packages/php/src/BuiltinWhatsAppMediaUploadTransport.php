@@ -24,10 +24,10 @@ final readonly class BuiltinWhatsAppMediaUploadTransport implements WhatsAppMedi
     {
         return $this->mode;
     }
-    public function upload(string $session, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation
+    public function upload(string $connection, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation
     {
         $this->assertAllowed();
-        return $body->uploadUsing($this->resource, $session, $this->mode, $this->options);
+        return $body->uploadUsing($this->resource, $connection, $this->mode, $this->options);
     }
     /** @return array{redacted:true} */
     public function __debugInfo(): array

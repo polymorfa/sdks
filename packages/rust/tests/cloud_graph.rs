@@ -140,7 +140,7 @@ async fn provider_writes_suppress_retry_overrides_and_keep_final_metadata() {
                     "project",
                     "template",
                     &polymorfa_sdk::templates::SubmitProjectTemplateRequest {
-                        session: "support".into(),
+                        connection: "support".into(),
                     },
                     options,
                 )

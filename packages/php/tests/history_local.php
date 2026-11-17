@@ -61,10 +61,10 @@ foreach (['valid','corrupt','cancelled','api','api-error'] as $mode) {
             $api = new Polymorfa\MessagingClient($credential, baseUrl:'https://api.fixture.invalid', http:$http);
             $retry = ['syncType' => 'RECENT','chunkOrder' => 4294967295,'chunkMessageId' => 'fixture_message','regenerate' => false];
             if ($mode === 'api-error') {
-                raises(fn () => $api->historySync->requestChunkRetry('session', $retry), ServerException::class);
+                raises(fn () => $api->historySync->requestChunkRetry('connection', $retry), ServerException::class);
             } else {
-                check($api->historySync->requestChunkRetry('session', $retry)->data['data']['requestId'] === 'fixture_retry', 'Typed retry result');
-                check($api->historySync->deleteChunk('session', '/fixture/history?ccb=1', str_repeat(chr(255), 32), 'handle', 'nonce', new RequestOptions(apiVersion:'2026-12-01'))->data['data']['status'] === 'deleted', 'Typed explicit delete result');
+                check($api->historySync->requestChunkRetry('connection', $retry)->data['data']['requestId'] === 'fixture_retry', 'Typed retry result');
+                check($api->historySync->deleteChunk('connection', '/fixture/history?ccb=1', str_repeat(chr(255), 32), 'handle', 'nonce', new RequestOptions(apiVersion:'2026-12-01'))->data['data']['status'] === 'deleted', 'Typed explicit delete result');
             }
         } else {
             $descriptor = new HistorySyncChunkDescriptor('/fixture/history', $historyBytes('mediaKey'), $historyBytes('fileSha256'), $historyBytes('fileEncSha256'), $historyFixture['fileLength']);
@@ -94,15 +94,15 @@ foreach (['valid','corrupt','cancelled','api','api-error'] as $mode) {
 }
 $api = new Polymorfa\MessagingClient($credential, baseUrl:'http://127.0.0.1:1');
 foreach ([['syncType' => 'INVALID','chunkOrder' => 0],['syncType' => 'RECENT','chunkOrder' => -1],['syncType' => 'RECENT','chunkOrder' => 4294967296],['syncType' => 'RECENT','chunkOrder' => 0,'chunkMessageId' => "private\nvalue"],['syncType' => 'RECENT','chunkOrder' => 0,'extra' => 'forbidden']] as $body) {
-    raises(fn () => $api->historySync->requestChunkRetry('session', $body), ConfigurationException::class);
+    raises(fn () => $api->historySync->requestChunkRetry('connection', $body), ConfigurationException::class);
 }
-raises(fn () => $api->historySync->deleteChunk('session', 'https://evil.invalid', str_repeat('x', 32)), ConfigurationException::class);
-raises(fn () => $api->historySync->deleteChunk('session', '/fixture', str_repeat('x', 31)), ConfigurationException::class);
+raises(fn () => $api->historySync->deleteChunk('connection', 'https://evil.invalid', str_repeat('x', 32)), ConfigurationException::class);
+raises(fn () => $api->historySync->deleteChunk('connection', '/fixture', str_repeat('x', 31)), ConfigurationException::class);
 echo "Local history golden, three compression formats, lossless protobuf/uint64/unknown fields, bounds, native TLS verification-before-decode and explicit API retry/delete passed.\n";
 
 $browser = new Polymorfa\MessagingClient(Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'));
-raises(fn () => $browser->historySync->requestChunkRetry('session', ['syncType' => 'FULL','chunkOrder' => 0]), ConfigurationException::class);
-raises(fn () => $browser->historySync->deleteChunk('session', '/fixture', str_repeat('x', 32)), ConfigurationException::class);
+raises(fn () => $browser->historySync->requestChunkRetry('connection', ['syncType' => 'FULL','chunkOrder' => 0]), ConfigurationException::class);
+raises(fn () => $browser->historySync->deleteChunk('connection', '/fixture', str_repeat('x', 32)), ConfigurationException::class);
 
 $historyVarint = static function (int $value): string {
     $out = '';

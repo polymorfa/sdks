@@ -19,9 +19,9 @@ type FlowValidationIssue struct {
 	Message     string                  `json:"message,omitempty"`
 	Pointers    []FlowValidationPointer `json:"pointers,omitempty"`
 }
-type FlowNumberLink struct {
-	Session          string                `json:"session"`
-	SessionID        string                `json:"sessionId,omitempty"`
+type FlowConnectionLink struct {
+	Connection       string                `json:"connection"`
+	ConnectionID     string                `json:"connectionId,omitempty"`
 	WABAID           string                `json:"wabaId"`
 	MetaFlowID       string                `json:"metaFlowId"`
 	Status           string                `json:"status"`
@@ -35,14 +35,14 @@ type FlowNumberLink struct {
 	Simulated        *bool                 `json:"simulated,omitempty"`
 }
 type FlowSummary struct {
-	ID          string           `json:"id"`
-	Name        string           `json:"name"`
-	Status      string           `json:"status"`
-	Version     string           `json:"version"`
-	ScreenCount int              `json:"screenCount"`
-	MetaLinks   []FlowNumberLink `json:"metaLinks"`
-	CreatedAt   int64            `json:"createdAt"`
-	UpdatedAt   int64            `json:"updatedAt"`
+	ID          string               `json:"id"`
+	Name        string               `json:"name"`
+	Status      string               `json:"status"`
+	Version     string               `json:"version"`
+	ScreenCount int                  `json:"screenCount"`
+	MetaLinks   []FlowConnectionLink `json:"metaLinks"`
+	CreatedAt   int64                `json:"createdAt"`
+	UpdatedAt   int64                `json:"updatedAt"`
 }
 type FlowDraft struct {
 	FlowSummary
@@ -60,17 +60,17 @@ type UpdateFlowRequest struct {
 	Definition        map[string]json.RawMessage `json:"definition,omitempty"`
 }
 type FlowProviderRequest struct {
-	SessionID  string   `json:"sessionId"`
-	Categories []string `json:"categories,omitempty"`
-	RequestID  string   `json:"requestId,omitempty"`
+	ConnectionID string   `json:"connectionId"`
+	Categories   []string `json:"categories,omitempty"`
+	RequestID    string   `json:"requestId,omitempty"`
 }
 type FlowProviderOperation struct {
 	ID               string  `json:"id"`
 	RequestID        *string `json:"requestId"`
 	FlowID           string  `json:"flowId"`
 	FlowName         string  `json:"flowName"`
-	SessionID        string  `json:"sessionId"`
-	Session          string  `json:"session"`
+	ConnectionID     string  `json:"connectionId"`
+	Connection       string  `json:"connection"`
 	Action           string  `json:"action"`
 	State            string  `json:"state"`
 	Resolution       *string `json:"resolution"`
@@ -94,7 +94,7 @@ type FlowEndpoint struct {
 	TeamID       string  `json:"teamId"`
 	ProjectID    string  `json:"projectId"`
 	FlowID       string  `json:"flowId"`
-	SessionID    string  `json:"sessionId"`
+	ConnectionID string  `json:"connectionId"`
 	Mode         string  `json:"mode"`
 	URL          *string `json:"url"`
 	FunctionID   *string `json:"functionId"`
@@ -138,7 +138,7 @@ func (FlowEndpointSetResult) String() string     { return "FlowEndpointSetResult
 func (v FlowEndpointSetResult) GoString() string { return v.String() }
 
 type SetFlowEndpointRequest struct {
-	SessionID           string            `json:"sessionId"`
+	ConnectionID        string            `json:"connectionId"`
 	Enabled             *bool             `json:"enabled,omitempty"`
 	ExpectedRevision    *int64            `json:"expectedRevision,omitempty"`
 	Mode                string            `json:"mode"`
@@ -147,18 +147,18 @@ type SetFlowEndpointRequest struct {
 	FunctionID          string            `json:"functionId,omitempty"`
 	DeploymentID        *Nullable[string] `json:"deploymentId,omitempty"`
 }
-type FlowNumberRequest struct {
-	SessionID string `json:"sessionId"`
+type FlowConnectionRequest struct {
+	ConnectionID string `json:"connectionId"`
 }
 type ListFlowEndpointReceiptsParams struct {
-	SessionID string
-	Limit     int
+	ConnectionID string
+	Limit        int
 }
 type FlowEndpointReceipt struct {
 	ID                   string   `json:"id"`
 	FlowID               string   `json:"flowId"`
 	EndpointID           string   `json:"endpointId"`
-	SessionID            string   `json:"sessionId"`
+	ConnectionID         string   `json:"connectionId"`
 	Mode                 string   `json:"mode"`
 	Action               *string  `json:"action"`
 	Outcome              string   `json:"outcome"`

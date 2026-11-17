@@ -48,8 +48,8 @@ class ProjectWithStats(TypedDict):
     defaultTier: str
     isActive: bool
     stage: Literal["development", "production"]
-    activeSessions: int
-    totalSessions: int
+    activeConnections: int
+    totalConnections: int
     totalMessages: int
     lastActivity: int | None
     iconUrl: str | None
@@ -92,12 +92,12 @@ class HybridKeep(TypedDict):
 
 class HybridSplit(TypedDict):
     action: Literal["split"]
-    existingNumberTransport: HybridTransport
-    newNumberName: str
+    existingConnectionTransport: HybridTransport
+    newConnectionName: str
 
 
 class HybridMerge(TypedDict):
-    absorbNumberId: str
+    absorbConnectionId: str
 
 
 class TierQuoteBase(TypedDict):
@@ -126,7 +126,7 @@ class TierConfirmation(TypedDict):
 
 
 class HybridTransitionBase(TypedDict):
-    survivingNumberId: str
+    survivingConnectionId: str
     status: NotRequired[Literal["scheduled", "running", "completed", "failed", "cancelled"]]
     failureReason: NotRequired[str | None]
     metaDisconnectRequired: NotRequired[bool]
@@ -140,14 +140,14 @@ class HybridKeepTransition(HybridTransitionBase):
 
 class HybridSplitTransition(HybridTransitionBase):
     action: Literal["split"]
-    existingNumberTransport: HybridTransport
-    newNumberName: str
-    newNumberId: NotRequired[str]
+    existingConnectionTransport: HybridTransport
+    newConnectionName: str
+    newConnectionId: NotRequired[str]
 
 
 class HybridMergeTransition(HybridTransitionBase):
     action: Literal["merge"]
-    absorbNumberId: str
+    absorbConnectionId: str
 
 
 class TierQuote(TypedDict):
@@ -163,7 +163,7 @@ class TierQuote(TypedDict):
     ]
 
 
-class NumberTierChange(TypedDict):
+class ConnectionTierChange(TypedDict):
     id: str
     status: Literal["quoted", "queued", "applied", "rejected"]
     failureReason: str | None
@@ -171,16 +171,16 @@ class NumberTierChange(TypedDict):
     quote: TierQuote
 
 
-class HybridCandidateNumber(TypedDict):
+class HybridCandidateConnection(TypedDict):
     id: str
     name: str
-    transport: HybridTransport
+    method: Literal["linked_device", "cloud_api"]
     status: str
     canBeAbsorbed: bool
 
 
 class HybridMergeCandidate(TypedDict):
-    numbers: list[HybridCandidateNumber]
+    connections: list[HybridCandidateConnection]
     eligible: bool
     ineligibleReason: NotRequired[
         Literal[
@@ -196,9 +196,9 @@ class HybridMergeCandidate(TypedDict):
     ]
 
 
-class SessionBatch(TypedDict):
+class ConnectionBatch(TypedDict):
     projectId: NotRequired[str]
-    sessionIds: list[str]
+    connectionIds: list[str]
 
 
 class BatchStopped(TypedDict):
@@ -228,8 +228,8 @@ class LimitCapability(TypedDict):
     value: int | None
 
 
-class SessionCapabilities(TypedDict):
-    session: str
+class ConnectionCapabilities(TypedDict):
+    connection: str
     projectId: str
     status: Literal["synced", "unknown"]
     syncedAt: str | None

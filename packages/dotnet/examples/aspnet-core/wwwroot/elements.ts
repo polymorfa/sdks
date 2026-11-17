@@ -25,7 +25,7 @@ export async function mount() {
   };
   const row = (snapshot: Snapshot): InboxConversation => {
     const last = snapshot.messages.at(-1);
-    return { id: snapshot.peer, session: snapshot.session, name: "Assigned recipient", phoneNumber: snapshot.peer,
+    return { id: snapshot.peer, connection: snapshot.session, name: "Assigned recipient", phoneNumber: snapshot.peer,
       lastActivity: last?.createdAt ?? 0, unreadCount: 0,
       ...(last ? {lastMessage:{text:last.text,createdAt:last.createdAt,direction:last.direction}} : {}) };
   };

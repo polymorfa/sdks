@@ -3,7 +3,7 @@ internal static class Fixture
 {
     internal static async Task Check(ProjectClient project, MessageResponse message, WhatsAppEncryptedUploadBody body)
     {
-        _ = new SessionConfigurationOverrides { SignalMode = SignalCustodyMode.Standard };
+        _ = new ConnectionConfigurationOverrides { SignalMode = SignalCustodyMode.Standard };
         await Task.CompletedTask;
     }
 }

@@ -16,7 +16,7 @@ function clientWith(
   FakeWebSocket.instances = [];
   const t = timers();
   const client = createInternalCallsClient({
-    session: "support",
+    connection: "support",
     api,
     WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
     setInterval: t.setInterval,
@@ -179,7 +179,7 @@ describe("CallsClient", () => {
     const call = await h.client.place("+15550100", { video: true });
     expect(h.api.place).toHaveBeenCalledWith(
       expect.objectContaining({
-        session: "support",
+        connection: "support",
         to: "+15550100",
         video: true,
       }),
@@ -334,13 +334,13 @@ describe("CallsClient", () => {
     // Nothing but ready is processed before authentication.
     ring(life);
     expect(h.client.calls).toEqual([]);
-    life.text({ type: "ready", session: "support" });
+    life.text({ type: "ready", connection: "support" });
     await connecting;
     expect(h.client.connected).toBe(true);
     await h.client.disconnect();
   });
 
-  it("names the session in the query for server credentials only", async () => {
+  it("names the connection in the query for server credentials only", async () => {
     const client = clientWith();
     await connected(client);
     // Client tokens send no query parameters.
@@ -351,7 +351,7 @@ describe("CallsClient", () => {
     api.token.mockResolvedValue({ value: "pmfa_live_server" });
     const h = clientWith(api);
     await connected(h);
-    expect(h.ws(0).url).toBe("wss://api.example/voip/ws?session=support");
+    expect(h.ws(0).url).toBe("wss://api.example/voip/ws?connection=support");
     // The auth frame is exactly { type, token }.
     expect(h.ws(0).texts[0]).toEqual({
       type: "auth",
@@ -756,7 +756,9 @@ describe("CallsClient", () => {
   });
 
   it("refuses to construct without a credential or an api seam", () => {
-    expect(() => createInternalCallsClient({ session: "s" })).toThrow(/token/);
+    expect(() => createInternalCallsClient({ connection: "s" })).toThrow(
+      /token/,
+    );
   });
 });
 
@@ -853,7 +855,7 @@ describe("CallsClient — review round one", () => {
     FakeWebSocket.instances = [];
     const t = timers();
     const client = createInternalCallsClient({
-      session: "support",
+      connection: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setInterval: t.setInterval,
@@ -912,7 +914,7 @@ describe("CallsClient — review round one", () => {
     FakeWebSocket.instances = [];
     const t = timers();
     const client = createInternalCallsClient({
-      session: "support",
+      connection: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setInterval: t.setInterval,

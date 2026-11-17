@@ -267,7 +267,7 @@ internal static class CampaignExistingValidation
         Fields(body, platform ? ["projectId", "status", "reason", "cursor", "limit"] : ["status", "reason", "cursor", "limit"], platform ? ["projectId"] : []);
         if (platform) CampaignContractValidation.Uuid(Text(body.GetProperty("projectId"), "projectId"), "projectId");
         if (Has(body, "status")) One(body.GetProperty("status"), "status", "queued", "sending", "sent", "delivered", "read", "failed", "skipped");
-        if (Has(body, "reason")) One(body.GetProperty("reason"), "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other");
+        if (Has(body, "reason")) One(body.GetProperty("reason"), "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "connection_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other");
         if (Has(body, "cursor")) Text(body.GetProperty("cursor"), "cursor", 1, 256);
         if (Has(body, "limit")) Integer(body.GetProperty("limit"), "limit", 1, 100);
         return Resource.Query(body);

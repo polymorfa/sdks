@@ -4,12 +4,12 @@ using System.Text.RegularExpressions;
 namespace Polymorfa.Sdk;
 
 public sealed record BillingBalance(decimal BalanceCents, string PreferredCurrency);
-public sealed record BillingUsage(long ActiveNumbers, decimal TotalChargedCents);
-public sealed record BillingTransaction(string Id, decimal AmountCents, decimal BalanceAfterCents, string Type, string Description, string? SessionId, string? ProjectId, string? Tier, string? Currency, string PaymentStatus, long CreatedAt);
+public sealed record BillingUsage(long ActiveConnections, decimal TotalChargedCents);
+public sealed record BillingTransaction(string Id, decimal AmountCents, decimal BalanceAfterCents, string Type, string Description, string? ConnectionId, string? ProjectId, string? Tier, string? Currency, string PaymentStatus, long CreatedAt);
 public sealed record TierPricing(string Id, string Tier, decimal DailyRateCents, string Label, string Description, IReadOnlyList<string> Features);
 public sealed record BillingPriority(string Id, string Name, int Priority);
 public sealed record ProjectResourcePriority(string Id, string Name, int Priority, string ProjectId);
-public sealed record BillingPriorities(long Revision, IReadOnlyList<BillingPriority> Projects, IReadOnlyList<ProjectResourcePriority> Customers, IReadOnlyList<ProjectResourcePriority> Numbers);
+public sealed record BillingPriorities(long Revision, IReadOnlyList<BillingPriority> Projects, IReadOnlyList<ProjectResourcePriority> Customers, IReadOnlyList<ProjectResourcePriority> Connections);
 public sealed record BillingLimit(string Scope, string ResourceId, string ProjectId, string Name, decimal? LimitCredits, decimal SpentCredits, decimal ReservedCredits, long Revision);
 public sealed record DailyCredits(string Date, decimal Credits);
 public sealed record BillingLimits(string CheckedAt, string PeriodStart, string PeriodEnd, decimal TodayCredits, decimal MonthCredits, IReadOnlyList<DailyCredits> Daily, IReadOnlyList<BillingLimit> Budgets);
@@ -45,7 +45,7 @@ public sealed class Billing : Resource
         {
             var resources = body.Resources ?? throw Invalid("resources is required.");
             if (body.ResourceIds is not null || resources.Count > 1000000) throw Invalid("Invalid resource ordering.");
-            var normalized = resources.Select(row => row.Scope is "customer" or "number" ? new BillingResourceOrder(row.Scope, Id(row.ResourceId)) : throw Invalid("Resource scope must be customer or number.")).ToArray();
+            var normalized = resources.Select(row => row.Scope is "customer" or "connection" ? new BillingResourceOrder(row.Scope, Id(row.ResourceId)) : throw Invalid("Resource scope must be customer or connection.")).ToArray();
             if (normalized.Distinct().Count() != normalized.Length) throw Invalid("Resources must be unique.");
             return Put<DataEnvelope<BillingPriorities>>("/platform/billing/priorities", body with { ProjectId = Id(body.ProjectId!), Resources = normalized }, options);
         }
@@ -61,7 +61,7 @@ public sealed class Billing : Resource
         return parameters?.ProjectId is null ? parameters : parameters with { ProjectId = Id(parameters.ProjectId) };
     }
     internal static string Id(string value) { if (value is null || !Regex.IsMatch(value, "^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$")) throw Invalid("Resource ID must be a UUID."); return value.ToLowerInvariant(); }
-    internal static void Scope(string value) { if (value is not ("project" or "customer" or "number")) throw Invalid("Scope must be project, customer, or number."); }
+    internal static void Scope(string value) { if (value is not ("project" or "customer" or "connection")) throw Invalid("Scope must be project, customer, or connection."); }
     internal static void Revision(long value) { if (value is < 0 or > 2147483646) throw Invalid("Invalid expected revision."); }
     internal static void Priority(int value) { if (value is < 0 or > 1000000) throw Invalid("Priority must be between 0 and 1000000."); }
     internal static void Limit(decimal? value) { if (value is < 0 or > 1000000 || value is decimal number && decimal.Round(number, 6) != number) throw Invalid("Credit limits require at most six decimal places and must be between 0 and 1000000."); }

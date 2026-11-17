@@ -44,8 +44,8 @@ export interface AcceptCallResult {
 }
 
 export interface PlaceCallRequest {
-  /** Source session. Sent for server credentials; client tokens are bound to one. */
-  readonly session: string;
+  /** Source connection. Sent for server credentials; client tokens are bound to one. */
+  readonly connection: string;
   readonly to: string;
   readonly participants?: readonly string[];
   readonly groupId?: string;
@@ -147,11 +147,11 @@ export interface HttpCallsApiOptions {
   /** Socket host; defaults to `ws(s)://` on the API host. */
   readonly socketBaseUrl?: string;
   /**
-   * The number a Customer-scoped client token acts for, sent as `?session=`
-   * on every Calls request. Session tokens are bound to one number and need
+   * The Connection a Customer-scoped client token acts for, sent as `?connection=`
+   * on every Calls request. Connection tokens are bound to one Connection and need
    * no value.
    */
-  readonly clientTokenSession?: string;
+  readonly clientTokenConnection?: string;
   readonly now?: () => number;
 }
 
@@ -207,10 +207,10 @@ export class HttpCallsApi implements CallsApi {
   readonly #baseUrl: string;
   readonly #fetch: FetchLike;
   readonly #socketBaseUrl: string;
-  readonly #clientTokenSession: string | undefined;
+  readonly #clientTokenConnection: string | undefined;
 
   constructor(options: HttpCallsApiOptions) {
-    this.#clientTokenSession = options.clientTokenSession;
+    this.#clientTokenConnection = options.clientTokenConnection;
     const credential = options.token ?? options.apiKey;
     if (credential === undefined)
       throw new CallsApiError(
@@ -249,7 +249,7 @@ export class HttpCallsApi implements CallsApi {
       "POST",
       "/messaging/voip/calls",
       async (token) => ({
-        ...(isClientToken(token) ? {} : { session: input.session }),
+        ...(isClientToken(token) ? {} : { connection: input.connection }),
         ...(input.groupId !== undefined
           ? { groupId: input.groupId }
           : input.participants === undefined
@@ -454,8 +454,8 @@ export class HttpCallsApi implements CallsApi {
       ...(signal === undefined ? {} : { signal }),
     };
     const target =
-      this.#clientTokenSession !== undefined && isClientToken(token.value)
-        ? `${path}${path.includes("?") ? "&" : "?"}session=${encodeURIComponent(this.#clientTokenSession)}`
+      this.#clientTokenConnection !== undefined && isClientToken(token.value)
+        ? `${path}${path.includes("?") ? "&" : "?"}connection=${encodeURIComponent(this.#clientTokenConnection)}`
         : path;
     const response = await this.#fetch(`${this.#baseUrl}${target}`, init);
     const text = await response.text();

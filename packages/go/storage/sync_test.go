@@ -48,14 +48,14 @@ func (s *sourceFixture) Acknowledge(ctx context.Context, item polymorfa.EventStr
 	return nil
 }
 func streamFixtureItem() polymorfa.EventStreamItem {
-	return polymorfa.EventStreamItem{Cursor: "c1", StreamID: "stream", Sequence: 1, Webhook: &polymorfa.WebhookEvent{ID: "event", Session: "session", Timestamp: "2026-10-01T00:00:00Z", Event: "message.received", Payload: json.RawMessage(`{"id":"m","conversation":{"id":"chat"},"timestamp":"1720000000","text":"fixture","type":"text"}`)}}
+	return polymorfa.EventStreamItem{Cursor: "c1", StreamID: "stream", Sequence: 1, Webhook: &polymorfa.WebhookEvent{ID: "event", Connection: "connection", Timestamp: "2026-10-01T00:00:00Z", Event: "message.received", Payload: json.RawMessage(`{"id":"m","conversation":{"id":"chat"},"timestamp":"1720000000","text":"fixture","type":"text"}`)}}
 }
 func TestSyncEventCheckpointManualACKAndDurableResume(t *testing.T) {
 	ctx := context.Background()
 	e := engineFor(t, memoryFor(t, 3), EngineOptions{})
 	s := &sourceFixture{items: []polymorfa.EventStreamItem{streamFixtureItem()}}
 	s.beforeAck = func(item polymorfa.EventStreamItem) error {
-		has, err := e.HasEvent(ctx, "session", "event")
+		has, err := e.HasEvent(ctx, "connection", "event")
 		if err != nil || !has {
 			return errors.New("ACK preceded event commit")
 		}
@@ -96,7 +96,7 @@ func TestSyncMissingPayloadGapAndCheckpointConflictNeverACK(t *testing.T) {
 				s.items[0].Webhook.Event = "history.sync"
 				s.items[0].Webhook.Payload = json.RawMessage(`{"syncType":"RECENT"}`)
 				options.Apply.DecodeHistory = func(ctx context.Context, p map[string]any, event polymorfa.WebhookEvent) (map[string]any, error) {
-					_, err := e.Apply(ctx, Batch{SessionID: "*", Operations: []Operation{{Kind: "checkpoint", SessionID: "*", Stream: "events", Cursor: "other"}}})
+					_, err := e.Apply(ctx, Batch{ConnectionID: "*", Operations: []Operation{{Kind: "checkpoint", ConnectionID: "*", Stream: "events", Cursor: "other"}}})
 					return nil, err
 				}
 			case "decode":
@@ -134,7 +134,7 @@ func TestSyncActualNativeAPIStreamPersistsBeforeACK(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "POST" {
 			saved, err := e.GetCheckpoint(context.Background(), "*", "events")
-			has, _ := e.HasEvent(context.Background(), "session", "event")
+			has, _ := e.HasEvent(context.Background(), "connection", "event")
 			if err != nil || saved == nil || saved.Cursor != "c1" || !has {
 				t.Error("native ACK preceded durable state")
 			}
@@ -185,7 +185,7 @@ func TestSyncInvalidStreamPayloadNeverPassesDurableCursor(t *testing.T) {
 				if r.Method == "POST" {
 					acknowledgements++
 					saved, _ := e.GetCheckpoint(ctx, "*", "events")
-					has, _ := e.HasEvent(ctx, "session", "event")
+					has, _ := e.HasEvent(ctx, "connection", "event")
 					if saved == nil || saved.Cursor != "c1" || !has {
 						t.Error("ACK before durable event and checkpoint")
 					}

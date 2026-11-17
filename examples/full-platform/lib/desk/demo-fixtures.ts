@@ -90,7 +90,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       slug: "acme-support",
       defaultTier: "standard",
       environment: "production",
-      sessionCount: 3,
+      connectionCount: 3,
       createdAt: iso(300 * DAY),
     },
     {
@@ -99,7 +99,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       slug: "sandbox",
       defaultTier: "free",
       environment: "sandbox",
-      sessionCount: 1,
+      connectionCount: 1,
       createdAt: iso(20 * DAY),
     },
   ],
@@ -113,7 +113,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
     usage: {
       periodStart: iso(16 * DAY),
       messages: 25_564,
-      sessions: 3,
+      connections: 3,
       amount: "96.20",
     },
     transactions: [
@@ -150,19 +150,19 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       {
         tier: "free",
         region: "global",
-        perSessionDay: "0.00",
+        perConnectionDay: "0.00",
         perMessage: "0.000",
       },
       {
         tier: "standard",
         region: "north_america",
-        perSessionDay: "0.40",
+        perConnectionDay: "0.40",
         perMessage: "0.002",
       },
       {
         tier: "pro",
         region: "north_america",
-        perSessionDay: "0.90",
+        perConnectionDay: "0.90",
         perMessage: "0.001",
       },
     ],
@@ -192,7 +192,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       },
       {
         id: "aud_4",
-        action: "session.restarted",
+        action: "connection.restarted",
         actor: "priya@acme.test",
         target: "sales-us",
         createdAt: iso(0.2 * DAY),
@@ -207,33 +207,33 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
         detectedAt: iso(30 * DAY),
       },
     ],
-    sessionBans: [
+    connectionBans: [
       {
         id: "ban_1",
-        session: "old-promo",
+        connection: "old-promo",
         reason: "spam_reports",
         status: "lifted",
         createdAt: iso(70 * DAY),
       },
     ],
-    activeSessionBans: [],
+    activeConnectionBans: [],
   },
-  "/api/admin/sessions": [
+  "/api/admin/connections": [
     {
       id: "ses_1",
-      sessionId: "support-main",
+      connectionId: "support-main",
       status: "connected",
       tierOverride: null,
     },
     {
       id: "ses_2",
-      sessionId: "sales-us",
+      connectionId: "sales-us",
       status: "connected",
       tierOverride: "pro",
     },
     {
       id: "ses_3",
-      sessionId: "billing-eu",
+      connectionId: "billing-eu",
       status: "disconnected",
       tierOverride: null,
     },
@@ -241,21 +241,21 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
   "/api/admin/bansafe": {
     numbers: [
       {
-        session: "support-main",
+        connection: "support-main",
         phoneNumber: "+14155550100",
         health: 94,
         band: "good",
         mostLikelyHealthState: "healthy",
       },
       {
-        session: "sales-us",
+        connection: "sales-us",
         phoneNumber: "+14155550142",
         health: 71,
         band: "fair",
         mostLikelyHealthState: "healthy",
       },
       {
-        session: "billing-eu",
+        connection: "billing-eu",
         phoneNumber: "+442071838750",
         health: 48,
         band: "poor",
@@ -265,7 +265,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
     findings: [
       {
         id: "fnd_1",
-        session: "billing-eu",
+        connection: "billing-eu",
         severity: "critical",
         code: "block_rate_high",
         status: "open",
@@ -285,7 +285,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       name: "Northwind Traders",
       externalCustomerId: "nw-001",
       status: "active",
-      numberCount: 2,
+      connectionCount: 2,
       createdAt: iso(100 * DAY),
     },
     {
@@ -293,7 +293,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       name: "Globex",
       externalCustomerId: "gx-17",
       status: "active",
-      numberCount: 1,
+      connectionCount: 1,
       createdAt: iso(45 * DAY),
     },
   ],
@@ -302,31 +302,31 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
       {
         id: "evt_1",
         type: "message.received",
-        session: "support-main",
+        connection: "support-main",
         createdAt: iso(60 * 1000),
       },
       {
         id: "evt_2",
         type: "message.ack",
-        session: "support-main",
+        connection: "support-main",
         createdAt: iso(90 * 1000),
       },
       {
         id: "evt_3",
-        type: "session.status",
-        session: "billing-eu",
+        type: "connection.status",
+        connection: "billing-eu",
         createdAt: iso(26 * 60 * 60 * 1000),
       },
       {
         id: "evt_4",
         type: "template.status",
-        session: null,
+        connection: null,
         createdAt: iso(5 * 60 * 60 * 1000),
       },
       {
         id: "evt_5",
         type: "call.missed",
-        session: "support-main",
+        connection: "support-main",
         createdAt: iso(190 * 60 * 1000),
       },
     ],
@@ -342,7 +342,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
           "message.received",
           "message.ack",
           "call.received",
-          "session.status",
+          "connection.status",
         ],
         createdAt: iso(40 * DAY),
       },
@@ -368,7 +368,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
     ],
   },
   "/api/admin/settings": {
-    sessionConfiguration: {
+    connectionConfiguration: {
       team: {
         observation: { presenceMode: "cache", typingMode: "events" },
         historySync: { mode: "metadata_only" },
@@ -411,7 +411,7 @@ const FIXTURES: Readonly<Record<string, unknown>> = {
     { phone: "+14155550999", reason: "STOP keyword", createdAt: iso(5 * DAY) },
   ],
   "/api/admin/campaigns": [],
-  "/api/messaging/sessions": [],
+  "/api/messaging/connections": [],
   "/api/messaging/inbox": {
     messages: [
       {

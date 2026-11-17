@@ -49,7 +49,7 @@ $ccMessaging->campaigns->testSend('slug', $ccCampaign, $ccSendBody);
 ccCheck($ccObservations()[0]['idempotencyKey'] !== $ccFirstGenerated, 'Independent logical test sends receive independent generated keys');
 
 $ccValue = 'before';
-$ccCallerBody = ['sessionId' => $ccSendBody['sessionId'], 'to' => $ccSendBody['to'], 'variables' => ['0' => &$ccValue]];
+$ccCallerBody = ['connectionId' => $ccSendBody['connectionId'], 'to' => $ccSendBody['to'], 'variables' => ['0' => &$ccValue]];
 $ccHeader = 'before';
 $ccMutationStack = GuzzleHttp\HandlerStack::create();
 $ccMutationStack->push(static function (callable $next) use (&$ccValue, &$ccHeader): callable {
@@ -64,7 +64,7 @@ $ccMutationStack->push(static function (callable $next) use (&$ccValue, &$ccHead
     };
 });
 $ccMutationClient = new Polymorfa\MessagingClient($ccCredential, baseUrl: $ccUrl, http: new GuzzleHttp\Client(['handler' => $ccMutationStack]));
-$ccConfigure(['method' => 'POST', 'path' => '/messaging/projects/slug/campaigns/'.$ccCampaign.'/test-send', 'body' => ['sessionId' => $ccSendBody['sessionId'], 'to' => $ccSendBody['to'], 'variables' => (object) ['0' => 'before']], 'response' => $ccMessagingJson($ccSendData), 'statuses' => [503, 200], 'requestHeaders' => ['X-Capture' => 'before', 'Idempotency-Key' => 'retained'], 'headers' => ['Retry-After' => '0']]);
+$ccConfigure(['method' => 'POST', 'path' => '/messaging/projects/slug/campaigns/'.$ccCampaign.'/test-send', 'body' => ['connectionId' => $ccSendBody['connectionId'], 'to' => $ccSendBody['to'], 'variables' => (object) ['0' => 'before']], 'response' => $ccMessagingJson($ccSendData), 'statuses' => [503, 200], 'requestHeaders' => ['X-Capture' => 'before', 'Idempotency-Key' => 'retained'], 'headers' => ['Retry-After' => '0']]);
 $ccMutationClient->campaigns->testSend('slug', $ccCampaign, $ccCallerBody, new Polymorfa\RequestOptions(maxNetworkRetries: 1, idempotencyKey: 'retained', headers: ['X-Capture' => &$ccHeader]));
 $ccAttempts = $ccObservations();
 ccCheck($ccValue === 'after' && $ccHeader === 'after' && count($ccAttempts) === 2 && $ccAttempts[0]['bodySha256'] === $ccAttempts[1]['bodySha256'], 'Captured numeric dictionary/body/header values survive caller-reference mutation across503');
@@ -104,7 +104,7 @@ foreach ([400, 401, 402, 403, 404, 409, 413, 422, 429, 500, 599] as $ccStatus) {
     $ccError = ccThrows(fn () => $ccTeam->campaigns->getSettings(new Polymorfa\RequestOptions(maxNetworkRetries: 0)), Polymorfa\PolymorfaException::class);
     ccCheck($ccError->errorCode === 'future_campaign_code' && $ccError->param === 'body.revision' && $ccError->requestId === 'body_request' && $ccError->status === $ccStatus && $ccError->metadata->headers['x-trace-id'] === 'trace' && $ccError->metadata->headers['idempotent-replayed'] === 'true' && $ccError->metadata->headers['content-disposition'] === 'attachment' && !isset($ccError->metadata->headers['set-cookie']), 'Error param and safe metadata survive HTTP'.$ccStatus);
 }
-foreach (['campaign_approval_required', 'campaign_approval_stale', 'campaign_variables_missing', 'zero_knowledge_session'] as $ccCode) {
+foreach (['campaign_approval_required', 'campaign_approval_stale', 'campaign_variables_missing', 'zero_knowledge_connection'] as $ccCode) {
     ccCheck(Polymorfa\ErrorCodes::isKnown($ccCode), 'Known additive API code');
 }
 echo "Native retry capture, unsafe admission and structured error metadata checks passed.\n";

@@ -70,7 +70,7 @@ Customer-owned media encryption, relay/direct uploads, send descriptors and
 history recovery commands follow TypeScript `254fc6a` and backend
 `87af94a85ab5f17dbcca2a06295dcb321ffadf3a`, with new requests selecting pending
 `2026-10-14`. Golden vectors, real HTTP relay and negative/static wire checks
-verify local behavior. These checks do not prove deployed Number access or
+verify local behavior. These checks do not prove deployed Connection access or
 WhatsApp provider acceptance. Local history download/decrypt/inflate/protobuf
 decoding, complete protocol types, direct webhook variants, and ETag-pinned
 S3 upload/verified archive helpers follow the same producer pins. Generated

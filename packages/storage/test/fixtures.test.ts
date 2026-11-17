@@ -14,7 +14,7 @@ import { reduceHistoryChunk } from "../src/reducer/history.js";
 import type { HistorySyncChunk } from "../src/history-types.js";
 const fixture = JSON.parse(
   readFileSync(
-    new URL("../conformance-fixtures.json", import.meta.url),
+    new URL("../conformance-fixtures.v3.json", import.meta.url),
     "utf8",
   ),
 ) as {
@@ -48,7 +48,7 @@ describe("portable language fixtures", () => {
     const adapter = memoryAdapter();
     const storage = createStorage(adapter);
     const batch = reduceHistoryChunk({
-      sessionId: "portable-fixture",
+      connectionId: "portable-fixture",
       chunk: fixture.history,
     });
     await storage.apply(batch);

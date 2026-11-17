@@ -88,7 +88,7 @@ async fn actual_dynamodb_local_official_driver_full_schema2_conformance() {
             &IndexQuery {
                 index: "by_chat".into(),
                 equals: BTreeMap::from([
-                    ("sessionId".into(), "scalars".into()),
+                    ("connectionId".into(), "scalars".into()),
                     ("chatId".into(), "chat".into())
                 ]),
                 limit: 10,
@@ -109,7 +109,7 @@ async fn actual_dynamodb_local_official_driver_full_schema2_conformance() {
             &IndexQuery {
                 index: "by_chat".into(),
                 equals: BTreeMap::from([
-                    ("sessionId".into(), "scalars".into()),
+                    ("connectionId".into(), "scalars".into()),
                     ("chatId".into(), "chat".into())
                 ]),
                 limit: 1,
@@ -155,7 +155,7 @@ async fn native_aws_wire_rejects_foreign_duplicate_corrupt_and_nonprogressing_ro
     ] {
         let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
         let url = format!("http://{}", listener.local_addr().unwrap());
-        let mut item = json!({"pk":{"S":"app:messages"},"sk":{"S":"ks:m"},"row":{"M":{"_id":{"S":"ks:m"},"_rev":{"N":"1"},"_v":{"M":{}},"sessionId":{"S":"s"},"messageId":{"S":"m"}}}});
+        let mut item = json!({"pk":{"S":"app:messages"},"sk":{"S":"ks:m"},"row":{"M":{"_id":{"S":"ks:m"},"_rev":{"N":"1"},"_v":{"M":{}},"connectionId":{"S":"s"},"messageId":{"S":"m"}}}});
         match mode {
             "namespace" => item["pk"]["S"] = json!("foreign:messages"),
             "identity" => item["row"]["M"]["_id"]["S"] = json!("ks:other"),
@@ -218,7 +218,7 @@ async fn native_aws_wire_rejects_foreign_duplicate_corrupt_and_nonprogressing_ro
                     &IndexQuery {
                         index: "by_chat".into(),
                         equals: BTreeMap::from([
-                            ("sessionId".into(), "s".into()),
+                            ("connectionId".into(), "s".into()),
                             ("chatId".into(), "chat".into()),
                         ]),
                         limit: 1,

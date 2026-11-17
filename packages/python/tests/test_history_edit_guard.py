@@ -19,7 +19,7 @@ from polymorfa.storage.reduce_events import reduce_event
 from polymorfa.webhooks import WebhookEvent
 
 FIXTURE = json.loads(
-    (Path(__file__).parent / "fixtures/history-edit-guard/fixture.json").read_text(),
+    (Path(__file__).parent / "fixtures/history-edit-guard/fixture.v3.json").read_text(),
     parse_int=float,
 )
 
@@ -28,7 +28,7 @@ def wire(op):
     if isinstance(op, ClearChat):
         return {
             "kind": "clearChat",
-            "sessionId": op.session_id,
+            "connectionId": op.connection_id,
             "chatId": op.chat_id,
             "upTo": op.up_to,
         }
@@ -40,7 +40,7 @@ def wire(op):
     }
     if op.guard:
         result["guard"] = {
-            "sessionId": op.guard.session_id,
+            "connectionId": op.guard.connection_id,
             "chatId": op.guard.chat_id,
             "timestamp": op.guard.timestamp,
         }
@@ -50,10 +50,10 @@ def wire(op):
 def reduce(step):
     if "history" in step:
         h = step["history"]
-        return reduce_history_chunk(h["sessionId"], h["chunk"], chunk_id=h["chunkId"])
+        return reduce_history_chunk(h["connectionId"], h["chunk"], chunk_id=h["chunkId"])
     e = step["event"]
     return reduce_event(
-        WebhookEvent(e["id"], e["session"], e["timestamp"], e["event"], e["payload"], e, True)
+        WebhookEvent(e["id"], e["connection"], e["timestamp"], e["event"], e["payload"], e, True)
     )
 
 

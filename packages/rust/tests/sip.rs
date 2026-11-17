@@ -3,7 +3,7 @@ mod support;
 use polymorfa_sdk::{sip::*, ErrorKind, RequestOptions};
 use serde_json::json;
 fn trunk() -> serde_json::Value {
-    json!({"id":"trunk","projectId":"project","name":"PBX","enabled":true,"direction":"both","outbound":{"targetUri":"sips:pbx.example.com","transport":"tls","authUsername":"user","hasPassword":true,"fromUser":null},"inbound":{"username":"inbound","realm":"realm","session":"support","allowedAddresses":["192.0.2.0/24"],"allowedDestinations":["1","44"]},"codecs":["PCMU","opus"],"maxConcurrentCalls":10,"revision":3,"createdAt":"2026-10-10T10:00:00Z","updatedAt":"2026-10-11T10:00:00Z"})
+    json!({"id":"trunk","projectId":"project","name":"PBX","enabled":true,"direction":"both","outbound":{"targetUri":"sips:pbx.example.com","transport":"tls","authUsername":"user","hasPassword":true,"fromUser":null},"inbound":{"username":"inbound","realm":"realm","connection":"support","allowedAddresses":["192.0.2.0/24"],"allowedDestinations":["1","44"]},"codecs":["PCMU","opus"],"maxConcurrentCalls":10,"revision":3,"createdAt":"2026-10-10T10:00:00Z","updatedAt":"2026-10-11T10:00:00Z"})
 }
 fn create() -> CreateSipTrunkRequest {
     CreateSipTrunkRequest {
@@ -22,7 +22,7 @@ fn create() -> CreateSipTrunkRequest {
                 from_user: Some(None),
             },
             inbound: SipTrunkInboundInput {
-                session: Some(Some("support".into())),
+                connection: Some(Some("support".into())),
                 allowed_addresses: vec!["192.0.2.0/24".into()],
                 allowed_destinations: Some(vec!["1".into(), "44".into()]),
             },
@@ -30,7 +30,7 @@ fn create() -> CreateSipTrunkRequest {
     }
 }
 fn create_json() -> serde_json::Value {
-    json!({"projectId":"project","name":"PBX","enabled":true,"codecs":["PCMU","opus"],"maxConcurrentCalls":10,"direction":"both","outbound":{"targetUri":"sips:pbx.example.com","transport":"tls","authUsername":"user","authPassword":"write-only","fromUser":null},"inbound":{"session":"support","allowedAddresses":["192.0.2.0/24"],"allowedDestinations":["1","44"]}})
+    json!({"projectId":"project","name":"PBX","enabled":true,"codecs":["PCMU","opus"],"maxConcurrentCalls":10,"direction":"both","outbound":{"targetUri":"sips:pbx.example.com","transport":"tls","authUsername":"user","authPassword":"write-only","fromUser":null},"inbound":{"connection":"support","allowedAddresses":["192.0.2.0/24"],"allowedDestinations":["1","44"]}})
 }
 #[tokio::test]
 async fn team_sip_trunk_configuration_credentials_and_endpoint_native_wire() {
@@ -69,7 +69,7 @@ async fn team_sip_trunk_configuration_credentials_and_endpoint_native_wire() {
         "PATCH",
         "/platform/sip-trunks/trunk",
         Some(
-            json!({"expectedRevision":3,"outbound":{"authUsername":null,"fromUser":null},"inbound":{"session":null}})
+            json!({"expectedRevision":3,"outbound":{"authUsername":null,"fromUser":null},"inbound":{"connection":null}})
         ),
         json!({"data":trunk()}),
         client.sip_trunks().update(
@@ -82,7 +82,7 @@ async fn team_sip_trunk_configuration_credentials_and_endpoint_native_wire() {
                     ..Default::default()
                 }),
                 inbound: Some(SipTrunkInboundPatch {
-                    session: Some(None),
+                    connection: Some(None),
                     ..Default::default()
                 }),
                 ..Default::default()

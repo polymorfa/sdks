@@ -14,7 +14,7 @@ import (
 // Historical MESSAGE_EDIT upserts must honor chat.clear/chat.delete watermarks
 // exactly as the TypeScript producer does (testdata/history-edit-guard).
 func TestHistoryEditGuardPublicProducerParity(t *testing.T) {
-	raw, err := os.ReadFile("testdata/history-edit-guard/fixture.json")
+	raw, err := os.ReadFile("testdata/history-edit-guard/fixture.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -23,9 +23,9 @@ func TestHistoryEditGuardPublicProducerParity(t *testing.T) {
 			Name  string
 			Steps []struct {
 				History *struct {
-					SessionID string         `json:"sessionId"`
-					ChunkID   string         `json:"chunkId"`
-					Chunk     map[string]any `json:"chunk"`
+					ConnectionID string         `json:"connectionId"`
+					ChunkID      string         `json:"chunkId"`
+					Chunk        map[string]any `json:"chunk"`
 				}
 				Event      *polymorfa.WebhookEvent
 				Operations json.RawMessage
@@ -78,7 +78,7 @@ func TestHistoryEditGuardPublicProducerParity(t *testing.T) {
 				var err error
 				if step.History != nil {
 					id := step.History.ChunkID
-					b, err = s.ReduceHistoryChunk(s.HistoryInput{SessionID: step.History.SessionID, Chunk: step.History.Chunk, ChunkID: &id})
+					b, err = s.ReduceHistoryChunk(s.HistoryInput{ConnectionID: step.History.ConnectionID, Chunk: step.History.Chunk, ChunkID: &id})
 				} else {
 					b, err = s.ReduceEvent(*step.Event)
 				}

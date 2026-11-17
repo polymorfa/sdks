@@ -17,7 +17,7 @@ type Operation struct {
 	Key            map[string]any  `json:"key,omitempty"`
 	Fields         Fields          `json:"fields,omitempty"`
 	Guard          *Watermark      `json:"guard,omitempty"`
-	SessionID      string          `json:"sessionId,omitempty"`
+	ConnectionID   string          `json:"connectionId,omitempty"`
 	ChatID         string          `json:"chatId,omitempty"`
 	UpTo           float64         `json:"upTo,omitempty"`
 	Stream         string          `json:"stream,omitempty"`
@@ -28,15 +28,15 @@ type Operation struct {
 }
 type ExpectedCursor struct{ Value *string }
 type Watermark struct {
-	SessionID string  `json:"sessionId"`
-	ChatID    string  `json:"chatId"`
-	Timestamp float64 `json:"timestamp"`
+	ConnectionID string  `json:"connectionId"`
+	ChatID       string  `json:"chatId"`
+	Timestamp    float64 `json:"timestamp"`
 }
 type Batch struct {
-	SessionID  string      `json:"sessionId"`
-	EventID    *string     `json:"eventId,omitempty"`
-	EventType  *string     `json:"eventType,omitempty"`
-	Operations []Operation `json:"operations"`
+	ConnectionID string      `json:"connectionId"`
+	EventID      *string     `json:"eventId,omitempty"`
+	EventType    *string     `json:"eventType,omitempty"`
+	Operations   []Operation `json:"operations"`
 }
 type ApplyResult struct {
 	Applied bool
@@ -141,8 +141,8 @@ func (e *Engine) read(ctx context.Context, entity string, ids []string, leases .
 	}
 	return out, nil
 }
-func (e *Engine) acquire(ctx context.Context, session string) (*lease, error) {
-	id, err := EncodeKey("leases", map[string]any{"sessionId": session})
+func (e *Engine) acquire(ctx context.Context, connection string) (*lease, error) {
+	id, err := EncodeKey("leases", map[string]any{"connectionId": connection})
 	if err != nil {
 		return nil, err
 	}
@@ -162,7 +162,7 @@ func (e *Engine) acquire(ctx context.Context, session string) (*lease, error) {
 		if before == nil || before["owner"] == nil || before["owner"] == "" || expires <= e.millis() {
 			row := cloneRow(before)
 			if row == nil {
-				row, err = EmptyRow("leases", map[string]any{"sessionId": session})
+				row, err = EmptyRow("leases", map[string]any{"connectionId": connection})
 				if err != nil {
 					return nil, err
 				}
@@ -266,20 +266,20 @@ func operationIdentity(op Operation) (string, string, error) {
 	entity, key := op.Entity, op.Key
 	if op.Kind == "checkpoint" {
 		entity = "checkpoints"
-		key = map[string]any{"sessionId": op.SessionID, "stream": op.Stream}
+		key = map[string]any{"connectionId": op.ConnectionID, "stream": op.Stream}
 	}
 	id, err := EncodeKey(entity, key)
 	return entity, id, err
 }
-func validateOperation(op Operation, session string) error {
-	actual := op.Key["sessionId"]
+func validateOperation(op Operation, connection string) error {
+	actual := op.Key["connectionId"]
 	if op.Kind == "clearChat" || op.Kind == "checkpoint" {
-		actual = op.SessionID
+		actual = op.ConnectionID
 	}
-	if actual != session {
+	if actual != connection {
 		return invalid()
 	}
-	if op.Guard != nil && (op.Kind != "upsert" && op.Kind != "patch" || op.Guard.SessionID != session || op.Guard.ChatID == "" || math.IsNaN(op.Guard.Timestamp) || math.IsInf(op.Guard.Timestamp, 0)) {
+	if op.Guard != nil && (op.Kind != "upsert" && op.Kind != "patch" || op.Guard.ConnectionID != connection || op.Guard.ChatID == "" || math.IsNaN(op.Guard.Timestamp) || math.IsInf(op.Guard.Timestamp, 0)) {
 		return invalid()
 	}
 	switch op.Kind {
@@ -292,7 +292,7 @@ func validateOperation(op Operation, session string) error {
 		if op.Cursor == "" {
 			return invalid()
 		}
-		_, err := EncodeKey("checkpoints", map[string]any{"sessionId": session, "stream": op.Stream})
+		_, err := EncodeKey("checkpoints", map[string]any{"connectionId": connection, "stream": op.Stream})
 		if err != nil {
 			return err
 		}
@@ -373,7 +373,7 @@ func (e *Engine) plan(ctx context.Context, ops []Operation, l *lease) ([]Write, 
 			}
 			base := current
 			if base == nil {
-				base, _ = EmptyRow(entity, map[string]any{"sessionId": op.SessionID, "stream": op.Stream})
+				base, _ = EmptyRow(entity, map[string]any{"connectionId": op.ConnectionID, "stream": op.Stream})
 			}
 			base = cloneRow(base)
 			base["cursor"] = op.Cursor
@@ -489,7 +489,7 @@ func (e *Engine) clearChat(ctx context.Context, op Operation, l *lease) (int, er
 		if err := e.renewIfNeeded(ctx, l); err != nil {
 			return total, err
 		}
-		messages, err := e.adapter.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"sessionId": op.SessionID, "chatId": op.ChatID}, Range: map[string]float64{"lte": op.UpTo}, Order: "asc", Limit: e.page})
+		messages, err := e.adapter.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"connectionId": op.ConnectionID, "chatId": op.ChatID}, Range: map[string]float64{"lte": op.UpTo}, Order: "asc", Limit: e.page})
 		if err != nil {
 			return total, err
 		}
@@ -498,21 +498,21 @@ func (e *Engine) clearChat(ctx context.Context, op Operation, l *lease) (int, er
 		}
 		deletes := []Operation{}
 		for _, message := range messages {
-			if ValidateRow("messages", message) != nil || message["sessionId"] != op.SessionID || message["chatId"] != op.ChatID {
+			if ValidateRow("messages", message) != nil || message["connectionId"] != op.ConnectionID || message["chatId"] != op.ChatID {
 				return total, invalid()
 			}
 			messageID, ok := message["messageId"].(string)
 			if !ok {
 				return total, invalid()
 			}
-			key := map[string]any{"sessionId": op.SessionID, "messageId": messageID}
+			key := map[string]any{"connectionId": op.ConnectionID, "messageId": messageID}
 			deletes = append(deletes, Operation{Kind: "delete", Entity: "media", Key: key})
 			for _, entity := range []string{"reactions", "receipts", "poll_votes"} {
 				for {
 					if err := e.renewIfNeeded(ctx, l); err != nil {
 						return total, err
 					}
-					children, err := e.adapter.Query(ctx, entity, Query{Index: "by_message", Equals: map[string]string{"sessionId": op.SessionID, "messageId": messageID}, Order: "asc", Limit: 500})
+					children, err := e.adapter.Query(ctx, entity, Query{Index: "by_message", Equals: map[string]string{"connectionId": op.ConnectionID, "messageId": messageID}, Order: "asc", Limit: 500})
 					if err != nil {
 						return total, err
 					}
@@ -521,7 +521,7 @@ func (e *Engine) clearChat(ctx context.Context, op Operation, l *lease) (int, er
 					}
 					writes := []Write{}
 					for _, child := range children {
-						if ValidateRow(entity, child) != nil || child["sessionId"] != op.SessionID || child["messageId"] != messageID {
+						if ValidateRow(entity, child) != nil || child["connectionId"] != op.ConnectionID || child["messageId"] != messageID {
 							return total, invalid()
 						}
 						rev, _ := revision(child["_rev"])
@@ -552,25 +552,25 @@ func (e *Engine) clearChat(ctx context.Context, op Operation, l *lease) (int, er
 	}
 }
 func (e *Engine) Apply(ctx context.Context, batch Batch) (ApplyResult, error) {
-	if batch.SessionID == "" {
+	if batch.ConnectionID == "" {
 		return ApplyResult{}, invalid()
 	}
 	for _, op := range batch.Operations {
-		if err := validateOperation(op, batch.SessionID); err != nil {
+		if err := validateOperation(op, batch.ConnectionID); err != nil {
 			return ApplyResult{}, err
 		}
 	}
 	if batch.EventID != nil && *batch.EventID == "" {
 		return ApplyResult{}, invalid()
 	}
-	l, err := e.acquire(ctx, batch.SessionID)
+	l, err := e.acquire(ctx, batch.ConnectionID)
 	if err != nil {
 		return ApplyResult{}, err
 	}
 	defer e.release(ctx, l)
 	marker := []Write{}
 	if batch.EventID != nil {
-		row, err := EmptyRow("events", map[string]any{"sessionId": batch.SessionID, "eventId": *batch.EventID})
+		row, err := EmptyRow("events", map[string]any{"connectionId": batch.ConnectionID, "eventId": *batch.EventID})
 		if err != nil {
 			return ApplyResult{}, err
 		}
@@ -611,7 +611,7 @@ func (e *Engine) Apply(ctx context.Context, batch Batch) (ApplyResult, error) {
 	kept := []Operation{}
 	for _, op := range guarded {
 		g := op.Guard
-		id, err := EncodeKey("chats", map[string]any{"sessionId": g.SessionID, "chatId": g.ChatID})
+		id, err := EncodeKey("chats", map[string]any{"connectionId": g.ConnectionID, "chatId": g.ChatID})
 		if err != nil {
 			return ApplyResult{}, err
 		}
@@ -676,8 +676,8 @@ func (e *Engine) Query(ctx context.Context, entity string, q Query) (QueryPage, 
 	}
 	return out, nil
 }
-func (e *Engine) GetCheckpoint(ctx context.Context, session, stream string) (*SavedCheckpoint, error) {
-	row, err := e.Get(ctx, "checkpoints", map[string]any{"sessionId": session, "stream": stream})
+func (e *Engine) GetCheckpoint(ctx context.Context, connection, stream string) (*SavedCheckpoint, error) {
+	row, err := e.Get(ctx, "checkpoints", map[string]any{"connectionId": connection, "stream": stream})
 	if err != nil || row == nil {
 		return nil, err
 	}
@@ -691,8 +691,8 @@ func (e *Engine) GetCheckpoint(ctx context.Context, session, stream string) (*Sa
 	}
 	return result, nil
 }
-func (e *Engine) HasEvent(ctx context.Context, session, event string) (bool, error) {
-	row, err := e.Get(ctx, "events", map[string]any{"sessionId": session, "eventId": event})
+func (e *Engine) HasEvent(ctx context.Context, connection, event string) (bool, error) {
+	row, err := e.Get(ctx, "events", map[string]any{"connectionId": connection, "eventId": event})
 	return row != nil, err
 }
 

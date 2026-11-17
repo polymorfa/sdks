@@ -8,12 +8,12 @@ use Psr\Http\Message\StreamInterface;
 function encryptedTransportTypes(WhatsAppMedia $resource, WhatsAppMediaUploadTransport $transport, WhatsAppEncryptedUploadBody $body): void
 {
     $options = new UploadWhatsAppMediaOptions('image', uploadTransport:$transport);
-    $resource->uploadBytes('session', 'synthetic', $options);
+    $resource->uploadBytes('connection', 'synthetic', $options);
     $builtin = $resource->uploadTransport('relay', new UploadWhatsAppMediaOptions('image'));
-    $location = $builtin->upload('session', $body);
+    $location = $builtin->upload('connection', $body);
     encryptedTransportLocation($location);
     encryptedTransportStream($body->open(offset:0));
-    $resource->uploadBytes('session', 'synthetic', new UploadWhatsAppMediaOptions('image', uploadTransport:$builtin));
+    $resource->uploadBytes('connection', 'synthetic', new UploadWhatsAppMediaOptions('image', uploadTransport:$builtin));
 }
 function encryptedTransportLocation(WhatsAppUploadLocation $location): void
 {

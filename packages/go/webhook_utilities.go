@@ -11,6 +11,7 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode/utf8"
 )
 
 const FlowForwardSignatureHeader = "X-Polymorfa-Flow-Signature"
@@ -108,7 +109,7 @@ func ConstructLocalWebhookEvent(raw []byte, signature, secret string, o VerifyLo
 	if !hmac.Equal(sig, m.Sum(nil)) {
 		return fail()
 	}
-	return ParseVerifiedWebhookEvent(raw)
+	return parseStreamWebhook(raw)
 }
 
 type WebhookFixture struct {
@@ -127,4 +128,30 @@ func CreateWebhookFixture(event WebhookEvent, secret string) (WebhookFixture, er
 	m.Write(b)
 	sig := hex.EncodeToString(m.Sum(nil))
 	return WebhookFixture{b, "application/json", sig, http.Header{"Content-Type": []string{"application/json"}, "X-Webhook-Signature": []string{sig}}}, nil
+}
+
+// Read projection only; PlatformEvent.Payload keeps the exact retained bytes.
+func parseStreamWebhook(body []byte) (WebhookEvent, error) {
+	if !utf8.Valid(body) {
+		return ParseVerifiedWebhookEvent(body)
+	}
+	var fields map[string]json.RawMessage
+	if err := json.Unmarshal(body, &fields); err != nil {
+		return ParseVerifiedWebhookEvent(body)
+	}
+	if old, present := fields["session"]; present {
+		var selector string
+		_, current := fields["connection"]
+		if current || string(old) == "null" || json.Unmarshal(old, &selector) != nil {
+			return WebhookEvent{}, validation("Ambiguous retained event selector.")
+		}
+		fields["connection"] = old
+		delete(fields, "session")
+		projected, err := json.Marshal(fields)
+		if err != nil {
+			return WebhookEvent{}, err
+		}
+		return ParseVerifiedWebhookEvent(projected)
+	}
+	return ParseVerifiedWebhookEvent(body)
 }

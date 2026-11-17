@@ -17,13 +17,13 @@ func main() {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	session, phone := os.Getenv("POLYMORFA_SESSION"), os.Getenv("POLYMORFA_PHONE")
-	if session == "" || phone == "" {
-		fmt.Fprintln(os.Stderr, "Set POLYMORFA_SESSION and POLYMORFA_PHONE before sending.")
+	connection, phone := os.Getenv("POLYMORFA_CONNECTION"), os.Getenv("POLYMORFA_PHONE")
+	if connection == "" || phone == "" {
+		fmt.Fprintln(os.Stderr, "Set POLYMORFA_CONNECTION and POLYMORFA_PHONE before sending.")
 		os.Exit(1)
 	}
 	text := "Hello from Go"
-	result, err := client.Messages().Send(ctx, session, polymorfa.SendMessageRequest{Conversation: polymorfa.ConversationReference{PhoneNumber: phone}, Content: polymorfa.MessageContent{Text: &text}})
+	result, err := client.Messages().Send(ctx, connection, polymorfa.SendMessageRequest{Conversation: polymorfa.ConversationReference{PhoneNumber: phone}, Content: polymorfa.MessageContent{Text: &text}})
 	if err != nil {
 		fail(err)
 	}

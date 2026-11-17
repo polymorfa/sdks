@@ -97,7 +97,7 @@ export interface HistoryProgressInput {
 
 /** Records a chunk and advances the per-sync-type progress. */
 export function historyProgressOperations(
-  sessionId: string,
+  connectionId: string,
   input: HistoryProgressInput,
 ): StorageOperation[] {
   const operations: StorageOperation[] = [];
@@ -111,7 +111,7 @@ export function historyProgressOperations(
     operations.push(
       upsert(
         "history_chunks",
-        { sessionId, syncType, chunkOrder: String(input.chunkOrder) },
+        { connectionId, syncType, chunkOrder: String(input.chunkOrder) },
         chunk,
       ),
     );
@@ -121,7 +121,7 @@ export function historyProgressOperations(
   put(progress, "progress", input.progress, input.progress ?? 0);
   put(progress, "lastChunkOrder", input.chunkOrder, input.chunkOrder ?? 0);
   operations.push(
-    upsert("history_progress", { sessionId, syncType }, progress),
+    upsert("history_progress", { connectionId, syncType }, progress),
   );
   return operations;
 }
@@ -391,7 +391,7 @@ function mediaWrites(
 }
 
 export interface WebMessageContext {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly keys: HistoryKeys;
   /** Chat JID from the enclosing conversation, used when the key lacks one. */
   readonly chatJid?: string;
@@ -406,7 +406,7 @@ export function reduceWebMessageInfo(
   info: WebMessageInfo,
   context: WebMessageContext,
 ): StorageOperation[] {
-  const { sessionId, keys } = context;
+  const { connectionId, keys } = context;
   const key = info.key ?? {};
   const jid = nonEmpty(key.remoteJid) ?? context.chatJid;
   if (!jid) return [];
@@ -427,7 +427,7 @@ export function reduceWebMessageInfo(
       : undefined;
   const timestamp = toMillis(protoNumber(info.messageTimestamp));
   const guard: ChatWatermarkGuard | undefined =
-    timestamp === undefined ? undefined : { sessionId, chatId, timestamp };
+    timestamp === undefined ? undefined : { connectionId, chatId, timestamp };
   const operations: StorageOperation[] = [];
   const content = unwrap(info.message);
 
@@ -442,8 +442,8 @@ export function reduceWebMessageInfo(
       put(fields, "chatId", chatId, 0);
       put(fields, "revokedAt", timestamp ?? 0, FINAL_VERSION);
       return [
-        upsert("messages", { sessionId, messageId: target }, fields),
-        upsert("media", { sessionId, messageId: target }, clearedMedia()),
+        upsert("messages", { connectionId, messageId: target }, fields),
+        upsert("media", { connectionId, messageId: target }, clearedMedia()),
       ];
     }
     if (type === 14 && protocol.editedMessage) {
@@ -455,7 +455,7 @@ export function reduceWebMessageInfo(
       put(fields, "chatId", chatId, 0);
       put(fields, "editedAt", version, version);
       return [
-        upsert("messages", { sessionId, messageId: target }, fields, guard),
+        upsert("messages", { connectionId, messageId: target }, fields, guard),
       ];
     }
     return [];
@@ -471,7 +471,11 @@ export function reduceWebMessageInfo(
     put(fields, "emoji", reaction.text ?? "", version);
     put(fields, "timestamp", version, version);
     return [
-      upsert("reactions", { sessionId, messageId: target, senderId }, fields),
+      upsert(
+        "reactions",
+        { connectionId, messageId: target, senderId },
+        fields,
+      ),
     ];
   }
 
@@ -499,7 +503,9 @@ export function reduceWebMessageInfo(
       toMillis(protoNumber(info.revokeMessageTimestamp)) ?? timestamp ?? 0,
       FINAL_VERSION,
     );
-    operations.push(upsert("media", { sessionId, messageId }, clearedMedia()));
+    operations.push(
+      upsert("media", { connectionId, messageId }, clearedMedia()),
+    );
   } else if (content) {
     const mapped = mapContent(content, 0);
     if (mapped) {
@@ -509,12 +515,14 @@ export function reduceWebMessageInfo(
       media = mapped.media;
     } else put(fields, "type", "unknown", 0);
   }
-  operations.push(upsert("messages", { sessionId, messageId }, fields, guard));
+  operations.push(
+    upsert("messages", { connectionId, messageId }, fields, guard),
+  );
   if (media)
     operations.push(
       upsert(
         "media",
-        { sessionId, messageId },
+        { connectionId, messageId },
         mediaWrites(media, chatId, 0),
         guard,
       ),
@@ -542,7 +550,7 @@ export function reduceWebMessageInfo(
     operations.push(
       upsert(
         "receipts",
-        { sessionId, messageId, recipientId: keys.contactId(userJid) },
+        { connectionId, messageId, recipientId: keys.contactId(userJid) },
         receiptFields,
         guard,
       ),
@@ -564,7 +572,7 @@ export function reduceWebMessageInfo(
     operations.push(
       upsert(
         "reactions",
-        { sessionId, messageId, senderId: reactorId },
+        { connectionId, messageId, senderId: reactorId },
         reactionFields,
         guard,
       ),
@@ -582,7 +590,7 @@ export function reduceWebMessageInfo(
     operations.push(
       upsert(
         "contacts",
-        { sessionId, contactId: keys.contactId(senderJid) },
+        { connectionId, contactId: keys.contactId(senderJid) },
         contact,
       ),
     );
@@ -597,7 +605,7 @@ const RANKS: Readonly<Record<number, string>> = {
 };
 
 function conversationOperations(
-  sessionId: string,
+  connectionId: string,
   conversation: HistoryConversation,
   keys: HistoryKeys,
 ): StorageOperation[] {
@@ -659,7 +667,7 @@ function conversationOperations(
   if (lastMessageAt !== undefined)
     put(fields, "lastMessageAt", lastMessageAt, lastMessageAt);
   const operations: StorageOperation[] = [
-    upsert("chats", { sessionId, chatId }, fields),
+    upsert("chats", { connectionId, chatId }, fields),
   ];
   if (kind === "group") {
     const group: Fields = {};
@@ -673,7 +681,7 @@ function conversationOperations(
       conversation.createdBy ? normalizeJid(conversation.createdBy) : undefined,
       0,
     );
-    operations.push(upsert("groups", { sessionId, groupId: chatId }, group));
+    operations.push(upsert("groups", { connectionId, groupId: chatId }, group));
     for (const participant of conversation.participant ?? []) {
       const userJid = nonEmpty(participant.userJid);
       if (!userJid) continue;
@@ -692,7 +700,7 @@ function conversationOperations(
         upsert(
           "group_participants",
           {
-            sessionId,
+            connectionId,
             groupId: chatId,
             participantId: keys.contactId(userJid),
           },
@@ -705,7 +713,7 @@ function conversationOperations(
     if (entry.message)
       operations.push(
         ...reduceWebMessageInfo(entry.message, {
-          sessionId,
+          connectionId,
           keys,
           chatJid: bare,
         }),
@@ -720,11 +728,13 @@ function conversationOperations(
  * gives the same state.
  */
 export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
-  const { sessionId, chunk } = input;
+  const { connectionId, chunk } = input;
   const keys = new HistoryKeys(input.identities, chunk);
   const operations: StorageOperation[] = [];
   for (const conversation of chunk.conversations ?? [])
-    operations.push(...conversationOperations(sessionId, conversation, keys));
+    operations.push(
+      ...conversationOperations(connectionId, conversation, keys),
+    );
   for (const pushname of chunk.pushnames ?? []) {
     const jid = nonEmpty(pushname.id);
     const name = nonEmpty(pushname.pushname);
@@ -733,7 +743,11 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
     put(fields, "jid", normalizeJid(jid), 0);
     put(fields, "pushName", name, 0);
     operations.push(
-      upsert("contacts", { sessionId, contactId: keys.contactId(jid) }, fields),
+      upsert(
+        "contacts",
+        { connectionId, contactId: keys.contactId(jid) },
+        fields,
+      ),
     );
   }
   for (const mapping of chunk.phoneNumberToLidMappings ?? []) {
@@ -748,7 +762,7 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
       operations.push(
         upsert(
           "contacts",
-          { sessionId, contactId: keys.contactId(jid) },
+          { connectionId, contactId: keys.contactId(jid) },
           fields,
         ),
       );
@@ -774,14 +788,14 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
       operations.push(
         upsert(
           "group_participants",
-          { sessionId, groupId, participantId: keys.contactId(userJid) },
+          { connectionId, groupId, participantId: keys.contactId(userJid) },
           fields,
         ),
       );
     }
   }
   operations.push(
-    ...historyProgressOperations(sessionId, {
+    ...historyProgressOperations(connectionId, {
       syncType: historySyncTypeName(chunk.syncType),
       chunkOrder: protoNumber(chunk.chunkOrder),
       progress: protoNumber(chunk.progress),
@@ -794,7 +808,7 @@ export function reduceHistoryChunk(input: HistoryChunkInput): OperationBatch {
     }),
   );
   return {
-    sessionId,
+    connectionId,
     ...(input.chunkId === undefined
       ? {}
       : { eventId: `history:${input.chunkId}` }),

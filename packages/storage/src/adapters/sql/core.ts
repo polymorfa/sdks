@@ -1,6 +1,7 @@
 import { validateCommit, validateQuery } from "../validation.js";
 import {
   ENTITY_NAMES,
+  STORAGE_SCHEMA_VERSION,
   entityDefinition,
   type EntityName,
 } from "../../schema.js";
@@ -16,6 +17,7 @@ import type {
 import { indexOf } from "../shared.js";
 import {
   columnName,
+  metaTable,
   quoteIdent,
   schemaStatements,
   schemaVersionStatement,
@@ -72,6 +74,19 @@ class ConflictSignal extends Error {
   constructor(readonly ids: readonly string[]) {
     super("conflict");
   }
+}
+
+function missingTable(error: unknown): boolean {
+  const value = error as { code?: unknown; errno?: unknown; message?: unknown };
+  return (
+    value?.code === "42P01" ||
+    value?.code === "3F000" ||
+    value?.errno === 1146 ||
+    value?.errno === 1049 ||
+    /no such table:|does not exist|doesn't exist/i.test(
+      String(value?.message ?? error),
+    )
+  );
 }
 
 function isBatchConflict(error: unknown): boolean {
@@ -348,11 +363,58 @@ export function sqlAdapter(
       ? { atomicCommit: true, maxCommitSize: driver.maxBatchSize ?? 500 }
       : { atomicCommit: true, maxCommitSize: 1000 };
 
+  const version = async (): Promise<number | undefined> => {
+    try {
+      const result = await driver.run(
+        `SELECT ${q("version")} FROM ${metaTable(dialect, options)} WHERE ${q("id")} = 'storage'`,
+        [],
+      );
+      if (result.rows.length !== 1)
+        throw new Error("Storage schema metadata is missing or ambiguous.");
+      return Number(result.rows[0]!.version);
+    } catch (error) {
+      if (missingTable(error)) return undefined;
+      throw error;
+    }
+  };
+  const verify = async (): Promise<void> => {
+    if ((await version()) !== STORAGE_SCHEMA_VERSION)
+      throw new Error(
+        "Storage schema version mismatch. Upgrade the stopped store before opening it.",
+      );
+  };
+
   return {
     name,
     capabilities,
     async setup() {
-      if (options.createTables === false) return;
+      const current = await version();
+      if (current !== undefined || options.createTables === false) {
+        await verify();
+        return;
+      }
+      // Never bless pre-existing or historical tables when their marker is missing.
+      for (const entity of [...ENTITY_NAMES, "sessions"]) {
+        const qualified =
+          options.schema && dialect === "postgres"
+            ? `${quoteIdent(dialect, options.schema)}.`
+            : "";
+        const existing =
+          qualified +
+          quoteIdent(
+            dialect,
+            `${options.tablePrefix ?? "polymorfa_"}${entity}`,
+          );
+        try {
+          await driver.run(`SELECT 1 FROM ${existing} LIMIT 0`, []);
+        } catch (error) {
+          if (missingTable(error)) continue;
+          throw error;
+        }
+        throw new Error(
+          "Existing storage tables have no schema marker. Explicit upgrade is required.",
+        );
+      }
       const statements = schemaStatements(dialect, options);
       if (dialect === "sqlite")
         statements.push(
@@ -360,8 +422,10 @@ export function sqlAdapter(
         );
       for (const statement of statements) await driver.run(statement, []);
       await driver.run(schemaVersionStatement(dialect, options), []);
+      await verify();
     },
     async get(entity, ids) {
+      await verify();
       const result = new Map<string, StoredRow>();
       const readBatchSize =
         driver.dialect === "sqlite"
@@ -385,6 +449,7 @@ export function sqlAdapter(
       return result;
     },
     async commit(writes) {
+      await verify();
       validateCommit(writes, capabilities.maxCommitSize);
       if (writes.length === 0) return { ok: true };
       return driver.dialect === "sqlite"
@@ -392,6 +457,7 @@ export function sqlAdapter(
         : commitInteractive(driver, writes);
     },
     async query(entity, query: IndexQuery) {
+      await verify();
       validateQuery(entity, query);
       const index = indexOf(entity, query.index);
       const params: SqlParam[] = [];

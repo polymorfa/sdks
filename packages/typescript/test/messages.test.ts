@@ -173,7 +173,7 @@ describe("MessagingClient message types", () => {
 describe("MessagingClient message routes", () => {
   it("sends typed text, media, location, contact, poll, buttons, list, and template bodies through the one source route", async () => {
     const { client, requests } = await messagesServer();
-    const session = "support/eu";
+    const connection = "support/eu";
 
     const sends: readonly SendMessageRequest[] = [
       {
@@ -237,7 +237,7 @@ describe("MessagingClient message routes", () => {
     ];
 
     for (const body of sends) {
-      await client.messages.send(session, body, {
+      await client.messages.send(connection, body, {
         idempotencyKey: `send-${Object.keys(body.content)[0]}`,
         apiVersion: "next",
       });

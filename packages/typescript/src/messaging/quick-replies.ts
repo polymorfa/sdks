@@ -12,24 +12,24 @@ export class QuickRepliesResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListBusinessQuickRepliesResponse>> {
     return this.transport.request({
       method: "GET",
-      path: quickRepliesPath(session),
+      path: quickRepliesPath(connection),
       ...options,
     });
   }
 
   create(
-    session: string,
+    connection: string,
     body: BusinessQuickReplyMutation,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateBusinessQuickReplyResponse>> {
     return this.transport.request({
       method: "POST",
-      path: quickRepliesPath(session),
+      path: quickRepliesPath(connection),
       body,
       ...options,
     });
@@ -37,36 +37,36 @@ export class QuickRepliesResource {
 
   /** Replaces the complete quick reply identified by quickReplyId. */
   replace(
-    session: string,
+    connection: string,
     quickReplyId: string,
     body: BusinessQuickReplyMutation,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ReplaceBusinessQuickReplyResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: quickReplyPath(session, quickReplyId),
+      path: quickReplyPath(connection, quickReplyId),
       body,
       ...options,
     });
   }
 
   delete(
-    session: string,
+    connection: string,
     quickReplyId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DeleteBusinessQuickReplyResponse>> {
     return this.transport.request({
       method: "DELETE",
-      path: quickReplyPath(session, quickReplyId),
+      path: quickReplyPath(connection, quickReplyId),
       ...options,
     });
   }
 }
 
-function quickRepliesPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/business/quick-replies`;
+function quickRepliesPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/business/quick-replies`;
 }
 
-function quickReplyPath(session: string, quickReplyId: string): string {
-  return `${quickRepliesPath(session)}/${encodeURIComponent(quickReplyId)}`;
+function quickReplyPath(connection: string, quickReplyId: string): string {
+  return `${quickRepliesPath(connection)}/${encodeURIComponent(quickReplyId)}`;
 }

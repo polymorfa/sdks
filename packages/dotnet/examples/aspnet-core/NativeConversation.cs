@@ -3,7 +3,7 @@ using System.Text.Json;
 using Polymorfa.Sdk;
 
 internal sealed record ExampleMessage(string Id, string? ClientId, string Text, long CreatedAt, string Direction, string Status, string Receipt);
-internal sealed class NativeConversation(string session, string peer, bool localTest)
+internal sealed class NativeConversation(string connection, string peer, bool localTest)
 {
     private readonly object state = new();
     private readonly SemaphoreSlim sendGate = new(1, 1);
@@ -12,7 +12,7 @@ internal sealed class NativeConversation(string session, string peer, bool local
     private readonly Queue<string> eventIds = new();
     private string peerId = "", lastEvent = "";
     private int received;
-    public object Snapshot() { lock (state) return new { messages = messages.ToArray(), peer, session, receivedEvents = received, lastEvent, localTest }; }
+    public object Snapshot() { lock (state) return new { messages = messages.ToArray(), peer, connection, receivedEvents = received, lastEvent, localTest }; }
     public async Task<IResult> SendAsync(MessagingClient client, byte[] body, string key, CancellationToken cancellation)
     {
         string text;
@@ -40,7 +40,7 @@ internal sealed class NativeConversation(string session, string peer, bool local
             }
             try
             {
-                var response = await client.Messages.SendAsync(session, new(new(PhoneNumber: peer), new TextContent(text)), new() { IdempotencyKey = key, Timeout = TimeSpan.FromSeconds(60), CancellationToken = cancellation });
+                var response = await client.Messages.SendAsync(connection, new(new(PhoneNumber: peer), new TextContent(text)), new() { IdempotencyKey = key, Timeout = TimeSpan.FromSeconds(60), CancellationToken = cancellation });
                 var receipt = response.Data.Data;
                 if (!response.Data.Success || string.IsNullOrEmpty(receipt.Id) || !DateTimeOffset.TryParse(receipt.Timestamp, out var at)) return Results.StatusCode(502);
                 var message = new ExampleMessage(receipt.Id, key, text, at.ToUnixTimeSeconds() * 1000, "outbound", "sent", receipt.Status);
@@ -63,7 +63,7 @@ internal sealed class NativeConversation(string session, string peer, bool local
     public void Receive(WebhookEvent webhook)
     {
         var envelope = webhook.Envelope;
-        if (envelope.Session != session) return;
+        if (envelope.Connection != connection) return;
         lock (state)
         {
             if (eventIds.Contains(envelope.Id)) return;

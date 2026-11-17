@@ -1,0 +1,9 @@
+{
+  "storageSourceSdkCommit": "d80b581c9df122411e9149a7e39a33700a51571c",
+  "schemaVersion": 3,
+  "schemaPath": "packages/go/storage/schema3.json",
+  "schemaSourceSha256": "7044c47a708a38f8df79a0980cba347ed524cd9b01bd1d4d70d06918665e4e99",
+  "dataArtifact": "schema3.json",
+  "d1BridgeSourceSdkCommit": "d80b581c9df122411e9149a7e39a33700a51571c",
+  "logic": "Handwritten Python; schema3.json is fixed Connection storage contract data. Historical schema.json and source.json are not runtime readers."
+}

@@ -133,13 +133,13 @@ describe("customer-owned media upload over native HTTP", () => {
         value: { success: true, data: location },
       }));
       const result = await client(api.url).whatsappMedia.upload(
-        "session/id",
+        "connection/id",
         plaintext,
         { mediaType },
       );
       const request = api.requests[0]!;
       expect(request.url.pathname).toBe(
-        "/messaging/session%2Fid/media/uploads",
+        "/messaging/connection%2Fid/media/uploads",
       );
       expect(request.url.searchParams.get("type")).toBe(type);
       expect(request.url.searchParams.get("ptt")).toBe(
@@ -335,7 +335,7 @@ describe("customer-owned media upload over native HTTP", () => {
     );
   });
 
-  it("sends a pre-uploaded descriptor through the standard-session message API", async () => {
+  it("sends a pre-uploaded descriptor through the standard-connection message API", async () => {
     const api = await server((request) => ({
       value: request.url.pathname.endsWith("/media/uploads")
         ? { success: true, data: location }

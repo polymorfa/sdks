@@ -54,7 +54,7 @@ describe("HttpTransport", () => {
               ...(marker === undefined
                 ? {}
                 : { "Idempotent-Replayed": marker }),
-              "set-cookie": "session=private",
+              "set-cookie": "connection=private",
               "x-internal-debug": "private",
             },
           },
@@ -136,7 +136,7 @@ describe("HttpTransport", () => {
         "polymorfa-version": "2026-08-19",
         "x-ratelimit-remaining": "41",
         "x-ratelimit-reset": "1700000060",
-        "set-cookie": "session=secret",
+        "set-cookie": "connection=secret",
         "x-internal-debug": "database-host",
       },
       body: '{"ok":true}',
@@ -177,15 +177,15 @@ describe("HttpTransport", () => {
     const transport = makeTransport(server.url);
     await transport.request({
       method: "GET",
-      path: "/messaging/number/hybrid-link",
+      path: "/messaging/connection/hybrid-link",
     });
     await transport.requestBinary({
       method: "GET",
-      path: "/messaging/number/media/id",
+      path: "/messaging/connection/media/id",
     });
     const stream = await transport.requestStream({
       method: "GET",
-      path: "/messaging/number/media/id",
+      path: "/messaging/connection/media/id",
     });
     await stream.body.cancel();
     await transport.request({ method: "GET", path: "/platform/projects" });
@@ -231,7 +231,7 @@ describe("HttpTransport", () => {
       makeTransport(server.url, {
         apiVersion: "2026-08-19",
         maxNetworkRetries: 2,
-      }).request({ method: "GET", path: "/messaging/number/hybrid-link" }),
+      }).request({ method: "GET", path: "/messaging/connection/hybrid-link" }),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
     expect(server.requests).toHaveLength(1);
     expect(server.requests[0]?.headers["polymorfa-version"]).toBe("2026-08-19");
@@ -256,7 +256,7 @@ describe("HttpTransport", () => {
     await expect(
       makeTransport(server.url, { maxNetworkRetries: 2 }).request({
         method: "GET",
-        path: "/messaging/number/hybrid-link",
+        path: "/messaging/connection/hybrid-link",
         headers: { "Polymorfa-Version": "2026-03-20" },
       }),
     ).rejects.toMatchObject({ code: "invalid_parameter", status: 400 });
@@ -269,12 +269,12 @@ describe("HttpTransport", () => {
     const transport = makeTransport(server.url, { apiVersion: "2026-09-22" });
     await transport.request({
       method: "GET",
-      path: "/messaging/number/hybrid-link",
+      path: "/messaging/connection/hybrid-link",
       headers: { "Polymorfa-Version": "2026-08-19" },
     });
     const stream = await transport.requestStream({
       method: "GET",
-      path: "/messaging/number/media/id",
+      path: "/messaging/connection/media/id",
       headers: { "Polymorfa-Version": "2026-08-19" },
       apiVersion: "2026-09-23",
     });
@@ -496,7 +496,7 @@ describe("HttpTransport", () => {
     await expect(
       transport.request({
         method: "POST",
-        path: "/messaging/number/messages",
+        path: "/messaging/connection/messages",
         body: { text: "hello" },
         idempotencyKey: "send-accepted",
       }),

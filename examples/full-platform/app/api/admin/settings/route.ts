@@ -7,18 +7,18 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-// Session configuration defaults and saved QuickLink branding, for the team
+// Connection configuration defaults and saved QuickLink branding, for the team
 // (team view) and for this project (project view).
 export const GET = route("admin", async () => {
   const [teamConfig, projectConfig, teamLinks, projectLinks] =
     await Promise.all([
-      team().sessionConfiguration.retrieve(),
-      project().sessionConfiguration.retrieve(),
+      team().connectionConfiguration.retrieve(),
+      project().connectionConfiguration.retrieve(),
       team().quickLinkSettings.retrieve(),
       project().quickLinkSettings.retrieve(),
     ]);
   return {
-    sessionConfiguration: {
+    connectionConfiguration: {
       team: teamConfig.data,
       project: projectConfig.data,
     },
@@ -30,7 +30,7 @@ export const POST = route("admin", async ({ body }) => {
   switch (action(body)) {
     case "projectObservation":
       // `revision` must match the value last read, or the API rejects the write.
-      return project().sessionConfiguration.update({
+      return project().connectionConfiguration.update({
         configuration: {
           set: {
             observation: { presenceMode: "cache", typingMode: "events" },

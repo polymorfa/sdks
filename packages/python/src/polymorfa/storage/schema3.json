@@ -1,0 +1,353 @@
+{
+  "connections": {
+    "name": "connections",
+    "key": [
+      "connectionId"
+    ],
+    "fields": {
+      "phoneNumber": "string",
+      "waId": "string",
+      "pushName": "string",
+      "phonePlatform": "string",
+      "accountType": "string",
+      "businessName": "string",
+      "connected": "boolean",
+      "status": "string",
+      "statusReason": "string",
+      "loggedOutReason": "string",
+      "loggedOutCode": "number"
+    },
+    "indexes": []
+  },
+  "chats": {
+    "name": "chats",
+    "key": [
+      "connectionId",
+      "chatId"
+    ],
+    "fields": {
+      "jid": "string",
+      "kind": "string",
+      "phoneNumber": "string",
+      "bsuid": "string",
+      "username": "string",
+      "name": "string",
+      "archived": "boolean",
+      "pinned": "boolean",
+      "muted": "boolean",
+      "muteEndAt": "number",
+      "markedUnread": "boolean",
+      "unreadCount": "number",
+      "readOnly": "boolean",
+      "ephemeralExpiration": "number",
+      "lastMessageAt": "number",
+      "clearedAt": "number",
+      "deletedAt": "number"
+    },
+    "indexes": [
+      {
+        "name": "by_activity",
+        "equals": [
+          "connectionId"
+        ],
+        "sort": "lastMessageAt"
+      }
+    ]
+  },
+  "messages": {
+    "name": "messages",
+    "key": [
+      "connectionId",
+      "messageId"
+    ],
+    "fields": {
+      "chatId": "string",
+      "waMessageId": "string",
+      "cloudMessageId": "string",
+      "fromMe": "boolean",
+      "senderId": "string",
+      "senderJid": "string",
+      "pushName": "string",
+      "timestamp": "number",
+      "type": "string",
+      "text": "string",
+      "caption": "string",
+      "mimeType": "string",
+      "fileName": "string",
+      "latitude": "number",
+      "longitude": "number",
+      "displayName": "string",
+      "title": "string",
+      "quotedId": "string",
+      "pollOptions": "json",
+      "extra": "json",
+      "editedAt": "number",
+      "revokedAt": "number",
+      "deletedAt": "number",
+      "starred": "boolean",
+      "status": "string",
+      "statusAt": "number"
+    },
+    "indexes": [
+      {
+        "name": "by_chat",
+        "equals": [
+          "connectionId",
+          "chatId"
+        ],
+        "sort": "timestamp"
+      }
+    ]
+  },
+  "reactions": {
+    "name": "reactions",
+    "key": [
+      "connectionId",
+      "messageId",
+      "senderId"
+    ],
+    "fields": {
+      "chatId": "string",
+      "emoji": "string",
+      "timestamp": "number"
+    },
+    "indexes": [
+      {
+        "name": "by_message",
+        "equals": [
+          "connectionId",
+          "messageId"
+        ],
+        "sort": "timestamp"
+      }
+    ]
+  },
+  "receipts": {
+    "name": "receipts",
+    "key": [
+      "connectionId",
+      "messageId",
+      "recipientId"
+    ],
+    "fields": {
+      "chatId": "string",
+      "status": "string",
+      "timestamp": "number"
+    },
+    "indexes": [
+      {
+        "name": "by_message",
+        "equals": [
+          "connectionId",
+          "messageId"
+        ],
+        "sort": "timestamp"
+      }
+    ]
+  },
+  "poll_votes": {
+    "name": "poll_votes",
+    "key": [
+      "connectionId",
+      "messageId",
+      "voterId"
+    ],
+    "fields": {
+      "chatId": "string",
+      "selectedHashes": "json",
+      "timestamp": "number"
+    },
+    "indexes": [
+      {
+        "name": "by_message",
+        "equals": [
+          "connectionId",
+          "messageId"
+        ],
+        "sort": "timestamp"
+      }
+    ]
+  },
+  "contacts": {
+    "name": "contacts",
+    "key": [
+      "connectionId",
+      "contactId"
+    ],
+    "fields": {
+      "jid": "string",
+      "lidJid": "string",
+      "phoneNumber": "string",
+      "bsuid": "string",
+      "username": "string",
+      "fullName": "string",
+      "firstName": "string",
+      "pushName": "string",
+      "businessName": "string",
+      "pictureId": "string",
+      "blocked": "boolean"
+    },
+    "indexes": []
+  },
+  "groups": {
+    "name": "groups",
+    "key": [
+      "connectionId",
+      "groupId"
+    ],
+    "fields": {
+      "jid": "string",
+      "subject": "string",
+      "description": "string",
+      "createdAt": "number",
+      "createdBy": "string",
+      "inviteLink": "string",
+      "joinApprovalRequired": "boolean",
+      "lastAction": "string"
+    },
+    "indexes": []
+  },
+  "group_participants": {
+    "name": "group_participants",
+    "key": [
+      "connectionId",
+      "groupId",
+      "participantId"
+    ],
+    "fields": {
+      "jid": "string",
+      "phoneNumber": "string",
+      "role": "string",
+      "active": "boolean",
+      "changedAt": "number",
+      "leaveReason": "string"
+    },
+    "indexes": [
+      {
+        "name": "by_group",
+        "equals": [
+          "connectionId",
+          "groupId"
+        ],
+        "sort": "changedAt"
+      }
+    ]
+  },
+  "media": {
+    "name": "media",
+    "key": [
+      "connectionId",
+      "messageId"
+    ],
+    "fields": {
+      "chatId": "string",
+      "kind": "string",
+      "mimeType": "string",
+      "fileName": "string",
+      "fileLength": "number",
+      "fileSha256": "string",
+      "fileEncSha256": "string",
+      "directPath": "string",
+      "mediaKey": "string",
+      "mediaKeyTimestamp": "number",
+      "descriptor": "string",
+      "downloadUrl": "string",
+      "archiveLocation": "string",
+      "archiveContentType": "string",
+      "archiveSize": "number",
+      "archiveSha256": "string",
+      "archivedAt": "number"
+    },
+    "indexes": []
+  },
+  "labels": {
+    "name": "labels",
+    "key": [
+      "connectionId",
+      "labelId"
+    ],
+    "fields": {
+      "name": "string",
+      "color": "number",
+      "orderIndex": "number",
+      "deleted": "boolean"
+    },
+    "indexes": []
+  },
+  "label_associations": {
+    "name": "label_associations",
+    "key": [
+      "connectionId",
+      "labelId",
+      "targetKind",
+      "targetId"
+    ],
+    "fields": {
+      "labeled": "boolean",
+      "changedAt": "number"
+    },
+    "indexes": []
+  },
+  "history_chunks": {
+    "name": "history_chunks",
+    "key": [
+      "connectionId",
+      "syncType",
+      "chunkOrder"
+    ],
+    "fields": {
+      "progress": "number",
+      "conversationCount": "number",
+      "messageCount": "number",
+      "pushnameCount": "number"
+    },
+    "indexes": []
+  },
+  "history_progress": {
+    "name": "history_progress",
+    "key": [
+      "connectionId",
+      "syncType"
+    ],
+    "fields": {
+      "progress": "number",
+      "lastChunkOrder": "number"
+    },
+    "indexes": []
+  },
+  "checkpoints": {
+    "name": "checkpoints",
+    "key": [
+      "connectionId",
+      "stream"
+    ],
+    "fields": {
+      "cursor": "string",
+      "position": "json",
+      "updatedAt": "number"
+    },
+    "indexes": []
+  },
+  "leases": {
+    "name": "leases",
+    "key": [
+      "connectionId"
+    ],
+    "fields": {
+      "owner": "string",
+      "expiresAt": "number"
+    },
+    "indexes": []
+  },
+  "events": {
+    "name": "events",
+    "key": [
+      "connectionId",
+      "eventId"
+    ],
+    "fields": {
+      "type": "string"
+    },
+    "indexes": []
+  }
+}

@@ -75,7 +75,7 @@ class Record(TypedDict):
     sourceKind: Literal["call", "attempt", "flow_run", "conversation", "asset", "team"]
     sourceId: str
     projectId: str | None
-    session: str | None
+    connection: str | None
     occurredAt: str
     recordedAt: str
     revision: int
@@ -97,8 +97,8 @@ class MeterTotal(TypedDict):
     records: int
 
 
-class NumberTotal(TypedDict):
-    session: str
+class ConnectionTotal(TypedDict):
+    connection: str
     projectId: str | None
     meters: list[MeterTotal]
 
@@ -108,11 +108,11 @@ class Summary(TypedDict):
     start: str
     end: str
     projectId: str | None
-    session: str | None
+    connection: str | None
     billingEnabled: bool
     meters: list[MeterTotal]
-    numbers: list[NumberTotal]
-    numbersTruncated: bool
+    connections: list[ConnectionTotal]
+    connectionsTruncated: bool
 
 
 class GateDecisions(TypedDict):
@@ -124,7 +124,7 @@ class GateDecisions(TypedDict):
 class Gate(TypedDict):
     key: GateKey
     kind: Literal["capability", "quota", "limit", "concurrency"]
-    subject: Literal["team", "number", "project", "campaign"]
+    subject: Literal["team", "connection", "project", "campaign"]
     mode: Literal["off", "record", "enforce"]
     active: bool
     limit: float | None
@@ -135,13 +135,13 @@ class Gate(TypedDict):
 
 
 class Gates(TypedDict):
-    session: str | None
+    connection: str | None
     gates: list[Gate]
 
 
 class SummaryParams(TypedDict, total=False):
     projectId: str
-    session: str
+    connection: str
     period: str
 
 
@@ -154,7 +154,7 @@ class RecordParams(SummaryParams, total=False):
 
 class GateParams(TypedDict, total=False):
     projectId: str
-    session: str
+    connection: str
 
 
 class Usage(PlatformResource):

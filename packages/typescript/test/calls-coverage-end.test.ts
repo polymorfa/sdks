@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   MessagingClient,
   PolymorfaValidationError,
-  type UpdateSessionCallSettingsRequest,
+  type UpdateConnectionCallSettingsRequest,
 } from "../src/index.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
 
@@ -31,7 +31,7 @@ describe("call settings coverage end is response-only", () => {
           maxNetworkRetries: 0,
           fetch: async (input, init) => {
             expect(String(input)).toBe(
-              "https://api.example/platform/sessions/support/call-settings",
+              "https://api.example/platform/connections/support/call-settings",
             );
             expect(init?.method).toBe(method);
             if (method === "PUT")
@@ -76,7 +76,7 @@ describe("call settings coverage end is response-only", () => {
       const body = {
         callsEnabled: false,
         ...extra,
-      } as unknown as UpdateSessionCallSettingsRequest;
+      } as unknown as UpdateConnectionCallSettingsRequest;
       expect(() => client.voip.updateCallSettings("support", body)).toThrow(
         PolymorfaValidationError,
       );

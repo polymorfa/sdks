@@ -1,4 +1,4 @@
-// Package storage implements customer-owned schema2 storage boundaries.
+// Package storage implements customer-owned schema3 storage boundaries.
 // Database adapters persist rows; shared merge/reducer/lease planning belongs
 // above this interface. No Polymorfa API credential or Signal core key is used.
 package storage
@@ -12,11 +12,11 @@ import (
 	"unicode/utf8"
 )
 
-const SchemaVersion = 2
-const SourceSDKCommit = "3bacf46f9c4213426314001586f5bae43aaa77de"
-const D1BridgeSourceCommit = "9ae35e671f7f4868a67c1562422c5af9284b95c1"
+const SchemaVersion = 3
+const SourceSDKCommit = "d80b581c9df122411e9149a7e39a33700a51571c"
+const D1BridgeSourceCommit = "d80b581c9df122411e9149a7e39a33700a51571c"
 
-//go:embed schema2.json
+//go:embed schema3.json
 var schemaBytes []byte
 var schema map[string]Definition
 

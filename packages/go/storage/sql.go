@@ -110,7 +110,7 @@ func sqlFields(entity string) []string {
 }
 
 // SQLSchemaStatements exports the shared schema2 columns/indexes. It never
-// changes an existing schema version. Setup records version2 only when absent.
+// changes an existing schema version. Setup records version3 only when absent.
 func SQLSchemaStatements(dialect SQLDialect, options SQLOptions) ([]string, error) {
 	var err error
 	options, err = sqlOptions(dialect, options)
@@ -371,7 +371,7 @@ func (a *SQLAdapter) Setup(ctx context.Context) error {
 	if a.dialect == MySQL {
 		insert = "INSERT IGNORE INTO "
 	}
-	insert += a.table("storage_schema") + " (" + a.q("id") + ", " + a.q("version") + ") VALUES ('storage', 2)"
+	insert += a.table("storage_schema") + " (" + a.q("id") + ", " + a.q("version") + ") VALUES ('storage', " + strconv.Itoa(SchemaVersion) + ")"
 	if a.dialect != MySQL {
 		insert += " ON CONFLICT (" + a.q("id") + ") DO NOTHING"
 	}
@@ -626,10 +626,10 @@ func validateFencedDeletes(writes []Write) error {
 		if w.Kind != "delete" || w.ExpectedRev != nil {
 			continue
 		}
-		session := strings.Split(w.ID, ":")[0]
+		connection := strings.Split(w.ID, ":")[0]
 		fenced := false
 		for _, f := range writes {
-			if f.Kind == "put" && f.Entity == "leases" && f.ExpectedRev != nil && f.Row["_id"] == session {
+			if f.Kind == "put" && f.Entity == "leases" && f.ExpectedRev != nil && f.Row["_id"] == connection {
 				rev, ok := revision(f.Row["_rev"])
 				if ok && rev == *f.ExpectedRev+1 {
 					fenced = true
@@ -720,7 +720,7 @@ func SQLMigration(dialect SQLDialect, options SQLOptions) (string, error) {
 	if dialect == MySQL {
 		insert = "INSERT IGNORE INTO "
 	}
-	insert += sqlTable(dialect, "storage_schema", options) + " (" + sqlQuote(dialect, "id") + ", " + sqlQuote(dialect, "version") + ") VALUES ('storage', 2)"
+	insert += sqlTable(dialect, "storage_schema", options) + " (" + sqlQuote(dialect, "id") + ", " + sqlQuote(dialect, "version") + ") VALUES ('storage', " + strconv.Itoa(SchemaVersion) + ")"
 	if dialect != MySQL {
 		insert += " ON CONFLICT (" + sqlQuote(dialect, "id") + ") DO NOTHING"
 	}

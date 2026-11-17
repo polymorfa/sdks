@@ -175,7 +175,7 @@ final class MongodbAdapter implements Adapter
                 if (count($rows) === $this->maxQueryRows) {
                     throw new StorageException('storage_query_bound_exceeded');
                 } $row = DocumentRows::decode($entity, $doc);
-                if ($row['sessionId'] !== $query['equals']['sessionId']) {
+                if ($row['connectionId'] !== $query['equals']['connectionId']) {
                     Schema::invalid();
                 } $rows[] = $row;
             }

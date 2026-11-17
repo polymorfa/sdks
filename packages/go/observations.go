@@ -145,12 +145,12 @@ type ProjectObservationPolicy struct {
 	ProjectID string `json:"projectId"`
 	ObservationValues
 }
-type SessionObservationPolicy struct {
-	SessionName string            `json:"sessionName"`
-	ProjectID   string            `json:"projectId"`
-	Project     ObservationValues `json:"project"`
-	Override    ObservationValues `json:"override"`
-	Effective   ObservationValues `json:"effective"`
+type ConnectionObservationPolicy struct {
+	ConnectionName string            `json:"connectionName"`
+	ProjectID      string            `json:"projectId"`
+	Project        ObservationValues `json:"project"`
+	Override       ObservationValues `json:"override"`
+	Effective      ObservationValues `json:"effective"`
 }
 type ObservationPolicies struct{ t *transport }
 
@@ -160,34 +160,34 @@ func (c *MessagingClient) ObservationPolicies() *ObservationPolicies {
 func (r *ObservationPolicies) RetrieveForProject(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[ProjectObservationPolicy]], error) {
 	return request[Envelope[ProjectObservationPolicy]](ctx, r.t, "GET", "/messaging/projects/"+escaped(id)+"/observation-policy", nil, nil, options(o))
 }
-func (r *ObservationPolicies) RetrieveForSession(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[SessionObservationPolicy]], error) {
-	return request[Envelope[SessionObservationPolicy]](ctx, r.t, "GET", messagingPath(s)+"/observation-policy", nil, nil, options(o))
+func (r *ObservationPolicies) RetrieveForConnection(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[ConnectionObservationPolicy]], error) {
+	return request[Envelope[ConnectionObservationPolicy]](ctx, r.t, "GET", messagingPath(s)+"/observation-policy", nil, nil, options(o))
 }
 
 type HybridScope struct {
-	Scope     string
-	ProjectID string
-	Session   string
+	Scope      string
+	ProjectID  string
+	Connection string
 }
 
 func (s HybridScope) query() (url.Values, error) {
 	q := url.Values{"scope": {s.Scope}}
 	switch s.Scope {
 	case "team":
-		if s.ProjectID != "" || s.Session != "" {
-			return nil, validation("Team scope has no project or session.")
+		if s.ProjectID != "" || s.Connection != "" {
+			return nil, validation("Team scope has no project or connection.")
 		}
 	case "project":
-		if s.ProjectID == "" || s.Session != "" {
+		if s.ProjectID == "" || s.Connection != "" {
 			return nil, validation("Project scope requires projectId.")
 		}
 		q.Set("projectId", s.ProjectID)
-	case "session":
-		if s.ProjectID == "" || s.Session == "" {
-			return nil, validation("Session scope requires projectId and session.")
+	case "connection":
+		if s.ProjectID == "" || s.Connection == "" {
+			return nil, validation("Connection scope requires projectId and connection.")
 		}
 		q.Set("projectId", s.ProjectID)
-		q.Set("session", s.Session)
+		q.Set("connection", s.Connection)
 	default:
 		return nil, validation("Invalid Hybrid Link scope.")
 	}

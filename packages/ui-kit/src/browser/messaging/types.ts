@@ -99,7 +99,7 @@ export type BrowserMessageContent = ExclusiveUnion<
   | { readonly contact: { readonly vcard: string } }
   | { readonly requestPhoneNumber: Readonly<Record<string, never>> }
   | {
-      /** Cloud API numbers only. Requires the existing send_message grant. */
+      /** Cloud API connections only. Requires the existing send_message grant. */
       readonly callPermissionRequest: {
         /** Why you want to call. The API accepts 1 to 1,024 characters. */
         readonly body: string;
@@ -298,11 +298,11 @@ export interface BrowserCallPeer {
   readonly username?: string;
 }
 
-/** One call on a number, as `GET /messaging/{session}/calls` returns it. */
+/** One call on a Connection, as `GET /messaging/{connection}/calls` returns it. */
 export interface BrowserCallRecord {
   readonly callId: string;
-  readonly projectId: string | null;
-  readonly sessionId: string;
+  readonly projectId: string;
+  readonly connectionId: string;
   readonly direction: "inbound" | "outbound";
   readonly upstream: "linked_device" | "cloud_api";
   readonly outcome:

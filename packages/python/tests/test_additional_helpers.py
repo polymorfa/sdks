@@ -132,10 +132,10 @@ async def test_native_voice_upload_never_sends_api_cookie_or_credential_to_stora
             response = web.json_response(
                 {"data": {"asset": ASSET, "upload": {**UPLOAD, "url": base + "/storage-upload"}}}
             )
-            response.set_cookie("api-session", "fixture", path="/")
+            response.set_cookie("api-connection", "fixture", path="/")
             return response
         assert request.path == AP + "/asset_1/complete"
-        assert request.headers["cookie"] == "api-session=fixture"
+        assert request.headers["cookie"] == "api-connection=fixture"
         assert "idempotency-key" not in request.headers
         return web.json_response({"data": ASSET})
 

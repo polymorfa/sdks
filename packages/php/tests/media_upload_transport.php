@@ -33,9 +33,9 @@ final readonly class TestEncryptedTransport implements WhatsAppMediaUploadTransp
     {
         return $this->label;
     }
-    public function upload(string $session, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation
+    public function upload(string $connection, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation
     {
-        return ($this->callback)($session, $body);
+        return ($this->callback)($connection, $body);
     }
 }
 $http = new GuzzleHttp\Client(['handler' => static function () {
@@ -92,9 +92,9 @@ foreach (['success','partial','later-failure','open-failure','bad-offset','callb
             }
         }]);
     };
-    $transport = new TestEncryptedTransport(static function (string $session, WhatsAppEncryptedUploadBody $body) use ($mode, &$held, $plain, $key, $location, $token): WhatsAppUploadLocation {
+    $transport = new TestEncryptedTransport(static function (string $connection, WhatsAppEncryptedUploadBody $body) use ($mode, &$held, $plain, $key, $location, $token): WhatsAppUploadLocation {
         $held = $body;
-        transportCheck($session === 'session' && $body->mediaType === 'image' && strlen($body->fileEncSha256) === 32, 'public encrypted metadata');
+        transportCheck($connection === 'connection' && $body->mediaType === 'image' && strlen($body->fileEncSha256) === 32, 'public encrypted metadata');
         transportCheck(!str_contains(print_r($body, true), $key) && !str_contains(json_encode($body), $key), 'body hides key/source');
         if ($mode === 'callback') {
             throw new RuntimeException('https://secret.invalid/?key='.$key);
@@ -137,7 +137,7 @@ foreach (['success','partial','later-failure','open-failure','bad-offset','callb
         return $mode === 'invalid-location' ? new WhatsAppUploadLocation('', '') : $location;
     });
     $options = new UploadWhatsAppMediaOptions('image', mediaKey:$key, requestOptions:new RequestOptions(timeout:in_array($mode, ['timeout','blocked'], true) ? 0.005 : 30, cancellation:$token), uploadTransport:$transport);
-    $call = fn () => $resource->upload('session', $source, $options);
+    $call = fn () => $resource->upload('connection', $source, $options);
     if (in_array($mode, ['success','abandoned'], true)) {
         $result = $call();
         transportCheck($result->egress === 'customer-store' && $result->location === $location, 'custom result');
@@ -163,8 +163,8 @@ foreach (['relay','direct'] as $mode) {
         $resource = (new MessagingClient(Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k'), baseUrl:'https://api.fixture.invalid', http:$http))->whatsappMedia;
         $options = new UploadWhatsAppMediaOptions('image', mediaKey:$key, http:$http);
         $builtin = $resource->uploadTransport($mode, $options);
-        $wrapper = new TestEncryptedTransport(static fn (string $session, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation => $builtin->upload($session, $body));
-        $result = $resource->uploadBytes('session', $plain, new UploadWhatsAppMediaOptions('image', mediaKey:$key, uploadTransport:$wrapper));
+        $wrapper = new TestEncryptedTransport(static fn (string $connection, WhatsAppEncryptedUploadBody $body): WhatsAppUploadLocation => $builtin->upload($connection, $body));
+        $result = $resource->uploadBytes('connection', $plain, new UploadWhatsAppMediaOptions('image', mediaKey:$key, uploadTransport:$wrapper));
         fwrite($pipes[0], "finish\n");
         $state = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
         transportCheck($state['valid'] && $state['posts'] > 0 && WhatsAppMedia::decrypt(base64_decode($state['ciphertext'], true), new MediaDescriptor('image', $key, fileEncSha256:$result->info->fileEncSha256)) === $plain, 'wrapped builtin actual TLS '.$mode);

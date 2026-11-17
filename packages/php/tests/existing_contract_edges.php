@@ -27,18 +27,18 @@ $ecNoIO(fn () => $ecMessaging->campaigns->update('slug', $ecId, []));
 foreach ([['reason' => 'invented'],['reason' => null],['limit' => 0],['limit' => 101],['cursor' => str_repeat('x', 257)],['status' => 'unknown'],['extra' => true]] as $params) {
     $ecNoIO(fn () => $ecMessaging->campaigns->listRecipients('slug', $ecId, $params));
 }
-foreach (['opted_out','cold_held','campaign_cancelled','invalid_recipient','session_not_connected','ack_timeout','blocked_by_safety','send_failed','missing_variable','other'] as $reason) {
+foreach (['opted_out','cold_held','campaign_cancelled','invalid_recipient','connection_not_connected','ack_timeout','blocked_by_safety','send_failed','missing_variable','other'] as $reason) {
     $ecRun('GET', $ecPath.'/recipients?reason='.$reason, null, ['success' => true,'data' => [],'page' => $ecPage], fn () => $ecMessaging->campaigns->listRecipients('slug', $ecId, ['reason' => $reason]));
 }
-foreach ([['purpose' => 'initial','session' => 's'],['purpose' => 'initial','addConnection' => 'linked_devices'],['purpose' => 'add_connection','session' => 's'],['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','signalMode' => 'standard'],['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','customerId' => null],['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','connectionGoal' => 'single'],['signalMode' => null],['signalMode' => 'unknown'],['configuration' => ['historySync' => ['delivery' => 'archive']]],['configuration' => ['historySync' => ['delivery' => null]]]] as $bad) {
+foreach ([['purpose' => 'initial','connection' => 's'],['purpose' => 'initial','addMethod' => 'linked_devices'],['purpose' => 'add_method','connection' => 's'],['purpose' => 'add_method','connection' => 's','addMethod' => 'linked_devices','signalMode' => 'standard'],['purpose' => 'add_method','connection' => 's','addMethod' => 'linked_devices','customerId' => null],['purpose' => 'add_method','connection' => 's','addMethod' => 'linked_devices','connectionGoal' => 'single'],['signalMode' => null],['signalMode' => 'unknown'],['configuration' => ['historySync' => ['delivery' => 'archive']]],['configuration' => ['historySync' => ['delivery' => null]]]] as $bad) {
     $ecNoIO(fn () => $ecMessaging->quickLinks->create($bad));
 }
 foreach (['signalMode','zeroKnowledge','signal_mode','signalModeDefault','signalRelay'] as $alias) {
     $ecNoIO(fn () => $ecMessaging->quickLinks->create(['configuration' => [$alias => false]]));
 }
 foreach ([['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0],['configuration' => ['set' => ['historySync' => ['delivery' => null]]],'revision' => 0],['configuration' => ['reset' => ['signalMode']],'revision' => 0],['configuration' => [],'revision' => 0,'projectId' => $ecBProject],['configuration' => [],'revision' => 0,'signalMode' => 'zero_knowledge']] as $bad) {
-    $ecNoIO(fn () => $ecA->sessionConfiguration->update($bad));
-    $ecNoIO(fn () => $ecMessaging->sessions->update('s', $bad));
+    $ecNoIO(fn () => $ecA->connectionConfiguration->update($bad));
+    $ecNoIO(fn () => $ecMessaging->connections->update('s', $bad));
 }
 foreach ([['sticker' => []],['sticker' => ['url' => 'https://example.com']]] as $content) {
     $ecNoIO(fn () => $ecMessaging->messages->send('s', ['conversation' => ['id' => 'chat'],'content' => $content]));
@@ -69,7 +69,7 @@ $ecCustom = new class () implements Polymorfa\WhatsAppMediaUploadTransport {
     {
         return 'customer';
     }
-    public function upload(string $session, Polymorfa\WhatsAppEncryptedUploadBody $body): Polymorfa\WhatsAppUploadLocation
+    public function upload(string $connection, Polymorfa\WhatsAppEncryptedUploadBody $body): Polymorfa\WhatsAppUploadLocation
     {
         $stream = $body->open();
         try {
@@ -90,9 +90,9 @@ $ecWrapper = new class ($ecRelay) implements Polymorfa\WhatsAppMediaUploadTransp
     {
         return 'wrapped-relay';
     }
-    public function upload(string $session, Polymorfa\WhatsAppEncryptedUploadBody $body): Polymorfa\WhatsAppUploadLocation
+    public function upload(string $connection, Polymorfa\WhatsAppEncryptedUploadBody $body): Polymorfa\WhatsAppUploadLocation
     {
-        return $this->inner->upload($session, $body);
+        return $this->inner->upload($connection, $body);
     }
 };
 $v = $ecVectors[0];

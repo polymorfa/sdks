@@ -7,13 +7,13 @@ namespace Polymorfa;
 use GuzzleHttp\ClientInterface;
 use Polymorfa\Resources\Events;
 use Polymorfa\Resources\Projects;
-use Polymorfa\Resources\PlatformSessions;
+use Polymorfa\Resources\PlatformConnections;
 use Polymorfa\Resources\PlatformWebhooks;
 
 final readonly class Client
 {
     private HttpTransport $transport;
-    public PlatformSessions $sessions;
+    public PlatformConnections $connections;
     public Projects $projects;
     public Events $events;
     public Resources\PlatformBanSafe $banSafe;
@@ -34,13 +34,13 @@ final readonly class Client
     public RawClient $raw;
     public Resources\PlatformMedia $media;
     public Resources\QuickLinkSettings $quickLinkSettings;
-    public Resources\SessionConfiguration $sessionConfiguration;
+    public Resources\ConnectionConfiguration $connectionConfiguration;
     public Resources\SipTrunks $sipTrunks;
     public Resources\Customers $customers;
     public Resources\Usage $usage;
     public Resources\Billing $billing;
     public Resources\AuditLogs $auditLogs;
-    public Resources\SessionBans $sessionBans;
+    public Resources\ConnectionBans $connectionBans;
     public Resources\SecurityIncidents $securityIncidents;
     public Resources\OptOuts $optOuts;
     public Resources\Teams $teams;
@@ -74,20 +74,20 @@ final readonly class Client
         $this->audienceSegments = new Resources\AudienceSegments($this->transport);
         $this->requestLogs = new Resources\RequestLogs($this->transport);
         $this->quickLinkSettings = new Resources\QuickLinkSettings($this->transport);
-        $this->sessionConfiguration = new Resources\SessionConfiguration($this->transport);
+        $this->connectionConfiguration = new Resources\ConnectionConfiguration($this->transport);
         $this->sipTrunks = new Resources\SipTrunks($this->transport);
         $this->customers = new Resources\Customers($this->transport);
         $this->usage = new Resources\Usage($this->transport);
         $this->billing = new Resources\Billing($this->transport);
         $this->auditLogs = new Resources\AuditLogs($this->transport);
-        $this->sessionBans = new Resources\SessionBans($this->transport);
+        $this->connectionBans = new Resources\ConnectionBans($this->transport);
         $this->securityIncidents = new Resources\SecurityIncidents($this->transport);
         $this->optOuts = new Resources\OptOuts($this->transport);
         $this->teams = new Resources\Teams($this->transport);
         $this->members = new Resources\Members($this->transport);
         $this->apiKeys = new Resources\ApiKeys($this->transport);
         $this->projectTokens = new Resources\ProjectTokens($this->transport);
-        $this->sessions = new PlatformSessions($this->transport);
+        $this->connections = new PlatformConnections($this->transport);
         $this->projects = new Projects($this->transport);
         $this->events = new Events($this->transport, '/platform');
         $this->operations = new Resources\Operations($this->transport, '/platform');

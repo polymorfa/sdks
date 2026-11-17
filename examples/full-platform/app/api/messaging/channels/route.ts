@@ -8,17 +8,17 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-export const GET = route("agent", ({ body, sessionOf }) =>
-  messaging().channels.list(sessionOf(body)),
+export const GET = route("agent", ({ body, connectionOf }) =>
+  messaging().channels.list(connectionOf(body)),
 );
 
-export const POST = route("admin", async ({ body, sessionOf }) => {
+export const POST = route("admin", async ({ body, connectionOf }) => {
   const channels = messaging().channels;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   const name = action(body);
   if (name === "create") {
     const description = optionalText(body, "description");
-    return channels.create(session, {
+    return channels.create(connection, {
       name: text(body, "name"),
       ...(description === undefined ? {} : { description }),
     });
@@ -26,47 +26,47 @@ export const POST = route("admin", async ({ body, sessionOf }) => {
   const channelId = text(body, "channelId");
   switch (name) {
     case "retrieve":
-      return channels.retrieve(session, channelId);
+      return channels.retrieve(connection, channelId);
     case "delete":
-      return channels.delete(session, channelId);
+      return channels.delete(connection, channelId);
     case "messages": {
       // Page older history with the smallest `position` you have seen.
       const before = optionalInteger(body, "before");
-      return channels.listMessages(session, channelId, {
+      return channels.listMessages(connection, channelId, {
         count: 50,
         ...(before === undefined ? {} : { before }),
       });
     }
     case "updates": {
       const since = optionalInteger(body, "since");
-      return channels.listMessageUpdates(session, channelId, {
+      return channels.listMessageUpdates(connection, channelId, {
         count: 50,
         ...(since === undefined ? {} : { since }),
       });
     }
     case "markViewed":
       return channels.markMessageViewed(
-        session,
+        connection,
         channelId,
         text(body, "messageId"),
       );
     case "react":
       return channels.reactToMessage(
-        session,
+        connection,
         channelId,
         text(body, "messageId"),
         { reaction: typeof body.reaction === "string" ? body.reaction : "" },
       );
     case "liveUpdates":
-      return channels.subscribeToLiveUpdates(session, channelId);
+      return channels.subscribeToLiveUpdates(connection, channelId);
     case "follow":
-      return channels.follow(session, channelId);
+      return channels.follow(connection, channelId);
     case "unfollow":
-      return channels.unfollow(session, channelId);
+      return channels.unfollow(connection, channelId);
     case "mute":
-      return channels.mute(session, channelId);
+      return channels.mute(connection, channelId);
     case "unmute":
-      return channels.unmute(session, channelId);
+      return channels.unmute(connection, channelId);
     default:
       return unknownAction(name);
   }

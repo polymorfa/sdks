@@ -176,7 +176,7 @@ async fn team_and_project_webhook_public_methods_native_wire_contracts() {
                     content_type: "application/json".into(),
                     data: "e30=".into(),
                 },
-                session_id: "s".into(),
+                connection_id: "s".into(),
                 event_type: None,
             },
             RequestOptions::default(),

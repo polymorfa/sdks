@@ -78,34 +78,34 @@ public record WhatsAppMetrics
     public WhatsAppAccountActivity AccountActivity { get; init; } = null!;
     public WhatsAppResponseQueue? ResponseQueue { get; init; }
 }
-public sealed record WhatsAppAnalyticsSummary : WhatsAppMetrics { public long TotalNumbers { get; init; } public long MeasuredNumbers { get; init; } public long ConnectedNumbers { get; init; } }
-public sealed record WhatsAppAnalyticsNumber : WhatsAppMetrics { public string SessionId { get; init; } = ""; public string ProjectId { get; init; } = ""; public string ProjectName { get; init; } = ""; public string Name { get; init; } = ""; public string Backend { get; init; } = ""; public string Status { get; init; } = ""; }
-public sealed record WhatsAppAnalyticsCallSeries : CallOutcomeMetrics { public string SessionId { get; init; } = ""; public long Ts { get; init; } }
-public sealed record WhatsAppAnalyticsSeries(long CustomerOnlineSignals, long CustomerTypingSignals, long PrimaryPhoneMessages, long OtherDeviceMessages, long PrimaryPhoneReplies, long PhoneActivePeriods, long CompletedPhoneActivityPeriods, long PhoneActivityMs, long PhoneQuietGaps, long PhoneQuietMs, string SessionId, long Ts, long OutgoingMessages, long IncomingMessages, long SendFailures, long BusinessReplies, decimal? AverageBusinessResponseMs, long OnlineMs, long Disconnects);
+public sealed record WhatsAppAnalyticsSummary : WhatsAppMetrics { public long TotalConnections { get; init; } public long MeasuredConnections { get; init; } public long ConnectedConnections { get; init; } }
+public sealed record WhatsAppAnalyticsConnection : WhatsAppMetrics { public string ConnectionId { get; init; } = ""; public string ProjectId { get; init; } = ""; public string ProjectName { get; init; } = ""; public string Name { get; init; } = ""; public string Backend { get; init; } = ""; public string Status { get; init; } = ""; }
+public sealed record WhatsAppAnalyticsCallSeries : CallOutcomeMetrics { public string ConnectionId { get; init; } = ""; public long Ts { get; init; } }
+public sealed record WhatsAppAnalyticsSeries(long CustomerOnlineSignals, long CustomerTypingSignals, long PrimaryPhoneMessages, long OtherDeviceMessages, long PrimaryPhoneReplies, long PhoneActivePeriods, long CompletedPhoneActivityPeriods, long PhoneActivityMs, long PhoneQuietGaps, long PhoneQuietMs, string ConnectionId, long Ts, long OutgoingMessages, long IncomingMessages, long SendFailures, long BusinessReplies, decimal? AverageBusinessResponseMs, long OnlineMs, long Disconnects);
 public sealed record AnalyticsPeriod(long Start, long End);
 public sealed record AnalyticsRequestVitals(long Requests, long Failures, decimal? ErrorRate);
-public sealed record WhatsAppAnalytics(IReadOnlyList<WhatsAppAnalyticsCallSeries> CallSeries, bool Enabled, AnalyticsPeriod Period, AnalyticsRequestVitals RequestVitals, WhatsAppAnalyticsSummary? Summary, IReadOnlyList<WhatsAppAnalyticsNumber> Numbers, IReadOnlyList<WhatsAppAnalyticsSeries> Series);
-public sealed record AnalyticsParameters(string? ProjectId = null, string? SessionId = null, long? Start = null, long? End = null);
-public sealed record AnalyticsMetricsParameters(string? ProjectId = null, string? SessionId = null, int? WindowHours = null, bool? Segments = null, string? Format = null);
+public sealed record WhatsAppAnalytics(IReadOnlyList<WhatsAppAnalyticsCallSeries> CallSeries, bool Enabled, AnalyticsPeriod Period, AnalyticsRequestVitals RequestVitals, WhatsAppAnalyticsSummary? Summary, IReadOnlyList<WhatsAppAnalyticsConnection> Connections, IReadOnlyList<WhatsAppAnalyticsSeries> Series);
+public sealed record AnalyticsParameters(string? ProjectId = null, string? ConnectionId = null, long? Start = null, long? End = null);
+public sealed record AnalyticsMetricsParameters(string? ProjectId = null, string? ConnectionId = null, int? WindowHours = null, bool? Segments = null, string? Format = null);
 public sealed class Analytics : Resource
 {
     private readonly string? projectId;
     private string Path => projectId is null ? "/platform/analytics" : "/platform/projects/" + E(projectId) + "/analytics";
     internal Analytics(HttpTransport http, string? projectId) : base(http) => this.projectId = projectId;
-    private void Validate(string? project, string? session)
+    private void Validate(string? project, string? connection)
     {
-        foreach (var id in new[] { project, session }) if (id is not null && !Guid.TryParseExact(id, "D", out _)) throw new PolymorfaValidationException("Analytics filters require UUIDs.", "invalid_analytics_filter");
+        foreach (var id in new[] { project, connection }) if (id is not null && !Guid.TryParseExact(id, "D", out _)) throw new PolymorfaValidationException("Analytics filters require UUIDs.", "invalid_analytics_filter");
         if (projectId is not null && project is not null && !projectId.Equals(project, StringComparison.OrdinalIgnoreCase)) throw new PolymorfaValidationException("Analytics cannot read outside the client's project.", "invalid_analytics_filter");
     }
     public async Task<ApiResponse<WhatsAppAnalytics>> GetAsync(AnalyticsParameters? parameters = null, RequestOptions? options = null)
     {
-        parameters ??= new(); Validate(parameters.ProjectId, parameters.SessionId);
+        parameters ??= new(); Validate(parameters.ProjectId, parameters.ConnectionId);
         if (parameters.Start is < 0 or > 9007199254740991 || parameters.End is < 0 or > 9007199254740991 || parameters.Start is { } start && parameters.End is { } end && (end < start || end - start > 366L * 86400000)) throw new PolymorfaValidationException("Choose an ordered analytics range of up to 366 days.", "invalid_analytics_range");
         var r = await ExistingContractCodec.Request<DataEnvelope<WhatsAppAnalytics>>(Http, HttpMethod.Get, Path, options: options, query: Query(parameters with { ProjectId = projectId is null ? parameters.ProjectId : null })).ConfigureAwait(false); return new(r.Data.Data, r.Metadata);
     }
     public async Task<ApiResponse<string>> MetricsAsync(AnalyticsMetricsParameters? parameters = null, RequestOptions? options = null)
     {
-        parameters ??= new(); Validate(parameters.ProjectId, parameters.SessionId); if (parameters.WindowHours is < 1 or > 168) throw new PolymorfaValidationException("windowHours must be from 1 to 168.", "invalid_analytics_range"); var format = parameters.Format ?? "prometheus"; if (format is not ("prometheus" or "openmetrics")) throw new PolymorfaValidationException("Invalid metrics format.", "invalid_analytics_filter");
+        parameters ??= new(); Validate(parameters.ProjectId, parameters.ConnectionId); if (parameters.WindowHours is < 1 or > 168) throw new PolymorfaValidationException("windowHours must be from 1 to 168.", "invalid_analytics_range"); var format = parameters.Format ?? "prometheus"; if (format is not ("prometheus" or "openmetrics")) throw new PolymorfaValidationException("Invalid metrics format.", "invalid_analytics_filter");
         var accept = format == "openmetrics" ? "application/openmetrics-text" : "text/plain";
         var r = await Http.RequestTextAsync(Path + "/metrics", accept, options, Query(parameters with { ProjectId = projectId is null ? parameters.ProjectId : null, Format = format })).ConfigureAwait(false);
         if (r.Metadata.Headers.GetValueOrDefault("content-type")?.Split(';')[0].Trim().ToLowerInvariant() != accept || !System.Text.RegularExpressions.Regex.IsMatch(r.Data, "^# TYPE polymorfa_analytics_enabled gauge$", System.Text.RegularExpressions.RegexOptions.Multiline) || format == "openmetrics" && !r.Data.EndsWith("# EOF\n", StringComparison.Ordinal)) throw new PolymorfaServerException("Invalid analytics metrics response.", "invalid_response", r.Metadata); return r;

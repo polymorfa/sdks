@@ -8,7 +8,7 @@ import { env, isDemoMode } from "../../../../../lib/env.js";
 import { messaging } from "../../../../../lib/polymorfa.js";
 
 // Calls token minted with `clientTokens.mint` (POST /platform/client-tokens).
-// The session's client rules must grant voip_place, voip_answer and
+// The connection's client rules must grant voip_place, voip_answer and
 // voip_signal.
 export const POST = createClientTokenRoute({
   authorize: async (request) => {
@@ -21,7 +21,7 @@ export const POST = createClientTokenRoute({
     createMessagingClientTokenMint({
       clientTokens: messaging().clientTokens,
       resolve: () => ({
-        session: env.session(),
+        connection: env.connection(),
         ephemeralId: subject.userId,
         ttlSeconds: 600,
       }),

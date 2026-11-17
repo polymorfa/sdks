@@ -173,11 +173,11 @@ describe("coverage checker", () => {
     const result = runRepositoryChecker();
     expect(result.status, result.stderr).toBe(0);
     expect(result.report).toMatchObject({
-      sourceCommit: "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
-      total: 671,
-      covered: 457,
-      partial: 2,
-      missing: 52,
+      sourceCommit: "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+      total: 672,
+      covered: 460,
+      partial: 1,
+      missing: 51,
       excluded: 160,
       changed: 0,
     });
@@ -209,13 +209,15 @@ describe("coverage checker", () => {
       enableCustomers: "Client.customers.enable",
       getCustomer: "Client.customers.retrieve",
       getCustomersStatus: "Client.customers.status",
+      getCustomerSignalCustody: undefined,
+      updateCustomerSignalCustody: undefined,
       listCustomerEvents: "Client.customers.listEvents",
-      listCustomerNumbers: "Client.customers.listNumbers",
+      listCustomerConnections: "Client.customers.listConnections",
       listCustomerPairingLinks: "Client.customers.listPairingLinks",
       listCustomers: "Client.customers.list",
       restoreCustomer: "Client.customers.restore",
       revokeCustomerPairingLink: "Client.customers.revokePairingLink",
-      transferCustomerNumber: "Client.customers.transferNumber",
+      transferCustomerConnection: "Client.customers.transferConnection",
       updateCustomer: "Client.customers.update",
     });
   });
@@ -317,14 +319,14 @@ describe("coverage checker", () => {
     });
   });
 
-  it("maps batch session lifecycle to the team-key client", () => {
+  it("maps batch connection lifecycle to the team-key client", () => {
     const ledger = JSON.parse(readFileSync(repositoryLedger, "utf8")) as {
       operations: Array<{
         operationId: string;
         typescript: { status: string; method?: string };
       }>;
     };
-    const operationIds = ["stopSessions", "deleteSessions"];
+    const operationIds = ["stopConnections", "deleteConnections"];
     const mappings = Object.fromEntries(
       ledger.operations
         .filter(({ operationId }) => operationIds.includes(operationId))
@@ -332,8 +334,8 @@ describe("coverage checker", () => {
     );
 
     expect(mappings).toEqual({
-      deleteSessions: "Client.sessions.deleteMany",
-      stopSessions: "Client.sessions.stopMany",
+      deleteConnections: "Client.connections.deleteMany",
+      stopConnections: "Client.connections.stopMany",
     });
   });
 
@@ -366,7 +368,7 @@ describe("coverage checker", () => {
         },
       }),
       BrowserMessagingClient: new BrowserMessagingClient({
-        session: "coverage",
+        connection: "coverage",
         getClientToken: async () => "pmfa_ct_coverage",
       }),
     };
@@ -487,8 +489,8 @@ describe("coverage checker", () => {
       getBusinessProduct: "MessagingClient.business.getProduct",
       getProjectObservationPolicy:
         "MessagingClient.observationPolicies.retrieveForProject",
-      getSessionObservationPolicy:
-        "MessagingClient.observationPolicies.retrieveForSession",
+      getConnectionObservationPolicy:
+        "MessagingClient.observationPolicies.retrieveForConnection",
       getOwnBusinessProfile: "MessagingClient.business.getProfile",
       reorderBusinessCollections: "MessagingClient.business.reorderCollections",
       setBusinessCartEnabled: "MessagingClient.business.setCartEnabled",
@@ -629,7 +631,7 @@ describe("coverage checker", () => {
       "checkCall",
       "getCallPermission",
       "getUserSecurityCode",
-      "listSessionCalls",
+      "listConnectionCalls",
       "rejectCall",
       "resolveIdentity",
     ]);
@@ -654,8 +656,8 @@ describe("coverage checker", () => {
       "listApiKeys",
       "listMembers",
       "listAuditLogs",
-      "listSessionBans",
-      "listActiveSessionBans",
+      "listConnectionBans",
+      "listActiveConnectionBans",
       "listSecurityIncidents",
       "acknowledgeSecurityIncident",
       "getPlatformOperation",
@@ -683,13 +685,13 @@ describe("coverage checker", () => {
         status: "covered",
         method: "Client.auditLogs.list",
       },
-      listSessionBans: {
+      listConnectionBans: {
         status: "covered",
-        method: "Client.sessionBans.list",
+        method: "Client.connectionBans.list",
       },
-      listActiveSessionBans: {
+      listActiveConnectionBans: {
         status: "covered",
-        method: "Client.sessionBans.listActive",
+        method: "Client.connectionBans.listActive",
       },
       listSecurityIncidents: {
         status: "covered",

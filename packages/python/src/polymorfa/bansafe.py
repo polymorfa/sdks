@@ -56,8 +56,8 @@ class SafeModeApplied(TypedDict):
     pacing: str | None
 
 
-class SessionSafeMode(TypedDict):
-    session: str
+class ConnectionSafeMode(TypedDict):
+    connection: str
     projectId: str
     project: SafeModeSettings
     override: SafeModeOverride
@@ -68,7 +68,7 @@ class SessionSafeMode(TypedDict):
     entitlementReason: str | None
 
 
-class UpdateSessionSafeMode(TypedDict, total=False):
+class UpdateConnectionSafeMode(TypedDict, total=False):
     presence: PresenceMode | Literal["inherit"]
     typing: TypingMode | Literal["inherit"]
     reads: ReadsMode | Literal["inherit"]
@@ -123,7 +123,7 @@ class UpdateProjectHealthPolicy(TypedDict):
     version: int
     enabled: bool
     threshold: float
-    sessionAction: HealthAction
+    connectionAction: HealthAction
     slowDownMps: float | None
     emailNotification: bool
     webhookNotification: bool
@@ -199,20 +199,20 @@ class BanSafe(Resource):
             "PUT", self._project_path(project_id, "health-policy"), body=body, options=options
         )
 
-    async def get_session_safe_mode(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[SessionSafeMode]]:
+    async def get_connection_safe_mode(
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[ConnectionSafeMode]]:
         self._server()
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/safe-mode", options=options
+            "GET", f"/messaging/{segment(connection)}/safe-mode", options=options
         )
 
-    async def update_session_safe_mode(
-        self, session: str, body: UpdateSessionSafeMode, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[SessionSafeMode]]:
+    async def update_connection_safe_mode(
+        self, connection: str, body: UpdateConnectionSafeMode, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[ConnectionSafeMode]]:
         self._server()
         return await self._request(
-            "PUT", f"/messaging/{segment(session)}/safe-mode", body=body, options=options
+            "PUT", f"/messaging/{segment(connection)}/safe-mode", body=body, options=options
         )
 
     @staticmethod

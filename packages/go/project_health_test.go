@@ -5,15 +5,15 @@ import "context"
 const projectSafeFixture = `{"data":{"projectId":"p","ceiling":{"presence":"dark","typing":"off","reads":"off","pacing":"jittered","onlineStart":0,"onlineEnd":24},"entitled":false,"entitlementReason":"not_enrolled"}}`
 const warmupFixture = `{"data":{"projectId":"p","plan":{"enabled":false,"warmupDays":30,"dailyStart":10},"ceiling":100,"curve":[{"day":1,"allowance":10}],"entitled":false,"entitlementReason":"not_enrolled"}}`
 const insuranceFixture = `{"data":{"projectId":"p","enabled":false,"banInsuranceIncluded":true}}`
-const healthFixture = `{"data":{"projectId":"p","version":2,"enabled":false,"threshold":0.5,"sessionAction":"none","slowDownMps":null,"emailNotification":false,"webhookNotification":true,"integrations":{"emailConfigured":false,"webhookConfigured":true}}}`
-const sessionSafeFixture = `{"data":{"session":"s","projectId":"p","project":{"presence":"dark"},"override":{"presence":"inherit"},"effective":{"presence":"dark"},"applied":null,"mismatch":false,"entitled":false,"entitlementReason":"not_enrolled"}}`
+const healthFixture = `{"data":{"projectId":"p","version":2,"enabled":false,"threshold":0.5,"connectionAction":"none","slowDownMps":null,"emailNotification":false,"webhookNotification":true,"integrations":{"emailConfigured":false,"webhookConfigured":true}}}`
+const connectionSafeFixture = `{"data":{"connection":"s","projectId":"p","project":{"presence":"dark"},"override":{"presence":"inherit"},"effective":{"presence":"dark"},"applied":null,"mismatch":false,"entitled":false,"entitlementReason":"not_enrolled"}}`
 
 func fixtureWarmupUpdate() UpdateProjectWarmupPlanRequest {
 	v, n := false, 0
 	return UpdateProjectWarmupPlanRequest{Enabled: &v, DailyStart: &n}
 }
 func fixtureHealthUpdate() UpdateProjectHealthPolicyRequest {
-	return UpdateProjectHealthPolicyRequest{Version: 1, Threshold: 0.5, SessionAction: "none", WebhookNotification: true}
+	return UpdateProjectHealthPolicyRequest{Version: 1, Threshold: 0.5, ConnectionAction: "none", WebhookNotification: true}
 }
 
 var projectHealthFixtures = []operationFixture{
@@ -39,10 +39,10 @@ var projectHealthFixtures = []operationFixture{
 	{"TeamClient.Projects.GetHealthPolicy", "GET", "/platform/projects/p/health-policy", "", "", healthFixture, "data.integrations.webhookConfigured", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Projects().GetHealthPolicy(ctx, "p"))
 	}},
-	{"TeamClient.Projects.UpdateHealthPolicy", "PUT", "/platform/projects/p/health-policy", "", `{"version":1,"enabled":false,"threshold":0.5,"sessionAction":"none","slowDownMps":null,"emailNotification":false,"webhookNotification":true}`, healthFixture, "data.version", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Projects.UpdateHealthPolicy", "PUT", "/platform/projects/p/health-policy", "", `{"version":1,"enabled":false,"threshold":0.5,"connectionAction":"none","slowDownMps":null,"emailNotification":false,"webhookNotification":true}`, healthFixture, "data.version", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Projects().UpdateHealthPolicy(ctx, "p", fixtureHealthUpdate()))
 	}},
-	{"TeamClient.Projects.ListHybridMergeCandidates", "GET", "/platform/projects/p/hybrid-merge-candidates", "", "", `{"data":[{"numbers":[{"id":"a","name":"A","transport":"linked_devices","status":"connected","canBeAbsorbed":false},{"id":"b","name":"B","transport":"official_api","status":"connected","canBeAbsorbed":true}],"eligible":false,"ineligibleReason":"hms_enabled"}]}`, "data.0.numbers.0.canBeAbsorbed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Projects.ListHybridMergeCandidates", "GET", "/platform/projects/p/hybrid-merge-candidates", "", "", `{"data":[{"connections":[{"id":"a","name":"A","method":"linked_device","status":"connected","canBeAbsorbed":false},{"id":"b","name":"B","method":"cloud_api","status":"connected","canBeAbsorbed":true}],"eligible":false,"ineligibleReason":"hms_enabled"}]}`, "data.0.connections.0.canBeAbsorbed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Projects().ListHybridMergeCandidates(ctx, "p"))
 	}},
 	{"MessagingClient.BanSafe.GetProjectSafeMode", "GET", "/messaging/projects/p/safe-mode", "", "", projectSafeFixture, "data.entitlementReason", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
@@ -67,13 +67,13 @@ var projectHealthFixtures = []operationFixture{
 	{"MessagingClient.BanSafe.GetProjectHealthPolicy", "GET", "/messaging/projects/p/health-policy", "", "", healthFixture, "data.integrations.webhookConfigured", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.BanSafe().GetProjectHealthPolicy(ctx, "p"))
 	}},
-	{"MessagingClient.BanSafe.UpdateProjectHealthPolicy", "PUT", "/messaging/projects/p/health-policy", "", `{"version":1,"enabled":false,"threshold":0.5,"sessionAction":"none","slowDownMps":null,"emailNotification":false,"webhookNotification":true}`, healthFixture, "data.version", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.BanSafe.UpdateProjectHealthPolicy", "PUT", "/messaging/projects/p/health-policy", "", `{"version":1,"enabled":false,"threshold":0.5,"connectionAction":"none","slowDownMps":null,"emailNotification":false,"webhookNotification":true}`, healthFixture, "data.version", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.BanSafe().UpdateProjectHealthPolicy(ctx, "p", fixtureHealthUpdate()))
 	}},
-	{"MessagingClient.BanSafe.GetSessionSafeMode", "GET", "/messaging/s/safe-mode", "", "", sessionSafeFixture, "data.override.presence", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.BanSafe().GetSessionSafeMode(ctx, "s"))
+	{"MessagingClient.BanSafe.GetConnectionSafeMode", "GET", "/messaging/s/safe-mode", "", "", connectionSafeFixture, "data.override.presence", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.BanSafe().GetConnectionSafeMode(ctx, "s"))
 	}},
-	{"MessagingClient.BanSafe.UpdateSessionSafeMode", "PUT", "/messaging/s/safe-mode", "", `{"presence":"inherit"}`, sessionSafeFixture, "data.entitlementReason", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.BanSafe().UpdateSessionSafeMode(ctx, "s", UpdateSessionSafeModeRequest{Presence: "inherit"}))
+	{"MessagingClient.BanSafe.UpdateConnectionSafeMode", "PUT", "/messaging/s/safe-mode", "", `{"presence":"inherit"}`, connectionSafeFixture, "data.entitlementReason", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.BanSafe().UpdateConnectionSafeMode(ctx, "s", UpdateConnectionSafeModeRequest{Presence: "inherit"}))
 	}},
 }

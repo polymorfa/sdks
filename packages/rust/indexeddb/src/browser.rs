@@ -10,6 +10,8 @@ extern "C" {
     #[wasm_bindgen(catch, js_name = newIndexedDb)]
     fn new_db(owner: &str, name: &str, entities: &str, maximum: usize)
         -> Result<NativeDb, JsValue>;
+    #[wasm_bindgen(method, catch, js_name = upgradeSchema2)]
+    fn upgrade_schema2(this: &NativeDb, signal: &web_sys::AbortSignal) -> Result<Promise, JsValue>;
     #[wasm_bindgen(method, catch)]
     fn setup(this: &NativeDb, signal: &web_sys::AbortSignal) -> Result<Promise, JsValue>;
     #[wasm_bindgen(method, catch)]
@@ -117,6 +119,13 @@ impl IndexedDbStorageAdapter {
         )
         .map_err(|_| provider())?;
         Ok(Self { native })
+    }
+    /// Upgrade a quiesced schema-2 database atomically, preserving rows and its namespace owner.
+    pub async fn upgrade_schema2(&self) -> StorageResult<()> {
+        let operation = AbortOnDrop::new()?;
+        let promise = self.native.upgrade_schema2(&operation.signal());
+        operation.finish::<bool>(promise).await?;
+        Ok(())
     }
     /// Close this adapter's connection. Later operations reopen the same database.
     pub fn close(&self) {

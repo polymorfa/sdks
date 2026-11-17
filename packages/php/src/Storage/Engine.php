@@ -6,7 +6,7 @@ namespace Polymorfa\Storage;
 
 use Polymorfa\CancellationToken;
 
-/** Durable per-session CAS leases and deterministic resumable schema2 writes. */
+/** Durable per-connection CAS leases and deterministic resumable schema3 writes. */
 final class Engine
 {
     /**
@@ -28,16 +28,16 @@ final class Engine
 
     /**
      * @return array<string,mixed> */
-    private function acquire(string $session, ?CancellationToken $cancellation): array
+    private function acquire(string $connection, ?CancellationToken $cancellation): array
     {
-        $id = Schema::encodeKey('leases', ['sessionId' => $session]);
+        $id = Schema::encodeKey('leases', ['connectionId' => $connection]);
         $owner = bin2hex(random_bytes(16));
         $deadline = hrtime(true) / 1000000 + $this->leaseWaitMs;
         do {
             $cancellation?->throwIfCancelled();
             $before = $this->adapter->get('leases', [$id], $cancellation)[$id] ?? null;
             if ($before === null || !($before['owner'] ?? null) || ($before['expiresAt'] ?? 0) <= ($this->now)()) {
-                $row = $before ?? Rows::empty('leases', ['sessionId' => $session]);
+                $row = $before ?? Rows::empty('leases', ['connectionId' => $connection]);
                 $row['_rev']++;
                 $row['owner'] = $owner;
                 $row['expiresAt'] = ($this->now)() + $this->leaseDurationMs;
@@ -94,7 +94,7 @@ final class Engine
      * @return array{string,string} */
     private static function identity(Upsert|Delete|Checkpoint $operation): array
     {
-        return $operation instanceof Checkpoint ? ['checkpoints', Schema::encodeKey('checkpoints', ['sessionId' => $operation->sessionId, 'stream' => $operation->stream])] : [$operation->entity, Schema::encodeKey($operation->entity, $operation->key)];
+        return $operation instanceof Checkpoint ? ['checkpoints', Schema::encodeKey('checkpoints', ['connectionId' => $operation->connectionId, 'stream' => $operation->stream])] : [$operation->entity, Schema::encodeKey($operation->entity, $operation->key)];
     }
 
     /**
@@ -129,7 +129,7 @@ final class Engine
                 if ($operation->expectedCursor !== Unspecified::Value && ($current['cursor'] ?? null) !== $operation->expectedCursor) {
                     throw new StorageException('storage_checkpoint_conflict');
                 }
-                $row = $current ?? Rows::empty('checkpoints', ['sessionId' => $operation->sessionId, 'stream' => $operation->stream]);
+                $row = $current ?? Rows::empty('checkpoints', ['connectionId' => $operation->connectionId, 'stream' => $operation->stream]);
                 $row['cursor'] = $operation->cursor;
                 $row['position'] = Rows::copy($operation->position);
                 $row['updatedAt'] = $operation->updatedAt;
@@ -213,12 +213,12 @@ final class Engine
         $count = 0;
         while (true) {
             $this->renewBeforeRead($lease, $cancellation);
-            $messages = $this->adapter->query('messages', ['index' => 'by_chat', 'equals' => ['sessionId' => $operation->sessionId, 'chatId' => $operation->chatId], 'limit' => $this->clearPageSize, 'range' => ['lte' => $operation->upTo]], $cancellation);
+            $messages = $this->adapter->query('messages', ['index' => 'by_chat', 'equals' => ['connectionId' => $operation->connectionId, 'chatId' => $operation->chatId], 'limit' => $this->clearPageSize, 'range' => ['lte' => $operation->upTo]], $cancellation);
             if ($messages === []) {
                 return $count;
             } $deletes = [];
             foreach ($messages as $message) {
-                $key = ['sessionId' => $operation->sessionId, 'messageId' => $message['messageId']];
+                $key = ['connectionId' => $operation->connectionId, 'messageId' => $message['messageId']];
                 foreach (['reactions', 'receipts', 'poll_votes'] as $entity) {
                     do {
                         $this->renewBeforeRead($lease, $cancellation);
@@ -248,7 +248,7 @@ final class Engine
         $ids = [];
         foreach ($operations as $op) {
             if ($op->guard !== null) {
-                $ids[] = Schema::encodeKey('chats', ['sessionId' => $op->guard->sessionId, 'chatId' => $op->guard->chatId]);
+                $ids[] = Schema::encodeKey('chats', ['connectionId' => $op->guard->connectionId, 'chatId' => $op->guard->chatId]);
             }
         }
         $chats = $this->read('chats', array_values(array_unique($ids)), $cancellation, $lease);
@@ -259,7 +259,7 @@ final class Engine
                 $result[] = $operation;
                 continue;
             }
-            $chat = $chats[Schema::encodeKey('chats', ['sessionId' => $guard->sessionId, 'chatId' => $guard->chatId])] ?? [];
+            $chat = $chats[Schema::encodeKey('chats', ['connectionId' => $guard->connectionId, 'chatId' => $guard->chatId])] ?? [];
             $marks = array_values(array_filter([$chat['clearedAt'] ?? null, $chat['deletedAt'] ?? null], static fn (mixed $v): bool => (is_int($v) || is_float($v)) && is_finite((float)$v)));
             if ($marks === [] || $guard->timestamp > max($marks)) {
                 $result[] = $operation;
@@ -270,23 +270,23 @@ final class Engine
 
     public function apply(Batch $batch, ?CancellationToken $cancellation = null): ApplyResult
     {
-        if ($batch->sessionId === '') {
+        if ($batch->connectionId === '') {
             Schema::invalid();
         }
         foreach ($batch->operations as $op) {
-            $session = $op instanceof ClearChat || $op instanceof Checkpoint ? $op->sessionId : ($op->key['sessionId'] ?? null);
-            if ($session !== $batch->sessionId || ($op instanceof Upsert && $op->guard !== null && $op->guard->sessionId !== $session) || (($op instanceof Upsert || $op instanceof Delete) && $op->entity === 'leases')) {
+            $connection = $op instanceof ClearChat || $op instanceof Checkpoint ? $op->connectionId : ($op->key['connectionId'] ?? null);
+            if ($connection !== $batch->connectionId || ($op instanceof Upsert && $op->guard !== null && $op->guard->connectionId !== $connection) || (($op instanceof Upsert || $op instanceof Delete) && $op->entity === 'leases')) {
                 Schema::invalid();
             }
             if ($op instanceof Upsert || $op instanceof Delete) {
                 Schema::encodeKey($op->entity, $op->key);
             }
         }
-        $lease = $this->acquire($batch->sessionId, $cancellation);
+        $lease = $this->acquire($batch->connectionId, $cancellation);
         try {
             $marker = [];
             if ($batch->eventId !== null) {
-                $key = ['sessionId' => $batch->sessionId, 'eventId' => $batch->eventId];
+                $key = ['connectionId' => $batch->connectionId, 'eventId' => $batch->eventId];
                 $id = Schema::encodeKey('events', $key);
                 if (isset($this->read('events', [$id], $cancellation, $lease)[$id])) {
                     return new ApplyResult(false, 0);
@@ -354,12 +354,12 @@ final class Engine
 
     /**
      * @return array<string,mixed>|null */
-    public function getCheckpoint(string $sessionId, string $stream): ?array
+    public function getCheckpoint(string $connectionId, string $stream): ?array
     {
-        return $this->get('checkpoints', ['sessionId' => $sessionId, 'stream' => $stream]);
+        return $this->get('checkpoints', ['connectionId' => $connectionId, 'stream' => $stream]);
     }
-    public function hasEvent(string $sessionId, string $eventId): bool
+    public function hasEvent(string $connectionId, string $eventId): bool
     {
-        return $this->get('events', ['sessionId' => $sessionId, 'eventId' => $eventId]) !== null;
+        return $this->get('events', ['connectionId' => $connectionId, 'eventId' => $eventId]) !== null;
     }
 }

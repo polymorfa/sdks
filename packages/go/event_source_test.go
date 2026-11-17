@@ -15,7 +15,7 @@ import (
 )
 
 func TestEventStreamLiveSourceNativeWire(t *testing.T) {
-	webhook := `{"id":"w","session":"s","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"enabled":false}}`
+	webhook := `{"id":"w","connection":"s","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"enabled":false}}`
 	received := make(chan string, 1)
 	var requests atomic.Int32
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {

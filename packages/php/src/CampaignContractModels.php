@@ -15,14 +15,14 @@ namespace Polymorfa;
  * @phpstan-type PlatformReplyCreate array{projectId:string,name:string,definition:ReplyDefinition,flowKey?:string,revision?:int}
  * @phpstan-type ReplyFlow array{id:string,flowKey:string,revision:int,name:string,definition:ReplyDefinition,createdAt:int}
  * @phpstan-type ProjectParams array{projectId:string}
- * @phpstan-type TestSendInput array{sessionId:string,to:string,sampleRecipientId?:string,variables?:array<string|int,string|int|float|bool>}
- * @phpstan-type PlatformTestSendInput array{projectId:string,sessionId:string,to:string,sampleRecipientId?:string,variables?:array<string|int,string|int|float|bool>}
- * @phpstan-type TestSend array{id:string,campaignId:string,status:'sent',from:array{sessionId:string,phone:string},to:string,messageId:string|null,variables:array<string|int,string>,createdAt:int}
+ * @phpstan-type TestSendInput array{connectionId:string,to:string,sampleRecipientId?:string,variables?:array<string|int,string|int|float|bool>}
+ * @phpstan-type PlatformTestSendInput array{projectId:string,connectionId:string,to:string,sampleRecipientId?:string,variables?:array<string|int,string|int|float|bool>}
+ * @phpstan-type TestSend array{id:string,campaignId:string,status:'sent',from:array{connectionId:string,phone:string},to:string,messageId:string|null,variables:array<string|int,string>,createdAt:int}
  * @phpstan-type AssignmentInput array{replyFlowId:string|null}
  * @phpstan-type PlatformAssignmentInput array{projectId:string,replyFlowId:string|null}
  * @phpstan-type Assignment array{campaignId:string,replyFlowId:string|null}
  * @phpstan-type LinkReport array{key:string,url:string,uniqueOpens:int,totalOpens:int}
- * @phpstan-type FailureReason 'opted_out'|'cold_held'|'campaign_cancelled'|'invalid_recipient'|'session_not_connected'|'ack_timeout'|'blocked_by_safety'|'send_failed'|'missing_variable'|'frequency_cap'|'other'
+ * @phpstan-type FailureReason 'opted_out'|'cold_held'|'campaign_cancelled'|'invalid_recipient'|'connection_not_connected'|'ack_timeout'|'blocked_by_safety'|'send_failed'|'missing_variable'|'frequency_cap'|'other'
  * @phpstan-type RecipientStatus 'queued'|'sending'|'sent'|'delivered'|'read'|'failed'|'skipped'
  * @phpstan-type ExportParams array{status?:RecipientStatus,reason?:FailureReason,cursor?:string,limit?:int}
  * @phpstan-type PlatformExportParams array{projectId:string,status?:RecipientStatus,reason?:FailureReason,cursor?:string,limit?:int}

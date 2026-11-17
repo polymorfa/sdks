@@ -5,7 +5,7 @@
  */
 export interface PolymorfaEvent {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly externalId?: string;
   /** ISO 8601 time the event was produced. */
   readonly timestamp: string;
@@ -32,7 +32,7 @@ export type DataStoreName =
   | "presence"
   | "calls"
   | "labels"
-  | "sessions"
+  | "connections"
   | "templates"
   | "events"
   | "custom";
@@ -46,7 +46,7 @@ export const DATA_STORE_NAMES: readonly DataStoreName[] = [
   "presence",
   "calls",
   "labels",
-  "sessions",
+  "connections",
   "templates",
   "events",
   "custom",
@@ -74,7 +74,7 @@ export interface StoredAttachment {
 }
 
 export interface StoredMessage extends StoredRow {
-  readonly session: string;
+  readonly connection: string;
   readonly conversationId: string;
   /** Epoch milliseconds. */
   readonly createdAt: number;
@@ -116,7 +116,7 @@ export interface ConversationSummaryMessage {
 }
 
 export interface StoredConversation extends StoredRow {
-  readonly session?: string;
+  readonly connection?: string;
   readonly isGroup?: boolean;
   readonly name?: string;
   readonly description?: string;
@@ -170,7 +170,7 @@ export interface StoredCallParticipant {
 }
 
 export interface StoredCall extends StoredRow {
-  readonly session: string;
+  readonly connection: string;
   readonly state: StoredCallState;
   readonly from?: IdentityReferenceView;
   readonly direction?: "inbound" | "outbound";
@@ -191,7 +191,7 @@ export interface StoredLabel extends StoredRow {
   readonly deleted?: boolean;
 }
 
-export interface StoredSession extends StoredRow {
+export interface StoredConnection extends StoredRow {
   /** Latest Meta account notice, independent of the runtime connection state. */
   readonly cloudAccountNotification?: {
     readonly kind?: string;
@@ -227,7 +227,7 @@ export interface StoredTemplate extends StoredRow {
 /** A raw event as filed in `events` and `custom`. */
 export interface StoredEvent extends StoredRow {
   readonly type: string;
-  readonly session: string;
+  readonly connection: string;
   readonly externalId?: string;
   readonly timestamp: string;
   readonly payload: unknown;
@@ -240,7 +240,7 @@ export interface StoreRowMap {
   readonly presence: StoredPresence;
   readonly calls: StoredCall;
   readonly labels: StoredLabel;
-  readonly sessions: StoredSession;
+  readonly connections: StoredConnection;
   readonly templates: StoredTemplate;
   readonly events: StoredEvent;
   readonly custom: StoredEvent;

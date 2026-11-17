@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Polymorfa\Storage\{D1Bridge,Schema,StorageException};
 
-$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/d1-bridge-fixtures.json'), true, flags:JSON_THROW_ON_ERROR);
+$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/d1-bridge-fixtures.v3.json'), true, flags:JSON_THROW_ON_ERROR);
 $sign = static fn (string $s): string => 'v1='.hash_hmac('sha256', $s, $fixture['secret']);
 check($sign($fixture['nonce'].'.'.$fixture['request']['method'].'.'.$fixture['request']['path'].'.'.$fixture['request']['rawBody']) === $fixture['request']['signature'], 'Independent request HMAC vector');
 check($sign($fixture['nonce'].'.'.$fixture['response']['status'].'.'.$fixture['response']['rawBody']) === $fixture['response']['signature'], 'Independent response HMAC vector');
@@ -43,9 +43,9 @@ foreach (['foreign-get','foreign-query','reordered-query','malformed-row','forei
         $wire = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
         $adapter = new D1Bridge($wire['url'], $fixture['authority'], $fixture['tablePrefix'], $fixture['secret']);
         $invoke = match($mode) {
-            'foreign-get','malformed-row' => fn () => $adapter->get('sessions', ['kexpected']),
-            'foreign-query','reordered-query' => fn () => $adapter->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'expected','chatId' => 'chat'],'limit' => 10]),
-            default => fn () => $adapter->commit([['kind' => 'put','entity' => 'sessions','row' => ['_id' => 'kexpected','_rev' => 1,'_v' => [],'sessionId' => 'expected'],'expectedRev' => null]])
+            'foreign-get','malformed-row' => fn () => $adapter->get('connections', ['kexpected']),
+            'foreign-query','reordered-query' => fn () => $adapter->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'expected','chatId' => 'chat'],'limit' => 10]),
+            default => fn () => $adapter->commit([['kind' => 'put','entity' => 'connections','row' => ['_id' => 'kexpected','_rev' => 1,'_v' => [],'connectionId' => 'expected'],'expectedRev' => null]])
         };
         check(raises($invoke, StorageException::class)->errorCode === 'untrusted_storage_response', 'Signed miswired row/query/conflict response rejected');
         fwrite($pipes[0], "finish\n");
@@ -80,7 +80,7 @@ try {
         fclose($pipe);
     }proc_close($process);
 }
-check(Schema::encodeKey('messages', ['sessionId' => 'a.b:é','messageId' => "x/!'()*~"]) === "ka%2Eb%3A%C3%A9:x%2F!'()*~", 'Portable JS key escaping');
+check(Schema::encodeKey('messages', ['connectionId' => 'a.b:é','messageId' => "x/!'()*~"]) === "ka%2Eb%3A%C3%A9:x%2F!'()*~", 'Portable JS key escaping');
 echo "Native D1 signed handshake, independent HMAC, wrong-identity/capability/nonce/body rejection, redirects/body deadline and redaction passed.\n";
 $endpoint = getenv('POLYMORFA_D1_BRIDGE_FIXTURE_URL');
 if ($endpoint !== false && $endpoint !== '') {
@@ -95,13 +95,13 @@ if ($endpoint !== false && $endpoint !== '') {
     }
     $adapter = new D1Bridge($endpoint, $fixture['authority'], $fixture['tablePrefix'], $fixture['secret'], $http);
     $adapter->setup();
-    $session = 'php-native-d1-'.bin2hex(random_bytes(12));
-    $portable = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.json'), true, flags:JSON_THROW_ON_ERROR);
+    $connection = 'php-native-d1-'.bin2hex(random_bytes(12));
+    $portable = json_decode(file_get_contents(__DIR__.'/fixtures/storage-conformance-fixtures.v3.json'), true, flags:JSON_THROW_ON_ERROR);
     $newRow = static function (string $entity, string $scope, array $values): array {
         $definition = Schema::definition($entity);
         $row = array_fill_keys(array_keys($definition['fields']), null);
         $row = array_replace($row, $values);
-        $row['sessionId'] = $scope;
+        $row['connectionId'] = $scope;
         $row['_id'] = Schema::encodeKey($entity, $row);
         $row['_rev'] = 1;
         $row['_v'] = [];
@@ -112,7 +112,7 @@ if ($endpoint !== false && $endpoint !== '') {
     foreach ($portable['eventRows'] as $entity => $rows) {
         $expected[$entity] = [];
         foreach ($rows as $source) {
-            $row = $newRow($entity, $session, $source);
+            $row = $newRow($entity, $connection, $source);
             $writes[] = ['kind' => 'put','entity' => $entity,'row' => $row,'expectedRev' => null];
             $expected[$entity][$row['_id']] = $row;
         }
@@ -124,7 +124,7 @@ if ($endpoint !== false && $endpoint !== '') {
         $got = $adapter->get($entity, array_keys($rows));
         check($got == $rows, 'Portable all-entity D1 rows preserve exact data');
     }
-    $bulk = $session.'-bulk';
+    $bulk = $connection.'-bulk';
     $all = [];
     for ($i = 0;$i < 2000;$i++) {
         $row = $newRow('messages', $bulk, ['messageId' => sprintf('m%04d', $i),'chatId' => 'bulk-chat','timestamp' => $i,'text' => 'synthetic']);
@@ -133,7 +133,7 @@ if ($endpoint !== false && $endpoint !== '') {
     foreach (array_chunk($all, 50) as $chunk) {
         check($adapter->commit($chunk)['ok'], '2000-row native D1 commit');
     }
-    $query = ['index' => 'by_chat','equals' => ['sessionId' => $bulk,'chatId' => 'bulk-chat'],'limit' => 700];
+    $query = ['index' => 'by_chat','equals' => ['connectionId' => $bulk,'chatId' => 'bulk-chat'],'limit' => 700];
     $total = 0;
     for (;;) {
         $rows = $adapter->query('messages', $query);

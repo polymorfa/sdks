@@ -985,7 +985,7 @@ function responseMetadata(
       "template",
       "target_reference",
       "only_eligible_transport",
-      "session_rule",
+      "connection_rule",
       "project_rule",
       "team_rule",
       "default_linked_devices",

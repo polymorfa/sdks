@@ -26,7 +26,7 @@ export const POST = route("admin", async ({ body }) => {
       });
     }
     case "historyFixture":
-      // Simulated history for testing sessions. Never use real content.
+      // Simulated history for testing connections. Never use real content.
       return messaging().testing.createHistoryFixture(env.projectId(), {
         messages: [
           {
@@ -46,14 +46,14 @@ export const POST = route("admin", async ({ body }) => {
         ],
       });
     case "testingQuickLink": {
-      // A QuickLink that opens a simulated testing session.
+      // A QuickLink that opens a simulated testing connection.
       const response = await messaging().quickLinks.create({
         configuration: {
           testing: {
             country: "US",
             configuration: {
               profile: { name: "Acme Test" },
-              accountType: "business",
+              accountType: "business_app",
               replyBehavior: "echo",
             },
             editable: ["profile.name", "replyBehavior"],

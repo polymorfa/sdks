@@ -122,7 +122,7 @@ describe("<CallLog/>", () => {
           {
             callId: "c1",
             projectId: null,
-            sessionId: "support",
+            connectionId: "support",
             direction: "inbound",
             upstream: "linked_device",
             outcome: "missed",
@@ -159,7 +159,7 @@ describe("<CallLog/>", () => {
           audience: "browser",
           expiresAt: Date.now() + 600_000,
           grant: {
-            session: "support",
+            connection: "support",
             conversations: "all",
             allow: ["read_calls"],
           },

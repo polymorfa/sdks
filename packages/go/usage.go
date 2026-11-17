@@ -58,7 +58,7 @@ type UsageRecord struct {
 	SourceKind    string                    `json:"sourceKind"`
 	SourceID      string                    `json:"sourceId"`
 	ProjectID     *string                   `json:"projectId"`
-	Session       *string                   `json:"session"`
+	Connection    *string                   `json:"connection"`
 	OccurredAt    string                    `json:"occurredAt"`
 	RecordedAt    string                    `json:"recordedAt"`
 	Revision      int64                     `json:"revision"`
@@ -77,21 +77,21 @@ type UsageMeterTotal struct {
 	Quantity  float64 `json:"quantity"`
 	Records   int64   `json:"records"`
 }
-type UsageNumberTotal struct {
-	Session   string            `json:"session"`
-	ProjectID *string           `json:"projectId"`
-	Meters    []UsageMeterTotal `json:"meters"`
+type UsageConnectionTotal struct {
+	Connection string            `json:"connection"`
+	ProjectID  *string           `json:"projectId"`
+	Meters     []UsageMeterTotal `json:"meters"`
 }
 type UsageSummary struct {
-	Period           string             `json:"period"`
-	Start            string             `json:"start"`
-	End              string             `json:"end"`
-	ProjectID        *string            `json:"projectId"`
-	Session          *string            `json:"session"`
-	BillingEnabled   bool               `json:"billingEnabled"`
-	Meters           []UsageMeterTotal  `json:"meters"`
-	Numbers          []UsageNumberTotal `json:"numbers"`
-	NumbersTruncated bool               `json:"numbersTruncated"`
+	Period               string                 `json:"period"`
+	Start                string                 `json:"start"`
+	End                  string                 `json:"end"`
+	ProjectID            *string                `json:"projectId"`
+	Connection           *string                `json:"connection"`
+	BillingEnabled       bool                   `json:"billingEnabled"`
+	Meters               []UsageMeterTotal      `json:"meters"`
+	Connections          []UsageConnectionTotal `json:"connections"`
+	ConnectionsTruncated bool                   `json:"connectionsTruncated"`
 }
 type UsageGateDecisions struct {
 	WouldBlock      int64 `json:"wouldBlock"`
@@ -111,13 +111,13 @@ type UsageGate struct {
 	Decisions UsageGateDecisions `json:"decisions"`
 }
 type UsageGateList struct {
-	Session *string     `json:"session"`
-	Gates   []UsageGate `json:"gates"`
+	Connection *string     `json:"connection"`
+	Gates      []UsageGate `json:"gates"`
 }
 type UsageSummaryParams struct {
-	ProjectID string
-	Session   string
-	Period    string
+	ProjectID  string
+	Connection string
+	Period     string
 }
 type UsageRecordParams struct {
 	UsageSummaryParams
@@ -126,8 +126,8 @@ type UsageRecordParams struct {
 	ListParams
 }
 type UsageGateParams struct {
-	ProjectID string
-	Session   string
+	ProjectID  string
+	Connection string
 }
 type Usage struct {
 	t         *transport
@@ -139,7 +139,7 @@ func (c *ProjectClient) Usage() *Usage { return &Usage{c.t, c.projectID} }
 func (r *Usage) query(p UsageSummaryParams) url.Values {
 	q := url.Values{}
 	setString(q, "projectId", p.ProjectID)
-	setString(q, "session", p.Session)
+	setString(q, "connection", p.Connection)
 	setString(q, "period", p.Period)
 	if r.projectID != "" {
 		q.Set("projectId", r.projectID)
@@ -158,7 +158,7 @@ func (r *Usage) ListRecords(ctx context.Context, p UsageRecordParams, o ...Reque
 	return unwrapped[UsageRecordPage](ctx, r.t, "GET", "/platform/usage/records", q, nil, options(o))
 }
 func (r *Usage) ListGates(ctx context.Context, p UsageGateParams, o ...RequestOptions) (Response[UsageGateList], error) {
-	return unwrapped[UsageGateList](ctx, r.t, "GET", "/platform/gates", r.query(UsageSummaryParams{ProjectID: p.ProjectID, Session: p.Session}), nil, options(o))
+	return unwrapped[UsageGateList](ctx, r.t, "GET", "/platform/gates", r.query(UsageSummaryParams{ProjectID: p.ProjectID, Connection: p.Connection}), nil, options(o))
 }
 func (r *Usage) IterateRecords(ctx context.Context, p UsageRecordParams, o ...RequestOptions) iter.Seq2[UsageRecord, error] {
 	return func(yield func(UsageRecord, error) bool) {

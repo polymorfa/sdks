@@ -117,7 +117,7 @@ func TestCosmosNativeConformance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, _ := EncodeKey("messages", map[string]any{"sessionId": "rollback", "messageId": "a"})
+	id, _ := EncodeKey("messages", map[string]any{"connectionId": "rollback", "messageId": "a"})
 	rows, err := foreign.Get(ctx, "messages", []string{id})
 	if err != nil || len(rows) != 0 {
 		t.Fatal("Cosmos namespace leaked", err)
@@ -170,7 +170,7 @@ func TestCosmosNativeConformance(t *testing.T) {
 		t.Fatal("cancelled Cosmos read succeeded")
 	}
 	// Setup must never replace a customer's incompatible version marker.
-	changed, _ := json.Marshal(cosmosDocument{ID: "storage_schema:storage", Namespace: "foreign_go", Entity: "storage_schema", Version: 3})
+	changed, _ := json.Marshal(cosmosDocument{ID: "storage_schema:storage", Namespace: "foreign_go", Entity: "storage_schema", Version: 4})
 	if _, err = container.ReplaceItem(ctx, foreign.partition, "storage_schema:storage", changed, nil); err != nil {
 		t.Fatal("version fixture")
 	}

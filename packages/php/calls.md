@@ -11,7 +11,7 @@ use Polymorfa\{Credential, CallsClient, CallsOptions, CallsTokenSource};
 
 $calls = new CallsClient(
     new CallsTokenSource(Credential::projectToken(getenv('POLYMORFA_PROJECT_TOKEN'))),
-    new CallsOptions(session: 'support'),
+    new CallsOptions(connection: 'support'),
 );
 $calls->connect();
 try {
@@ -81,7 +81,7 @@ Cancellation is observed when these waits are polled or resumed; there is no
 implicit global Fiber scheduler.
 
 The default transport puts credentials in the first WebSocket frame, never the
-URL or handshake headers. Server lifecycle URLs contain only the session and
+URL or handshake headers. Server lifecycle URLs contain only the connection and
 optional participant. Client-token lifecycle URLs contain neither. A custom
 `connector` must return `PollingCallSocket` and preserve those rules; a custom
 `clientFactory` can configure the SDK's HTTP proxy or transport. Native socket

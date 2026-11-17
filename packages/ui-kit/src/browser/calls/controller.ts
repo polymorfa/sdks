@@ -243,7 +243,7 @@ export interface CallsBackend {
    */
   report?(callId: string, report: CallReport): Promise<void>;
   /**
-   * Leave one media connection. When omitted, the media session leaves on
+   * Leave one media connection. When omitted, the media connection leaves on
    * its own when it closes.
    */
   leave?(
@@ -741,7 +741,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   }
   /**
    * Whether an audio→video upgrade is possible right now: the call carries
-   * video, the call is not already video, and the media session can
+   * video, the call is not already video, and the media connection can
    * renegotiate.
    */
   get canEnableVideo(): boolean {
@@ -756,7 +756,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
   /**
    * Start sending the camera on an audio call and renegotiate on the same
    * connection. No-op when the call has no video, when video is already on,
-   * or when the media session cannot renegotiate.
+   * or when the media connection cannot renegotiate.
    */
   async enableVideo(): Promise<void> {
     this.assertActive();
@@ -1198,7 +1198,7 @@ export class CallsController extends ObservableController<CallsSnapshot> {
       ...callFields(before),
       status: before.status === "ringing" ? "ringing" : "connecting",
     });
-    // Named here, not by the media session, so a failure to open can be
+    // Named here, not by the media connection, so a failure to open can be
     // reported for the connection it was meant to be.
     const connectionId =
       this.#backend.connectionId?.(callId) ?? createConnectionId();
