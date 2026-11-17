@@ -1,9 +1,9 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "be8cc1ec941c179aa3c3e3bea9753d9a05a9d047",
-  "sourceFilesSha256": "d22830d70a8a3265ddf5dc47b6cd38866da9729e26a8a86f1ec467ae4277510d",
+  "sourceCommit": "b4692bf87042c25dbae2a9c4e76db94f3019c5d7",
+  "sourceFilesSha256": "1a0f45f9658d58d4f69e3583914dfbcd7fdda406befc9de84fd7d7bb55890f20",
   "apiVersion": "2026-09-22",
-  "apiSourceCommit": "a7cab53684b989b1ce68882989d31e2277841bdc",
+  "apiSourceCommit": "20b482dfe31dbe88e624682c90669a61f9a2b5a6",
   "specs": {
     "messaging": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
     "platform": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559"
