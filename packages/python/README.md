@@ -827,6 +827,12 @@ when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
+
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
 
@@ -929,6 +935,35 @@ async def confirm_explicitly():
     return await client.passkeys.confirm(connection, supplied_confirmation)
 ```
 
+## Connection call history (unreleased source)
+
+Read one Connection's calls with the other party's identity through
+`GET /messaging/{connection}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```python
+page = await messaging.calls.list("support", {"limit": 25, "outcome": "missed"})
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
+## Connection-scoped Test operations
+
+The Test phone methods take a Connection ID, without a project argument:
+~~~python
+phone = await client.testing.get_phone("support")
+event = await client.testing.trigger_event(
+    "support", {"event": "call.missed", "fromConnection": "sales"}
+)
+fixtures = await client.testing.list_event_fixtures()
+~~~
+
+Send-phone-message and unlink-device helpers use the same Connection scope. The trigger body contains event, optional overrides and optional fromConnection; the target Connection is a separate method argument. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-Connection access checks; a helper does not grant access or make a real Connection a Test Connection.
 
 ## Guest participants and waiting rooms (unreleased)
 

@@ -77,7 +77,7 @@ export class TestingResource {
    * Fire a named, signed test event for a Test connection. Generated events reach
    * webhooks and event history with `source: "test"`. With `fromConnection`, a
    * `message.received` request sends a simulated message from another Test
-   * connection instead. Real connections are refused with a 400 error. Pass
+   * number instead. Real connections are refused with a 404 resource_not_found error. Pass
    * `options.idempotencyKey` to make retries safe: repeating the request with
    * the same key and body reuses the same event ID, and the SDK then retries
    * network and 5xx failures.
@@ -110,7 +110,7 @@ export class TestingResource {
 
   /**
    * Read a Test connection's simulated phone: whether it is online and which
-   * companions are linked to it. Real connections are refused with a 400 error.
+   * companions are linked to it. Real connections are refused with a 404 resource_not_found error.
    */
   getPhone(
     connection: string,

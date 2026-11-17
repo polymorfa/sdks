@@ -4,6 +4,7 @@ import {
   MessagingClient,
   PolymorfaConfigurationError,
   PolymorfaValidationError,
+  PolymorfaNotFoundError,
   type TestingPhone,
 } from "../src/index.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
@@ -158,4 +159,16 @@ it("matches the pinned Testing phone contract", () => {
     "deviceId",
     "unlinked",
   ]);
+});
+
+it("hides a real Number with resource_not_found", async () => {
+  const { client: messaging } = client(
+    json(
+      { error: { code: "resource_not_found", message: "Resource not found" } },
+      404,
+    ),
+  );
+  await expect(
+    messaging.testing.getPhone("real-number"),
+  ).rejects.toBeInstanceOf(PolymorfaNotFoundError);
 });

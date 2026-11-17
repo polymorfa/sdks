@@ -3,9 +3,13 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--connection-call-history-only")) { await ProjectPairingTests.ConnectionCallHistoryAsync(); return; }
+
 if (args.Contains("--cloud-order-quantity-only")) { await CloudOrderQuantityTests.RunAsync(); return; }
 
 if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); return; }
+
+if (args.Contains("--bansafe-only")) { await BanSafeTests.RunAsync(); Console.WriteLine("PASS BanSafe routes and Ban Credit waiver claims"); return; }
 
 if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsync(); return; }
 

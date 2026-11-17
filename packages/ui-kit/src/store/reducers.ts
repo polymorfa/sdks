@@ -186,7 +186,15 @@ export async function upsertMessage(
     readonly connection: string;
   },
   time: number,
-  options: { readonly content: boolean; readonly status?: StoredMessageStatus },
+  options: {
+    readonly content: boolean;
+    readonly status?: StoredMessageStatus;
+    /**
+     * Whether the message's `pushName` may name the conversation. History
+     * writes pass `false`: their author name belongs to a group message.
+     */
+    readonly nameConversation?: boolean;
+  },
 ): Promise<void> {
   const conversation =
     (await context.get("conversations", patch.conversationId)) ??
@@ -240,8 +248,15 @@ export async function upsertMessage(
     createdAt > (conversation.readAt ?? -Infinity);
   if (isNewInbound)
     summary = { ...summary, unreadCount: summary.unreadCount + 1 };
-  if (!next.fromMe && next.pushName !== undefined && summary.isGroup !== true)
-    summary = applyFields(summary, { name: next.pushName }, time);
+  // Only a display name carried by this write may name the conversation: a
+  // name merged from an earlier history write belongs to a group author.
+  if (
+    options.nameConversation !== false &&
+    !next.fromMe &&
+    patch.pushName !== undefined &&
+    summary.isGroup !== true
+  )
+    summary = applyFields(summary, { name: patch.pushName }, time);
   if (summary !== conversation || existing === undefined)
     context.put("conversations", {
       ...summary,
@@ -679,7 +694,12 @@ function callEvent(state: StoredCallState | undefined): StoreReducer {
       state: "ringing",
       startedAt: context.time,
     };
-    const from = identity(payload.from);
+    const reported = identity(payload.from);
+    // Later call events often carry only the ID; keep what earlier ones knew.
+    const from =
+      reported !== undefined && existing.from?.id === reported.id
+        ? { ...existing.from, ...reported }
+        : reported;
     let next: StoredCall = applyFields(
       existing,
       pick({

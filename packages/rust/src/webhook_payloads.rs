@@ -1136,6 +1136,7 @@ pub enum BanSafeClaimStatus {
 #[serde(rename_all = "snake_case")]
 pub enum BanSafeClaimVerdict {
     SimultaneousCalls,
+    LinkedDeviceInteractive,
     OtherDevice,
     CustomerConduct,
     SharedNetwork,

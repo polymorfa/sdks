@@ -318,7 +318,11 @@ Claim `measuredCents`, `capCents`, and `amountCents` are credit quantities with
 up to six decimal places, not integer cents. A claim with verdict
 `simultaneous_calls` opens `denied` with amount 0 because simultaneous calls
 were on for the Connection during the 30 days before the ban;
-`evidence.simultaneousCalls` reports that state for every claim. Finding acknowledgement and
+`evidence.simultaneousCalls` reports that state for every claim. The verdict
+`linked_device_interactive` (an interactive message sent from a linked device)
+also opens `denied` with amount 0 when the send falls in that window;
+`evidence.linkedDeviceInteractive` reports it, and is `false` on claims filed
+before it was recorded. Finding acknowledgement and
 enforcement appeals require a signed-in dashboard session and are not SDK
 methods.
 
@@ -1164,7 +1168,21 @@ Identity resolution accepts an ID, phone number, or BSUID. Calling and security
 code checks require a connected Linked Device Connection; identity resolution also
 supports Cloud Connections when their business portfolio is configured.
 
+The source-only `messaging.calls.list(connection, params)` method requires a
+matching package release and regional call-history API deployment. It returns
+one page of the Connection's calls, newest first, with the other party in `peer`
+(user ID, phone number, username). The records are served from the Connection's data region. Filter by
+`direction`, `outcome`, `since` and `until`, and pass `nextCursor` as
+`cursor` for the next page. Client tokens need the `read_calls` action.
+
 ```ts
+const calls = await messaging.calls.list("support", {
+  outcome: "missed",
+  limit: 25,
+});
+for (const call of calls.data.data)
+  console.log(call.callId, call.peer?.phoneNumber);
+
 await messaging.calls.reject(
   "support",
   incomingCallId,
@@ -3041,7 +3059,7 @@ hosted message storage.
 
 Fire a named, signed test event for a Test Connection. The event reaches your
 webhooks and event history with `source: "test"` and does not change the Test
-Connection. Real Connections are refused with a `PolymorfaValidationError`, and each
+Connection. Real Connections return `404 resource_not_found` (`PolymorfaNotFoundError`), and each
 project can trigger 30 test events per minute (`PolymorfaRateLimitError`).
 
 ```ts
@@ -3063,8 +3081,8 @@ const { data } = await messaging.testing.listEventFixtures();
 ```
 
 Set `fromConnection` on a `message.received` request to send a simulated text
-from another connected Test Connection in the same project instead; the response
-has `delivery: "simulated"` and the event arrives as ordinary Test Connection
+from another connected Test connection in the same project instead; the response
+has `delivery: "simulated"` and the event arrives as ordinary Test connection
 activity. Both methods require a team key or project token with
 `sandbox:write` (trigger) or `sandbox:read` (list) and Test Connections access.
 
@@ -3100,8 +3118,10 @@ await messaging.testing.unlinkPhoneDevice("my-test-number", 74);
 
 `getPhone` needs `sandbox:read`; `sendPhoneMessage` and `unlinkPhoneDevice`
 need `sandbox:write`. All three need a team key or project token
-and Test Connections access. Real numbers, an offline phone and recipients outside
-the project are refused with a `PolymorfaValidationError`. Phone messages share
+and Test connections access. Real Connections return `404 resource_not_found`
+(`PolymorfaNotFoundError`). An offline phone and invalid recipients return
+`400` (`PolymorfaValidationError`); a Test key hides unknown, real, and
+other-project recipients with `404 resource_not_found`. Phone messages share
 the 30-per-minute project limit with test events. Device 0 is the phone and
 cannot be unlinked.
 

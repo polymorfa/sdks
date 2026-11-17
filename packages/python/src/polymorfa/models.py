@@ -724,5 +724,47 @@ class RejectConnectionCall(TypedDict):
     from_: str
 
 
+class ConnectionCallPeer(TypedDict, total=False):
+    """The other party: user ID, phone number or username, as the call reported them."""
+
+    id: str
+    phoneNumber: str
+    username: str
+
+
+class ConnectionCallRecord(TypedDict):
+    """One call on a Connection, read from the Connection's data region."""
+
+    callId: str
+    projectId: str
+    connectionId: str
+    direction: Literal["inbound", "outbound"]
+    upstream: Literal["linked_device", "cloud_api"]
+    outcome: Literal["answered", "missed", "declined", "failed", "in_progress"]
+    state: Literal["offered", "accepted", "rejected", "missed", "ended"]
+    hasVideo: bool
+    peer: ConnectionCallPeer | None
+    startedAt: str
+    connectedAt: str | None
+    endedAt: str | None
+    durationSeconds: int | None
+    endReason: str | None
+
+
+class ConnectionCallsParams(TypedDict, total=False):
+    limit: int
+    cursor: str
+    direction: Literal["inbound", "outbound"]
+    outcome: Literal["answered", "missed", "declined", "failed", "in_progress"]
+    since: str
+    until: str
+
+
+class ConnectionCallsPage(TypedDict):
+    success: Literal[True]
+    data: list[ConnectionCallRecord]
+    nextCursor: str | None
+
+
 class RejectedConnectionCall(TypedDict):
     status: Literal["REJECTED"]

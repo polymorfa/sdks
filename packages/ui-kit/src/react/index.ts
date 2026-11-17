@@ -84,3 +84,20 @@ export {
   type CallConnectionOption,
   type CallConnectionPickerProps,
 } from "./call-connection-picker.js";
+export {
+  ContactList,
+  ContactListView,
+  GroupDetails,
+  NewChat,
+  type ContactListProps,
+  type ContactListViewProps,
+  type GroupDetailsProps,
+  type NewChatProps,
+} from "./new-chat.js";
+export {
+  CallLog,
+  callPeerName,
+  callSummary,
+  conversationForCall,
+  type CallLogProps,
+} from "./call-log.js";

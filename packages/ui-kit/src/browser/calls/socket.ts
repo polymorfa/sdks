@@ -39,6 +39,8 @@ export interface CallsSocketOptions {
   readonly connection?: string;
   /** Participant name for a server key (sent as `?participant=`). */
   readonly participant?: string;
+  /** The Connection a Customer-scoped client token acts for (sent as `?connection=`). */
+  readonly clientTokenConnection?: string;
   /** Reconnect backoff bounds in milliseconds. Defaults 1 000 → 30 000. */
   readonly minBackoffMs?: number;
   readonly maxBackoffMs?: number;
@@ -97,6 +99,9 @@ export class CallsSocket {
       ...(options.participant === undefined
         ? {}
         : { participant: options.participant }),
+      ...(options.clientTokenConnection === undefined
+        ? {}
+        : { clientTokenConnection: options.clientTokenConnection }),
       ...(options.WebSocket === undefined
         ? {}
         : { WebSocket: options.WebSocket }),

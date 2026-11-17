@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import type {
+  ConnectionCallRecord,
   CreateCustomerPairingLinkRequest,
   CreateCustomerRequest,
   CreateQuickLinkRequest,
@@ -60,6 +61,30 @@ function keys<T>(record: { readonly [K in keyof Required<T>]: true }) {
 }
 
 describe("SDK types match the pinned contract snapshots", () => {
+  it("keeps call-history account identity aligned with the Connection contract", () => {
+    expect(
+      keys<ConnectionCallRecord>({
+        callId: true,
+        projectId: true,
+        connectionId: true,
+        direction: true,
+        upstream: true,
+        outcome: true,
+        state: true,
+        hasVideo: true,
+        peer: true,
+        startedAt: true,
+        connectedAt: true,
+        endedAt: true,
+        durationSeconds: true,
+        endReason: true,
+      }),
+    ).toEqual(properties(messaging, "ConnectionCallRecord"));
+    expect(messaging.ConnectionCallRecord?.required).toContain("connectionId");
+    expect(messaging.ConnectionCallRecord?.properties).not.toHaveProperty(
+      "sessionId",
+    );
+  });
   it("keeps HMS provider references transport-specific with a deprecated alias", () => {
     for (const name of ["HistoryMessageSummary", "HistoryMessage"]) {
       const schema = messaging[name];

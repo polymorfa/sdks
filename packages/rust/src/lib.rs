@@ -20,6 +20,7 @@ pub mod campaigns;
 pub mod channels;
 pub mod cloud_graph;
 pub mod configuration;
+pub mod connection_calls;
 pub mod connections;
 pub mod customers;
 pub mod developer;

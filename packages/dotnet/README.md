@@ -39,7 +39,7 @@ Known webhooks have typed payloads for all 84 names in the pinned TypeScript con
 
 `Events.LiveSource` and `EventStreamSource` feed decoded webhook bodies to an application-owned store. Each subscription resumes from its saved cursor and skips events whose body was not retained. Dispose the subscription to stop delivery; await `DisposeAsync` or `Completion` to wait for stream cleanup. `OnError` receives terminal stream or listener failures.
 
-The existing coverage ledger records 453 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
+The existing coverage ledger records 454 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
 
 `CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames retain timestamps. Outgoing H.264 uses the protocol's reserved source zero; received source ownership is exposed separately.
 
@@ -1011,6 +1011,12 @@ when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
+
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
 
@@ -1115,6 +1121,34 @@ Task<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> ConfirmExplicitly() =>
     client.Passkeys.ConfirmAsync(connection, suppliedConfirmation);
 ```
 
+## Connection call history (unreleased source)
+
+Read one Connection's calls with the other party's identity through
+`GET /messaging/{connection}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```csharp
+var page = await messaging.Calls.ListAsync("support",
+    new ListConnectionCallsParameters(Limit: 25, Outcome: "missed"));
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
+## Connection-scoped Test operations
+
+The Test phone methods take a Connection ID, without a project argument:
+~~~csharp
+var phone = await client.Testing.GetPhoneAsync("support");
+var testEvent = await client.Testing.TriggerEventAsync("support", new("call.missed", FromConnection: "sales"));
+var fixtures = await client.Testing.ListEventFixturesAsync();
+~~~
+
+Send-phone-message and unlink-device helpers use the same Connection scope. The trigger body contains event, optional overrides and optional fromConnection; the target Connection is a separate method argument. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-Connection access checks; a helper does not grant access or make a real Connection a Test Connection.
 
 ## Guest participants and waiting rooms (unreleased)
 

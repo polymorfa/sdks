@@ -24,10 +24,10 @@ public sealed record UnlinkTestingPhoneDeviceResponse(string Connection, int Dev
 public sealed class Testing : Resource
 {
     internal Testing(HttpTransport http) : base(http) { }
-    private static string HistoryPath(string projectId) => "/messaging/projects/" + E(projectId) + "/test-history-fixtures";
+    private static string Path(string projectId) => "/messaging/projects/" + E(projectId);
     private static string PhonePath(string connection) => "/messaging/" + E(connection) + "/phone";
     private Task<ApiResponse<T>> Request<T>(HttpMethod method, string path, object? body, RequestOptions? options) { Http.Credential.RequireServer(); return Http.RequestAsync<T>(method, path, body, options); }
-    public Task<ApiResponse<TestingHistoryFixtureCreated>> CreateHistoryFixtureAsync(string projectId, CreateTestingHistoryFixtureRequest input, RequestOptions? options = null) => Request<TestingHistoryFixtureCreated>(HttpMethod.Post, HistoryPath(projectId), input, options);
+    public Task<ApiResponse<TestingHistoryFixtureCreated>> CreateHistoryFixtureAsync(string projectId, CreateTestingHistoryFixtureRequest input, RequestOptions? options = null) => Request<TestingHistoryFixtureCreated>(HttpMethod.Post, Path(projectId) + "/test-history-fixtures", input, options);
     public Task<ApiResponse<TriggerTestEventResponse>> TriggerEventAsync(string connection, TriggerTestEventRequest input, RequestOptions? options = null) => Request<TriggerTestEventResponse>(HttpMethod.Post, "/messaging/" + E(connection) + "/test-events", input, options);
     public Task<ApiResponse<TestEventFixtures>> ListEventFixturesAsync(RequestOptions? options = null) => Request<TestEventFixtures>(HttpMethod.Get, "/messaging/test-events/fixtures", null, options);
     public Task<ApiResponse<TestingPhone>> GetPhoneAsync(string connection, RequestOptions? options = null) { Http.Credential.RequireServer(); return ExistingContractCodec.Request<TestingPhone>(Http, HttpMethod.Get, PhonePath(connection), options: options); }

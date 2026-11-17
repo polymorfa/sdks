@@ -146,6 +146,12 @@ export interface HttpCallsApiOptions {
   readonly fetch?: FetchLike;
   /** Socket host; defaults to `ws(s)://` on the API host. */
   readonly socketBaseUrl?: string;
+  /**
+   * The Connection a Customer-scoped client token acts for, sent as `?connection=`
+   * on every Calls request. Connection tokens are bound to one Connection and need
+   * no value.
+   */
+  readonly clientTokenConnection?: string;
   readonly now?: () => number;
 }
 
@@ -201,8 +207,10 @@ export class HttpCallsApi implements CallsApi {
   readonly #baseUrl: string;
   readonly #fetch: FetchLike;
   readonly #socketBaseUrl: string;
+  readonly #clientTokenConnection: string | undefined;
 
   constructor(options: HttpCallsApiOptions) {
+    this.#clientTokenConnection = options.clientTokenConnection;
     const credential = options.token ?? options.apiKey;
     if (credential === undefined)
       throw new CallsApiError(
@@ -445,7 +453,11 @@ export class HttpCallsApi implements CallsApi {
       ...(payload === undefined ? {} : { body: JSON.stringify(payload) }),
       ...(signal === undefined ? {} : { signal }),
     };
-    const response = await this.#fetch(`${this.#baseUrl}${path}`, init);
+    const target =
+      this.#clientTokenConnection !== undefined && isClientToken(token.value)
+        ? `${path}${path.includes("?") ? "&" : "?"}connection=${encodeURIComponent(this.#clientTokenConnection)}`
+        : path;
+    const response = await this.#fetch(`${this.#baseUrl}${target}`, init);
     const text = await response.text();
     let parsed: unknown = undefined;
     if (text.length > 0) {

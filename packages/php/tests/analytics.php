@@ -31,7 +31,12 @@ foreach ([fn () => $analyticsClient->get(['start' => 20,'end' => 0]),fn () => $a
 $listener = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
 $address = stream_socket_get_name($listener, false);
 fclose($listener);
-$process = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/analytics-server.php'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes);
+$fixtureLogRoot = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/php-http-fixtures';
+if (!is_dir($fixtureLogRoot)) {
+    mkdir($fixtureLogRoot, 0700, true);
+}
+$fixtureLogPath = $fixtureLogRoot.'/analytics-'.getmypid().'.log';
+$process = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/analytics-server.php'], [0 => ['pipe','r'],1 => ['file',$fixtureLogPath,'a'],2 => ['file',$fixtureLogPath,'a']], $pipes);
 try {
     $http = new GuzzleHttp\Client(['http_errors' => false]);
     for ($attempt = 0;$attempt < 100;$attempt++) {

@@ -827,34 +827,28 @@
       "operationId": "listConnectionCalls",
       "fingerprint": "f2d54d775be5105eb9044330417ee852f8daca639bd0034ea3cf0d5b6897697f",
       "typescript": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.calls.list"
       },
       "go": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.ConnectionCalls.List"
       },
       "python": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.calls.list"
       },
       "php": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::$calls->list"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Calls.ListAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.calls.list"
       }
     },
     {

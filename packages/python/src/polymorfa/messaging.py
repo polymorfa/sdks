@@ -39,6 +39,8 @@ from .models import (
     ChatPresenceData,
     Connection,
     ConnectionAccount,
+    ConnectionCallsPage,
+    ConnectionCallsParams,
     ConnectionRemoved,
     ConnectionStarting,
     ConnectionStopping,
@@ -800,6 +802,25 @@ class Presence(Resource):
 
 
 class ConnectionCalls(Resource):
+    async def list(
+        self,
+        connection: str,
+        params: ConnectionCallsParams | None = None,
+        *,
+        options: RequestOptions = O,
+    ) -> ApiResponse[ConnectionCallsPage]:
+        """One page of the Connection's calls, newest first, with the other party's identity.
+
+        Records are served from the Connection's data region. Client tokens need
+        the ``read_calls`` action.
+        """
+        return await self._request(
+            "GET",
+            f"/messaging/{segment(connection)}/calls",
+            query=cast(Mapping[str, QueryValue], params or {}),
+            options=options,
+        )
+
     async def reject(
         self,
         connection: str,

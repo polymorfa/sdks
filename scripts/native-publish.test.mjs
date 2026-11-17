@@ -18,6 +18,7 @@ import {
   verifyPlan,
 } from "./native-publish.mjs";
 import { nativePackages } from "./native-packages.mjs";
+import { previewProvenance } from "./release-gate.mjs";
 
 const scratchRoot = join(
   homedir(),
@@ -39,13 +40,26 @@ function receipt(overrides = {}) {
       goTag: `packages/go/v${semver}`,
     },
     sourceSdkCommit: "e".repeat(40),
-    acceptance: { synthetic: true, result: "passed" },
+    acceptance: {
+      schemaVersion: 1,
+      repository: "polymorfa/polymorfa",
+      sourceSha: "f".repeat(40),
+      apiVersion: "2026-09-22",
+      environment: "staging",
+      contracts: {},
+      result: "passed",
+      scenarios: [{ result: "passed" }],
+      deployment: { commit: "f".repeat(40), status: "finished" },
+      acceptedAt: "2026-10-17T12:00:00Z",
+      runUrl: "https://github.com/polymorfa/polymorfa/actions/runs/123",
+    },
     ...overrides,
   };
 }
 // Fake accepted pack directories with the real package names and graph.
 function packs(value = receipt()) {
   const dir = mkdtempSync(join(scratchRoot, "packs-"));
+  const semver = value.versions.semver;
   const names = {
     rust: nativePackages.rust.map((p) => `${p.name}-${semver}.crate`),
     dotnet: nativePackages.dotnet.map((p) => `${p.name}.${semver}.nupkg`),
@@ -94,15 +108,63 @@ test("plan orders every public package after its dependencies and binds hashes",
   verifyPlan(plan, dir, receipt());
 });
 
+test("native preview plans bind distinct versions without an accepted API receipt", () => {
+  const version = "0.1.0-preview.20261116120000";
+  const value = receipt({
+    channel: "preview",
+    acceptance: null,
+    preview: previewProvenance({
+      GITHUB_EVENT_NAME: "workflow_dispatch",
+      GITHUB_REF: "refs/heads/main",
+      GITHUB_RUN_ID: "123",
+      GITHUB_ACTOR: "synthetic-operator",
+    }),
+    versions: {
+      semver: version,
+      python: "0.1.0a0.dev20261116120000",
+      goTag: `packages/go/v${version}`,
+    },
+  });
+  const dir = packs(value);
+  const plan = planNativeRelease(dir, value);
+  verifyPlan(plan, dir, value);
+  assert.ok(
+    plan.steps.every(
+      (step) =>
+        step.version.includes("preview") || step.version.includes("a0.dev"),
+    ),
+  );
+  assert.throws(
+    () => verifyPlan(plan, dir, { ...value, acceptance: receipt().acceptance }),
+    /must not carry/,
+  );
+  assert.throws(
+    () =>
+      planNativeRelease(dir, {
+        ...value,
+        packageVersion: version,
+        versions: {
+          semver: "0.1.0",
+          python: "0.1.0",
+          goTag: "packages/go/v0.1.0",
+        },
+      }),
+    /channel/,
+  );
+});
+
 test("stale, mismatched or tampered acceptance prevents any publisher effect", () => {
   const dir = packs();
   const plan = planNativeRelease(dir, receipt());
   for (const changed of [
     receipt({ sourceSha: "c".repeat(40) }),
-    receipt({ acceptance: { synthetic: true, result: "failed" } }),
+    receipt({ acceptance: { ...receipt().acceptance, result: "failed" } }),
     receipt({ fingerprint: "d".repeat(64) }),
   ])
-    assert.throws(() => verifyPlan(plan, dir, changed), /differs/);
+    assert.throws(
+      () => verifyPlan(plan, dir, changed),
+      /differs|passed|failed/,
+    );
   assert.throws(
     () => planNativeRelease(dir, receipt({ channel: "stable" })),
     /channel/,

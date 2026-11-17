@@ -3,7 +3,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import {
   MessagingClient,
   PolymorfaRateLimitError,
-  PolymorfaValidationError,
+  PolymorfaNotFoundError,
   TEST_EVENT_FIXTURES,
   type TriggerTestEventRequest,
 } from "../src/index.js";
@@ -146,21 +146,20 @@ it("surfaces a real-connection refusal as an invalid request", async () => {
       {
         error: {
           type: "invalid_request_error",
-          code: "invalid_parameter",
-          message:
-            "Test events are available only for Test numbers. This connection is not a Test number in the project, or it does not exist.",
+          code: "resource_not_found",
+          message: "Resource not found",
           param: null,
         },
         data: null,
       },
-      400,
+      404,
     ),
   );
   await expect(
     messaging.testing.triggerEvent("real", {
       event: "call.received",
     }),
-  ).rejects.toBeInstanceOf(PolymorfaValidationError);
+  ).rejects.toBeInstanceOf(PolymorfaNotFoundError);
 });
 
 it("rejects client tokens before transport", () => {

@@ -157,6 +157,9 @@ impl CloudOnboarding<'_> {
             .await
     }
 }
+fn project_path(project: &str) -> String {
+    format!("/messaging/projects/{}", encode(project))
+}
 fn phone_path(connection: &str) -> String {
     format!("/messaging/{}/phone", encode(connection))
 }
@@ -171,10 +174,7 @@ impl Testing<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!(
-                    "/messaging/projects/{}/test-history-fixtures",
-                    encode(project)
-                ),
+                &format!("{}/test-history-fixtures", project_path(project)),
                 &[],
                 Some(body),
                 options,

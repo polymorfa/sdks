@@ -648,6 +648,52 @@ export interface ListCampaignRecipientsResponse {
   readonly page: CampaignRecipientPage;
 }
 
+/** The other party on a call: user ID, phone number or username, as the call reported them. */
+export interface CallPeer {
+  readonly id?: string;
+  readonly phoneNumber?: string;
+  readonly username?: string;
+}
+
+/** One call on a Connection, read from its data region. */
+export interface ConnectionCallRecord {
+  readonly callId: string;
+  readonly projectId: string;
+  /** The Connection selector. */
+  readonly connectionId: string;
+  readonly direction: "inbound" | "outbound";
+  readonly upstream: "linked_device" | "cloud_api";
+  readonly outcome:
+    "answered" | "missed" | "declined" | "failed" | "in_progress";
+  readonly state: "offered" | "accepted" | "rejected" | "missed" | "ended";
+  readonly hasVideo: boolean;
+  /** Null when the call did not report the other party. */
+  readonly peer: CallPeer | null;
+  readonly startedAt: string;
+  readonly connectedAt: string | null;
+  readonly endedAt: string | null;
+  readonly durationSeconds: number | null;
+  readonly endReason: string | null;
+}
+
+export interface ListConnectionCallsParams {
+  /** 1 to 100; default 25. */
+  readonly limit?: number;
+  readonly cursor?: string;
+  readonly direction?: "inbound" | "outbound";
+  readonly outcome?: ConnectionCallRecord["outcome"];
+  /** Calls started at or after this ISO 8601 time. */
+  readonly since?: string;
+  /** Calls started before this ISO 8601 time. */
+  readonly until?: string;
+}
+
+export interface ListConnectionCallsResponse {
+  readonly success: true;
+  readonly data: readonly ConnectionCallRecord[];
+  readonly nextCursor: string | null;
+}
+
 export interface RejectCallRequest {
   /** JID of the incoming caller. */
   readonly from: string;
@@ -1857,7 +1903,24 @@ export type CustomerClientTokenAction =
   | "chats_read"
   | "chats_manage"
   | "contact_write"
-  | "contact_delete";
+  | "contact_delete"
+  | "voip_place"
+  | "voip_answer"
+  | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
+  | "read_calls"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write";
 
 interface MintClientTokenBase {
   readonly ephemeralId: string;
@@ -1868,13 +1931,7 @@ interface MintClientTokenBase {
 export interface MintConnectionClientTokenRequest extends MintClientTokenBase {
   readonly connection: string;
   readonly customer?: never;
-  readonly allow?: readonly (
-    | CustomerClientTokenAction
-    | "mcp"
-    | "voip_place"
-    | "voip_answer"
-    | "voip_signal"
-  )[];
+  readonly allow?: readonly (CustomerClientTokenAction | "mcp")[];
 }
 
 /**
@@ -1922,6 +1979,20 @@ export type ClientAction =
   | "chats_manage"
   | "contact_write"
   | "contact_delete"
+  | "groups_read"
+  | "groups_manage"
+  | "read_calls"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write"
   | "widget_start"
   | "widget_pair"
   | "widget_status"

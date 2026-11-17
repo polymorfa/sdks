@@ -112,7 +112,7 @@ $httpSocket = stream_socket_server('tcp://127.0.0.1:0');
 $address = stream_socket_get_name($httpSocket, false);
 fclose($httpSocket);
 $httpUrl = 'http://'.$address;
-$http = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/calls-runtime-http.php'], [['pipe','r'],['pipe','w'],['pipe','w']], $httpPipes, null, $env);
+$http = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/calls-runtime-http.php'], [0 => ['pipe','r'],1 => ['file',$work.'/calls-http-'.getmypid().'.log','a'],2 => ['file',$work.'/calls-http-'.getmypid().'.log','a']], $httpPipes, null, $env);
 $ws = proc_open([PHP_BINARY,__DIR__.'/calls-runtime-server.php'], [['pipe','r'],['pipe','w'],['pipe','w']], $wsPipes, null, $env);
 try {
     $wire = json_decode(fgets($wsPipes[1]), true, flags:JSON_THROW_ON_ERROR);

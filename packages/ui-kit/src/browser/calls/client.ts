@@ -25,6 +25,11 @@ import { CallsSignalingClient } from "./signaling.js";
 export interface BrowserCallsOptions extends BrowserTransportOptions {
   /** Local call identity. Requests use the client token's bound connection. */
   readonly connection: string;
+  /**
+   * Set when the client token is Customer-scoped: the number it acts for,
+   * sent as `?connection=` on Calls requests and the lifecycle socket.
+   */
+  readonly clientTokenConnection?: string;
   readonly WebSocket?: CallsClientOptions["WebSocket"];
   readonly controller?: CallsControllerOptions;
   /**
@@ -81,12 +86,19 @@ export function createBrowserCalls(
   publicOptions: BrowserCallsOptions,
 ): BrowserCalls {
   const options = publicOptions as InternalBrowserCallsOptions;
-  const transport = new BrowserTransport(options);
+  const base = new BrowserTransport(options);
+  const transport =
+    options.clientTokenConnection === undefined
+      ? base
+      : withConnectionQuery(base, options.clientTokenConnection);
   const api = new BrowserCallsApi(transport);
   const clientOptions: InternalCallsClientOptions = {
     connection: options.connection,
     api,
     mediaMode: "external",
+    ...(options.clientTokenConnection === undefined
+      ? {}
+      : { clientTokenConnection: options.clientTokenConnection }),
     ...(options.WebSocket === undefined
       ? {}
       : { WebSocket: options.WebSocket }),
@@ -359,4 +371,24 @@ export function createBrowserCalls(
 
 function message(cause: unknown): string {
   return cause instanceof Error ? cause.message : "Call operation failed.";
+}
+
+/** Adds `?connection=` to every Calls request, for Customer-scoped tokens. */
+function withConnectionQuery(
+  transport: BrowserTransport,
+  connection: string,
+): BrowserTransport {
+  return new Proxy(transport, {
+    get(target, property) {
+      if (property !== "request") {
+        const value = Reflect.get(target, property, target);
+        return typeof value === "function" ? value.bind(target) : value;
+      }
+      return (request: Parameters<BrowserTransport["request"]>[0]) =>
+        target.request({
+          ...request,
+          query: { ...request.query, connection },
+        });
+    },
+  });
 }

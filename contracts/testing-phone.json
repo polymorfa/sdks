@@ -813,5 +813,277 @@
   "previousExport": {
     "path": "contracts/history/pre-connections/testing-phone.json",
     "sha256": "5eef77d9370e3837d674fb807d389e77473363f9baa378457590bf4b27ff99e6"
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "Polymorfa team key (pmfa_ prefix), project token (pmfa_pt_ prefix) where supported, or short-lived client token (pmfa_ct_ prefix). Team keys and project tokens may be personal or service-account owned and enforce selected action scopes. Team keys cover the team and its projects; project tokens stay inside one project. Client tokens stay inside their live project and connection and enforce their client rules and immutable mint-time action ceiling. Treat all credentials as opaque strings. Never parse them or assume a fixed length; store at least 512 characters. Server keys use issuance-record lookup; short-lived client tokens carry a signed permission ceiling."
+      }
+    },
+    "schemas": {
+      "PublicError": {
+        "type": "object",
+        "properties": {
+          "error": {
+            "type": "object",
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "invalid_request_error",
+                  "authentication_error",
+                  "permission_error",
+                  "billing_error",
+                  "conflict_error",
+                  "rate_limit_error",
+                  "api_error",
+                  "upstream_error"
+                ]
+              },
+              "code": {
+                "type": "string",
+                "enum": [
+                  "zero_knowledge_connection",
+                  "invalid_parameter",
+                  "invalid_credential",
+                  "entitlement_required",
+                  "cloud_template_authority_restricted",
+                  "gate_limit_reached",
+                  "billing_credit_required",
+                  "addon_required",
+                  "safe_mode_not_entitled",
+                  "warmup_plan_not_entitled",
+                  "method_not_allowed",
+                  "permission_denied",
+                  "missing_scope",
+                  "resource_not_found",
+                  "hms_not_enabled",
+                  "media_fetch_failed",
+                  "resource_gone",
+                  "feature_unavailable",
+                  "stream_cursor_invalid",
+                  "stream_cursor_expired",
+                  "stream_connection_limit_reached",
+                  "state_conflict",
+                  "team_deletion_scheduled",
+                  "hybrid_routing_paused",
+                  "hybrid_choice_required",
+                  "hybrid_transition_ineligible",
+                  "hybrid_automation_unavailable",
+                  "hybrid_group_linked_devices_unavailable",
+                  "hybrid_transport_unavailable",
+                  "hybrid_target_reference_unavailable",
+                  "send_outcome_unknown",
+                  "terms_acceptance_required",
+                  "terms_activation_blocked",
+                  "idempotency_conflict",
+                  "idempotency_in_progress",
+                  "idempotency_outcome_unknown",
+                  "idempotency_replay_unavailable",
+                  "call_claimed",
+                  "call_not_ringing",
+                  "connection_limit",
+                  "unsupported_for_connection",
+                  "call_permission_required",
+                  "invalid_sip_trunk",
+                  "calls_disabled",
+                  "call_recipient_opted_out",
+                  "call_destination_blocked",
+                  "call_permission_request_limited",
+                  "call_permission_granted",
+                  "order_status_transition_invalid",
+                  "order_cancellation_failed",
+                  "call_opt_out_limit",
+                  "connection_restricted",
+                  "sip_trunk_in_use",
+                  "sip_trunk_revision_conflict",
+                  "sip_trunk_limit",
+                  "sip_unavailable",
+                  "voice_not_enabled",
+                  "provider_credential_invalid",
+                  "provider_unavailable",
+                  "asset_not_ready",
+                  "voice_asset_in_use",
+                  "voice_asset_revision_conflict",
+                  "voice_unavailable",
+                  "rate_limit_exceeded",
+                  "internal_error",
+                  "operation_not_supported",
+                  "upstream_failure",
+                  "service_unavailable",
+                  "credential_verification_unavailable",
+                  "connection_not_ready",
+                  "command_dispatch_failed",
+                  "result_unknown",
+                  "parent_bsuid_not_supported",
+                  "recipient_not_on_whatsapp",
+                  "conversation_window_closed",
+                  "template_not_approved",
+                  "media_too_large",
+                  "whatsapp_rate_limited",
+                  "new_chat_limit_reached",
+                  "marketing_disabled_on_cloud_api",
+                  "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
+                  "whatsapp_groups_ineligible",
+                  "whatsapp_group_creation_paused",
+                  "whatsapp_group_limit_reached",
+                  "whatsapp_group_full",
+                  "whatsapp_group_suspended",
+                  "whatsapp_group_has_no_participants",
+                  "bansafe_suspended",
+                  "bansafe_team_suspended",
+                  "bansafe_cold_blocked",
+                  "bansafe_cold_held",
+                  "bansafe_throttled",
+                  "bansafe_daily_allowance_reached",
+                  "bansafe_accounting_unavailable",
+                  "bansafe_send_outcome_unknown",
+                  "campaigns_not_entitled",
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
+                ]
+              },
+              "message": {
+                "type": "string"
+              },
+              "param": {
+                "type": "string",
+                "nullable": true
+              },
+              "request_id": {
+                "type": "string",
+                "description": "Matches the X-Request-Id response header. Include it when you contact support."
+              },
+              "request_log_url": {
+                "type": "string",
+                "format": "uri",
+                "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
+              }
+            },
+            "required": ["type", "code", "message", "param", "request_id"]
+          },
+          "data": {
+            "type": "string",
+            "nullable": true,
+            "enum": [null],
+            "description": "Always null for a failed request."
+          },
+          "docs": {
+            "type": "string",
+            "format": "uri"
+          }
+        },
+        "required": ["error", "data", "docs"]
+      },
+      "TestingPhoneUnlink": {
+        "type": "object",
+        "properties": {
+          "connection": {
+            "type": "string"
+          },
+          "deviceId": {
+            "type": "integer"
+          },
+          "unlinked": {
+            "type": "boolean",
+            "enum": [true]
+          }
+        },
+        "required": ["connection", "deviceId", "unlinked"]
+      },
+      "TestingPhoneMessage": {
+        "type": "object",
+        "properties": {
+          "connection": {
+            "type": "string"
+          },
+          "to": {
+            "type": "string"
+          },
+          "messageId": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": ["connection", "to", "messageId"]
+      },
+      "TestingPhoneMessageRequest": {
+        "type": "object",
+        "properties": {
+          "to": {
+            "type": "string",
+            "pattern": "^\\+[1-9]\\d{7,14}$",
+            "description": "The phone number of another Test connection in the same project, in E.164 format."
+          },
+          "text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 4096
+          }
+        },
+        "required": ["to", "text"],
+        "additionalProperties": false
+      },
+      "TestingPhoneState": {
+        "type": "object",
+        "properties": {
+          "connection": {
+            "type": "string"
+          },
+          "phone": {
+            "type": "string",
+            "description": "The Test number, in E.164 format."
+          },
+          "online": {
+            "type": "boolean",
+            "description": "True while the simulated phone is running."
+          },
+          "devices": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "deviceId": {
+                  "type": "integer"
+                }
+              },
+              "required": ["deviceId"]
+            },
+            "description": "Companions linked to the phone, such as Polymorfa's own connection and Inspector."
+          }
+        },
+        "required": ["connection", "phone", "online", "devices"]
+      }
+    },
+    "headers": {
+      "X-RateLimit-Reset": {
+        "description": "Unix timestamp in seconds when the oldest counted request leaves the rolling window, when the per-team request limiter applies. Follow Retry-After on a rejected request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Remaining": {
+        "description": "Requests left in the per-team quota; zero when this limiter rejects the request.",
+        "schema": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "X-RateLimit-Limit": {
+        "description": "Team request quota per rolling minute, when the per-team request limiter applies.",
+        "schema": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    }
   }
 }

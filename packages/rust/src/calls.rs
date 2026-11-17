@@ -238,6 +238,25 @@ impl<'a> Calls<'a> {
             )
             .await
     }
+    /// One page of the Connection's calls, newest first, with the other party's identity.
+    pub async fn list(
+        &self,
+        connection: &str,
+        params: &crate::connection_calls::ListConnectionCallsParams,
+        options: RequestOptions,
+    ) -> Result<ApiResponse<crate::connection_calls::ConnectionCallsPage>> {
+        let query_model = crate::developer::query(params)?;
+        let query = crate::models::query_pairs(&query_model)?;
+        self.http
+            .request::<_, ()>(
+                Method::GET,
+                &format!("/messaging/{}/calls", encode(connection)),
+                &query,
+                None,
+                options,
+            )
+            .await
+    }
     pub async fn reject_incoming(
         &self,
         connection: &str,
