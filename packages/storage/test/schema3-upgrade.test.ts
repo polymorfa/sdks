@@ -1,4 +1,4 @@
-import { DatabaseSync } from "node:sqlite";
+import { createClient } from "@libsql/client";
 import { indexedDB } from "fake-indexeddb";
 import { expect, it } from "vitest";
 import { ENTITY_NAMES } from "../src/schema.js";
@@ -7,7 +7,7 @@ import {
   indexeddbAdapter,
   upgradeIndexedDbSchema2,
 } from "../src/adapters/indexeddb.js";
-import { sqliteAdapter } from "../src/adapters/sqlite.js";
+import { libsqlAdapter } from "../src/adapters/libsql.js";
 
 const oldRow = {
   _id: "kaccount%2E1",
@@ -120,22 +120,28 @@ it.each(["collision", "foreign"])(
 it.each([2, 4])(
   "never repins SQL storage schema %s during setup or reads",
   async (version) => {
-    const db = new DatabaseSync(":memory:");
-    db.exec(
+    const db = createClient({ url: "file::memory:" });
+    await db.executeMultiple(
       `CREATE TABLE polymorfa_storage_schema(id text PRIMARY KEY, version integer NOT NULL); INSERT INTO polymorfa_storage_schema VALUES('storage', ${version}); CREATE TABLE polymorfa_sessions(_id text); INSERT INTO polymorfa_sessions VALUES('retained');`,
     );
-    const adapter = sqliteAdapter(db);
-    await expect(adapter.setup!()).rejects.toThrow("version mismatch");
-    await expect(adapter.get("connections", [])).rejects.toThrow(
-      "version mismatch",
-    );
-    expect(
-      db.prepare("SELECT version FROM polymorfa_storage_schema").get(),
-    ).toMatchObject({ version });
-    expect(
-      db.prepare("SELECT _id FROM polymorfa_sessions").get(),
-    ).toMatchObject({ _id: "retained" });
-    db.close();
+    try {
+      // libSQL exercises the same SQLite SQL-core guard on every supported
+      // Node version, including Node 20 without the node:sqlite builtin.
+      const adapter = libsqlAdapter(db);
+      await expect(adapter.setup!()).rejects.toThrow("version mismatch");
+      await expect(adapter.get("connections", [])).rejects.toThrow(
+        "version mismatch",
+      );
+      expect(
+        (await db.execute("SELECT version FROM polymorfa_storage_schema"))
+          .rows[0],
+      ).toMatchObject({ version });
+      expect(
+        (await db.execute("SELECT _id FROM polymorfa_sessions")).rows[0],
+      ).toMatchObject({ _id: "retained" });
+    } finally {
+      db.close();
+    }
   },
 );
 

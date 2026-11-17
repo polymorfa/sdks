@@ -215,7 +215,7 @@ test("Messaging feature pins cannot borrow Platform acceptance or bypass a publi
       validateFeatureContractPins(source, [{ ...pin, ...delta }]),
     );
 });
-test("integrated frequency-cap and segment/drip supplements are gate pins that block until reconciled", () => {
+test("source-aligned frequency-cap and segment/drip supplements retain their publication hold", () => {
   const source = JSON.parse(
     readFileSync(new URL("../contracts/source.json", import.meta.url), "utf8"),
   );
@@ -231,12 +231,21 @@ test("integrated frequency-cap and segment/drip supplements are gate pins that b
       "messaging",
       "platform",
     ]);
-    assert.notEqual(supplement.commit, source.commit);
+    assert.equal(supplement.commit, source.commit);
+    assert.equal(supplement.published, false);
     assert.throws(
       () => validateFeatureContractPins(source, pins),
+      /held from publication/,
+    );
+    assert.throws(
+      () =>
+        validateFeatureContractPins(
+          source,
+          pins.map((pin) => ({ ...pin, sourceCommit: "0".repeat(40) })),
+        ),
       /not been reconciled/,
     );
-    // Reconciled to its own source, the supplement passes; nothing flips a hold.
+    // Matching source and hashes cannot remove an explicit publication hold.
     const reconciled = {
       repository: supplement.repository,
       commit: supplement.commit,
@@ -247,7 +256,15 @@ test("integrated frequency-cap and segment/drip supplements are gate pins that b
         ]),
       ),
     };
-    validateFeatureContractPins(reconciled, pins);
+    assert.throws(
+      () => validateFeatureContractPins(reconciled, pins),
+      /held from publication/,
+    );
+    // Only synthetic accepted pins exercise the positive metadata path.
+    validateFeatureContractPins(
+      reconciled,
+      pins.map((pin) => ({ ...pin, published: true })),
+    );
   }
   // The current release contract therefore fails closed.
   assert.throws(() => expectedContract(), /reconciled|held from publication/);
