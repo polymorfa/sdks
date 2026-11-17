@@ -13,7 +13,7 @@
   "supplements": [
     {
       "path": "contracts/campaign-frequency-cap.json",
-      "commit": "f7f058a0a543f74b42ab76eecb9e75c1cc9e03b8",
+      "commit": "d3e21ffbb26360ff620164f0f72ca2058dc2e018",
       "sources": {
         "messaging": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
         "platform": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559"
@@ -21,7 +21,7 @@
     },
     {
       "path": "contracts/campaign-segments-drip.json",
-      "commit": "f7f058a0a543f74b42ab76eecb9e75c1cc9e03b8",
+      "commit": "d3e21ffbb26360ff620164f0f72ca2058dc2e018",
       "sources": {
         "messaging": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
         "platform": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559"

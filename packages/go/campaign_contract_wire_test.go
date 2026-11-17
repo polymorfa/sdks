@@ -262,7 +262,7 @@ func TestCampaignContractThirtyWire(t *testing.T) {
 			}
 		}
 	}
-	if len(ids) != 30 || supplement.Published || supplement.Commit != "f7f058a0a543f74b42ab76eecb9e75c1cc9e03b8" {
+	if len(ids) != 30 || supplement.Published || supplement.Commit != "d3e21ffbb26360ff620164f0f72ca2058dc2e018" {
 		t.Fatal("supplement pin changed")
 	}
 	for _, row := range rows {
