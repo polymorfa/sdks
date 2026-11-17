@@ -23,6 +23,7 @@ public sealed record EventStreamOptions
 /// <summary>Resumable project events. Authentication and revoked cursors terminate the stream.</summary>
 public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
 {
+
     private readonly HttpTransport http;
     private readonly string path;
     private readonly EventStreamOptions options;
@@ -108,7 +109,7 @@ public sealed class EventStream : IAsyncEnumerable<EventStreamItem>
                     if (record.Payload is { } payload)
                     {
                         if (payload.Encoding != "base64") throw new PolymorfaServerException("Unsupported event payload encoding.", "invalid_stream");
-                        webhook = Webhooks.ParseVerifiedEvent(Convert.FromBase64String(payload.Data));
+                        webhook = Webhooks.ParseRetainedStreamEvent(Convert.FromBase64String(payload.Data));
                     }
                     var item = new EventStreamItem(record, frame.GetProperty("streamId").GetString()!, frame.GetProperty("sequence").GetInt64(), webhook, cursor);
                     Cursor = cursor;

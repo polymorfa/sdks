@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from types import MappingProxyType
 from typing import cast
 
+from ._json import loads
 from .errors import ValidationError, WebhookSignatureError
 from .transport import Json, JsonObject
 from .webhook_models import TypedWebhookEvent
@@ -216,7 +217,7 @@ def construct_local_webhook_event(
         raise WebhookSignatureError(
             "Local-forward webhook signature verification failed.", code="invalid_webhook_signature"
         )
-    return parse_verified_webhook_event(raw_body)
+    return _parse_retained_stream_webhook(raw_body)
 
 
 @dataclass(frozen=True)
@@ -289,3 +290,16 @@ def parse_verified_webhook_delivery(raw_body: bytes) -> WebhookDelivery:
             raise ValidationError("Nested or invalid event batch.", code="invalid_webhook_batch")
         events.append(parse_verified_webhook_event(json.dumps(member, allow_nan=False).encode()))
     return WebhookEventBatch("event_batch", 1, value["id"], tuple(events))
+
+
+def _parse_retained_stream_webhook(raw: bytes) -> WebhookEvent:
+    """Read projection; the event's encoded payload keeps the original bytes."""
+    value = loads(raw.decode("utf-8", errors="strict"))
+    if isinstance(value, dict) and "session" in value:
+        if "connection" in value or not isinstance(value["session"], str):
+            raise ValueError("Ambiguous retained event selector")
+        original = value.copy()
+        value = {key: item for key, item in value.items() if key != "session"}
+        value["connection"] = original["session"]
+        return parse_verified_webhook_event(json.dumps(value, allow_nan=False).encode())
+    return parse_verified_webhook_event(raw)

@@ -2,6 +2,7 @@ using System.Security.Cryptography;
 using System.Collections.Frozen;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace Polymorfa.Sdk;
 
@@ -16,6 +17,21 @@ public sealed record UnknownWebhookEvent(WebhookEnvelope Envelope) : WebhookEven
 public sealed record WebhookFixture(byte[] Body, string ContentType, string Signature, IReadOnlyDictionary<string, string> Headers);
 public static partial class Webhooks
 {
+    // Read projection only. EventRecord.Payload retains original encoded bytes.
+    internal static WebhookEvent ParseRetainedStreamEvent(byte[] raw)
+    {
+        var node = JsonNode.Parse(raw);
+        if (node is JsonObject obj && obj.ContainsKey("session"))
+        {
+            if (obj.ContainsKey("connection") || obj["session"] is not JsonValue value || !value.TryGetValue<string>(out var selector))
+                throw new PolymorfaValidationException("Ambiguous retained event selector.", "invalid_webhook_event");
+            obj.Remove("session");
+            obj["connection"] = selector;
+            return Webhooks.ParseVerifiedEvent(Encoding.UTF8.GetBytes(obj.ToJsonString()));
+        }
+        return Webhooks.ParseVerifiedEvent(raw);
+    }
+
     /// <summary>Creates exact JSON bytes and their native webhook signature for application tests.</summary>
     public static WebhookFixture CreateFixture(WebhookEvent webhookEvent, string secret)
     {
@@ -85,7 +101,7 @@ public static partial class Webhooks
         var prefix = Encoding.UTF8.GetBytes($"{timestamp}.");
         var signed = new byte[prefix.Length + rawBody.Length]; prefix.CopyTo(signed, 0); rawBody.CopyTo(signed.AsSpan(prefix.Length));
         if (!Verify(signed, parts[1], key)) throw new WebhookSignatureException();
-        return ParseVerifiedEvent(rawBody);
+        return ParseRetainedStreamEvent(rawBody.ToArray());
     }
     public static IReadOnlySet<string> KnownEventTypes { get; } = new[]
     {

@@ -35,7 +35,8 @@ from .transport import (
     Transport,
     retry_delay,
 )
-from .webhooks import WebhookEvent, parse_verified_webhook_event
+from .webhooks import WebhookEvent
+from .webhooks import _parse_retained_stream_webhook as _parse_stream_webhook
 
 
 class StreamEvent(TypedDict):
@@ -257,7 +258,7 @@ class EventStream:
                                             or not isinstance(payload.get("data"), str)
                                         ):
                                             raise ValueError("Invalid encoded payload")
-                                        webhook = parse_verified_webhook_event(
+                                        webhook = _parse_stream_webhook(
                                             base64.b64decode(payload["data"], validate=True)
                                         )
                                     except (ValidationError, ValueError, binascii.Error):

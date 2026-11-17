@@ -55,6 +55,26 @@ export function parseVerifiedWebhookEvent(rawBody: WebhookBody): WebhookEvent {
   return parseEventEnvelope(decodeVerifiedWebhookBody(rawBody));
 }
 
+/** @internal Read projection for retained streams and authenticated CLI forwarding.
+ * Native webhook verification stays current-only; source bytes are never changed. */
+export function parseRetainedStreamEvent(rawBody: WebhookBody): WebhookEvent {
+  const parsed = decodeVerifiedWebhookBody(rawBody);
+  if (
+    parsed &&
+    typeof parsed === "object" &&
+    !Array.isArray(parsed) &&
+    Object.hasOwn(parsed, "session")
+  ) {
+    const { session, ...rest } = parsed as Record<string, unknown>;
+    if (Object.hasOwn(rest, "connection") || typeof session !== "string")
+      throw new PolymorfaValidationError("Ambiguous retained event selector.", {
+        code: "invalid_webhook_event",
+      });
+    return parseEventEnvelope({ ...rest, connection: session });
+  }
+  return parseEventEnvelope(parsed);
+}
+
 export function decodeVerifiedWebhookBody(rawBody: WebhookBody): unknown {
   let text: string;
   try {

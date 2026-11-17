@@ -21,12 +21,41 @@ internal static class StreamRepairTests
     internal static async Task RunAsync()
     {
         var errors = new List<Exception>();
-        foreach (var check in new Func<Task>[] { CursorAsync, StorageAsync, InitialCursorAsync, BoundsAsync })
+        foreach (var check in new Func<Task>[] { CursorAsync, StorageAsync, InitialCursorAsync, BoundsAsync, RetainedSelectorAsync })
         {
             try { await check(); } catch (Exception error) { errors.Add(error); }
         }
         if (errors.Count != 0) throw new AggregateException(errors);
         Console.WriteLine("PASS stream validation, retained resume/storage cursors, initial cursor fallback, manual ACK/CAS and UTF-8 frame bounds");
+    }
+
+    private static async Task RetainedSelectorAsync()
+    {
+        const string raw = """{"id":"retained","session":"support.old","timestamp":"now","event":"future.event","payload":{"opaque":[false,42]}}""";
+        var encoded = Convert.ToBase64String(Encoding.UTF8.GetBytes(raw));
+        using var client = Client(new Handler(_ => Task.FromResult(Reply(Frame("retained-cursor", encoded)))));
+        await foreach (var item in client.Project("p").Events.Stream(Options()))
+        {
+            Check(item.Webhook!.Envelope.Connection == "support.old", "Retained selector view");
+            Check(item.Event.Payload!.Data == encoded, "Original retained bytes changed");
+            break;
+        }
+        try { Webhooks.ParseVerifiedEvent(Encoding.UTF8.GetBytes(raw)); throw new Exception("Active parser admitted old selector"); }
+        catch (PolymorfaValidationException) { }
+        var key = Enumerable.Repeat((byte)7, 32).ToArray();
+        var secret = Convert.ToBase64String(key).TrimEnd('=').Replace('+', '-').Replace('/', '_');
+        var mac = System.Security.Cryptography.HMACSHA256.HashData(key, Encoding.UTF8.GetBytes("1700000000." + raw));
+        var signature = "t=1700000000,v1=" + Convert.ToHexString(mac).ToLowerInvariant();
+        Check(Webhooks.ConstructLocalEvent(Encoding.UTF8.GetBytes(raw), signature, secret, 1700000000).Envelope.Connection == "support.old", "Local retained signature view");
+        try { Webhooks.ConstructLocalEvent(Encoding.UTF8.GetBytes(raw + " "), signature, secret, 1700000000); throw new Exception("Modified original bytes verified"); }
+        catch (WebhookSignatureException) { }
+        foreach (var selectors in new[] { "\"session\":null", "\"session\":1", "\"session\":\"old\",\"connection\":\"current\"" })
+        {
+            var malformed = Encoding.UTF8.GetBytes("{\"id\":\"e\",\"timestamp\":\"now\",\"event\":\"future.event\",\"payload\":{}," + selectors + "}");
+            var decoder = typeof(Webhooks).GetMethod("ParseRetainedStreamEvent", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static)!;
+            try { decoder.Invoke(null, [malformed]); throw new Exception("Ambiguous retained selector accepted"); }
+            catch (System.Reflection.TargetInvocationException error) when (error.InnerException is PolymorfaValidationException) { }
+        }
     }
     private static async Task CursorAsync()
     {

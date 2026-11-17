@@ -1,7 +1,10 @@
 package polymorfa
 
 import (
+	"bytes"
 	"context"
+	"crypto/hmac"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -228,5 +231,37 @@ func TestEventStreamFrameByteBounds(t *testing.T) {
 	})
 	if !stopped || delivered != 2 {
 		t.Fatal("byte boundary or reset rejected", delivered)
+	}
+}
+
+func TestRetainedStreamSelectorView(t *testing.T) {
+	original := []byte(`{"id":"retained","session":"support.old","timestamp":"now","event":"message.received","payload":{"opaque":[false,42]}}`)
+	before := string(original)
+	event, err := parseStreamWebhook(original)
+	if err != nil || event.Connection != "support.old" || event.ID != "retained" || string(original) != before {
+		t.Fatal("retained view", event, err)
+	}
+	key := bytes.Repeat([]byte{7}, 32)
+	secret := base64.RawURLEncoding.EncodeToString(key)
+	timestamp := int64(1700000000)
+	mac := hmac.New(sha256.New, key)
+	mac.Write([]byte("1700000000."))
+	mac.Write(original)
+	signature := fmt.Sprintf("t=%d,v1=%x", timestamp, mac.Sum(nil))
+	local, err := ConstructLocalWebhookEvent(original, signature, secret, VerifyLocalWebhookOptions{NowUnixSeconds: &timestamp})
+	if err != nil || local.Connection != "support.old" {
+		t.Fatal("retained local signature", local, err)
+	}
+	if _, err := ConstructLocalWebhookEvent(append(append([]byte{}, original...), ' '), signature, secret, VerifyLocalWebhookOptions{NowUnixSeconds: &timestamp}); err == nil {
+		t.Fatal("changed original bytes verified")
+	}
+	if _, err := ParseVerifiedWebhookEvent(original); err == nil {
+		t.Fatal("active webhook parser admitted old selector")
+	}
+	for _, selector := range []string{`"session":null`, `"session":1`, `"session":"old","connection":"current"`} {
+		raw := []byte(`{"id":"e","timestamp":"now","event":"message.received","payload":{},` + selector + `}`)
+		if _, err := parseStreamWebhook(raw); err == nil {
+			t.Fatal("ambiguous selector accepted", selector)
+		}
 	}
 }

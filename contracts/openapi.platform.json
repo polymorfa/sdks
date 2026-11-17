@@ -65462,8 +65462,12 @@
                   "name": {
                     "type": "string"
                   },
-                  "transport": {
-                    "$ref": "#/components/schemas/HybridTransport"
+                  "method": {
+                    "type": "string",
+                    "enum": [
+                      "linked_device",
+                      "cloud_api"
+                    ]
                   },
                   "status": {
                     "type": "string"
@@ -65476,7 +65480,7 @@
                 "required": [
                   "id",
                   "name",
-                  "transport",
+                  "method",
                   "status",
                   "canBeAbsorbed"
                 ]

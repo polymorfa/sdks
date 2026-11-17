@@ -786,7 +786,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         }
       >;
     };
-    expect(contract.commit).toBe("23f91923668cdbb832642e471103568648254fc4");
+    expect(contract.commit).toBe("a7cab53684b989b1ce68882989d31e2277841bdc");
     expect(contract.published).toBe(false);
     expect(contract.apiVersion).toBe("2026-09-22");
     const operations = Object.values(contract.sources).flatMap((source) =>
@@ -804,7 +804,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         "utf8",
       ),
     ) as { commit: string };
-    expect(baseline.commit).toBe("23f91923668cdbb832642e471103568648254fc4");
+    expect(baseline.commit).toBe("a7cab53684b989b1ce68882989d31e2277841bdc");
   });
 
   it("preserves every send variant and accepted whitespace labels without rewriting the graph", async () => {

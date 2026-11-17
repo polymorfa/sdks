@@ -135,7 +135,7 @@ async fn platform_project_safety_warmup_insurance_health_and_hybrid_candidates_n
         "GET",
         "/platform/projects/project/hybrid-merge-candidates",
         None,
-        json!({"data":[{"connections":[{"id":"one","name":"Support","transport":"linked_devices","status":"CONNECTED","canBeAbsorbed":true},{"id":"two","name":"Official","transport":"official_api","status":"CONNECTED","canBeAbsorbed":false}],"eligible":false,"ineligibleReason":"hms_enabled"}]}),
+        json!({"data":[{"connections":[{"id":"one","name":"Support","method":"linked_device","status":"CONNECTED","canBeAbsorbed":true},{"id":"two","name":"Official","method":"cloud_api","status":"CONNECTED","canBeAbsorbed":false}],"eligible":false,"ineligibleReason":"hms_enabled"}]}),
         client
             .projects()
             .list_hybrid_merge_candidates("project", RequestOptions::default())

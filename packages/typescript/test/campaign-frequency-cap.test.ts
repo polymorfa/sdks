@@ -34,7 +34,7 @@ const contract = JSON.parse(
   ),
 );
 it("pins bounds, fields, errors and reason filters to the checked source contract", () => {
-  expect(contract.commit).toBe("23f91923668cdbb832642e471103568648254fc4");
+  expect(contract.commit).toBe("a7cab53684b989b1ce68882989d31e2277841bdc");
   for (const source of Object.values(contract.sources) as {
     sourceSha256: string;
     fields: Record<string, unknown>;

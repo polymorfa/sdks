@@ -42,14 +42,14 @@ CANDIDATES = [
             {
                 "id": "number_1",
                 "name": "support",
-                "transport": "linked_devices",
+                "method": "linked_device",
                 "status": "CONNECTED",
                 "canBeAbsorbed": False,
             },
             {
                 "id": "number_2",
                 "name": "official",
-                "transport": "official_api",
+                "method": "cloud_api",
                 "status": "CONNECTED",
                 "canBeAbsorbed": True,
             },

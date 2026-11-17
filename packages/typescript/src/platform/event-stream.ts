@@ -7,7 +7,7 @@ import {
   PolymorfaServerError,
   PolymorfaValidationError,
 } from "../errors.js";
-import { parseVerifiedWebhookEvent } from "../webhooks/verify.js";
+import { parseRetainedStreamEvent } from "../webhooks/verify.js";
 import type { HttpTransport } from "../transport/http.js";
 import type { EncodedEventPayload, JsonValue } from "./developer-types.js";
 
@@ -43,7 +43,7 @@ export interface EventStreamItem {
   readonly streamId: string;
   /** Frame number on that connection; use with `acknowledgeStream`. */
   readonly sequence: number;
-  /** The exact webhook body, or null when `event.payload` is null. */
+  /** Decoded Connection view, or null. Exact retained bytes stay in `event.payload`. */
   readonly webhook: WebhookEnvelope | null;
   readonly cursor: string;
 }
@@ -197,7 +197,7 @@ function decodeWebhook(
     const bytes = Uint8Array.from(atob(payload.data), (char) =>
       char.charCodeAt(0),
     );
-    return parseVerifiedWebhookEvent(bytes) as WebhookEnvelope;
+    return parseRetainedStreamEvent(bytes) as WebhookEnvelope;
   } catch (cause) {
     throw new PolymorfaServerError("Invalid streamed webhook payload.", {
       code: "invalid_response",

@@ -528,7 +528,7 @@ only after its encrypted-body read succeeds.
 ## Additional campaign and custody contracts (development source)
 
 This checkout adds 30 handwritten operations from API source
-`23f91923668cdbb832642e471103568648254fc4`, using TypeScript reference
+`a7cab53684b989b1ce68882989d31e2277841bdc`, using TypeScript reference
 `44d5426f90bf376940a5198edac5da4cd893cbe9`. The additive contract remains
 unpublished. The primary coverage snapshots and global API default stay at their
 existing revisions. These methods select `2026-10-14` per request when
@@ -962,3 +962,9 @@ or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.

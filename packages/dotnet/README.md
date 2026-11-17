@@ -54,7 +54,7 @@ Signal cryptography and key custody remain in the customer-operated Signal servi
 ### Campaign, audience profiles and custody defaults
 
 The 30-operation campaign/custody supplement follows API source
-`23f91923668cdbb832642e471103568648254fc4`. These helpers use
+`a7cab53684b989b1ce68882989d31e2277841bdc`. These helpers use
 `Polymorfa-Version: 2026-10-14` when `RequestOptions.ApiVersion` is absent.
 An explicit override is preserved. Existing helpers retain their `2026-09-22`
 default. This is unpublished source; the supplement remains held for release.
@@ -1155,3 +1155,9 @@ or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.

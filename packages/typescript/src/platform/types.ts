@@ -23,6 +23,7 @@ import type {
   CampaignVariant,
   CampaignVariantStrategy,
   InvalidRecipientRow,
+  ConnectionMethodKind,
 } from "../messaging/types.js";
 
 export interface DataEnvelope<T> {
@@ -974,7 +975,7 @@ export type HybridMergeIneligibleReason =
 export interface HybridMergeCandidateConnection {
   readonly id: string;
   readonly name: string;
-  readonly transport: HybridTransport;
+  readonly method: ConnectionMethodKind;
   readonly status: string;
   /**
    * False when this Connection uses hosted message storage. It cannot be the

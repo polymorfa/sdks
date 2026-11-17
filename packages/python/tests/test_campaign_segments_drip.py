@@ -135,8 +135,8 @@ def error(code):
 
 
 def test_types_match_pinned_supplements():
-    assert CAP["commit"] == "23f91923668cdbb832642e471103568648254fc4"
-    assert SEG["commit"] == "23f91923668cdbb832642e471103568648254fc4"
+    assert CAP["commit"] == "a7cab53684b989b1ce68882989d31e2277841bdc"
+    assert SEG["commit"] == "a7cab53684b989b1ce68882989d31e2277841bdc"
     platform = CAP["sources"]["platform"]["schemas"]
     for model, name in (
         (C.FrequencyCapSettings, "CampaignFrequencyCapSettings"),

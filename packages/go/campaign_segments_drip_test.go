@@ -625,7 +625,7 @@ func TestCampaignSegmentsDripContractSupplements(t *testing.T) {
 		return out
 	}
 	commit, cap := load("../../contracts/campaign-frequency-cap.json")
-	if commit != "23f91923668cdbb832642e471103568648254fc4" {
+	if commit != "a7cab53684b989b1ce68882989d31e2277841bdc" {
 		t.Fatal("frequency cap source pin", commit)
 	}
 	one := 1
@@ -647,7 +647,7 @@ func TestCampaignSegmentsDripContractSupplements(t *testing.T) {
 		}
 	}
 	commit, segments := load("../../contracts/campaign-segments-drip.json")
-	if commit != "23f91923668cdbb832642e471103568648254fc4" {
+	if commit != "a7cab53684b989b1ce68882989d31e2277841bdc" {
 		t.Fatal("segment and drip source pin", commit)
 	}
 	yes := true

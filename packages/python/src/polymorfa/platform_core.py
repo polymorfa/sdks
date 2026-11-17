@@ -174,7 +174,7 @@ class ConnectionTierChange(TypedDict):
 class HybridCandidateConnection(TypedDict):
     id: str
     name: str
-    transport: HybridTransport
+    method: Literal["linked_device", "cloud_api"]
     status: str
     canBeAbsorbed: bool
 

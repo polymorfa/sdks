@@ -81,7 +81,7 @@ final class Webhooks
         if ($key === false || strlen($key) !== 32 || $timestamp > 9007199254740991 || !is_finite($now) || abs($now - $timestamp) > $toleranceSeconds || !hash_equals(hash_hmac('sha256', sprintf('%.0f', $timestamp).'.'.$rawBody, $key), $match[2])) {
             throw new WebhookSignatureException('Local webhook signature verification failed.', 'invalid_webhook_signature');
         }
-        return self::parseVerifiedEvent($rawBody);
+        return self::parseRetainedStreamEvent($rawBody);
     }
     /** @return array{body:string,contentType:'application/json',signature:string,headers:array{'content-type':'application/json','x-webhook-signature':string}} */
     public static function createFixture(WebhookEvent $event, #[\SensitiveParameter] string $secret): array
@@ -113,4 +113,19 @@ final class Webhooks
         /** @var array<string,mixed> $value */
         return new WebhookEvent($value['id'], $value['connection'], $value['timestamp'], $value['event'], $value['payload'], $value, in_array($value['event'], self::KNOWN_TYPES, true), is_string($value['externalId'] ?? null) ? $value['externalId'] : null);
     }
+    /** @internal Read projection only; the event retains its exact encoded payload. */
+    public static function parseRetainedStreamEvent(string $raw): WebhookEvent
+    {
+        $tree = json_decode($raw, false, 512, JSON_THROW_ON_ERROR);
+        if ($tree instanceof \stdClass && property_exists($tree, 'session')) {
+            if (property_exists($tree, 'connection') || !is_string($tree->session)) {
+                throw new ValidationException('Ambiguous retained event selector.', 'invalid_webhook_event');
+            }
+            $tree->connection = $tree->session;
+            unset($tree->session);
+            return Webhooks::parseVerifiedEvent(json_encode($tree, JSON_THROW_ON_ERROR));
+        }
+        return Webhooks::parseVerifiedEvent($raw);
+    }
+
 }

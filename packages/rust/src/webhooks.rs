@@ -347,7 +347,9 @@ pub fn construct_local_event(
             "invalid_webhook_signature",
         ));
     }
-    parse_verified_event(raw_body)
+    let view = parse_retained_stream_envelope(raw_body)?;
+    let bytes = serde_json::to_vec(&view).map_err(|_| signature_error())?;
+    parse_verified_event(&bytes)
 }
 fn signature_error() -> Error {
     Error::local(
@@ -516,4 +518,26 @@ pub fn parse_verified_delivery(raw: &[u8]) -> Result<WebhookDelivery> {
         id: id.into(),
         events,
     }))
+}
+
+// Read projection only. EventRecord.payload retains original encoded bytes.
+pub(crate) fn parse_retained_stream_envelope(body: &[u8]) -> Result<WebhookEnvelope> {
+    let invalid = || {
+        Error::local(
+            ErrorKind::Server,
+            "Malformed retained event stream webhook.",
+            "invalid_response",
+        )
+    };
+    let mut value: serde_json::Value = serde_json::from_slice(body).map_err(|_| invalid())?;
+    if let Some(fields) = value.as_object_mut() {
+        if fields.contains_key("session") {
+            if fields.contains_key("connection") || !fields["session"].is_string() {
+                return Err(invalid());
+            }
+            let selector = fields.remove("session").ok_or_else(invalid)?;
+            fields.insert("connection".into(), selector);
+        }
+    }
+    serde_json::from_value(value).map_err(|_| invalid())
 }

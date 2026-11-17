@@ -13,7 +13,7 @@ public sealed record UpdateProjectInsuranceEvidenceRequest(bool Enabled);
 public sealed record ProjectHealthPolicyIntegrations(bool EmailConfigured, bool WebhookConfigured);
 public sealed record ProjectHealthPolicy(string ProjectId, long Version, bool Enabled, double Threshold, string ConnectionAction, decimal? SlowDownMps, bool EmailNotification, bool WebhookNotification, ProjectHealthPolicyIntegrations Integrations);
 public sealed record UpdateProjectHealthPolicyRequest(long Version, bool Enabled, double Threshold, string ConnectionAction, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] decimal? SlowDownMps, bool EmailNotification, bool WebhookNotification);
-public sealed record HybridMergeCandidateConnection(string Id, string Name, string Transport, string Status, bool CanBeAbsorbed);
+public sealed record HybridMergeCandidateConnection(string Id, string Name, ConnectionMethod Method, string Status, bool CanBeAbsorbed);
 public sealed record HybridMergeCandidate(IReadOnlyList<HybridMergeCandidateConnection> Connections, bool Eligible, string? IneligibleReason = null);
 public sealed partial class Projects
 {

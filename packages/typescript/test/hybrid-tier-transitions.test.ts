@@ -309,14 +309,14 @@ describe("Hybrid Link tier transitions", () => {
           {
             id: SURVIVOR,
             name: "support",
-            transport: "linked_devices",
+            method: "linked_device",
             status: "connected",
             canBeAbsorbed: false,
           },
           {
             id: ABSORBED,
             name: "support-cloud",
-            transport: "official_api",
+            method: "cloud_api",
             status: "connected",
             canBeAbsorbed: true,
           },
@@ -328,14 +328,14 @@ describe("Hybrid Link tier transitions", () => {
           {
             id: CREATED,
             name: "sales",
-            transport: "linked_devices",
+            method: "linked_device",
             status: "disconnected",
             canBeAbsorbed: true,
           },
           {
             id: "01994234-0000-7000-8000-00000000000d",
             name: "sales-cloud",
-            transport: "official_api",
+            method: "cloud_api",
             status: "connected",
             canBeAbsorbed: true,
           },
@@ -504,7 +504,10 @@ describe("Hybrid tier transition types match the pinned Platform snapshot", () =
     );
     expect(
       Object.keys(candidate.properties!.connections!.items!.properties!).sort(),
-    ).toEqual(["canBeAbsorbed", "id", "name", "status", "transport"]);
+    ).toEqual(["canBeAbsorbed", "id", "method", "name", "status"]);
+    expect(
+      candidate.properties!.connections!.items!.properties!.method!.enum,
+    ).toEqual(["linked_device", "cloud_api"]);
     expect(candidate.properties!.connections!.items!.required).toContain(
       "canBeAbsorbed",
     );

@@ -71,11 +71,11 @@ type UpdateProjectHealthPolicyRequest struct {
 	WebhookNotification bool     `json:"webhookNotification"`
 }
 type HybridMergeCandidateConnection struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Transport     string `json:"transport"`
-	Status        string `json:"status"`
-	CanBeAbsorbed bool   `json:"canBeAbsorbed"`
+	ID            string           `json:"id"`
+	Name          string           `json:"name"`
+	Method        ConnectionMethod `json:"method"`
+	Status        string           `json:"status"`
+	CanBeAbsorbed bool             `json:"canBeAbsorbed"`
 }
 type HybridMergeCandidate struct {
 	Connections      [2]HybridMergeCandidateConnection `json:"connections"`

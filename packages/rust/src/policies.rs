@@ -1,10 +1,10 @@
 //! Project Safe Mode, warm-up plans, insurance evidence and revision-bound health policy.
 use crate::{
-    models::{DataEnvelope, SuccessEnvelope},
+    models::{ConnectionMethod, DataEnvelope, SuccessEnvelope},
     platform::Projects,
     platform_connections::{
-        ConnectionSafeMode, HybridTransport, SafeModePacing, SafeModePresence, SafeModeReads,
-        SafeModeSettings, SafeModeTyping, UpdateConnectionSafeModeRequest,
+        ConnectionSafeMode, SafeModePacing, SafeModePresence, SafeModeReads, SafeModeSettings,
+        SafeModeTyping, UpdateConnectionSafeModeRequest,
     },
     transport::{encode, HttpTransport},
     ApiResponse, RequestOptions, Result,
@@ -133,7 +133,7 @@ pub enum HybridMergeIneligibleReason {
 pub struct HybridMergeCandidateConnection {
     pub id: String,
     pub name: String,
-    pub transport: HybridTransport,
+    pub method: ConnectionMethod,
     pub status: String,
     pub can_be_absorbed: bool,
 }
