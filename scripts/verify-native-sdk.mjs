@@ -1,5 +1,5 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, readdirSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { mkdirSync } from "node:fs";
 import { homedir } from "node:os";
@@ -181,13 +181,32 @@ if (language === "go") {
   // Release preparation must repeat unpatched registry verification after the
   // core is published under the release's separate authority.
   const packedCore = resolve(target, "package", `${core.name}-${core.version}`);
-  run(cargo, [
-    "package",
-    ...nativeCargoTargetArgs(target),
-    "--allow-dirty",
-    "--config",
-    `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(packedCore)}`,
-  ]);
+  const sourceLock = resolve(cwd, "Cargo.lock");
+  const originalLock = readFileSync(sourceLock);
+  try {
+    run(cargo, [
+      "package",
+      ...nativeCargoTargetArgs(target),
+      "--allow-dirty",
+      "--config",
+      `patch.crates-io.polymorfa-storage-core.path=${JSON.stringify(packedCore)}`,
+    ]);
+  } finally {
+    // Cargo can append its temporary override as an unused patch in the source
+    // lock. Remove only that exact generated suffix, never a dependency edit.
+    const currentLock = readFileSync(sourceLock);
+    if (!currentLock.equals(originalLock)) {
+      const unusedPatch = Buffer.from(
+        `\n[[patch.unused]]\nname = ${JSON.stringify(core.name)}\nversion = ${JSON.stringify(core.version)}\n`,
+      );
+      if (!currentLock.equals(Buffer.concat([originalLock, unusedPatch]))) {
+        throw new Error(
+          "Rust packaging changed source lock dependencies; inspect the retained diff",
+        );
+      }
+      writeFileSync(sourceLock, originalLock);
+    }
+  }
 } else {
   const project = "src/Polymorfa.Sdk/Polymorfa.Sdk.csproj";
   if (!existsSync(resolve(cwd, project)))
