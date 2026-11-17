@@ -425,6 +425,11 @@ customer-owned migration using `SupabasePresetOptions`. Adapter setup never
 installs these policies. Reuse the schema and prefix in `SqlStorageOptions` and
 set `CreateTables = false` for the server SQL adapter.
 
+The preset grants the writer SELECT on the schema-version marker for these
+checks. For an earlier schema-3 preset, grant SELECT on
+`<schema>.<prefix>storage_schema` to the configured writer. The writer does not
+need permission to update that marker.
+
 The separate reader role can select only connections mapped to `auth.uid()` in
 `storage_memberships`. It cannot write storage data or memberships. Configure
 trusted Supabase/PostgREST JWT enforcement; never expose a direct reader SQL

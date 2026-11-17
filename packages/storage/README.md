@@ -78,6 +78,8 @@ records. Customer-owned SQL and document-store migrations remain explicit.
 
 `./supabase` exports `supabasePreset`: reference PostgreSQL schema plus FORCE RLS and live connection memberships. Install once as a reviewed customer-owned migration. Create its reader and backend writer roles separately. The default reader is `authenticated`; the writer is `polymorfa_storage_writer`. Readers can select only connections with their own `auth.uid()` membership; they cannot write data or memberships. The named backend writer has explicit storage/membership authority. Never grant that role to browser users or a public API key. Membership and policy administration remain customer-owned.
 
+The preset grants the writer SELECT on the schema-version marker so `createTables: false` can verify the installed schema. For an earlier schema-3 preset, grant SELECT on `<schema>.<prefix>storage_schema` to the configured writer. The writer does not need permission to update that marker.
+
 ## Verification and portability
 
 `./conformance` exports `defineStorageConformance(testApi, adapterName, createAdapter)`. Run every test against a real driver and the runtime you will deploy, including transactions, stale deletes, atomic rollback, paused-writer fencing, checkpoint conflicts, ordering, replay and a 2,000-message history chunk. `conformance-fixtures.json` carries fixed events and expected public rows for handwritten language ports; adapter concurrency tests remain required in addition to those fixtures.
