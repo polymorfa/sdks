@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "20b482dfe31dbe88e624682c90669a61f9a2b5a6",
+  "commit": "653fe445b611c9bf168f3004313ce3331ce584e2",
   "branch": "rajeh/connection-rename-backend",
   "published": false,
   "note": "Breaking Connection source candidate at held API date 2026-09-22. Exact committed producer snapshots; no source merge, deployed API acceptance or package publication is inferred. Nightly/stable release gates remain closed until matching staging/production acceptance.",

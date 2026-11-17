@@ -53,8 +53,8 @@ internal static class CampaignSegmentsDripTests
         while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "contracts/campaign-segments-drip.json"))) directory = directory.Parent;
         using var cap = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory!.FullName, "contracts/campaign-frequency-cap.json")));
         using var seg = JsonDocument.Parse(File.ReadAllText(Path.Combine(directory.FullName, "contracts/campaign-segments-drip.json")));
-        ResourceTests.Equal(cap.RootElement.GetProperty("commit").GetString(), "20b482dfe31dbe88e624682c90669a61f9a2b5a6");
-        ResourceTests.Equal(seg.RootElement.GetProperty("commit").GetString(), "20b482dfe31dbe88e624682c90669a61f9a2b5a6");
+        ResourceTests.Equal(cap.RootElement.GetProperty("commit").GetString(), "653fe445b611c9bf168f3004313ce3331ce584e2");
+        ResourceTests.Equal(seg.RootElement.GetProperty("commit").GetString(), "653fe445b611c9bf168f3004313ce3331ce584e2");
         var never = new JsonSerializerOptions(HttpTransportJson) { DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.Never };
         static string[] Keys(JsonElement v) => v.EnumerateObject().Select(p => p.Name).Order().ToArray();
         static string[] Props(JsonElement schema) => schema.GetProperty("properties").EnumerateObject().Select(p => p.Name).Order().ToArray();
