@@ -53,7 +53,7 @@ export const POST = route("admin", async ({ body }) => {
             country: "US",
             configuration: {
               profile: { name: "Acme Test" },
-              accountType: "business",
+              accountType: "business_app",
               replyBehavior: "echo",
             },
             editable: ["profile.name", "replyBehavior"],

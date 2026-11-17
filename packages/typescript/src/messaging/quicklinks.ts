@@ -1,3 +1,4 @@
+import { assertTestingModeFields } from "./testing-account-mode.js";
 import { quickLinkIntent } from "../session-delivery-validation.js";
 import { existingOptions } from "../campaign-existing-validation.js";
 import type { SignalCustodyMode } from "../campaign-contracts.js";
@@ -187,6 +188,8 @@ export class QuickLinksResource {
   ): Promise<ApiResponse<CreateQuickLinkResponse>> {
     this.assertServerCredential();
     options = existingOptions(options, quickLinkIntent(input));
+    if (input.configuration?.testing?.configuration)
+      assertTestingModeFields(input.configuration.testing.configuration);
     if (input.billingControls) {
       billingLimit(input.billingControls.limitCredits);
       billingPriority(input.billingControls.priority);

@@ -5383,6 +5383,12 @@
       "published": false,
       "language": "python"
     },
+    "businessAccountModes": {
+      "inventory": "contracts/native-business-account-modes.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "python"
+    },
     "interactiveMessages": {
       "inventory": "contracts/native-interactive-messages.json",
       "language": "python",

@@ -306,6 +306,18 @@ export async function requestContract<T>(
 }
 
 const phoneModels = {
+  mode: object({
+    session: string,
+    accountType: one(
+      "whatsapp_app",
+      "business_app",
+      "meta_cloud",
+      "meta_coexistence",
+    ),
+    primaryPlatform: nullable(one("android", "ios")),
+    changed: boolean,
+    unlinkedDevices: list(integer),
+  }),
   phone: object({
     session: string,
     phone: string,

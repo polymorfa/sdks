@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "sourceCommit": "14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4",
+  "pin": "contracts/business-account-modes.json",
+  "baselineUnchanged": true,
+  "published": false,
+  "claim": "Source and native fixture attribution. Executed checks, package qualification and release acceptance are separate evidence.",
+  "operations": [
+    {
+      "operationId": "setTestingAccountMode",
+      "method": "PUT",
+      "path": "/messaging/{session}/phone/account-mode",
+      "languages": {
+        "typescript": {
+          "method": "MessagingClient.testing.setAccountMode",
+          "test": "test/business-account-modes.test.ts"
+        },
+        "go": {
+          "method": "MessagingClient.Testing.SetAccountMode",
+          "test": "business_account_modes_test.go"
+        },
+        "python": {
+          "method": "AsyncMessagingClient.testing.set_account_mode",
+          "test": "tests/test_business_account_modes.py"
+        },
+        "php": {
+          "method": "MessagingClient.testing.setAccountMode",
+          "test": "tests/business_account_modes.php"
+        },
+        "rust": {
+          "method": "MessagingClient.testing.set_account_mode",
+          "test": "tests/business_account_modes.rs"
+        },
+        "dotnet": {
+          "method": "MessagingClient.Testing.SetAccountModeAsync",
+          "test": "tests/Polymorfa.Sdk.Tests/BusinessAccountModeTests.cs"
+        }
+      }
+    }
+  ],
+  "fields": {
+    "quickLinkTesting": {
+      "operationId": "createQuickLink",
+      "fields": ["accountType", "primaryPlatform"],
+      "languages": {
+        "typescript": {
+          "test": "test/business-account-modes.test.ts"
+        },
+        "go": {
+          "test": "business_account_modes_test.go"
+        },
+        "python": {
+          "test": "tests/test_business_account_modes.py"
+        },
+        "php": {
+          "test": "tests/business_account_modes.php"
+        },
+        "rust": {
+          "test": "tests/configuration.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/BusinessAccountModeTests.cs"
+        }
+      }
+    },
+    "businessProfileEncryption": {
+      "operationId": "getBusinessProfile",
+      "enum": ["end_to_end", "hybrid", "not_end_to_end"],
+      "optional": true,
+      "languages": {
+        "typescript": {
+          "test": "test/business-account-modes.test.ts"
+        },
+        "go": {
+          "test": "business_account_modes_test.go"
+        },
+        "python": {
+          "test": "tests/test_business_account_modes.py"
+        },
+        "php": {
+          "test": "tests/business_account_modes.php"
+        },
+        "rust": {
+          "test": "tests/business_account_modes.rs"
+        },
+        "dotnet": {
+          "test": "tests/Polymorfa.Sdk.Tests/BusinessAccountModeTests.cs"
+        }
+      }
+    }
+  }
+}

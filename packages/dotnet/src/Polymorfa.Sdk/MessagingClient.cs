@@ -91,6 +91,7 @@ public sealed class QuickLinks
     public Task<ApiResponse<SuccessEnvelope<QuickLink>>> CreateAsync(CreateQuickLinkRequest? body = null, RequestOptions? options = null)
     {
         http.Credential.RequireServer(); body ??= new();
+        if (body.Configuration?.Testing?.Configuration is { } testing) BusinessAccountModeValidation.Fields(testing.AccountType, testing.PrimaryPlatform);
         if (body.Purpose == "add_connection" && string.IsNullOrWhiteSpace(body.Session)) throw new PolymorfaValidationException("An add_connection link requires session.", "invalid_parameter");
         if (body.BillingControls is { } billing && (billing.Priority < 0 || billing.Priority > 1_000_000 || billing.LimitCredits < 0 || billing.LimitCredits > 1_000_000 || billing.LimitCredits is decimal limit && decimal.Round(limit, 6) != limit || body.Purpose == "add_connection" || body.Configuration?.Testing is not null)) throw new PolymorfaValidationException("Invalid billingControls.", "invalid_parameter");
         var captured = ConfigurationContract.QuickLink(body, out var intent);

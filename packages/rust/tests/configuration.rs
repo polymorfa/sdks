@@ -66,7 +66,12 @@ async fn quicklink_configuration_testing_history_and_onboarding_native_wire() {
                     name: Some("Support".into()),
                     status: Some("Ready".into()),
                 }),
-                account_type: Some("business".into()),
+                account_type: Some(
+                    polymorfa_sdk::business_account_modes::WhatsAppAccountType::BusinessApp,
+                ),
+                primary_platform: Some(
+                    polymorfa_sdk::business_account_modes::TestingPrimaryPlatform::Ios,
+                ),
                 reply_behavior: Some("echo".into()),
                 failure_scenario: Some("none".into()),
                 history_fixture_id: Some("support".into()),
@@ -91,7 +96,7 @@ async fn quicklink_configuration_testing_history_and_onboarding_native_wire() {
         configuration: Some(overrides.clone()),
         ..CreateQuickLinkRequest::default()
     };
-    let expected = json!({"projectId":"project","configuration":{"observation":{"labelMode":"project"},"hms":{"enabled":false},"testing":{"country":"US","configuration":{"profile":{"name":"Support","status":"Ready"},"accountType":"business","replyBehavior":"echo","failureScenario":"none","historyFixtureId":"support"},"editable":["profile.name"]},"connectionPreference":"both","connectionEnforcement":"prefer","methods":["qr","code"],"defaultMethod":null,"prefillPhone":"+15551234567","allowPhoneChange":false,"historySync":{"consent":"optional","mode":"deliver","requestFull":true}}});
+    let expected = json!({"projectId":"project","configuration":{"observation":{"labelMode":"project"},"hms":{"enabled":false},"testing":{"country":"US","configuration":{"profile":{"name":"Support","status":"Ready"},"accountType":"business_app","primaryPlatform":"ios","replyBehavior":"echo","failureScenario":"none","historyFixtureId":"support"},"editable":["profile.name"]},"connectionPreference":"both","connectionEnforcement":"prefer","methods":["qr","code"],"defaultMethod":null,"prefillPhone":"+15551234567","allowPhoneChange":false,"historySync":{"consent":"optional","mode":"deliver","requestFull":true}}});
     wire_messaging!(
         client,
         "POST",

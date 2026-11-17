@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--business-account-modes-only")) { await BusinessAccountModeTests.RunAsync(); return; }
 if (args.Contains("--session-call-history-only")) { await ProjectPairingTests.SessionCallHistoryAsync(); return; }
 
 if (args.Contains("--cloud-order-quantity-only")) { await CloudOrderQuantityTests.RunAsync(); return; }
@@ -167,6 +168,7 @@ try
     await OfficialGroupTests.RunAsync();
     await TemplateTests.RunAsync();
     await OnboardingTests.RunAsync();
+    await BusinessAccountModeTests.RunAsync();
     await AudienceSettingsTests.RunAsync();
     await CampaignTests.RunAsync();
     await CampaignExistingTests.RunAsync();
