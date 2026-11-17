@@ -43,34 +43,28 @@ it("checks bare testing-phone results and actual202 through native HTTP", async 
     credential: { type: "projectToken", value: PROJECT_TOKEN },
     baseUrl: server.url,
   });
-  expect((await m.testing.getPhone(projectId, "s/a")).data).toEqual(
-    fixtures[0],
-  );
+  expect((await m.testing.getPhone("s/a")).data).toEqual(fixtures[0]);
   expect(
     (
-      await m.testing.sendPhoneMessage(projectId, "s/a", {
+      await m.testing.sendPhoneMessage("s/a", {
         to: "+15551234568",
         text: "x",
       })
     ).metadata.status,
   ).toBe(202);
-  expect(
-    (await m.testing.unlinkPhoneDevice(projectId, "s/a", 99)).data,
-  ).toEqual(fixtures[2]);
+  expect((await m.testing.unlinkPhoneDevice("s/a", 99)).data).toEqual(
+    fixtures[2],
+  );
   expect(server.requests.map((r) => [r.method, r.path, r.body])).toEqual([
-    ["GET", `/messaging/testing/${projectId}/numbers/s%2Fa/phone`, ""],
+    ["GET", `/messaging/s%2Fa/phone`, ""],
     [
       "POST",
-      `/messaging/testing/${projectId}/numbers/s%2Fa/phone/messages`,
+      `/messaging/s%2Fa/phone/messages`,
       '{"to":"+15551234568","text":"x"}',
     ],
-    [
-      "POST",
-      `/messaging/testing/${projectId}/numbers/s%2Fa/phone/devices/99/unlink`,
-      "",
-    ],
+    ["POST", `/messaging/s%2Fa/phone/devices/99/unlink`, ""],
   ]);
-  await expect(m.testing.getPhone(projectId, "s/a")).rejects.toMatchObject({
+  await expect(m.testing.getPhone("s/a")).rejects.toMatchObject({
     code: "invalid_response",
     metadata: { headers: { "x-trace-id": "a".repeat(32) } },
   });

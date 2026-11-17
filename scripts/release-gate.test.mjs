@@ -307,7 +307,7 @@ test("A two-audience supplement is checked per family and honours its hold", () 
   );
 });
 
-test("guest-call hold blocks the real publisher after other supplements are reconciled", async () => {
+test("preview records held source while nightly and stable feature gates remain enforced", async () => {
   const parent = join(
     homedir(),
     ".polymorfa-agent-work",
@@ -323,6 +323,16 @@ test("guest-call hold blocks the real publisher after other supplements are reco
     new URL("./release-gate.mjs", import.meta.url),
     join(fixture, "scripts/release-gate.mjs"),
   );
+  for (const name of [
+    "release-policy.mjs",
+    "check-coverage.mjs",
+    "interactive-supplement.mjs",
+    "native-supplements.mjs",
+  ])
+    copyFileSync(
+      new URL(`./${name}`, import.meta.url),
+      join(fixture, "scripts", name),
+    );
   copyFileSync(
     new URL("../packages/typescript/src/version.ts", import.meta.url),
     join(fixture, "packages/typescript/src/version.ts"),
@@ -378,10 +388,27 @@ test("guest-call hold blocks the real publisher after other supplements are reco
   const publisher = await import(
     pathToFileURL(join(fixture, "scripts/release-gate.mjs")).href
   );
+  assert.equal(publisher.expectedContract("preview").sourceSha, source.commit);
   assert.throws(
-    () => publisher.expectedContract(),
+    () => publisher.expectedContract("nightly"),
     /Guest calls.*held from publication/,
   );
+  assert.throws(
+    () => publisher.expectedContract("stable"),
+    /Guest calls.*held from publication/,
+  );
+  // The guest-call exception does not waive any other feature hold.
+  const heldPath = join(fixture, "contracts/request-logs.json");
+  const held = JSON.parse(readFileSync(heldPath));
+  writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /Guest calls.*held from publication/,
+  );
+  writeFileSync(heldPath, JSON.stringify(held));
+  assert.equal(candidate.sourceAccepted, false);
+  assert.equal(candidate.published, false);
+  assert.deepEqual(JSON.parse(readFileSync(candidatePath)), candidate);
   candidate.sourceAccepted = candidate.published = true;
   candidate.httpControl.sourceAccepted = candidate.httpControl.published = true;
   candidate.candidateSource.repository = source.repository;
@@ -393,7 +420,14 @@ test("guest-call hold blocks the real publisher after other supplements are reco
     },
   ];
   writeFileSync(candidatePath, JSON.stringify(candidate));
-  assert.equal(publisher.expectedContract().sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("stable").sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("nightly").sourceSha, source.commit);
+  writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
+  assert.equal(publisher.expectedContract("preview").sourceSha, source.commit);
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /held from publication/,
+  );
 });
 
 test("guest-call publication binds both holds, version, repository, commit and Messaging hash", () => {

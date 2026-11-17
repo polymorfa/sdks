@@ -1,11 +1,12 @@
 /**
  * What a drop-in grant can allow. The API enforces the client-token actions
- * (`send_*`, `read_*`, `subscribe_presence`, `voip_*`); your handler enforces
+ * (`send_*`, `read_*`, `subscribe_presence`, `voip_*`, `groups_*`); your handler enforces
  * the rest on its own routes (`read_messages`, `subscribe_events`,
  * `connect_whatsapp`, `manage_templates`).
  */
 export type PolymorfaPermission =
   | "read_messages"
+  | "read_calls"
   | "subscribe_events"
   | "send_message"
   | "send_reaction"
@@ -21,12 +22,26 @@ export type PolymorfaPermission =
   | "voip_place"
   | "voip_answer"
   | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write"
   | "connect_whatsapp"
   | "manage_templates";
 
 export const POLYMORFA_PERMISSIONS: readonly PolymorfaPermission[] =
   Object.freeze([
     "read_messages",
+    "read_calls",
     "subscribe_events",
     "send_message",
     "send_reaction",
@@ -42,6 +57,19 @@ export const POLYMORFA_PERMISSIONS: readonly PolymorfaPermission[] =
     "voip_place",
     "voip_answer",
     "voip_signal",
+    "groups_read",
+    "groups_manage",
+    "conversations_read",
+    "conversations_manage",
+    "labels_read",
+    "labels_manage",
+    "contacts_manage",
+    "profile_read",
+    "profile_manage",
+    "channels_read",
+    "channels_manage",
+    "business_read",
+    "presence_write",
     "connect_whatsapp",
     "manage_templates",
   ]);

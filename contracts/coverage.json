@@ -18655,34 +18655,28 @@
       "operationId": "getTestingPhone",
       "fingerprint": "3857280d47e6fdfea20616d423160d1eacf357b37609cc71b1d408ebb25e80fe",
       "typescript": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.getPhone"
       },
       "go": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.GetPhone"
       },
       "python": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.get_phone"
       },
       "php": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::testing.getPhone"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.GetPhoneAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.get_phone"
       }
     },
     {
@@ -18840,34 +18834,28 @@
       "operationId": "listTestEventFixtures",
       "fingerprint": "04fbd25cb26404b99eeee32dc3861e9fd89daff9cd273fa859787e7fe9cf13c1",
       "typescript": {
-        "status": "missing",
-        "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient.testing.listEventFixtures) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.listEventFixtures"
       },
       "go": {
-        "status": "missing",
-        "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient.Testing.ListEventFixtures) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.ListEventFixtures"
       },
       "python": {
-        "status": "missing",
-        "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (AsyncMessagingClient.testing.list_event_fixtures) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.list_event_fixtures"
       },
       "php": {
-        "status": "missing",
-        "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient::testing.listEventFixtures) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::testing.listEventFixtures"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient.Testing.ListEventFixturesAsync) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.ListEventFixturesAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "The API moved this operation from GET /messaging/testing/{projectId}/events/fixtures to GET /messaging/test-events/fixtures; the SDK method for the old path (MessagingClient.testing.list_event_fixtures) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.list_event_fixtures"
       }
     },
     {
@@ -19167,34 +19155,28 @@
       "operationId": "unlinkTestingPhoneDevice",
       "fingerprint": "c02e328d3ae2555873d9abcc37f40a25a95d4ed7d004a8d3bb147dd81fd9d628",
       "typescript": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.unlinkPhoneDevice"
       },
       "go": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.UnlinkPhoneDevice"
       },
       "python": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.unlink_phone_device"
       },
       "php": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::testing.unlinkPhoneDevice"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.UnlinkPhoneDeviceAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.unlink_phone_device"
       }
     },
     {
@@ -19204,34 +19186,28 @@
       "operationId": "sendTestingPhoneMessage",
       "fingerprint": "28d48aa209a0fb6dd2779d1103d2a0ca98f0f3407f3c1c806890076b0cf6e5d9",
       "typescript": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.sendPhoneMessage"
       },
       "go": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.SendPhoneMessage"
       },
       "python": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.send_phone_message"
       },
       "php": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::testing.sendPhoneMessage"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.SendPhoneMessageAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.send_phone_message"
       }
     },
     {
@@ -19352,34 +19328,28 @@
       "operationId": "triggerTestEvent",
       "fingerprint": "7bd451a4dad642aa1b260fbe735e0a31da10d88c9294f29983a6d13cff4cfe86",
       "typescript": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (MessagingClient.testing.triggerEvent) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.triggerEvent"
       },
       "go": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (MessagingClient.Testing.TriggerEvent) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.TriggerEvent"
       },
       "python": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (AsyncMessagingClient.testing.trigger_event) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.trigger_event"
       },
       "php": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (MessagingClient::testing.triggerEvent) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::testing.triggerEvent"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (MessagingClient.Testing.TriggerEventAsync) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.TriggerEventAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/events to POST /messaging/{session}/test-events; the SDK method for the old path (MessagingClient.testing.trigger_event) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.trigger_event"
       }
     },
     {
@@ -19426,34 +19396,28 @@
       "operationId": "createTestingHistoryFixture",
       "fingerprint": "90836ddb657f5021281794ce5d3c24e6acc9a0a59fee2a23fb235fc418179abf",
       "typescript": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient.testing.createHistoryFixture) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.createHistoryFixture"
       },
       "go": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient.Testing.CreateHistoryFixture) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.CreateHistoryFixture"
       },
       "python": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (AsyncMessagingClient.testing.create_history_fixture) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "AsyncMessagingClient.testing.create_history_fixture"
       },
       "php": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient::testing.createHistoryFixture) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient::testing.createHistoryFixture"
       },
       "dotnet": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient.Testing.CreateHistoryFixtureAsync) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.Testing.CreateHistoryFixtureAsync"
       },
       "rust": {
-        "status": "missing",
-        "reason": "The API moved this operation from POST /messaging/testing/{projectId}/history-fixtures to POST /messaging/projects/{projectId}/test-history-fixtures; the SDK method for the old path (MessagingClient.testing.create_history_fixture) is not yet updated.",
-        "milestone": "contract-f180dc1ee2-sync"
+        "status": "covered",
+        "method": "MessagingClient.testing.create_history_fixture"
       }
     },
     {
@@ -21926,51 +21890,6 @@
     }
   },
   "retiredOperations": [
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/testing/{projectId}/events/fixtures",
-      "operationId": "listTestEventFixtures",
-      "reason": "No longer in the API specification at contract revision f180dc1ee2 of polymorfa/polymorfa#887 under this path or operation. The SDK methods named below still target it and are pending a removal or update decision.",
-      "sdkMethods": {
-        "typescript": "MessagingClient.testing.listEventFixtures",
-        "go": "MessagingClient.Testing.ListEventFixtures",
-        "python": "AsyncMessagingClient.testing.list_event_fixtures",
-        "php": "MessagingClient::testing.listEventFixtures",
-        "dotnet": "MessagingClient.Testing.ListEventFixturesAsync",
-        "rust": "MessagingClient.testing.list_event_fixtures"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/testing/{projectId}/events",
-      "operationId": "triggerTestEvent",
-      "reason": "No longer in the API specification at contract revision f180dc1ee2 of polymorfa/polymorfa#887 under this path or operation. The SDK methods named below still target it and are pending a removal or update decision.",
-      "sdkMethods": {
-        "typescript": "MessagingClient.testing.triggerEvent",
-        "go": "MessagingClient.Testing.TriggerEvent",
-        "python": "AsyncMessagingClient.testing.trigger_event",
-        "php": "MessagingClient::testing.triggerEvent",
-        "dotnet": "MessagingClient.Testing.TriggerEventAsync",
-        "rust": "MessagingClient.testing.trigger_event"
-      }
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/testing/{projectId}/history-fixtures",
-      "operationId": "createTestingHistoryFixture",
-      "reason": "No longer in the API specification at contract revision f180dc1ee2 of polymorfa/polymorfa#887 under this path or operation. The SDK methods named below still target it and are pending a removal or update decision.",
-      "sdkMethods": {
-        "typescript": "MessagingClient.testing.createHistoryFixture",
-        "go": "MessagingClient.Testing.CreateHistoryFixture",
-        "python": "AsyncMessagingClient.testing.create_history_fixture",
-        "php": "MessagingClient::testing.createHistoryFixture",
-        "dotnet": "MessagingClient.Testing.CreateHistoryFixtureAsync",
-        "rust": "MessagingClient.testing.create_history_fixture"
-      }
-    },
     {
       "family": "platform",
       "method": "DELETE",

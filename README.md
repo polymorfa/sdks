@@ -46,6 +46,22 @@ optional peer dependency used only by `/react` and `/store/react`. See the
 
 For a small browser preview against staging, see the [Calls example](examples/calls-example/README.md).
 
+## Preview releases
+
+The manual `preview` channel publishes checked SDK and UI Kit prereleases before
+deployed API acceptance. Their provenance records feature holds and incomplete
+SDK coverage. Preview publication does not establish API feature availability.
+These packages use the `preview` npm tag and distinct `-preview.<timestamp>`
+versions; `dev` and `latest` retain their acceptance requirements. After the
+preview tags appear in npm, install matching packages with:
+
+```bash
+npm install @polymorfa/sdk@preview @polymorfa/ui-kit@preview
+```
+
+See the
+[release procedure](docs/releasing.md#preview-publication).
+
 ## TypeScript development install
 
 The daily workflow checks `main` at 02:00 UTC and publishes eligible nightly
@@ -55,7 +71,6 @@ publication:
 
 ```bash
 npm install @polymorfa/sdk@dev
-npm install @polymorfa/ui-kit@dev   # browser apps
 ```
 
 Pin an exact version for reproducible installs. Check

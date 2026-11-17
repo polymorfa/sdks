@@ -894,6 +894,12 @@ when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
 
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
+
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
 
@@ -1032,6 +1038,51 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 # }
 ```
 
+## Number call history (unreleased source)
+
+Read one number's calls with the other party's identity through
+`GET /messaging/{session}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```rust,no_run
+# async fn read_call_history(messaging: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
+let page = messaging.calls().list("support",
+    &polymorfa_sdk::session_calls::ListSessionCallsParams {
+        limit: Some(25), outcome: Some("missed".into()), ..Default::default()
+    }, Default::default()).await?;
+# let _ = page;
+# Ok(())
+# }
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
+## Number-scoped Test operations
+
+The Test phone methods take a Number ID, without a project argument:
+```rust,no_run
+# async fn run(client: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
+use polymorfa_sdk::onboarding::{TestEventFixture, TriggerTestEventRequest};
+use polymorfa_sdk::RequestOptions;
+
+let phone = client.testing().get_phone("support", RequestOptions::default()).await?;
+let event = client.testing().trigger_event("support", &TriggerTestEventRequest {
+    event: TestEventFixture::CallMissed,
+    overrides: None,
+    from_number: Some("sales".into()),
+}, RequestOptions::default()).await?;
+let fixtures = client.testing().list_event_fixtures(RequestOptions::default()).await?;
+# let _ = (phone, event, fixtures);
+# Ok(())
+# }
+```
+
+Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.
 
 ## Guest participants and waiting rooms (unreleased)
 
