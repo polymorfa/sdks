@@ -9,7 +9,7 @@ later tooling or documentation commit does not create a self-reference.
 
 The current source includes main's separately pinned webhook phone-offline
 supplement. The baseline stays at `Polymorfa-Version: 2026-09-22`, with API source
-`23f91923668cdbb832642e471103568648254fc4` (the Connection source candidate) and the two
+`a7cab53684b989b1ce68882989d31e2277841bdc` (the Connection source candidate) and the two
 hashes in `specs`.
 Separately pinned supplements retain their own versions. The generator rejects
 changed source files, coverage pins and OpenAPI snapshots until the source is
