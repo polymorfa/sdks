@@ -1,6 +1,6 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "653fe445b611c9bf168f3004313ce3331ce584e2",
+  "commit": "f7f058a0a543f74b42ab76eecb9e75c1cc9e03b8",
   "published": false,
   "apiVersion": "2026-09-22",
   "note": "Connection source projection at the exact candidate revision in contracts/source.json. This is not deployment or package acceptance.",

@@ -14,7 +14,7 @@ const BASELINE = {
   operations: 671,
 };
 const CURRENT_BASELINE = {
-  sourceApiCommit: "653fe445b611c9bf168f3004313ce3331ce584e2",
+  sourceApiCommit: "f7f058a0a543f74b42ab76eecb9e75c1cc9e03b8",
   operations: 672,
 };
 const FIELDS = {
