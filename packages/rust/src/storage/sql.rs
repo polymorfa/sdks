@@ -433,8 +433,14 @@ impl StorageAdapter for SqlStorageAdapter {
                         (sql, values)
                     }
                 };
+                // SQLx Any 0.8.6 infers nullable argument types from each value,
+                // including swapped FLOAT4/FLOAT8 null metadata. PostgreSQL's
+                // cached statement would reuse that first type for later binary
+                // values. Prepare each row write afresh; keep read/delete caches.
+                let persistent =
+                    self.dialect != SqlDialect::Postgres || !matches!(write, RowWrite::Put { .. });
                 let result = self
-                    .bind(sqlx::query(&sql), values)?
+                    .bind(sqlx::query(&sql).persistent(persistent), values)?
                     .execute(&mut *transaction)
                     .await;
                 match result {
@@ -579,6 +585,10 @@ pub fn supabase_preset(options: &SupabasePresetOptions) -> StorageResult<String>
         q(&format!("{}storage_memberships", sql.table_prefix))?
     );
     let mut statements = schema_statements(SqlDialect::Postgres, &sql)?;
+    statements.push(format!(
+        "GRANT SELECT ON {} TO {writer}",
+        table(SqlDialect::Postgres, &sql, "storage_schema")?
+    ));
     statements.extend([
         format!("CREATE TABLE IF NOT EXISTS {members} (connection_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (connection_id, subject))"),
         format!("ALTER TABLE {members} ENABLE ROW LEVEL SECURITY"),format!("ALTER TABLE {members} FORCE ROW LEVEL SECURITY"),format!("REVOKE ALL ON {members} FROM PUBLIC"),

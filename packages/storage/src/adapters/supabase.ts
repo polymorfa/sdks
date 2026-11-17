@@ -2,6 +2,7 @@ import { ENTITY_NAMES } from "../schema.js";
 import {
   schemaStatements,
   schemaVersionStatement,
+  metaTable,
   tableName,
   quoteIdent,
   type SqlNaming,
@@ -29,6 +30,7 @@ export function supabasePreset(options: SupabasePresetOptions = {}): string {
     `ALTER TABLE ${members} FORCE ROW LEVEL SECURITY`,
     `REVOKE ALL ON ${members} FROM PUBLIC`,
     `GRANT USAGE ON SCHEMA ${q(schema)} TO ${q(reader)}, ${q(writer)}`,
+    `GRANT SELECT ON ${metaTable("postgres", { ...options, schema })} TO ${q(writer)}`,
     `GRANT SELECT ON ${members} TO ${q(reader)}`,
     `GRANT SELECT, INSERT, UPDATE, DELETE ON ${members} TO ${q(writer)}`,
     `CREATE POLICY ${q(`${prefix}members_self`)} ON ${members} FOR SELECT TO ${q(reader)} USING (subject = auth.uid())`,

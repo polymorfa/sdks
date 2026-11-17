@@ -83,13 +83,44 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
     }
   });
   it("FORCE RLS denies foreign connections, content writes and membership writes; live revocation takes effect", async () => {
-    const pool = new Pool(pgOptions);
+    const options = process.env.POLYMORFA_STORAGE_RLS_POSTGRES_URL
+      ? { connectionString: process.env.POLYMORFA_STORAGE_RLS_POSTGRES_URL }
+      : pgOptions;
+    if ("connectionString" in options) {
+      const target = new URL(options.connectionString!);
+      if (
+        !["127.0.0.1", "localhost", "[::1]"].includes(target.hostname) ||
+        target.pathname !== "/sdk_customer_rls_tests"
+      ) {
+        throw new Error(
+          "Supabase role proof requires its dedicated loopback fixture database",
+        );
+      }
+    }
+    const pool = new Pool(options);
+    const writerOptions =
+      "connectionString" in options
+        ? (() => {
+            const target = new URL(options.connectionString!);
+            target.username = "zk_storage_writer";
+            target.password = "synthetic_fixture_only";
+            return { connectionString: target.toString() };
+          })()
+        : {
+            ...options,
+            user: "zk_storage_writer",
+            password: "synthetic_fixture_only",
+          };
+    const writerPool = new Pool(writerOptions);
     const client = await pool.connect();
     const schema = `zkrls_${Date.now()}`;
     const subject = "00000000-0000-0000-0000-000000000001";
     try {
       await client.query(
         "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='zk_storage_reader') THEN CREATE ROLE zk_storage_reader NOLOGIN; END IF; IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='zk_storage_writer') THEN CREATE ROLE zk_storage_writer NOLOGIN; END IF; END $$;",
+      );
+      await client.query(
+        "ALTER ROLE zk_storage_writer LOGIN NOINHERIT NOSUPERUSER NOBYPASSRLS PASSWORD 'synthetic_fixture_only'",
       );
       await client.query(
         "CREATE SCHEMA IF NOT EXISTS auth; CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; GRANT USAGE ON SCHEMA auth TO zk_storage_reader;",
@@ -102,7 +133,7 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
           serverRole: "zk_storage_writer",
         }),
       );
-      const adapter = postgresAdapter(pool, {
+      const adapter = postgresAdapter(writerPool, {
         schema,
         tablePrefix: "s_",
         createTables: false,
@@ -162,6 +193,7 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
     } finally {
       await client.query("RESET ROLE");
       client.release();
+      await writerPool.end();
       await pool.end();
     }
   }, 30000);
