@@ -87,6 +87,11 @@ export function checkBusinessAccountModes({
   );
   const quickLink = fieldGroups.quickLinkTesting;
   assert.ok(operationIds.has(quickLink.operationId));
+  assert.equal(
+    quickLink.operationId,
+    "createQuickLink",
+    "QuickLink testing fields belong to createQuickLink",
+  );
   assert.deepEqual(quickLink.fields, ["accountType", "primaryPlatform"]);
   const testingFields =
     schemas.QuickLinkConfiguration.properties.testing.properties.configuration
@@ -98,6 +103,11 @@ export function checkBusinessAccountModes({
     );
   const encryption = fieldGroups.businessProfileEncryption;
   assert.ok(operationIds.has(encryption.operationId));
+  assert.equal(
+    encryption.operationId,
+    "getBusinessProfile",
+    "Business profile encryption belongs to getBusinessProfile",
+  );
   assert.equal(encryption.optional, true);
   assert.deepEqual(
     encryption.enum,

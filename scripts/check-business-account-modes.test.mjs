@@ -76,3 +76,17 @@ test("fails when the inventory names a different pinned operation", () => {
     }),
   );
 });
+test("fails when a field group names another pinned operation", () => {
+  assert.throws(
+    run((json) => {
+      json(inventory).fields.quickLinkTesting.operationId =
+        "setTestingAccountMode";
+    }),
+  );
+  assert.throws(
+    run((json) => {
+      json(inventory).fields.businessProfileEncryption.operationId =
+        "createQuickLink";
+    }),
+  );
+});
