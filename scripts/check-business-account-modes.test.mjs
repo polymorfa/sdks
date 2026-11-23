@@ -90,3 +90,12 @@ test("fails when a field group names another pinned operation", () => {
     }),
   );
 });
+test("fails when the supplement is rebound to another commit", () => {
+  assert.throws(
+    run((json) => {
+      const commit = "0".repeat(40);
+      json(pin).commit = commit;
+      json(inventory).sourceCommit = commit;
+    }),
+  );
+});

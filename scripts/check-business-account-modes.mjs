@@ -15,7 +15,7 @@ export function checkBusinessAccountModes({
   const pin = json("contracts/business-account-modes.json");
   const inventory = json("contracts/native-business-account-modes.json");
   const languages = ["typescript", "go", "python", "php", "rust", "dotnet"];
-  assert.match(pin.commit, /^[a-f0-9]{40}$/);
+  assert.equal(pin.commit, "15db8b1c9d88e2ceccb58c851e731feabb659a39");
   assert.match(pin.sources.messaging.sourceSha256, /^[a-f0-9]{64}$/);
   assert.equal(pin.releaseStatus, "source-only");
   assert.equal(inventory.sourceCommit, pin.commit);

@@ -1029,7 +1029,9 @@ result = await client.testing.set_account_mode(
 
 The request requires `accountType`: `whatsapp_app`, `business_app`, `meta_cloud`
 or `meta_coexistence`. Phone modes accept `primaryPlatform` (`android` or `ios`);
-omit it for `meta_cloud`. Legacy `personal` and `business` names are rejected.
+omit it for `meta_cloud`. On a phone mode, omitting it sets `android`, so an
+iOS `business_app` Test Connection changes mode and unlinks every companion.
+Legacy `personal` and `business` names are rejected.
 A change unlinks companions, which must pair again. The response distinguishes a
 completed unchanged mode with `changed: false`. Client tokens cannot perform this
 operation. It does not convert a real WhatsApp account.
