@@ -23,7 +23,7 @@ export function checkBusinessAccountModes({
   assert.equal(inventory.baselineUnchanged, true);
   assert.equal(
     json("contracts/source.json").commit,
-    "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
+    "15db8b1c9d88e2ceccb58c851e731feabb659a39",
   );
   const schemas = pin.sources.messaging.components.schemas;
   assert.deepEqual(
@@ -46,7 +46,7 @@ export function checkBusinessAccountModes({
   assert.equal(inventory.operations[0].method, "PUT");
   assert.equal(
     inventory.operations[0].path,
-    "/messaging/{session}/phone/account-mode",
+    "/messaging/{connection}/phone/account-mode",
   );
   for (const operation of inventory.operations) {
     assert.equal(

@@ -12,7 +12,7 @@ namespace Polymorfa;
  * @phpstan-type ProjectTemplate array{id:string,name:string,category:string,language:string,status:string,kind:string,definition?:Definition|null,sampleValues?:array<string,string>|null,cloudLinks:list<mixed>,createdAt:int|float,updatedAt:int|float}
  * @phpstan-type ProjectCreate array{name:string,definition:Definition,sampleValues?:array<string,string>}
  * @phpstan-type ProjectUpdate array{name?:string,status?:string,definition?:Definition,sampleValues?:array<string,string>}
- * @phpstan-type CloudTemplate array{id:string,tenantId:string,session:string,wabaId:string,name:string,language:string,category:Category,status:'PENDING'|'APPROVED'|'REJECTED'|'PAUSED'|'DISABLED'|'DELETED'|'ARCHIVED'|'IN_APPEAL'|'LIMIT_EXCEEDED'|'PENDING_DELETION',components:list<mixed>,metaTemplateId?:string,rejectionReason?:string,qualityScore?:string,createdAt:string,updatedAt:string}
+ * @phpstan-type CloudTemplate array{id:string,tenantId:string,connection:string,wabaId:string,name:string,language:string,category:Category,status:'PENDING'|'APPROVED'|'REJECTED'|'PAUSED'|'DISABLED'|'DELETED'|'ARCHIVED'|'IN_APPEAL'|'LIMIT_EXCEEDED'|'PENDING_DELETION',components:list<mixed>,metaTemplateId?:string,rejectionReason?:string,qualityScore?:string,createdAt:string,updatedAt:string}
  * @phpstan-type CloudCreate array{name:string,language:string,category:Category,components:list<mixed>}
  */
 final class TemplateModels

@@ -5,15 +5,15 @@ namespace Polymorfa.Sdk;
 
 public sealed record FlowValidationPointer(string? Path = null, int? LineStart = null, int? LineEnd = null, int? ColumnStart = null, int? ColumnEnd = null);
 public sealed record FlowValidationIssue(string? Error = null, string? ErrorType = null, string? Message = null, IReadOnlyList<FlowValidationPointer>? Pointers = null, int? LineStart = null, int? LineEnd = null, int? ColumnStart = null, int? ColumnEnd = null);
-public sealed record FlowNumberLink(string Session, string WabaId, string MetaFlowId, string Status, IReadOnlyList<string> Categories, IReadOnlyList<FlowValidationIssue> ValidationErrors, string UploadState, long LastSyncedAt, string? SessionId = null, string? PreviewUrl = null, long? PreviewExpiresAt = null, string? DefinitionDigest = null, bool? Simulated = null);
-public record FlowSummary(string Id, string Name, string Status, string Version, int ScreenCount, IReadOnlyList<FlowNumberLink> MetaLinks, long CreatedAt, long UpdatedAt);
-public sealed record FlowDraft(string Id, string Name, string Status, string Version, int ScreenCount, IReadOnlyList<FlowNumberLink> MetaLinks, long CreatedAt, long UpdatedAt, IReadOnlyDictionary<string, JsonElement> Definition) : FlowSummary(Id, Name, Status, Version, ScreenCount, MetaLinks, CreatedAt, UpdatedAt);
+public sealed record FlowConnectionLink(string Connection, string WabaId, string MetaFlowId, string Status, IReadOnlyList<string> Categories, IReadOnlyList<FlowValidationIssue> ValidationErrors, string UploadState, long LastSyncedAt, string? ConnectionId = null, string? PreviewUrl = null, long? PreviewExpiresAt = null, string? DefinitionDigest = null, bool? Simulated = null);
+public record FlowSummary(string Id, string Name, string Status, string Version, int ScreenCount, IReadOnlyList<FlowConnectionLink> MetaLinks, long CreatedAt, long UpdatedAt);
+public sealed record FlowDraft(string Id, string Name, string Status, string Version, int ScreenCount, IReadOnlyList<FlowConnectionLink> MetaLinks, long CreatedAt, long UpdatedAt, IReadOnlyDictionary<string, JsonElement> Definition) : FlowSummary(Id, Name, Status, Version, ScreenCount, MetaLinks, CreatedAt, UpdatedAt);
 public sealed record CreateFlowRequest(string Name, IReadOnlyDictionary<string, JsonElement> Definition, string? DraftId = null);
 public sealed record UpdateFlowRequest(long ExpectedUpdatedAt, string? Name = null, string? Status = null, IReadOnlyDictionary<string, JsonElement>? Definition = null);
-public sealed record FlowProviderRequest(string SessionId, IReadOnlyList<string>? Categories = null, string? RequestId = null);
-public sealed record FlowProviderOperation(string Id, string? RequestId, string FlowId, string FlowName, string SessionId, string Session, string Action, string State, string? Resolution, string? WabaId, string? MetaFlowId, string? DefinitionDigest, string? ProviderStatus, string? ErrorCode, int? ProviderCode, int? ProviderSubcode, long CreatedAt, long UpdatedAt, long? CompletedAt);
+public sealed record FlowProviderRequest(string ConnectionId, IReadOnlyList<string>? Categories = null, string? RequestId = null);
+public sealed record FlowProviderOperation(string Id, string? RequestId, string FlowId, string FlowName, string ConnectionId, string Connection, string Action, string State, string? Resolution, string? WabaId, string? MetaFlowId, string? DefinitionDigest, string? ProviderStatus, string? ErrorCode, int? ProviderCode, int? ProviderSubcode, long CreatedAt, long UpdatedAt, long? CompletedAt);
 public sealed record FlowProviderResult(FlowProviderOperation? Operation, FlowDraft Flow);
-public sealed record FlowEndpoint(string Id, string TeamId, string ProjectId, string FlowId, string SessionId, string Mode, string? Url, string? FunctionId, string? DeploymentId, bool Enabled, long Revision, string EndpointUri, long CreatedAt, long UpdatedAt);
+public sealed record FlowEndpoint(string Id, string TeamId, string ProjectId, string FlowId, string ConnectionId, string Mode, string? Url, string? FunctionId, string? DeploymentId, bool Enabled, long Revision, string EndpointUri, long CreatedAt, long UpdatedAt);
 public sealed record ManagedFlowEncryptionKey(string Id, string State, string Fingerprint, string PublicKey, string? ErrorCode, long CreatedAt, long? ActivatedAt, long? RetireAfter);
 public record FlowEncryptionCustody(string Custody, string? ActiveKeyId, IReadOnlyList<ManagedFlowEncryptionKey> Keys);
 public sealed record FlowEncryptionKeyRotation(string Custody, string? ActiveKeyId, IReadOnlyList<ManagedFlowEncryptionKey> Keys, ManagedFlowEncryptionKey Key) : FlowEncryptionCustody(Custody, ActiveKeyId, Keys);
@@ -22,13 +22,13 @@ public sealed record FlowEndpointSetResult(FlowEndpoint Endpoint, FlowEncryption
 {
     public override string ToString() => $"FlowEndpointSetResult {{ EndpointId = {Endpoint.Id}, SigningSecret = [REDACTED] }}";
 }
-public abstract record SetFlowEndpointRequest(string SessionId, bool? Enabled = null, long? ExpectedRevision = null) { public abstract string Mode { get; } }
-public sealed record ForwardFlowEndpointRequest(string SessionId, string Url, bool? RotateSigningSecret = null, bool? Enabled = null, long? ExpectedRevision = null) : SetFlowEndpointRequest(SessionId, Enabled, ExpectedRevision) { public override string Mode => "forward"; }
-public sealed record DirectFlowEndpointRequest(string SessionId, string Url, bool? Enabled = null, long? ExpectedRevision = null) : SetFlowEndpointRequest(SessionId, Enabled, ExpectedRevision) { public override string Mode => "direct"; }
-public sealed record FunctionFlowEndpointRequest(string SessionId, string FunctionId, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> DeploymentId = default, bool? Enabled = null, long? ExpectedRevision = null) : SetFlowEndpointRequest(SessionId, Enabled, ExpectedRevision) { public override string Mode => "function"; }
-public sealed record FlowNumberRequest(string SessionId);
-public sealed record ListFlowEndpointReceiptsParameters(string? SessionId = null, int? Limit = null);
-public sealed record FlowEndpointReceipt(string Id, string FlowId, string EndpointId, string SessionId, string Mode, string? Action, string Outcome, int? HttpStatus, string? ErrorCode, string? KeyId, string? FunctionInvocationId, double? DurationMs, long CreatedAt, long? CompletedAt);
+public abstract record SetFlowEndpointRequest(string ConnectionId, bool? Enabled = null, long? ExpectedRevision = null) { public abstract string Mode { get; } }
+public sealed record ForwardFlowEndpointRequest(string ConnectionId, string Url, bool? RotateSigningSecret = null, bool? Enabled = null, long? ExpectedRevision = null) : SetFlowEndpointRequest(ConnectionId, Enabled, ExpectedRevision) { public override string Mode => "forward"; }
+public sealed record DirectFlowEndpointRequest(string ConnectionId, string Url, bool? Enabled = null, long? ExpectedRevision = null) : SetFlowEndpointRequest(ConnectionId, Enabled, ExpectedRevision) { public override string Mode => "direct"; }
+public sealed record FunctionFlowEndpointRequest(string ConnectionId, string FunctionId, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> DeploymentId = default, bool? Enabled = null, long? ExpectedRevision = null) : SetFlowEndpointRequest(ConnectionId, Enabled, ExpectedRevision) { public override string Mode => "function"; }
+public sealed record FlowConnectionRequest(string ConnectionId);
+public sealed record ListFlowEndpointReceiptsParameters(string? ConnectionId = null, int? Limit = null);
+public sealed record FlowEndpointReceipt(string Id, string FlowId, string EndpointId, string ConnectionId, string Mode, string? Action, string Outcome, int? HttpStatus, string? ErrorCode, string? KeyId, string? FunctionInvocationId, double? DurationMs, long CreatedAt, long? CompletedAt);
 public sealed record FlowOk(bool Ok);
 public sealed class Flows : Resource
 {
@@ -62,10 +62,10 @@ public sealed class Flows : Resource
     public Task<ApiResponse<FlowProviderResult>> DiscardAsync(string flowId, FlowProviderRequest body, RequestOptions? options = null) => Request<FlowProviderResult>(HttpMethod.Post, Path(flowId) + "/discard", body, options);
     public Task<ApiResponse<FlowProviderResult>> SyncAsync(string flowId, FlowProviderRequest body, RequestOptions? options = null) => Request<FlowProviderResult>(HttpMethod.Post, Path(flowId) + "/sync", body, options);
     public Task<ApiResponse<IReadOnlyList<FlowProviderOperation>>> ReceiptsAsync(string flowId, RequestOptions? options = null) => Request<IReadOnlyList<FlowProviderOperation>>(HttpMethod.Get, Path(flowId) + "/receipts", null, options);
-    public Task<ApiResponse<FlowEndpointState>> EndpointAsync(string flowId, FlowNumberRequest parameters, RequestOptions? options = null) { ValidateNumber(parameters.SessionId); return Request<FlowEndpointState>(HttpMethod.Get, Path(flowId) + "/endpoint", parameters, options); }
+    public Task<ApiResponse<FlowEndpointState>> EndpointAsync(string flowId, FlowConnectionRequest parameters, RequestOptions? options = null) { ValidateConnection(parameters.ConnectionId); return Request<FlowEndpointState>(HttpMethod.Get, Path(flowId) + "/endpoint", parameters, options); }
     public Task<ApiResponse<FlowEndpointSetResult>> SetEndpointAsync(string flowId, SetFlowEndpointRequest body, RequestOptions? options = null)
     {
-        ValidateNumber(body.SessionId);
+        ValidateConnection(body.ConnectionId);
         if (body.ExpectedRevision is < 1) throw new PolymorfaValidationException("expectedRevision must be positive.", "invalid_parameter");
         switch (body)
         {
@@ -76,15 +76,15 @@ public sealed class Flows : Resource
         }
         return Request<FlowEndpointSetResult>(HttpMethod.Put, Path(flowId) + "/endpoint", body, options);
     }
-    public Task<ApiResponse<FlowOk>> DeleteEndpointAsync(string flowId, FlowNumberRequest parameters, RequestOptions? options = null) { ValidateNumber(parameters.SessionId); return Request<FlowOk>(HttpMethod.Delete, Path(flowId) + "/endpoint", parameters, options); }
+    public Task<ApiResponse<FlowOk>> DeleteEndpointAsync(string flowId, FlowConnectionRequest parameters, RequestOptions? options = null) { ValidateConnection(parameters.ConnectionId); return Request<FlowOk>(HttpMethod.Delete, Path(flowId) + "/endpoint", parameters, options); }
     public Task<ApiResponse<IReadOnlyList<FlowEndpointReceipt>>> EndpointReceiptsAsync(string flowId, ListFlowEndpointReceiptsParameters? parameters = null, RequestOptions? options = null)
     {
         if (parameters?.Limit is < 1 or > 100) throw new PolymorfaValidationException("limit must be from 1 to 100.", "invalid_parameter");
         return Request<IReadOnlyList<FlowEndpointReceipt>>(HttpMethod.Get, Path(flowId) + "/endpoint/receipts", parameters, options);
     }
-    public Task<ApiResponse<FlowEncryptionCustody>> EncryptionKeyAsync(FlowNumberRequest parameters, RequestOptions? options = null) { ValidateNumber(parameters.SessionId); return Request<FlowEncryptionCustody>(HttpMethod.Get, "/platform/flow-encryption-keys", parameters, options); }
-    public Task<ApiResponse<FlowEncryptionKeyRotation>> RotateEncryptionKeyAsync(FlowNumberRequest parameters, RequestOptions? options = null) { ValidateNumber(parameters.SessionId); return Request<FlowEncryptionKeyRotation>(HttpMethod.Post, "/platform/flow-encryption-keys/rotate", parameters, options); }
-    private static void ValidateNumber(string sessionId) { if (string.IsNullOrWhiteSpace(sessionId)) throw new PolymorfaValidationException("sessionId is required.", "invalid_parameter"); }
+    public Task<ApiResponse<FlowEncryptionCustody>> EncryptionKeyAsync(FlowConnectionRequest parameters, RequestOptions? options = null) { ValidateConnection(parameters.ConnectionId); return Request<FlowEncryptionCustody>(HttpMethod.Get, "/platform/flow-encryption-keys", parameters, options); }
+    public Task<ApiResponse<FlowEncryptionKeyRotation>> RotateEncryptionKeyAsync(FlowConnectionRequest parameters, RequestOptions? options = null) { ValidateConnection(parameters.ConnectionId); return Request<FlowEncryptionKeyRotation>(HttpMethod.Post, "/platform/flow-encryption-keys/rotate", parameters, options); }
+    private static void ValidateConnection(string connectionId) { if (string.IsNullOrWhiteSpace(connectionId)) throw new PolymorfaValidationException("connectionId is required.", "invalid_parameter"); }
     private static void ValidateEndpointUrl(string value)
     {
         if (value.Length > 2048 || !Uri.TryCreate(value, UriKind.Absolute, out var url) || url.Scheme != "https" || url.UserInfo.Length > 0 || url.Fragment.Length > 0) throw new PolymorfaValidationException("Flow endpoint must be an HTTPS URL without user information or fragment.", "invalid_parameter");

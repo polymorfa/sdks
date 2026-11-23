@@ -21,8 +21,8 @@ model!(Customer{id:String,team_id:String,project_id:String,name:Option<String>,e
 pub struct CustomerSummary {
     #[serde(flatten)]
     pub customer: Customer,
-    pub number_count: u64,
-    pub connected_number_count: u64,
+    pub connection_count: u64,
+    pub connected_connection_count: u64,
     pub active_pairing_link_state: Option<String>,
     pub last_activity_at: Option<u64>,
     pub needs_attention: bool,
@@ -33,7 +33,7 @@ model!(CustomersStatus{enabled:bool,enabled_at:Option<u64>,enabled_by:Option<Str
 pub struct CustomersEnablement {
     #[serde(flatten)]
     pub status: CustomersStatus,
-    pub migrated_number_count: u64,
+    pub migrated_connection_count: u64,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -60,13 +60,13 @@ pub struct CreateCustomerRequest {
     pub external_customer_id: Option<Option<String>>,
 }
 pub type UpdateCustomerRequest = CreateCustomerRequest;
-model!(ListCustomersParameters{project_id:String;cursor:String,limit:u32,search:String,status:CustomerListStatus,is_default:bool,has_numbers:bool,needs_attention:bool});
+model!(ListCustomersParameters{project_id:String;cursor:String,limit:u32,search:String,status:CustomerListStatus,is_default:bool,has_connections:bool,needs_attention:bool});
 model!(CustomerListPage{next_cursor:Option<String>,has_more:bool;});
 model!(CustomerListEnvelope{data:Vec<CustomerSummary>,page:CustomerListPage;});
-model!(CustomerNumber{id:String,customer_id:String,session_id:String,name:Option<String>,phone_masked:Option<String>,status:String,backend:Option<String>,created_at:u64;});
+model!(CustomerConnection{id:String,customer_id:String,connection_id:String,name:Option<String>,phone_masked:Option<String>,status:String,backend:Option<String>,created_at:u64;});
 model!(CustomerEventMetadata{;fields:Vec<CustomerEventField>});
-model!(CustomerEvent{id:String,action:String,from_status:Option<String>,to_status:Option<String>,session_id:Option<String>,pairing_link_id:Option<String>,metadata:CustomerEventMetadata,occurred_at:u64;});
-model!(CustomerPairingLink{id:String,team_id:String,project_id:String,customer_id:String,expected_phone_masked:Option<String>,methods:Vec<CustomerPairingMethod>,locale:Option<CustomerPairingLocale>,theme:Option<CustomerPairingTheme>,expires_at:u64,status:CustomerPairingLinkStatus,attempt_count:u32,max_attempts:u32,pending_session_id:Option<String>,created_by:Option<String>,reserved_at:Option<u64>,opened_at:Option<u64>,connecting_at:Option<u64>,connected_at:Option<u64>,failed_at:Option<u64>,expired_at:Option<u64>,revoked_at:Option<u64>,last_error_code:Option<String>,failed_exchange_count:u32,phone_mismatch_count:u32,created_at:u64,updated_at:u64;});
+model!(CustomerEvent{id:String,action:String,from_status:Option<String>,to_status:Option<String>,connection_id:Option<String>,pairing_link_id:Option<String>,metadata:CustomerEventMetadata,occurred_at:u64;});
+model!(CustomerPairingLink{id:String,team_id:String,project_id:String,customer_id:String,expected_phone_masked:Option<String>,methods:Vec<CustomerPairingMethod>,locale:Option<CustomerPairingLocale>,theme:Option<CustomerPairingTheme>,expires_at:u64,status:CustomerPairingLinkStatus,attempt_count:u32,max_attempts:u32,pending_connection_id:Option<String>,created_by:Option<String>,reserved_at:Option<u64>,opened_at:Option<u64>,connecting_at:Option<u64>,connected_at:Option<u64>,failed_at:Option<u64>,expired_at:Option<u64>,revoked_at:Option<u64>,last_error_code:Option<String>,failed_exchange_count:u32,phone_mismatch_count:u32,created_at:u64,updated_at:u64;});
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CreatedCustomerPairingLink {
     #[serde(flatten)]
@@ -91,7 +91,7 @@ pub struct CreateCustomerPairingLinkRequest {
     pub expires_in_seconds: Option<u32>,
 }
 model!(ListCustomerEventsParameters{project_id:String;limit:u32});
-model!(TransferCustomerNumberRequest{project_id:String,source_customer_id:String,confirm:bool;});
+model!(TransferCustomerConnectionRequest{project_id:String,source_customer_id:String,confirm:bool;});
 pub struct Customers<'a>(pub(crate) &'a HttpTransport);
 fn customer(id: &str) -> String {
     format!("/platform/customers/{}", encode(id))
@@ -146,7 +146,7 @@ impl Customers<'_> {
         }
         for (k, v) in [
             ("isDefault", params.is_default),
-            ("hasNumbers", params.has_numbers),
+            ("hasConnections", params.has_connections),
             ("needsAttention", params.needs_attention),
         ] {
             if let Some(v) = v {
@@ -230,16 +230,16 @@ impl Customers<'_> {
             )
             .await
     }
-    pub async fn list_numbers(
+    pub async fn list_connections(
         &self,
         id: &str,
         project: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Vec<CustomerNumber>>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Vec<CustomerConnection>>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/numbers", customer(id)),
+                &format!("{}/connections", customer(id)),
                 &[("projectId", project.into())],
                 None,
                 options,
@@ -315,13 +315,13 @@ impl Customers<'_> {
             )
             .await
     }
-    pub async fn transfer_number(
+    pub async fn transfer_connection(
         &self,
         id: &str,
-        session_id: &str,
-        body: &TransferCustomerNumberRequest,
+        connection_id: &str,
+        body: &TransferCustomerConnectionRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<CustomerNumber>>> {
+    ) -> Result<ApiResponse<DataEnvelope<CustomerConnection>>> {
         if !body.confirm {
             return Err(Error::local(
                 ErrorKind::Validation,
@@ -332,7 +332,11 @@ impl Customers<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/numbers/{}/transfer", customer(id), encode(session_id)),
+                &format!(
+                    "{}/connections/{}/transfer",
+                    customer(id),
+                    encode(connection_id)
+                ),
                 &[],
                 Some(body),
                 options,

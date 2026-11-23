@@ -20,7 +20,7 @@ function dynamoNegative(array $responses, Closure $operation, string $error, int
     $table = 'php_native_negative';
     $requests = [];
     $rawBodies = [];
-    $setup = [[200,['Table' => ['TableStatus' => 'ACTIVE','KeySchema' => [['AttributeName' => 'pk','KeyType' => 'HASH'],['AttributeName' => 'sk','KeyType' => 'RANGE']],'AttributeDefinitions' => [['AttributeName' => 'pk','AttributeType' => 'S'],['AttributeName' => 'sk','AttributeType' => 'S']]]]],[200,['Item' => ['pk' => ['S' => 'negative:storage_schema'],'sk' => ['S' => 'storage'],'version' => ['N' => '2']]]]];
+    $setup = [[200,['Table' => ['TableStatus' => 'ACTIVE','KeySchema' => [['AttributeName' => 'pk','KeyType' => 'HASH'],['AttributeName' => 'sk','KeyType' => 'RANGE']],'AttributeDefinitions' => [['AttributeName' => 'pk','AttributeType' => 'S'],['AttributeName' => 'sk','AttributeType' => 'S']]]]],[200,['Item' => ['pk' => ['S' => 'negative:storage_schema'],'sk' => ['S' => 'storage'],'version' => ['N' => '3']]]]];
     $queue = [...$setup,...$responses];
     $client = new Aws\DynamoDb\DynamoDbClient(['version' => 'latest','region' => 'us-east-1','endpoint' => 'http://dynamodb-native.invalid','credentials' => ['key' => 'synthetic','secret' => 'synthetic'],'retries' => 0,'http_handler' => static function ($request) use (&$queue, &$requests, &$rawBodies) {
         $rawBodies[] = (string)$request->getBody();
@@ -56,7 +56,7 @@ function dynamoNegative(array $responses, Closure $operation, string $error, int
     }
 }
 $table = 'php_native_negative';
-$row = Rows::empty('messages', ['sessionId' => 'session','messageId' => 'one']);
+$row = Rows::empty('messages', ['connectionId' => 'connection','messageId' => 'one']);
 $row['_rev'] = 1;
 $id = $row['_id'];
 $key = ['pk' => ['S' => 'negative:messages'],'sk' => ['S' => $id]];
@@ -67,7 +67,7 @@ $foreign = $item;
 $foreign['pk']['S'] = 'foreign';
 $badRev = $item;
 $badRev['row']['M']['_id']['S'] = 'bad-id';
-$unrequested = Rows::empty('messages', ['sessionId' => 'session','messageId' => 'other']);
+$unrequested = Rows::empty('messages', ['connectionId' => 'connection','messageId' => 'other']);
 $unrequested['_rev'] = 1;
 $otherItem = $marshaler->marshalItem(['pk' => 'negative:messages','sk' => $unrequested['_id'],'row' => DocumentRows::encode('messages', $unrequested)]);
 foreach ([$foreign,$badRev,$otherItem] as $bad) {
@@ -79,7 +79,7 @@ dynamoNegative([[200,['UnprocessedKeys' => ['foreign' => ['Keys' => [$key]]]]]],
 dynamoNegative([[200,['UnprocessedKeys' => [$table => ['Keys' => [['pk' => ['S' => 'foreign'],'sk' => ['S' => $id]]]]]]]], $get, 'invalid_storage_data', 1);
 dynamoNegative([[200,['Responses' => [$table => [$item]],'UnprocessedKeys' => [$table => ['Keys' => [$key]]]]]], $get, 'invalid_storage_data', 1);
 dynamoNegative(array_fill(0, 8, [200,['UnprocessedKeys' => [$table => ['Keys' => [$key]]]]]), $get, 'storage_unprocessed_reads', 8);
-$query = fn ($adapter) => $adapter->query('messages', ['index' => 'by_chat','equals' => ['sessionId' => 'session','chatId' => 'chat'],'limit' => 1000]);
+$query = fn ($adapter) => $adapter->query('messages', ['index' => 'by_chat','equals' => ['connectionId' => 'connection','chatId' => 'chat'],'limit' => 1000]);
 dynamoNegative([[200,['Items' => [],'LastEvaluatedKey' => $key]]], $query, 'invalid_storage_data', 1);
 $foreignKey = $key;
 $foreignKey['pk']['S'] = 'foreign';

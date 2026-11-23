@@ -188,7 +188,7 @@ fn signed(value: &Value) -> polymorfa_sdk::Result<WebhookDelivery> {
 #[test]
 fn whole_body_batch_and_previous_identity() {
     let event =
-        json!({"id":"e","session":"","timestamp":"now","event":"future.event","payload":{}});
+        json!({"id":"e","connection":"","timestamp":"now","event":"future.event","payload":{}});
     let batch = json!({"object":"event_batch","version":1,"id":"00000000-0000-4000-8000-000000000001","events":[event.clone(),event.clone()]});
     let WebhookDelivery::Batch(b) = signed(&batch).unwrap() else {
         panic!("batch")
@@ -314,7 +314,7 @@ fn readiness_codes_are_open_status_values() {
         .map(|v| v.as_str().unwrap())
         .chain(["future_readiness"])
     {
-        let value = json!({"purpose":"initial","connectionGoal":"single","id":"q","status":"pending","session":"n","errorCode":code});
+        let value = json!({"purpose":"initial","connectionGoal":"single","id":"q","status":"pending","connection":"n","errorCode":code});
         let status: polymorfa_sdk::models::QuickLinkStatus = serde_json::from_value(value).unwrap();
         assert_eq!(status.error_code.as_deref(), Some(code));
     }

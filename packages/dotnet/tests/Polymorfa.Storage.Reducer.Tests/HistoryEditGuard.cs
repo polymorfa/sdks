@@ -10,7 +10,7 @@ internal static class HistoryEditGuard
     private static void Check(bool value, string label) { if (!value) throw new Exception(label); }
     internal static async Task Run()
     {
-        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/history-edit-guard.json")));
+        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/history-edit-guard.v3.json")));
         var cases = fixture.RootElement.GetProperty("cases").EnumerateArray().ToArray();
         Check(cases.Length == 13, "Edit guard cases");
         var mismatches = new List<string>();

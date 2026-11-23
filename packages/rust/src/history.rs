@@ -204,30 +204,30 @@ pub struct CustomerServiceWindow {
 }
 
 pub struct Chats<'a>(pub(crate) &'a HttpTransport);
-fn chat_path(session: &str, id: &str) -> String {
-    format!("/messaging/{}/chats/{}", encode(session), encode(id))
+fn chat_path(connection: &str, id: &str) -> String {
+    format!("/messaging/{}/chats/{}", encode(connection), encode(id))
 }
-fn message_path(session: &str, chat: &str, id: &str) -> String {
-    format!("{}/messages/{}", chat_path(session, chat), encode(id))
+fn message_path(connection: &str, chat: &str, id: &str) -> String {
+    format!("{}/messages/{}", chat_path(connection, chat), encode(id))
 }
 impl Chats<'_> {
     pub async fn get_service_window(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CustomerServiceWindow>>> {
         self.0.server()?;
         self.0
             .get(
-                &format!("{}/service-window", chat_path(session, chat)),
+                &format!("{}/service-window", chat_path(connection, chat)),
                 options,
             )
             .await
     }
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         params: &ListHistoryChatsParams,
         options: RequestOptions,
     ) -> Result<ApiResponse<HistoryPage<HistoryChat>>> {
@@ -237,7 +237,7 @@ impl Chats<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("/messaging/{}/chats", encode(session)),
+                &format!("/messaging/{}/chats", encode(connection)),
                 &query,
                 None,
                 options,
@@ -246,16 +246,16 @@ impl Chats<'_> {
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HistoryChat>>> {
         self.0.server()?;
-        self.0.get(&chat_path(session, chat), options).await
+        self.0.get(&chat_path(connection, chat), options).await
     }
     pub async fn list_messages(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         params: &ListHistoryMessagesParams,
         options: RequestOptions,
@@ -266,7 +266,7 @@ impl Chats<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/messages", chat_path(session, chat)),
+                &format!("{}/messages", chat_path(connection, chat)),
                 &query,
                 None,
                 options,
@@ -275,17 +275,19 @@ impl Chats<'_> {
     }
     pub async fn retrieve_message(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HistoryMessage>>> {
         self.0.server()?;
-        self.0.get(&message_path(session, chat, id), options).await
+        self.0
+            .get(&message_path(connection, chat, id), options)
+            .await
     }
     pub async fn download_message_media_stream(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         id: &str,
         options: RequestOptions,
@@ -293,21 +295,21 @@ impl Chats<'_> {
         self.0.server()?;
         self.0
             .download(
-                &format!("{}/media", message_path(session, chat, id)),
+                &format!("{}/media", message_path(connection, chat, id)),
                 options,
             )
             .await
     }
     pub async fn download_message_media(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<Vec<u8>>> {
         use futures_util::StreamExt;
         let mut response = self
-            .download_message_media_stream(session, chat, id, options)
+            .download_message_media_stream(connection, chat, id, options)
             .await?;
         let mut data = Vec::new();
         while let Some(chunk) = response.body.next().await {
@@ -320,7 +322,7 @@ impl Chats<'_> {
     }
     pub async fn edit_message(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         id: &str,
         body: &EditMessageRequest,
@@ -329,7 +331,7 @@ impl Chats<'_> {
         self.0
             .request(
                 Method::PUT,
-                &message_path(session, chat, id),
+                &message_path(connection, chat, id),
                 &[],
                 Some(body),
                 options.idempotent(),
@@ -338,7 +340,7 @@ impl Chats<'_> {
     }
     pub async fn delete_message(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         id: &str,
         transport: Option<MessageTransport>,
@@ -359,7 +361,7 @@ impl Chats<'_> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &message_path(session, chat, id),
+                &message_path(connection, chat, id),
                 &query,
                 None,
                 options.idempotent(),
@@ -368,14 +370,14 @@ impl Chats<'_> {
     }
     pub async fn archive(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/archive", chat_path(session, chat)),
+                &format!("{}/archive", chat_path(connection, chat)),
                 &[],
                 None,
                 options,
@@ -384,14 +386,14 @@ impl Chats<'_> {
     }
     pub async fn unarchive(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/unarchive", chat_path(session, chat)),
+                &format!("{}/unarchive", chat_path(connection, chat)),
                 &[],
                 None,
                 options,
@@ -400,7 +402,7 @@ impl Chats<'_> {
     }
     pub async fn set_disappearing_timer(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         body: &crate::account::DisappearingTimerRequest,
         options: RequestOptions,
@@ -408,7 +410,7 @@ impl Chats<'_> {
         self.0
             .request(
                 Method::PUT,
-                &format!("{}/disappearing", chat_path(session, chat)),
+                &format!("{}/disappearing", chat_path(connection, chat)),
                 &[],
                 Some(body),
                 options,

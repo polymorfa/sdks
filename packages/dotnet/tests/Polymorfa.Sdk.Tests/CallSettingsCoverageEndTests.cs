@@ -6,7 +6,7 @@ internal static class CallSettingsCoverageEndTests
 {
     public static async Task RunAsync()
     {
-        var old = new SessionCallSettings(true, false, "clients", null, false, false, 2, null, false);
+        var old = new ConnectionCallSettings(true, false, "clients", null, false, false, 2, null, false);
         var (enabled, conference, route, trunk, claim, hosted, revision, updated, simultaneous) = old;
         ResourceTests.Equal(revision, 2L);
         ResourceTests.Equal(old.SimultaneousCallsCoverageExcludedUntil, null);
@@ -16,7 +16,7 @@ internal static class CallSettingsCoverageEndTests
                 var until = item.Until;
                 var data = new { callsEnabled = true, conferenceMode = false, inboundRoute = "clients", sipTrunkId = (string?)null, sipClaim = false, hostCloudApiCalls = false, revision = 2, updatedAt = (string?)null, simultaneousCalls = item.On, simultaneousCallsCoverageExcludedUntil = until };
                 var response = JsonSerializer.Serialize(new { success = true, data });
-                await Messaging(method, "/platform/sessions/s/call-settings", method == "GET" ? null : "{\"callsEnabled\":false}", response, async c =>
+                await Messaging(method, "/platform/connections/s/call-settings", method == "GET" ? null : "{\"callsEnabled\":false}", response, async c =>
                 {
                     var value = method == "GET" ? await c.Calls.RetrieveCallSettingsAsync("s") : await c.Calls.UpdateCallSettingsAsync("s", new(CallsEnabled: false));
                     ResourceTests.Equal(value.Data.Data.SimultaneousCallsCoverageExcludedUntil, until);

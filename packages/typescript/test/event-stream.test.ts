@@ -6,6 +6,7 @@ import {
   PolymorfaConfigurationError,
   type EventStreamItem,
 } from "../src/index.js";
+import { parseVerifiedWebhookEvent } from "../src/webhooks/verify.js";
 import { TEAM_API_KEY, PROJECT_TOKEN } from "./support/credentials.js";
 
 const PROJECT = "018f0000-0000-7000-8000-000000000077";
@@ -13,7 +14,7 @@ const PROJECT = "018f0000-0000-7000-8000-000000000077";
 function webhookBody(id: string, type = "message.received") {
   return {
     id,
-    session: "support",
+    connection: "support",
     timestamp: "2026-09-18T10:00:00.000Z",
     event: type,
     payload: { text: "hello" },
@@ -151,13 +152,15 @@ describe("events.stream", () => {
     ) as unknown as typeof fetch;
     const items = await collect(
       projectClient(fetcher).events.stream({
-        types: ["message.*", "session.connected"],
+        types: ["message.*", "connection.connected"],
       }),
       2,
     );
     const url = new URL(requests[0]!.url);
     expect(url.pathname).toBe(`/platform/projects/${PROJECT}/events/stream`);
-    expect(url.searchParams.get("types")).toBe("message.*,session.connected");
+    expect(url.searchParams.get("types")).toBe(
+      "message.*,connection.connected",
+    );
     expect(requests[0]!.headers.get("accept")).toBe("text/event-stream");
     expect(requests[0]!.headers.get("authorization")).toBe(
       `Bearer ${PROJECT_TOKEN}`,
@@ -803,3 +806,100 @@ it.each(["%%%", Buffer.from("{}").toString("base64")])(
     );
   },
 );
+
+describe("retained stream selector read view", () => {
+  it("preserves encoded original bytes and exposes a canonical Connection view", async () => {
+    const original = {
+      id: "retained",
+      session: "support.old",
+      timestamp: "2026-09-18T10:00:00.000Z",
+      event: "message.received",
+      payload: { opaque: [false, 42] },
+    };
+    const raw = JSON.stringify(original);
+    expect(() =>
+      parseVerifiedWebhookEvent(new TextEncoder().encode(raw)),
+    ).toThrow();
+    const frame = eventFrame(2, original.id, "retained-cursor");
+    frame.data.event.payload!.data = Buffer.from(raw).toString("base64");
+    const client = projectClient((async () =>
+      sse([ready, frame])) as typeof fetch);
+    const items = await collect(client.events.stream(), 1);
+    expect(items[0]!.webhook).toEqual({
+      id: original.id,
+      connection: original.session,
+      timestamp: original.timestamp,
+      event: original.event,
+      payload: original.payload,
+    });
+    expect(items[0]!.event.payload!.data).toBe(frame.data.event.payload!.data);
+    expect(
+      Buffer.from(items[0]!.event.payload!.data, "base64").toString(),
+    ).toBe(raw);
+  });
+  it.each([
+    { session: null },
+    { session: 1 },
+    { session: "old", connection: "current" },
+  ])(
+    "rejects ambiguous or malformed retained identity %j without advancing its cursor",
+    async (selectors) => {
+      const bad = eventFrame(2, "bad", "bad-cursor");
+      bad.data.event.payload!.data = Buffer.from(
+        JSON.stringify({
+          id: "bad",
+          timestamp: "now",
+          event: "message.received",
+          payload: {},
+          ...selectors,
+        }),
+      ).toString("base64");
+      let attempts = 0;
+      const stream = projectClient((async () =>
+        ++attempts === 1
+          ? sse([bad])
+          : sse([
+              eventFrame(3, "good", "good-cursor"),
+            ])) as typeof fetch).events.stream({
+        since: "initial",
+        reconnect: { initialDelayMs: 0, maxDelayMs: 0 },
+      });
+      expect((await collect(stream, 1))[0]!.cursor).toBe("good-cursor");
+      expect(attempts).toBe(2);
+    },
+  );
+});
+
+it("verifies the exact CLI-forwarded retained body before making its Connection read view", async () => {
+  const { createHmac } = await import("node:crypto");
+  const { webhooks } = await import("../src/webhooks/utilities.js");
+  const raw =
+    '{"id":"old","session":"support.old","timestamp":"now","event":"future.event","payload":{"opaque":[false,42]}}';
+  const bytes = new TextEncoder().encode(raw);
+  const key = Buffer.alloc(32, 7);
+  const secret = key.toString("base64url");
+  const timestamp = 1_700_000_000;
+  const signature = `t=${timestamp},v1=${createHmac("sha256", key).update(`${timestamp}.`).update(bytes).digest("hex")}`;
+  const view = await webhooks.verifyLocal({
+    body: bytes,
+    signature,
+    secret,
+    nowUnixSeconds: timestamp,
+  });
+  expect(view).toMatchObject({
+    id: "old",
+    connection: "support.old",
+    event: "future.event",
+    payload: { opaque: [false, 42] },
+  });
+  expect(new TextDecoder().decode(bytes)).toBe(raw);
+  await expect(
+    webhooks.verifyLocal({
+      body: new TextEncoder().encode(raw + " "),
+      signature,
+      secret,
+      nowUnixSeconds: timestamp,
+    }),
+  ).rejects.toThrow();
+  expect(() => parseVerifiedWebhookEvent(bytes)).toThrow();
+});

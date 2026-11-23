@@ -38,7 +38,7 @@ export interface EmbeddedSignupResponse {
   data: { stage: string };
 }
 
-/** Trusted-server continuation of an issued QuickLink; never direct session creation. */
+/** Trusted-server continuation of an issued QuickLink; never direct connection creation. */
 export class CloudOnboardingResource {
   constructor(
     private readonly transport: HttpTransport,
@@ -78,23 +78,23 @@ export class TestingResource {
   }
 
   /**
-   * Fire a named, signed test event for a Test number. Generated events reach
-   * webhooks and event history with `source: "test"`. With `fromNumber`, a
+   * Fire a named, signed test event for a Test connection. Generated events reach
+   * webhooks and event history with `source: "test"`. With `fromConnection`, a
    * `message.received` request sends a simulated message from another Test
-   * number instead. Real numbers are refused with a 404 resource_not_found error. Pass
+   * number instead. Real connections are refused with a 404 resource_not_found error. Pass
    * `options.idempotencyKey` to make retries safe: repeating the request with
    * the same key and body reuses the same event ID, and the SDK then retries
    * network and 5xx failures.
    */
   triggerEvent(
-    session: string,
+    connection: string,
     input: TriggerTestEventRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TriggerTestEventResponse>> {
     assertServerCredential(this.credentialType);
     return this.transport.request({
       method: "POST",
-      path: `/messaging/${encodeURIComponent(session)}/test-events`,
+      path: `/messaging/${encodeURIComponent(connection)}/test-events`,
       body: input,
       ...options,
     });
@@ -113,11 +113,11 @@ export class TestingResource {
   }
 
   /**
-   * Read a Test number's simulated phone: whether it is online and which
-   * companions are linked to it. Real numbers are refused with a 404 resource_not_found error.
+   * Read a Test connection's simulated phone: whether it is online and which
+   * companions are linked to it. Real connections are refused with a 404 resource_not_found error.
    */
   getPhone(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingPhone>> {
     assertServerCredential(this.credentialType);
@@ -125,7 +125,7 @@ export class TestingResource {
       this.transport,
       {
         method: "GET",
-        path: phonePath(session),
+        path: phonePath(connection),
         ...existingOptions(options),
       },
       "phone",
@@ -134,13 +134,13 @@ export class TestingResource {
   }
 
   /**
-   * Send a text message from a Test number's phone to another connected Test
-   * number in the same project. The message travels the simulated WhatsApp
+   * Send a text message from a Test Connection's phone to another connected Test
+   * Connection in the same project. The message travels the simulated WhatsApp
    * network, so its companions receive the sent copy and the recipient gets a
    * normal inbound message. Counts toward the Testing rate limit.
    */
   sendPhoneMessage(
-    session: string,
+    connection: string,
     input: SendTestingPhoneMessageRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SendTestingPhoneMessageResponse>> {
@@ -149,7 +149,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(session)}/messages`,
+        path: `${phonePath(connection)}/messages`,
         body: input,
         ...existingOptions(options),
       },
@@ -158,20 +158,20 @@ export class TestingResource {
     );
   }
 
-  /** Change a Test number's mode. A change unlinks every companion. */
+  /** Change a Test Connection's mode. A change unlinks every companion. */
   setAccountMode(
-    session: string,
+    connection: string,
     input: TestingAccountModeRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<TestingAccountMode>> {
     assertServerCredential(this.credentialType);
     assertTestingAccountMode(input);
-    contractString(session, "session", 1, 256);
+    contractString(connection, "connection", 1, 256);
     return requestPhone(
       this.transport,
       {
         method: "PUT",
-        path: `/messaging/${encodeURIComponent(session)}/phone/account-mode`,
+        path: `${phonePath(connection)}/account-mode`,
         body: input,
         ...existingOptions(options),
       },
@@ -180,12 +180,12 @@ export class TestingResource {
   }
 
   /**
-   * Unlink a companion from a Test number's phone, as a person would from
+   * Unlink a companion from a Test Connection's phone, as a person would from
    * Linked devices. The companion is logged out. The phone itself (device 0)
    * cannot be unlinked.
    */
   unlinkPhoneDevice(
-    session: string,
+    connection: string,
     deviceId: number,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UnlinkTestingPhoneDeviceResponse>> {
@@ -198,7 +198,7 @@ export class TestingResource {
       this.transport,
       {
         method: "POST",
-        path: `${phonePath(session)}/devices/${deviceId}/unlink`,
+        path: `${phonePath(connection)}/devices/${deviceId}/unlink`,
         ...existingOptions(options),
       },
       "unlink",
@@ -206,8 +206,8 @@ export class TestingResource {
     );
   }
 }
-function phonePath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/phone`;
+function phonePath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/phone`;
 }
 function assertServerCredential(type: MessagingCredential["type"]): void {
   if (type === "clientToken")

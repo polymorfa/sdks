@@ -16,7 +16,7 @@ import (
 )
 
 func TestRequestLogsTypedWireAndFilters(t *testing.T) {
-	fixture := `{"data":[{"id":"log","projectId":"project","createdAt":"2026-10-11T00:00:00Z","method":"POST","route":"/messaging/:session/messages","status":null,"durationMs":1.25,"result":"failure","source":"mcp","requestId":"request","traceId":null,"errorCode":"future_error","mcpTool":"send_message","credential":{"type":"client_token","id":null,"last4":null}}],"page":{"hasMore":false,"nextCursor":null,"followCursor":"follow"}}`
+	fixture := `{"data":[{"id":"log","projectId":"project","createdAt":"2026-10-11T00:00:00Z","method":"POST","route":"/messaging/:connection/messages","status":null,"durationMs":1.25,"result":"failure","source":"mcp","requestId":"request","traceId":null,"errorCode":"future_error","mcpTool":"send_message","credential":{"type":"client_token","id":null,"last4":null}}],"page":{"hasMore":false,"nextCursor":null,"followCursor":"follow"}}`
 	var mu sync.Mutex
 	queries := []url.Values{}
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
@@ -34,7 +34,7 @@ func TestRequestLogsTypedWireAndFilters(t *testing.T) {
 	client, _ := NewTeamClient(teamConfig(server.URL))
 	project, _ := client.Project("project")
 	ctx := context.Background()
-	route, credentialID, requestID, traceID, until := "/messaging/:session/messages", "key", "request", "trace", "2026-10-12"
+	route, credentialID, requestID, traceID, until := "/messaging/:connection/messages", "key", "request", "trace", "2026-10-12"
 	since := time.Date(2026, 10, 11, 1, 2, 3, 123000000, time.FixedZone("offset", 3600))
 	limit := 2
 	page, err := client.RequestLogs().List(ctx, ListRequestLogsParams{ProjectID: "project", Limit: &limit, RequestLogFilters: RequestLogFilters{Status: []RequestLogStatus{RequestLogStatusCode(404), RequestLog5xx}, Method: []RequestLogMethod{RequestLogPOST, RequestLogPATCH}, Route: &route, Source: RequestLogMCP, CredentialID: &credentialID, RequestID: &requestID, TraceID: &traceID, SinceTime: &since, Until: &until}})

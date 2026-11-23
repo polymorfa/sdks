@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { expect, it } from "vitest";
 
-it("keeps reviewed billing and session administration in the canonical Platform contract", () => {
+it("keeps reviewed billing and connection administration in the canonical Platform contract", () => {
   const spec = JSON.parse(
     readFileSync(
       new URL("../../../contracts/openapi.platform.json", import.meta.url),
@@ -9,28 +9,31 @@ it("keeps reviewed billing and session administration in the canonical Platform 
     ),
   );
   expect(spec.paths["/platform/billing/reminders"]).toBeUndefined();
-  expect(spec.components.schemas.PlatformSession.required).toContain(
+  expect(spec.components.schemas.PlatformConnection.required).toContain(
     "paidUntil",
   );
   expect(
-    spec.components.schemas.PlatformSession.properties.paidUntil,
+    spec.components.schemas.PlatformConnection.properties.paidUntil,
   ).toMatchObject({ type: "number", nullable: true });
   expect(
-    spec.paths["/platform/sessions/{sessionId}/start"].post.responses["402"],
+    spec.paths["/platform/connections/{connectionId}/start"].post.responses[
+      "402"
+    ],
   ).toBeDefined();
-  expect(spec.components.schemas.SessionTierOverrideRequest.required).toEqual([
-    "quoteId",
-  ]);
-  expect(spec.components.schemas.NumberTierQuoteRequest.required).toEqual([
+  expect(
+    spec.components.schemas.ConnectionTierOverrideRequest.required,
+  ).toEqual(["quoteId"]);
+  expect(spec.components.schemas.ConnectionTierQuoteRequest.required).toEqual([
     "tierOverride",
   ]);
-  expect(spec.paths["/platform/sessions/{sessionId}"].get.operationId).toBe(
-    "getSession",
-  );
-  expect(spec.paths["/platform/sessions/{sessionId}"].put.operationId).toBe(
-    "updateSession",
-  );
   expect(
-    spec.paths["/platform/sessions/{sessionId}/tier-quotes"].post.operationId,
-  ).toBe("quoteSessionTierChange");
+    spec.paths["/platform/connections/{connectionId}"].get.operationId,
+  ).toBe("getConnection");
+  expect(
+    spec.paths["/platform/connections/{connectionId}"].put.operationId,
+  ).toBe("updateConnection");
+  expect(
+    spec.paths["/platform/connections/{connectionId}/tier-quotes"].post
+      .operationId,
+  ).toBe("quoteConnectionTierChange");
 });

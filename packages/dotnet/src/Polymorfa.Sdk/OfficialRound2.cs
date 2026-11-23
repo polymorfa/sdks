@@ -8,25 +8,25 @@ public sealed record CloudCatalogCacheProduct(string Id, string? RetailerId = nu
 public sealed record CloudCatalogCacheList(IReadOnlyList<CloudCatalogSync> Catalogs);
 public sealed record CloudCatalogProductPage(CloudCatalogSync Catalog, IReadOnlyList<CloudCatalogCacheProduct> Products, string? NextCursor = null);
 public sealed record CatalogProductsParameters(int? Limit = null, string? Cursor = null);
-/// <summary>Beta Number cache. Graph catalog resources are separate.</summary>
+/// <summary>Beta Connection cache. Graph catalog resources are separate.</summary>
 public sealed class Catalogs : Resource
 {
     internal Catalogs(HttpTransport http) : base(http) { }
-    private string Path(string session, string? catalogId = null)
+    private string Path(string connection, string? catalogId = null)
     {
         Http.Credential.RequireServer();
-        if (string.IsNullOrWhiteSpace(session) || catalogId is not null && !Regex.IsMatch(catalogId, @"\A[0-9]{1,32}\z")) throw new PolymorfaValidationException("Provide a Number ID and catalog ID of 1 to 32 digits.", "invalid_parameter");
-        return "/messaging/" + E(session) + "/catalogs" + (catalogId is null ? "" : "/" + E(catalogId));
+        if (string.IsNullOrWhiteSpace(connection) || catalogId is not null && !Regex.IsMatch(catalogId, @"\A[0-9]{1,32}\z")) throw new PolymorfaValidationException("Provide a Connection ID and catalog ID of 1 to 32 digits.", "invalid_parameter");
+        return "/messaging/" + E(connection) + "/catalogs" + (catalogId is null ? "" : "/" + E(catalogId));
     }
-    public Task<ApiResponse<SuccessEnvelope<CloudCatalogCacheList>>> ListAsync(string session, RequestOptions? options = null) => Get<SuccessEnvelope<CloudCatalogCacheList>>(Path(session), options);
-    public Task<ApiResponse<SuccessEnvelope<CloudCatalogSync>>> RetrieveAsync(string session, string catalogId, RequestOptions? options = null) => Get<SuccessEnvelope<CloudCatalogSync>>(Path(session, catalogId), options);
-    public Task<ApiResponse<SuccessEnvelope<CloudCatalogProductPage>>> ListProductsAsync(string session, string catalogId, CatalogProductsParameters? parameters = null, RequestOptions? options = null)
+    public Task<ApiResponse<SuccessEnvelope<CloudCatalogCacheList>>> ListAsync(string connection, RequestOptions? options = null) => Get<SuccessEnvelope<CloudCatalogCacheList>>(Path(connection), options);
+    public Task<ApiResponse<SuccessEnvelope<CloudCatalogSync>>> RetrieveAsync(string connection, string catalogId, RequestOptions? options = null) => Get<SuccessEnvelope<CloudCatalogSync>>(Path(connection, catalogId), options);
+    public Task<ApiResponse<SuccessEnvelope<CloudCatalogProductPage>>> ListProductsAsync(string connection, string catalogId, CatalogProductsParameters? parameters = null, RequestOptions? options = null)
     {
         if (parameters?.Limit is < 1 or > 100 || parameters?.Cursor is string cursor && !Regex.IsMatch(cursor, @"\A[A-Za-z0-9_-]{1,256}\z")) throw new PolymorfaValidationException("Invalid catalog pagination.", "invalid_parameter");
-        return Get<SuccessEnvelope<CloudCatalogProductPage>>(Path(session, catalogId) + "/products", options, parameters);
+        return Get<SuccessEnvelope<CloudCatalogProductPage>>(Path(connection, catalogId) + "/products", options, parameters);
     }
     /// <summary>Submit once, allow the server's 50-second budget, preserve cooldown errors.</summary>
-    public Task<ApiResponse<SuccessEnvelope<CloudCatalogSync>>> SyncAsync(string session, string catalogId, RequestOptions? options = null) => Http.RequestEmptyMutationAsync<SuccessEnvelope<CloudCatalogSync>>(HttpMethod.Post, Path(session, catalogId) + "/sync", (options ?? new()) with { MaxNetworkRetries = 0, Timeout = options?.Timeout ?? TimeSpan.FromSeconds(60) });
+    public Task<ApiResponse<SuccessEnvelope<CloudCatalogSync>>> SyncAsync(string connection, string catalogId, RequestOptions? options = null) => Http.RequestEmptyMutationAsync<SuccessEnvelope<CloudCatalogSync>>(HttpMethod.Post, Path(connection, catalogId) + "/sync", (options ?? new()) with { MaxNetworkRetries = 0, Timeout = options?.Timeout ?? TimeSpan.FromSeconds(60) });
 }
 public sealed record MarketingOnboarding(string Status, string? MetaStatus);
 public sealed record MarketingTerms(string Status, string? MetaStatus, string? Date);

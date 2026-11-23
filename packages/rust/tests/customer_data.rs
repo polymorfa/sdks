@@ -34,13 +34,13 @@ impl MediaUploadTransport for WrappingTransport<'_> {
     }
     fn upload<'a>(
         &'a self,
-        session: &'a str,
+        connection: &'a str,
         body: EncryptedUploadBody<'a>,
         cancellation: tokio_util::sync::CancellationToken,
     ) -> UploadTransportFuture<'a> {
         Box::pin(async move {
             self.calls.fetch_add(1, Ordering::SeqCst);
-            self.inner.upload(session, body, cancellation).await
+            self.inner.upload(connection, body, cancellation).await
         })
     }
 }

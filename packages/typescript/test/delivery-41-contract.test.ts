@@ -19,15 +19,15 @@ it("selects delivery intent versions without changing legacy reset or explicit v
     credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   }).project(projectId);
-  await c.sessionConfiguration.update({
+  await c.connectionConfiguration.update({
     configuration: { set: { historySync: { delivery: "descriptor" } } },
     revision: 0,
   } as never);
-  await c.sessionConfiguration.update({
+  await c.connectionConfiguration.update({
     configuration: { reset: ["historySync"] },
     revision: 0,
   });
-  await c.sessionConfiguration.update(
+  await c.connectionConfiguration.update(
     {
       configuration: { reset: ["historySync.delivery"] },
       revision: 0,
@@ -47,7 +47,7 @@ it("selects delivery intent versions without changing legacy reset or explicit v
 });
 it("keeps QuickLink omission, explicit modes and descriptor consent distinct", async () => {
   const server = await startTestServer(() => ({
-    body: '{"success":true,"data":{"purpose":"initial","connectionGoal":"single","id":"link","url":"https://example.test/link","session":"session","expiresAt":null}}',
+    body: '{"success":true,"data":{"purpose":"initial","connectionGoal":"single","id":"link","url":"https://example.test/link","connection":"connection","expiresAt":null}}',
   }));
   servers.push(server);
   const m = new MessagingClient({
@@ -100,7 +100,7 @@ it("rejects archive writes, nested custody aliases and supplementary custody bef
   }).project(projectId);
   const calls = [
     () =>
-      c.sessionConfiguration.update({
+      c.connectionConfiguration.update({
         configuration: { set: { historySync: { delivery: "archive" } } },
         revision: 0,
       } as never),
@@ -110,9 +110,9 @@ it("rejects archive writes, nested custody aliases and supplementary custody bef
       } as never),
     () =>
       m.quickLinks.create({
-        purpose: "add_connection",
-        session: "x",
-        addConnection: "official_api",
+        purpose: "add_method",
+        connection: "x",
+        addMethod: "official_api",
         signalMode: "standard",
       } as never),
   ];
@@ -170,7 +170,7 @@ it("refuses Client direct upload before reading input, keeps relay and custom tr
   const custom = {
     name: "customer",
     async upload(
-      _session: string,
+      _connection: string,
       body: import("../src/index.js").WhatsAppEncryptedUploadBody,
     ) {
       const reader = (await body.open()).getReader();
@@ -284,8 +284,8 @@ it("retains A/B configuration owners through interleaved reads, writes and calle
     credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
-  const a = c.project(projectId).sessionConfiguration,
-    b = c.project(otherId).sessionConfiguration;
+  const a = c.project(projectId).connectionConfiguration,
+    b = c.project(otherId).connectionConfiguration;
   await a.retrieve({ apiVersion: "2026-10-14" });
   await b.update({
     revision: 0,
@@ -316,7 +316,7 @@ it("retains A/B configuration owners through interleaved reads, writes and calle
   expect(server.requests).toHaveLength(4);
 });
 
-it("retains old and new configuration reads, requested/effective divergence and optional session custody facts", async () => {
+it("retains old and new configuration reads, requested/effective divergence and optional connection custody facts", async () => {
   const observation = {
     presenceMode: "off",
     typingMode: "off",
@@ -345,10 +345,10 @@ it("retains old and new configuration reads, requested/effective divergence and 
         "observation.labelMode": "platform",
         "observation.quickReplyMode": "platform",
       },
-      revisions: { team: 0, project: 0, session: 0 },
+      revisions: { team: 0, project: 0, connection: 0 },
     };
-    const session = {
-      sessionId: projectId,
+    const connection = {
+      connectionId: projectId,
       name: "Synthetic Number",
       tenantId: projectId,
       type: "linked_device",
@@ -361,9 +361,9 @@ it("retains old and new configuration reads, requested/effective divergence and 
     };
     return {
       body: JSON.stringify(
-        request.path.includes("session-configuration")
+        request.path.includes("connection-configuration")
           ? { data: configuration }
-          : { success: true, data: session },
+          : { success: true, data: connection },
       ),
     };
   });
@@ -372,12 +372,12 @@ it("retains old and new configuration reads, requested/effective divergence and 
     credential: { type: "teamApiKey", value: TEAM_API_KEY },
     baseUrl: server.url,
   });
-  const legacy = (await c.project(projectId).sessionConfiguration.retrieve())
+  const legacy = (await c.project(projectId).connectionConfiguration.retrieve())
     .data;
   const current = (
     await c
       .project(projectId)
-      .sessionConfiguration.retrieve({ apiVersion: "2026-10-14" })
+      .connectionConfiguration.retrieve({ apiVersion: "2026-10-14" })
   ).data;
   expect(legacy.requestedHistory).not.toHaveProperty("delivery");
   expect(current.requestedHistory).toEqual({
@@ -392,13 +392,13 @@ it("retains old and new configuration reads, requested/effective divergence and 
   });
   expect(current.sources["historySync.delivery"]).toBe("platform");
   expect(
-    (await c.sessions.retrieve(projectId)).data.data.signalMode,
+    (await c.connections.retrieve(projectId)).data.data.signalMode,
   ).toBeUndefined();
   expect(
-    (await c.sessions.retrieve(projectId, { apiVersion: "2026-10-14" })).data
+    (await c.connections.retrieve(projectId, { apiVersion: "2026-10-14" })).data
       .data.signalMode,
   ).toBe("zero_knowledge");
-  const updated = await c.sessions.update(projectId, {
+  const updated = await c.connections.update(projectId, {
     revision: 0,
     configuration: { set: { historySync: { delivery: "descriptor" } } },
   });
@@ -414,7 +414,7 @@ it("retains old and new configuration reads, requested/effective divergence and 
     { configuration: { set: { signalMode: "zero_knowledge" } } },
   ])
     expect(() =>
-      c.sessions.update(projectId, {
+      c.connections.update(projectId, {
         revision: 0,
         configuration: {},
         ...extra,

@@ -10,5 +10,6 @@ foreach (var dialect in Enum.GetValues<StorageSqlDialect>())
 }
 await using (var sqlite = await SqlStorageAdapter.SqliteAsync("Data Source=:memory:")) await Conformance(sqlite);
 await SupabaseTests.Run();
+await ConnectionSchemaTests.Run();
 if (Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_POSTGRES_URL") is { } postgres) { await using var adapter = SqlStorageAdapter.Postgres(postgres, new() { TablePrefix = "cs_" + Guid.NewGuid().ToString("N") + "_" }); await Conformance(adapter); }
 if (Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_MYSQL_URL") is { } mysql) { await using var adapter = SqlStorageAdapter.MySql(mysql, new() { TablePrefix = "cs_" + Guid.NewGuid().ToString("N") + "_" }); await Conformance(adapter); }

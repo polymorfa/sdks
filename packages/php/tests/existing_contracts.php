@@ -58,7 +58,7 @@ try {
     $ecInput = ['name' => 'Campaign','variableMapping' => ['0' => [],'__proto__' => ['fallback' => 'zero']],'trackedLinks' => []];
     $ecWire = ['name' => 'Campaign','variableMapping' => (object)['0' => (object)[],'__proto__' => (object)['fallback' => 'zero']],'trackedLinks' => []];
     $ecRun('POST', '/messaging/projects/slug/campaigns', $ecWire, ['success' => true,'data' => $ecCampaign], fn () => $ecMessaging->campaigns->create('slug', $ecInput));
-    ecRaises(fn () => $ecTeam->project($ecProject)->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0]), Polymorfa\ConfigurationException::class);
+    ecRaises(fn () => $ecTeam->project($ecProject)->connectionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0]), Polymorfa\ConfigurationException::class);
     ecRaises(fn () => $ecRun('POST', '/messaging/s/history/chunks/retry', ['syncType' => 'FULL','chunkOrder' => 0], ['success' => false,'data' => ['requestId' => 'request','status' => 'requested']], fn () => $ecMessaging->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0]), ['version' => '2026-10-14']), Polymorfa\ServerException::class);
     require __DIR__.'/existing_contract_cases.php';
     require __DIR__.'/existing_contract_nine.php';

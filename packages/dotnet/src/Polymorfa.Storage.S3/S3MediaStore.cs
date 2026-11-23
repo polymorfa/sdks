@@ -11,7 +11,7 @@ public sealed record S3MediaStoreOptions(IAmazonS3 Client, string Bucket, string
     public override string ToString() => "S3MediaStoreOptions(redacted)";
 }
 public enum S3WhatsAppEgress { Relay, Direct }
-public sealed record S3UploadToWhatsAppOptions(WhatsAppMediaResource Messaging, string Session, string Key, WhatsAppUploadMediaType MediaType)
+public sealed record S3UploadToWhatsAppOptions(WhatsAppMediaResource Messaging, string Connection, string Key, WhatsAppUploadMediaType MediaType)
 {
     public string? Mimetype { get; init; }
     public long MaxBytes { get; init; } = 256 * 1024 * 1024;
@@ -69,8 +69,8 @@ public sealed class S3MediaStore
             return new OwnedObjectStream(response);
         }
         var prepared = await WhatsAppMedia.PrepareUploadAsync(Open, new(options.MediaType) { Mimetype = options.Mimetype ?? head.Headers.ContentType, MaxBytes = options.MaxBytes, CancellationToken = token }).ConfigureAwait(false); if (prepared.Info.FileLength != head.Headers.ContentLength) throw Changed();
-        if (transport is not null) return await options.Messaging.UploadAsync(options.Session, prepared, transport, token).ConfigureAwait(false);
-        var request = (options.RequestOptions ?? new()) with { CancellationToken = token }; return options.Egress == S3WhatsAppEgress.Relay ? await options.Messaging.UploadRelayAsync(options.Session, prepared, request).ConfigureAwait(false) : await options.Messaging.UploadDirectAsync(options.Session, prepared, (options.DirectOptions ?? new()) with { CancellationToken = token }, request).ConfigureAwait(false);
+        if (transport is not null) return await options.Messaging.UploadAsync(options.Connection, prepared, transport, token).ConfigureAwait(false);
+        var request = (options.RequestOptions ?? new()) with { CancellationToken = token }; return options.Egress == S3WhatsAppEgress.Relay ? await options.Messaging.UploadRelayAsync(options.Connection, prepared, request).ConfigureAwait(false) : await options.Messaging.UploadDirectAsync(options.Connection, prepared, (options.DirectOptions ?? new()) with { CancellationToken = token }, request).ConfigureAwait(false);
     }
     /// <summary>Archives the base64 media descriptor and message type from an inbound message.</summary>
     public Task<S3ArchiveResult> ArchiveAsync(string media, string messageType, S3ArchiveOptions options, CancellationToken cancellation = default)

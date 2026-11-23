@@ -11,7 +11,7 @@ import (
 
 type MediaInfo struct {
 	ID         string  `json:"id"`
-	Session    string  `json:"session"`
+	Connection string  `json:"connection"`
 	MessageID  string  `json:"messageId"`
 	MimeType   string  `json:"mimeType"`
 	FileLength int64   `json:"fileLength"`

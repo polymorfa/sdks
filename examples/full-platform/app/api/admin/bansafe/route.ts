@@ -1,4 +1,4 @@
-import type { BanSafeNumber } from "@polymorfa/sdk";
+import type { BanSafeConnection } from "@polymorfa/sdk";
 
 import { team } from "../../../../lib/polymorfa.js";
 import { env } from "../../../../lib/env.js";
@@ -15,7 +15,7 @@ import {
 export const GET = route("admin", async () => {
   const banSafe = team().banSafe;
   const projectId = env.projectId();
-  const numbers: BanSafeNumber[] = [];
+  const numbers: BanSafeConnection[] = [];
   let cursor: string | undefined;
   // At most 20 pages (2,000 numbers); stop if the cursor does not advance.
   for (let pages = 0; pages < 20; pages += 1) {
@@ -63,12 +63,12 @@ export const POST = route("admin", async ({ body, request }) => {
   const banSafe = team().banSafe;
   switch (action(body)) {
     case "number": {
-      const session = text(body, "session");
+      const connection = text(body, "connection");
       const [health, history, telemetry, telemetryHistory] = await Promise.all([
-        banSafe.getHealth(session),
-        banSafe.listHealthHistory(session, { limit: 30 }),
-        banSafe.getTelemetry(session),
-        banSafe.listTelemetryHistory(session, { limit: 24 }),
+        banSafe.getHealth(connection),
+        banSafe.listHealthHistory(connection, { limit: 30 }),
+        banSafe.getTelemetry(connection),
+        banSafe.listTelemetryHistory(connection, { limit: 24 }),
       ]);
       return {
         health: health.data.data,
@@ -81,7 +81,7 @@ export const POST = route("admin", async ({ body, request }) => {
       const note = optionalText(body, "note");
       return banSafe.createIncident(
         {
-          session: text(body, "session"),
+          connection: text(body, "connection"),
           ...(note === undefined ? {} : { note }),
         },
         { idempotencyKey: idempotencyKey(request) },

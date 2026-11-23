@@ -1,4 +1,4 @@
-"""Typed Test-number account modes and optional business encryption state."""
+"""Typed Test Connection account modes and optional business encryption state."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ class TestingAccountModeInput(TypedDict):
 
 
 class TestingAccountMode(TypedDict):
-    session: str
+    connection: str
     accountType: WhatsAppAccountType
     primaryPlatform: TestingPrimaryPlatform | None
     changed: bool

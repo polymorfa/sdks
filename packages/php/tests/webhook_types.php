@@ -11,7 +11,7 @@ function typedWebhookConsumer(Polymorfa\WebhookEvent $event): void
     switch ($known['event']) {
         case 'customer.pairing_link.connected':
             typedWebhookString($known['payload']['pairingLinkId']);
-            typedWebhookString($known['payload']['sessionId']);
+            typedWebhookString($known['payload']['connectionId']);
             break;
         case 'call.ended':
             typedWebhookNumber($known['payload']['durationSeconds']);
@@ -40,7 +40,7 @@ function typedWebhookConsumer(Polymorfa\WebhookEvent $event): void
         case 'bansafe.claim':
             typedWebhookNumber($known['payload']['amountCents']);
             break;
-        case 'session.capabilities_updated':
+        case 'connection.capabilities_updated':
             foreach ($known['payload']['changedKeys'] as $key) {
                 typedWebhookString($key);
             }

@@ -20,21 +20,21 @@ final class ExistingContractConsumer
         $messages->campaigns->launch('slug', $id, ['scheduledAt' => 0,'skipMissingVariables' => false]);
         $messages->campaigns->listRecipients('slug', $id, ['reason' => 'missing_variable','status' => 'failed','cursor' => 'next','limit' => 1]);
         $team->campaigns->recipients($id, ['projectId' => $project,'reason' => 'other','status' => 'queued','cursor' => 'next','limit' => 100]);
-        $team->project($project)->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']],'reset' => ['historySync.delivery']],'revision' => 0]);
-        $messages->sessions->update('s', ['configuration' => ['reset' => ['historySync.delivery']],'revision' => 0]);
-        $team->sessions->update('s', ['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']]],'revision' => 0]);
+        $team->project($project)->connectionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']],'reset' => ['historySync.delivery']],'revision' => 0]);
+        $messages->connections->update('s', ['configuration' => ['reset' => ['historySync.delivery']],'revision' => 0]);
+        $team->connections->update('s', ['configuration' => ['set' => ['historySync' => ['delivery' => 'descriptor']]],'revision' => 0]);
         $messages->quickLinks->create(['signalMode' => 'zero_knowledge','configuration' => ['historySync' => ['delivery' => 'descriptor','consent' => 'force_off']]]);
-        $messages->quickLinks->create(['purpose' => 'add_connection','session' => 's','addConnection' => 'linked_devices','configuration' => ['allowPhoneChange' => false]]);
+        $messages->quickLinks->create(['purpose' => 'add_method','connection' => 's','addMethod' => 'linked_devices','configuration' => ['allowPhoneChange' => false]]);
         self::campaign($messages->campaigns->retrieve('slug', $id)->data['data']);
         self::analytics($messages->campaigns->analytics('slug', $id)->data['data']);
         foreach ($team->campaigns->recipients($id, ['projectId' => $project])->data['data'] as $r) {
             self::recipient($r);
         }
-        $session = $messages->sessions->retrieve('s')->data['data'];
-        if (isset($session['signalMode'])) {
-            self::mode($session['signalMode']);
+        $connection = $messages->connections->retrieve('s')->data['data'];
+        if (isset($connection['signalMode'])) {
+            self::mode($connection['signalMode']);
         }
-        $config = $team->project($project)->sessionConfiguration->retrieve()->data;
+        $config = $team->project($project)->connectionConfiguration->retrieve()->data;
         if (isset($config['effective']['historySync']['delivery'])) {
             self::delivery($config['effective']['historySync']['delivery']);
         }

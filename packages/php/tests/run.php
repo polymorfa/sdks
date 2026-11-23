@@ -47,7 +47,7 @@ foreach (['pt', 'ct', 'ls', 'at', 'wst', 'sd'] as $prefix) {
 check(!str_contains(var_export($credential->__debugInfo(), true), str_repeat('a', 72)), 'Credential redaction');
 $receipt = ['success' => true, 'data' => ['id' => 'msg_1', 'whatsapp_ids' => ['linked_devices' => 'provider_1'],
     'conversation' => ['id' => 'user_1'], 'timestamp' => '2026-09-22T00:00:00Z', 'status' => 'sent', 'type' => 'text']];
-$link = ['success' => true, 'data' => ['id' => 'link_1', 'url' => 'https://link.polymorfa.com/link_1', 'session' => 'support',
+$link = ['success' => true, 'data' => ['id' => 'link_1', 'url' => 'https://link.polymorfa.com/link_1', 'connection' => 'support',
     'purpose' => 'initial', 'connectionGoal' => 'single', 'expiresAt' => null]];
 $hook = ['success' => true, 'data' => ['id' => 'hook_1', 'tenantId' => 'team_1', 'url' => 'https://example.com/hook', 'events' => ['message.received'],
     'retries' => ['attempts' => 1, 'delaySeconds' => 1, 'policy' => 'constant'], 'headers' => [], 'enabled' => true, 'createdAt' => '2026-09-22T00:00:00Z']];
@@ -63,10 +63,10 @@ $cases = [
     ['POST', '/messaging/support/messages/star', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'star' => true], ['success' => true,'data' => ['status' => 'OK']],
         fn ($c) => $c->messages->star('support', ['conversation' => ['id' => 'user_1'], 'id' => 'msg_1', 'star' => true])],
     ['GET', '/messaging/support/operations/op_1', null, ['success' => true, 'data' => ['operationId' => 'op_1', 'status' => 'pending']], fn ($c) => $c->messages->operationStatus('support', 'op_1')],
-    ['GET', '/messaging/support/pair/qr?format=json', null, ['success' => true, 'data' => ['qr' => 'qr_1']], fn ($c) => $c->sessions->qr('support')],
-    ['POST', '/messaging/support/pair/code', ['phone' => '+15551234567'], ['success' => true, 'data' => ['code' => '123']], fn ($c) => $c->sessions->requestPairingCode('support', ['phone' => '+15551234567'])],
+    ['GET', '/messaging/support/pair/qr?format=json', null, ['success' => true, 'data' => ['qr' => 'qr_1']], fn ($c) => $c->connections->qr('support')],
+    ['POST', '/messaging/support/pair/code', ['phone' => '+15551234567'], ['success' => true, 'data' => ['code' => '123']], fn ($c) => $c->connections->requestPairingCode('support', ['phone' => '+15551234567'])],
     ['POST', '/messaging/quicklinks', ['projectId' => 'project_1'], $link, fn ($c) => $c->quickLinks->create(['projectId' => 'project_1'])],
-    ['GET', '/messaging/quicklinks/link_1', null, ['success' => true, 'data' => ['id' => 'link_1', 'status' => 'pending', 'session' => 'support', 'purpose' => 'initial', 'connectionGoal' => 'single', 'hybridPhase' => null,
+    ['GET', '/messaging/quicklinks/link_1', null, ['success' => true, 'data' => ['id' => 'link_1', 'status' => 'pending', 'connection' => 'support', 'purpose' => 'initial', 'connectionGoal' => 'single', 'hybridPhase' => null,
         'expiresAt' => null, 'openedAt' => null, 'connectedAt' => null, 'phone' => null, 'errorCode' => null]], fn ($c) => $c->quickLinks->retrieve('link_1')],
     ['DELETE', '/messaging/quicklinks/link_1', null, ['success' => true, 'message' => 'Cancelled'], fn ($c) => $c->quickLinks->cancel('link_1')],
     ['POST', '/messaging/webhooks', ['url' => 'https://example.com/hook'], $hook, fn ($c) => $c->webhooks->create(['url' => 'https://example.com/hook'])],
@@ -89,7 +89,7 @@ foreach ($cases as [$method, $path, $body, $fixture, $invoke]) {
 }
 $history = [];
 $client = new MessagingClient($credential, http: mocked([jsonResponse(['error' => ['code' => 'service_unavailable']], 503, ['retry-after' => '0']), jsonResponse(['data' => []])], $history));
-check($client->sessions->list()->metadata->attempts === 2, 'Safe retry');
+check($client->connections->list()->metadata->attempts === 2, 'Safe retry');
 $history = [];
 $client = new MessagingClient($credential, http: mocked([jsonResponse(['error' => ['code' => 'service_unavailable']], 503)], $history));
 raises(fn () => $client->quickLinks->create(), ServerException::class);
@@ -100,11 +100,11 @@ raises(fn () => $client->messages->send('support', ['conversation' => ['id' => '
 check(count($history) === 1, 'Replayed result final');
 $history = [];
 $client = new MessagingClient($credential, maxNetworkRetries: 0, http: mocked([jsonResponse(['error' => ['code' => 'invalid_credential', 'message' => 'Expired', 'request_id' => 'body_req']], 401)], $history));
-$error = raises(fn () => $client->sessions->list(), AuthenticationException::class);
+$error = raises(fn () => $client->connections->list(), AuthenticationException::class);
 check($error->requestId === 'body_req', 'Body request ID');
 $token = new CancellationToken();
 $token->cancel();
-raises(fn () => $client->sessions->list(new RequestOptions(cancellation: $token)), CancelledException::class);
+raises(fn () => $client->connections->list(new RequestOptions(cancellation: $token)), CancelledException::class);
 $history = [];
 $client = new Client($credential, http: mocked([jsonResponse(['data' => [['id' => 'event_1']], 'page' => ['nextCursor' => 'next']]), jsonResponse(['data' => [['id' => 'event_2']], 'page' => ['nextCursor' => null]])], $history));
 check(array_column(iterator_to_array($client->events->list()), 'id') === ['event_1', 'event_2'], 'Pagination');
@@ -113,7 +113,7 @@ raises(fn () => $project->project('project_2'), ConfigurationException::class);
 foreach (['/../events', '/%2e%2e/events', '//other-host', '/platform/projects/project_2/events'] as $path) {
     raises(fn () => $project->raw->request('GET', $path), Polymorfa\ValidationException::class);
 }
-$raw = '{"id":"event_1","session":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}';
+$raw = '{"id":"event_1","connection":"","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}';
 $signature = hash_hmac('sha256', $raw, 'secret');
 $event = Webhooks::constructEvent($raw, 'sha256=' . $signature, 'secret');
 check(!$event->known && $event->payload === ['x' => 1], 'Unknown webhook event');
@@ -126,7 +126,7 @@ require __DIR__ . '/accounts.php';
 require __DIR__ . '/contacts.php';
 require __DIR__ . '/media.php';
 require __DIR__ . '/groups.php';
-require __DIR__ . '/sessions.php';
+require __DIR__ . '/connections.php';
 require __DIR__ . '/integrations_calls.php';
 
 require __DIR__."/client_tokens.php";
@@ -140,7 +140,7 @@ require __DIR__."/business_catalog.php";
 
 require __DIR__."/quick_replies_users.php";
 
-require __DIR__."/cloud_sessions.php";
+require __DIR__."/cloud_connections.php";
 
 require __DIR__."/channels.php";
 
@@ -148,7 +148,7 @@ require __DIR__."/voip.php";
 
 require __DIR__."/bansafe.php";
 
-require __DIR__.'/platform_sessions.php';
+require __DIR__.'/platform_connections.php';
 
 require __DIR__.'/security.php';
 
@@ -240,6 +240,7 @@ foreach ([
     'storage_engine_http.php',
     'storage_engine_d1.php',
     'storage_provider_sql.php',
+    'connection_storage_upgrade.php',
     'storage_provider_supabase.php',
     'storage_provider_libsql.php',
     'storage_provider_documents.php',

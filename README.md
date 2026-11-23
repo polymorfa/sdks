@@ -132,8 +132,8 @@ const messaging = new MessagingClient({
   apiVersion: "2026-09-22",
 });
 
-const sessions = await messaging.sessions.list();
-console.log(sessions.data.data, sessions.metadata.requestId);
+const connections = await messaging.connections.list();
+console.log(connections.data.data, connections.metadata.requestId);
 
 const sent = await messaging.messages.send(
   "support",
@@ -155,15 +155,15 @@ any network request. Server credentials are rejected in browser runtimes.
 The handwritten Messaging resources in this milestone are:
 
 - `banSafe`: retrieve and update project Safe Mode, warm-up, Ban Insurance
-  evidence, and Health policy settings, and one number's Safe Mode override,
+  evidence, and Health policy settings, and one Connection's Safe Mode override,
   with a team key or project token
-- `sessions`: list, retrieve, update, delete, start, stop, restart,
+- `connections`: list, retrieve, update, delete, start, stop, restart,
   logout, account, and entitlement-gated direct JSON QR or phone pairing
-- `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing sessions
+- `quickLinks`: create, retrieve, and cancel hosted QuickLink pairing flows
 - `cloudOnboarding`: continue an issued Meta Cloud API QuickLink from a trusted
   server
 - `cloudTemplates`: list, retrieve, create, edit and delete Meta templates for a
-  Number with an Official API connection; separate from project template drafts
+  Connection using the Cloud API method; separate from project template drafts
 - `cloudCatalogs`: read WABA product-catalog links through the Graph facade
 - `cloudMarketing`: read Meta's raw WABA Marketing Messages status strings without interpreting eligibility
 - `flowEncryption`: read or register a public Flow encryption key for one Meta phone number
@@ -171,8 +171,8 @@ The handwritten Messaging resources in this milestone are:
   products, collections, orders, compliance, linked accounts, and eligibility
 - `calls`: reject an identified incoming Linked Device call
 - `voip`: place, accept, reject, leave, and end Polymorfa Calls, add
-  participants, read a person's call permission on a Cloud API Number, check a
-  destination before dialing, and read or update a session's call settings
+  participants, read a person's call permission on a Cloud API Connection, check a
+  destination before dialing, and read or update a connection's call settings
 - `campaigns`: list, create (with inline recipients), retrieve, inspect
   analytics, launch, pause, resume, stop, requeue, and page or append campaign
   recipients through the Messaging control plane
@@ -194,13 +194,13 @@ The handwritten Messaging resources in this milestone are:
   chat's complete label set
 - `identities`: resolve one phone number, public user ID, BSUID, or username to known
   identity aliases
-- `observationPolicies`: retrieve and update project ceilings and session
+- `observationPolicies`: retrieve and update project ceilings and connection
   overrides for presence, typing, and label observation
-- `profile`: retrieve the session profile and set its name, status, or JSON
+- `profile`: retrieve the connection profile and set its name, status, or JSON
   URL/base64 picture source, plus delete the picture
 - `privacy`: retrieve account privacy, update setting-specific values, and set
   the account default disappearing-message timer
-- `presence`: set and inspect the session's own non-authoritative presence
+- `presence`: set and inspect the connection's own non-authoritative presence
   snapshot, inspect retained chat observations, and subscribe to user presence
 - `quickReplies`: list, create, replace, and delete remembered Business App
   quick replies
@@ -223,7 +223,7 @@ const client = new Client({
 });
 
 const projects = await client.projects.list();
-const sessions = await client.sessions.list({
+const connections = await client.connections.list({
   projectId: projects.data.data[0]?._id,
 });
 
@@ -304,7 +304,7 @@ The team view also exposes these management resources:
 - `members`: list team members
 - `auditLogs`: list the team audit trail with live action, resource,
   and limit filters
-- `sessionBans`: list all or active session bans
+- `connectionBans`: list all or active connection bans
 - `securityIncidents`: list and acknowledge leaked-credential incidents
 - `projectTokens`: list token metadata for an explicit project
 - `sipTrunks`: list, create, retrieve, update, delete, and rotate the
@@ -319,7 +319,7 @@ The team view also exposes these management resources:
 - `billing`: retrieve balance and currency, inspect usage meters, list
   transactions and tier pricing
 - `usage`: read metered call usage for a month, list or iterate usage records
-  for a call or number (also on project clients), and read usage gate modes,
+  for a call or Connection (also on project clients), and read usage gate modes,
   limits and decisions (team clients only). Usage is measured, not
   charged.
 - `banSafe`: inspect Health, telemetry collection, signal definitions, findings,
@@ -328,10 +328,10 @@ The team view also exposes these management resources:
 - `projects`: list, create, request production enrollment, approve, and cancel;
   retrieve and update Safe Mode, warm-up, Ban Insurance evidence, and Health
   policy settings; list same-number pairs that can merge into Hybrid Link
-- `sessions`: list, start, stop, or delete one session; stop or delete a bounded
+- `connections`: list, start, stop, or delete one connection; stop or delete a bounded
   batch; review and confirm a tier change, including the Hybrid Link
-  resolution or merge; create a testing session; and retrieve or update the
-  session Safe Mode override
+  resolution or merge; create a testing connection; and retrieve or update the
+  connection Safe Mode override
 - `campaigns`: list, create, retrieve, update, delete, lifecycle actions,
   analytics, events, and paged or appended recipients. The single-campaign
   operations require the owning `projectId`. This resource is available only
@@ -340,8 +340,8 @@ The team view also exposes these management resources:
   `update` accepts `recipientListId` to point an unlaunched draft at another
   audience, or null to detach it
 - `customers`: enable Customers for a project; create, list, retrieve, update,
-  archive, and restore Customers; inspect Numbers and events; create, list,
-  and revoke pairing links; and transfer Numbers between Customers
+  archive, and restore Customers; inspect Connections and events; create, list,
+  and revoke pairing links; and transfer Connections between Customers
 - `audiences`: list, create from inline members or a spreadsheet import,
   retrieve, delete, create an upload URL, and add, page, or remove members
 - `optOuts`: list, create one, create a batch, delete by phone number, and read
@@ -390,20 +390,20 @@ adapter that authorizes the signed-in user.
 
 ### WhatsApp analytics
 
-`client.analytics.get({projectId, sessionId, start, end})` reads activity,
+`client.analytics.get({projectId, connectionId, start, end})` reads activity,
 completed 24-hour direct-chat delivery/read/reply cohorts, response times and
 connection vitals. Times are Unix milliseconds and the range is at most 366
 days. A project-bound client confines the request to its own project. Requires
-`sessions:read` and Analytics enabled by a team owner or admin in the Console.
+`connections:read` and Analytics enabled by a team owner or admin in the Console.
 Disabled results contain no business data. Missing coverage has null rates;
 read receipts do not prove an app open. `measured` distinguishes observed zero
-activity from a number without telemetry. No contact identities or message
+activity from a Connection without telemetry. No contact identities or message
 content are returned. See the [Analytics guide](https://docs.polymorfa.com/console/analytics).
 
 ### Recipient observations
 
 `analytics.get()` exposes optional `recipientActivity` on the combined summary
-and each number. Hourly rows preserve recipient numbering country, complete-list
+and each Connection. Hourly rows preserve recipient numbering country, complete-list
 linked-device count range and primary/linked/unknown signal source. Country and
 count fields also appear on joint `conversationBreakdown` rows; older buckets use
 Unknown. `primary_only`, `one_linked` and `two_plus_linked` exclude device zero from
@@ -426,7 +426,7 @@ Analytics remains unmeasured.
 
 `client.analytics.metrics({windowHours: 24, format: "openmetrics", segments: true})` returns Prometheus/OpenMetrics text with HTTP metadata, on root and project clients.
 Counts are overlapping-window gauges, with denominators, measurement coverage and observation times.
-Requires `sessions:read` and the same Analytics opt-in. Disabled exports contain only
+Requires `connections:read` and the same Analytics opt-in. Disabled exports contain only
 enablement and window metadata. [Collector configuration](https://docs.polymorfa.com/console/analytics-collectors).
 
 Analytics responses also expose completed observed phone activity spans and
@@ -437,23 +437,23 @@ See the [measurement definitions](https://docs.polymorfa.com/console/analytics#p
 
 ### Device analytics
 
-`client.analytics.get({start, end, projectId, sessionId})` reads scoped Analytics.
-A project-bound client is confined to its project. Requires `sessions:read` and
+`client.analytics.get({start, end, projectId, connectionId})` reads scoped Analytics.
+A project-bound client is confined to its project. Requires `connections:read` and
 Analytics enabled by a team owner or admin. `deviceAnalytics` counts observed
 live direct messages by estimated sending client family, separately for people
-messaging your numbers and for your own numbers sending. Message ID prefixes are
+messaging your Connections and for your own Connections sending. Message ID prefixes are
 estimates, not hardware verification. Unknown is included; incomplete coverage
 has null shares. Older retained buckets have no device measurements.
 
-`numbers[].deviceAnalytics.inventory` lists up to 25 observed device indexes
-belonging to that connected number, with a coarse reported class and last
+`connections[].deviceAnalytics.inventory` lists up to 25 observed device indexes
+belonging to that Connection, with a coarse reported class and last
 observed sending activity. A later device-list change sets `listCurrent=false`
 and makes the count/membership unknown until a fresh list arrives. The combined
 summary has no inventory. No recipient device identities or raw message IDs
 are retained in Analytics.
 
 For a fresh list of a recipient's linked-device indexes, use
-`client.messaging.contacts.devices(numberId, contactId)`. This existing
+`client.messaging.contacts.devices(connectionId, contactId)`. This existing
 scoped read does not establish OS, model or device ownership. See the
 [device guide](https://docs.polymorfa.com/sdks/typescript/devices).
 
@@ -532,7 +532,7 @@ overwrite (`409 state_conflict`). `import` adds up to 5,000 entries at once and
 reports invalid ones in `rejected`. A full list (100,000 entries) fails with
 `409 call_opt_out_limit`.
 
-A Cloud API Number can call a person only after that person grants permission.
+A Cloud API Connection can call a person only after that person grants permission.
 Ask with `callPermissionRequest` content, then read the answer:
 
 ```ts
@@ -559,7 +559,7 @@ const permission = await messaging.voip.retrieveCallPermission(
 permission.data.data.status; // "none" | "temporary" | "permanent" | "revoked"
 
 const check = await messaging.voip.check({
-  session: "support",
+  connection: "support",
   to: "+14155550123",
 });
 check.data.data.refusal; // null, or the first reason a call would fail
@@ -570,7 +570,7 @@ when WhatsApp could not be reached and the stored state is returned with
 `actions: null`. `check` runs the same checks a placement runs without placing
 a call or reserving anything. Both need a server credential.
 `retrieveCallPermission` answers `409 unsupported_for_connection` on a
-linked-device Number; `check` supports linked-device Numbers and returns
+Linked Device Connection; `check` supports Linked Device Connections and returns
 `permission: null` for them. If required call-check state is unavailable,
 `check` raises `PolymorfaServerError` (`503 service_unavailable`); no allow or
 refusal result is returned.
@@ -759,7 +759,7 @@ if (isEvent(event, "message.received")) {
 Native deliveries use the hexadecimal `X-Webhook-Signature` value. The helper
 also accepts the `sha256=<hex>` compatibility form. Verification uses
 HMAC-SHA256 and constant-time comparison over the unmodified bytes. Recognized
-events narrow to exported payload types, including messages, sessions, groups,
+events narrow to exported payload types, including messages, connections, groups,
 presence, contacts, chats, calls, labels, history sync, Meta Cloud API contact
 sync and Business app echoes, command results, call permission changes, and business quick replies. Unknown event names and payloads are preserved for
 forward compatibility.
@@ -824,7 +824,7 @@ import {
 
 const getClientToken = createClientTokenProvider();
 const messaging = new BrowserMessagingClient({
-  session: "support",
+  connection: "support",
   getClientToken,
 });
 
@@ -834,7 +834,7 @@ await messaging.messages.setTyping({
 });
 ```
 
-The browser Messaging client is session-bound and exposes only the runtime's
+The browser Messaging client is connection-bound and exposes only the runtime's
 exact client-token action allowlist. `createBrowserComposerActions` connects
 text/reply compose boxes to that client. Conversation history, template
 management, media upload, and call lifecycle/control stay behind explicit
@@ -844,7 +844,7 @@ The canonical template builder is the paired path for template management:
 `MessagingClient.templates` performs server operations,
 `createTemplateBuilderRoute` authorizes and scopes same-origin browser actions,
 and `createSameOriginTemplateBuilderTransport` connects the framework-neutral
-controller without exposing a server key, project slug, or submission session.
+controller without exposing a server key, project slug, or submission connection.
 The controller models standard, carousel, authentication, and limited-time
 offer definitions and keeps saving separate from Meta submission.
 
@@ -857,14 +857,14 @@ controller lifecycles.
 ### Call links in this source revision
 
 `MessagingClient.voip.createCallLink` and `previewCallLink` require a server
-credential with `sessions:manage` and a Linked Device Number with calling
+credential with `connections:manage` and a Linked Device Connection with calling
 enabled. They are source additions pending matching API deployment and SDK
 publication; client tokens are refused. They do not place or join a call.
 
 ```ts
-const created = await messaging.voip.createCallLink({ session: "support" });
+const created = await messaging.voip.createCallLink({ connection: "support" });
 const preview = await messaging.voip.previewCallLink({
-  session: "support",
+  connection: "support",
   token: created.data.data.token,
   video: created.data.data.video,
 });
@@ -879,28 +879,28 @@ are `VoipCreateCallLinkRequest`, `VoipPreviewCallLinkRequest`,
 
 ### Client-token action ceilings
 
-Client tokens accept an immutable `allow` ceiling for a session or Customer.
-Every request still requires live Number rules and current ownership. Session
-`allow` requires the action-ceilings beta. Until it is enabled, session `allow`
+Client tokens accept an immutable `allow` ceiling for a connection or Customer.
+Every request still requires live Connection rules and current ownership. Connection
+`allow` requires the action-ceilings beta. Until it is enabled, connection `allow`
 is refused and omission keeps the existing token format. After enabling it,
-omitting `allow` snapshots a session's configured actions; Customer omission selects the
+omitting `allow` snapshots a connection's configured actions; Customer omission selects the
 original Customer action set. `chats_read`, `chats_manage`, `contact_write`, and
 `contact_delete` are reserved for enrolled regional beta access. These types do
 not establish regional availability or enable access by themselves.
 
-An explicit empty session list seals zero actions. Keep it distinct from
+An explicit empty connection list seals zero actions. Keep it distinct from
 omission when constructing the server-side mint request:
 
-| SDK        | Omit the session ceiling                              | Seal zero session actions |
-| ---------- | ----------------------------------------------------- | ------------------------- |
-| TypeScript | Omit `allow`                                          | `allow: []`               |
-| Go         | `Allow: nil`                                          | `Allow: []string{}`       |
-| Python     | Omit the `allow` key                                  | `"allow": []`             |
-| PHP        | Omit the `allow` key                                  | `'allow' => []`           |
-| Rust       | `ClientTokenTarget::Session { session, allow: None }` | Set `allow: Some(vec![])` |
-| C#         | Omit `Allow` or use `null`                            | `Allow: []`               |
+| SDK        | Omit the connection ceiling                                 | Seal zero connection actions |
+| ---------- | ----------------------------------------------------------- | ---------------------------- |
+| TypeScript | Omit `allow`                                                | `allow: []`                  |
+| Go         | `Allow: nil`                                                | `Allow: []string{}`          |
+| Python     | Omit the `allow` key                                        | `"allow": []`                |
+| PHP        | Omit the `allow` key                                        | `'allow' => []`              |
+| Rust       | `ClientTokenTarget::Connection { connection, allow: None }` | Set `allow: Some(vec![])`    |
+| C#         | Omit `Allow` or use `null`                                  | `Allow: []`                  |
 
-Rust uses `SessionClientAction` for session ceilings and `CustomerClientAction`
+Rust uses `ConnectionClientAction` for connection ceilings and `CustomerClientAction`
 for Customer ceilings. Customer lists remain non-empty. The API validates
 actions, enrollment and live rules; these request types grant no authority.
 
@@ -914,7 +914,7 @@ model as `controller.call`. Pass its controller to React or Web Components.
 ```ts
 import { createBrowserCalls } from "@polymorfa/ui-kit";
 
-const calls = createBrowserCalls({ session: "support", getClientToken });
+const calls = createBrowserCalls({ connection: "support", getClientToken });
 await calls.connect();
 await calls.controller.place("+15550100");
 // Release the widget and connections when leaving the application.
@@ -924,7 +924,7 @@ await calls.dispose();
 The token needs `voip_place`, `voip_answer` and `voip_signal` actions. Your
 server mints it with `POST /platform/client-tokens`; the browser uses it
 directly for REST calls and for the first frame of each call socket. No
-calling ticket is involved. Requests use the token's bound session.
+calling ticket is involved. Requests use the token's bound connection.
 
 Incoming calls ring until a participant answers or declines them. Several
 calls can ring at once, and the widget never declines one for you. Answer
@@ -965,7 +965,7 @@ colors derive from the shared appearance variables.
 `@polymorfa/ui-kit/store` keeps an opt-in IndexedDB copy of webhook-shaped events for
 applications that store messages themselves. Your backend receives webhooks
 and streams them to the browser; the store files messages, conversations,
-contacts, presence, calls, labels, sessions, templates, and other events into
+contacts, presence, calls, labels, connections, templates, and other events into
 separate stores and feeds `ConversationController` through
 `createStoreConversationSource()`. Message content is written to the device;
 see the [store guide](packages/ui-kit/docs/store.md#privacy) for encryption,
@@ -979,7 +979,7 @@ logic; webhook helpers read raw bytes once and delegate verification to
 `webhooks.verify` from the server SDK.
 
 Template routes use the same application-owned authorization boundary. Project
-scope and Cloud API session selection are resolver callbacks that run only on
+scope and Cloud API connection selection are resolver callbacks that run only on
 the server; browser-provided replacements are ignored.
 
 `@polymorfa/ui-kit/devtools` provides an explicit development overlay for appearance,
@@ -1026,9 +1026,9 @@ release instruction.
 
 ## Contract update notes
 
-The typed webhook catalog includes `session.restriction_updated` with
+The typed webhook catalog includes `connection.restriction_updated` with
 `type`, `active`, `enforcementType`, `expiresAt`, and `observedAt`.
-`session.logged_out` requires a numeric `code` and a `reason` of `banned`,
+`connection.logged_out` requires a numeric `code` and a `reason` of `banned`,
 `device_removed`, or `unknown`. Test event requests support the restriction
 fixture with `restrictionActive` and the call-end reason `call_restricted`.
 
@@ -1051,15 +1051,15 @@ SDK exports `BrowserWhatsAppMessageIds`. See the pinned component revision in
 ## Hybrid Link contract additions
 
 The development SDK types include Hybrid Link controls. Their presence does not
-enable the private preview: the API checks live team/project enrollment, Number
+enable the private preview: the API checks live team/project enrollment, Connection
 entitlement, and operational availability. Browser client tokens cannot use the
 Hybrid control or message-operation methods, and Hybrid sends through browser
 client tokens are unavailable in this preview.
 
-Use `quickLinks.availability({projectId, session})` before offering an added
-connection. Initial setup uses `quickLinks.create({connectionGoal: "hybrid"})`;
-adding a transport uses `purpose: "add_connection"`, the existing `session`, and
-`addConnection: "linked_devices" | "official_api"`. The Number and Customer stay
+Use `quickLinks.availability({projectId, connection})` before offering an added
+method. Initial setup uses `quickLinks.create({connectionGoal: "hybrid"})`;
+adding a method uses `purpose: "add_method"`, the existing `connection`, and
+`addMethod: "linked_devices" | "official_api"`. The Connection and Customer stay
 the same. `configuration.connectionPreference: "both"` still chooses one transport.
 QuickLink status includes `hybridPhase` for Cloud setup, Linked pairing, repair,
 and readiness.
@@ -1075,16 +1075,16 @@ An accepted uncertain send raises `send_outcome_unknown` with its operation ID.
 The SDK stops automatic retries when a response carries an accepted operation ID,
 even if its body cannot be read. In that case the thrown error carries the ID in
 `error.metadata.operationId`.
-Read `messages.operationStatus(session, operationId)` with the original issuing
+Read `messages.operationStatus(connection, operationId)` with the original issuing
 server principal. `pending` and `unknown` do not permit another send or a
 transport switch. A terminal `rejected` result carries
 `rejectionCode: "hybrid_authority_unavailable"` and proves that this operation
 ended before the provider effect. Fix the cause before starting a new operation.
 
 `hybridLink.getPolicy(scope)` and `setPolicy(scope, body)` preserve team, project,
-or Number authority. Writes require the exact `expectedRevision`, `prefer`, and
+or Connection authority. Writes require the exact `expectedRevision`, `prefer`, and
 `allowedTransports`; narrower policies cannot widen ancestor restrictions.
-`hybridLink.state(session)` reads connection status. `setPaused(session,
+`hybridLink.state(connection)` reads connection status. `setPaused(connection,
 {expectedRevision, paused})` changes routing at the exact current revision.
 
 ## License
@@ -1093,13 +1093,18 @@ MIT
 
 Treat every Polymorfa credential as an opaque string. Never parse it or assume a fixed length. Credential storage must support at least 512 characters, preferably unrestricted text. Client-token length varies with its bindings and Customer scope.
 
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.
+
 ## Business account-mode supplement
 
-All six SDKs expose the Test-number account-mode operation, the corresponding
+All six SDKs expose the Test Connection account-mode operation, the corresponding
 QuickLink testing fields and optional business contact encryption values. See
 the package READMEs for the native calls. The separately produced
 `contracts/business-account-modes.json` binds API source
-`14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4`; it does not replace the API baseline
+`15db8b1c9d88e2ceccb58c851e731feabb659a39`; it does not replace the API baseline
 or other supplements. `contracts/native-business-account-modes.json` attributes
 the native fixtures. Check receipts and package consumers remain separate gates.
 This source is not a package release or proof that the API is deployed.

@@ -6,7 +6,7 @@ const E164 = /^\+[1-9]\d{6,14}$/;
 /** Install narrow Calls rules only when this Number has no rules yet. */
 export async function configureCallsExampleRules(
   messaging,
-  session,
+  connection,
   testCallee,
 ) {
   if (!E164.test(testCallee))
@@ -16,7 +16,7 @@ export async function configureCallsExampleRules(
 
   let existing = false;
   try {
-    await messaging.clientTokens.retrieveRules(session);
+    await messaging.clientTokens.retrieveRules(connection);
     existing = true;
   } catch (cause) {
     if (cause?.status !== 404) throw cause;
@@ -31,9 +31,9 @@ export async function configureCallsExampleRules(
 
   // The public 404 does not say whether rules are absent or the Number is
   // outside this credential's project. A readable Number resolves it; when
-  // sessions:read is missing, the PUT still checks the project on the server.
+  // connections:read is missing, the PUT still checks the project on the server.
   try {
-    await messaging.sessions.retrieve(session);
+    await messaging.connections.retrieve(connection);
   } catch (cause) {
     if (cause?.status === 404)
       throw new CallsExampleSetupError(
@@ -43,7 +43,7 @@ export async function configureCallsExampleRules(
   }
 
   try {
-    await messaging.clientTokens.updateRules(session, {
+    await messaging.clientTokens.updateRules(connection, {
       recipientMode: "none",
       allowedActions: "voip_place,voip_answer,voip_signal",
       // Per token per minute: signaling, candidates and diagnostics share it.

@@ -24,12 +24,12 @@ foreach (['image','video','audio','ptt','document','sticker'] as $kind) {
             $media['ptt'] = true;
         }
         $body = ['conversation' => ['id' => 'conversation'],'content' => [$mapped => $media]];
-        $response = $client->messages->send('session', $body);
+        $response = $client->messages->send('connection', $body);
         $returned = $response->data['data']['content'][$mapped]['descriptor'];
         check($returned instanceof WhatsAppMediaSendDescriptor && $returned->mediaType === $kind && $returned->mediaKey === $descriptor->mediaKey && $returned->fileSha256 === $descriptor->fileSha256, 'Descriptor response preserves binary fields and media identity');
         check($body['content'][$mapped]['descriptor'] === $descriptor, 'Caller request remains typed and unmodified');
-        $client->messages->send('session', ['conversation' => ['id' => 'conversation'],'content' => ['text' => 'legacy']]);
-        $client->messages->send('session', $body, new RequestOptions(apiVersion:'2026-12-01'));
+        $client->messages->send('connection', ['conversation' => ['id' => 'conversation'],'content' => ['text' => 'legacy']]);
+        $client->messages->send('connection', $body, new RequestOptions(apiVersion:'2026-12-01'));
         fwrite($pipes[0], "finish\n");
         $state = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
         check($state['valid'] && $state['posts'] === 3, 'Actual TLS descriptor wire, idempotency, legacy and explicit API versions');
@@ -51,6 +51,6 @@ foreach ([new WhatsAppMediaSendMetadata(width:1),new WhatsAppMediaSendMetadata(s
 }
 $client = new Polymorfa\MessagingClient($credential, baseUrl:'http://127.0.0.1:1');
 foreach ([['sticker' => ['descriptor' => $descriptor,'url' => 'https://private.invalid']],['image' => ['descriptor' => $descriptor]],['sticker' => ['descriptor' => $descriptor,'caption' => 'unsupported']],['sticker' => ['descriptor' => $wire]],['text' => 'x','sticker' => ['descriptor' => $descriptor]]] as $content) {
-    raises(fn () => $client->messages->send('session', ['conversation' => ['id' => 'conversation'],'content' => $content]), ConfigurationException::class);
+    raises(fn () => $client->messages->send('connection', ['conversation' => ['id' => 'conversation'],'content' => $content]), ConfigurationException::class);
 }
 echo "Native TLS descriptor sends/responses for six kinds, secret redaction, shape bounds and per-request API revisions passed.\n";

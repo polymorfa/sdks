@@ -75,7 +75,7 @@ fn lifecycle_protocol(
 ) -> std::result::Result<Response, tokio_tungstenite::tungstenite::handshake::server::ErrorResponse>
 {
     assert_eq!(request.uri().path(), "/voip/ws");
-    assert_eq!(request.uri().query(), Some("session=support"));
+    assert_eq!(request.uri().query(), Some("connection=support"));
     assert!(!request.headers().contains_key("authorization"));
     Ok(response)
 }
@@ -109,7 +109,7 @@ async fn lifecycle_refresh_reconnect_bounded_pending_and_duplicate_received() {
             );
             socket
                 .send(Message::Text(
-                    json!({"type":"ready","session":"support","participant":"server:default"})
+                    json!({"type":"ready","connection":"support","participant":"server:default"})
                         .to_string()
                         .into(),
                 ))
@@ -265,7 +265,7 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
         tokio::time::sleep(Duration::from_millis(5)).await;
         let (head, body, headers) = http(stream, json!({"data":{"callId":"outbound"}})).await;
         assert_eq!(head, "POST /messaging/voip/calls HTTP/1.1");
-        assert!(body.get("session").is_none());
+        assert!(body.get("connection").is_none());
         assert!(body.get("participant").is_none());
         assert_eq!(body["to"], "+15551234567");
         assert!(headers.to_ascii_lowercase().contains("idempotency-key:"));
@@ -478,7 +478,7 @@ async fn outbound_early_accept_media_state_pcm_auth_refresh_same_connection_and_
     .unwrap();
     assert_eq!(
         scoped
-            .sessions()
+            .connections()
             .list(Default::default())
             .await
             .unwrap_err()

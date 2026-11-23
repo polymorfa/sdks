@@ -42,7 +42,7 @@ import {
   PolymorfaRateLimitError,
   PolymorfaTimeoutError,
   SecurityIncidentsResource,
-  SessionBansResource,
+  ConnectionBansResource,
   TemplatesResource,
   UsersResource,
   VoipResource,
@@ -102,20 +102,20 @@ import {
   type ResolveIdentityParams,
   type ResponseMetadata,
   type SecurityIncident,
-  type SessionBan,
-  type SessionBatchRequest,
+  type ConnectionBan,
+  type ConnectionBatchRequest,
   type SendMessageRequest,
   type TemplateDefinition,
   type TierPricing,
-  type NumberTierChange,
-  type NumberTierQuoteRequest,
-  type SessionTierOverrideRequest,
+  type ConnectionTierChange,
+  type ConnectionTierQuoteRequest,
+  type ConnectionTierOverrideRequest,
   type WebhookEvent,
   type UserSecurityCode,
   type TeamQuickLinkSettings,
   type ProjectQuickLinkSettings,
-  type SessionCallSettings,
-  type UpdateSessionCallSettingsRequest,
+  type ConnectionCallSettings,
+  type UpdateConnectionCallSettingsRequest,
   type VoipAcceptCallRequest,
   type VoipAcceptCallResult,
   type VoipLeaveCallRequest,
@@ -169,7 +169,7 @@ describe("public exports", () => {
       PolymorfaTimeoutError,
       PolymorfaCancelledError,
       SecurityIncidentsResource,
-      SessionBansResource,
+      ConnectionBansResource,
       TemplatesResource,
       UsersResource,
       VoipResource,
@@ -185,15 +185,15 @@ describe("public exports", () => {
     expectTypeOf<ApiKey>().toHaveProperty("last4");
     expectTypeOf<AuditLog>().toHaveProperty("actorEmail");
     expectTypeOf<BillingBalance>().toHaveProperty("balanceCents");
-    expectTypeOf<BillingUsage>().toHaveProperty("activeNumbers");
+    expectTypeOf<BillingUsage>().toHaveProperty("activeConnections");
     expectTypeOf<BillingTransaction>().toHaveProperty("balanceAfterCents");
     expectTypeOf<Campaign>().toHaveProperty("recipientCount");
     expectTypeOf<CampaignAnalytics>().toHaveProperty("responseRate");
     expectTypeOf<CreateCampaignRequest>().toHaveProperty("name");
     expectTypeOf<TierPricing>().toHaveProperty("dailyRateCents");
-    expectTypeOf<NumberTierChange>().toHaveProperty("quote");
-    expectTypeOf<NumberTierQuoteRequest>().toHaveProperty("tierOverride");
-    expectTypeOf<SessionTierOverrideRequest>().toHaveProperty("quoteId");
+    expectTypeOf<ConnectionTierChange>().toHaveProperty("quote");
+    expectTypeOf<ConnectionTierQuoteRequest>().toHaveProperty("tierOverride");
+    expectTypeOf<ConnectionTierOverrideRequest>().toHaveProperty("quoteId");
     expectTypeOf<ResponseMetadata>().toHaveProperty("requestId");
     expectTypeOf<RequestOptions>().toHaveProperty("signal");
     expectTypeOf<ResolveIdentityParams>().toMatchTypeOf<
@@ -219,8 +219,8 @@ describe("public exports", () => {
     >();
     expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("resolution");
-    expectTypeOf<SessionBan>().toHaveProperty("status");
-    expectTypeOf<SessionBatchRequest>().toHaveProperty("sessionIds");
+    expectTypeOf<ConnectionBan>().toHaveProperty("status");
+    expectTypeOf<ConnectionBatchRequest>().toHaveProperty("connectionIds");
     expectTypeOf<CreateQuickLinkRequest>().toHaveProperty("projectId");
     expectTypeOf<CreateChannelRequest>().toHaveProperty("picture");
     expectTypeOf<Channel>().toHaveProperty("id");
@@ -263,8 +263,8 @@ describe("public exports", () => {
     expectTypeOf<VoipAcceptCallResult>().toHaveProperty("answeredBy");
     expectTypeOf<VoipLeaveCallRequest>().toHaveProperty("connectionId");
     expectTypeOf<VoipParticipant>().toHaveProperty("state");
-    expectTypeOf<SessionCallSettings>().toHaveProperty("conferenceMode");
-    expectTypeOf<UpdateSessionCallSettingsRequest>().toHaveProperty(
+    expectTypeOf<ConnectionCallSettings>().toHaveProperty("conferenceMode");
+    expectTypeOf<UpdateConnectionCallSettingsRequest>().toHaveProperty(
       "conferenceMode",
     );
   });

@@ -31,7 +31,7 @@ class FakeWebSocket {
   /** Open, then accept the auth frame as the platform does. */
   authenticate(): void {
     this.open();
-    this.receive({ type: "ready", session: "support" });
+    this.receive({ type: "ready", connection: "support" });
   }
   receive(message: unknown): void {
     this.onmessage?.({ data: JSON.stringify(message) });
@@ -176,7 +176,7 @@ describe("CallsSocket", () => {
       signaling: signaling(),
       incoming: socket,
     });
-    const session: CallMediaSession = {
+    const connection: CallMediaSession = {
       localStream: {} as MediaStream,
       remoteStream: {} as MediaStream,
       setMuted: vi.fn(),
@@ -185,7 +185,7 @@ describe("CallsSocket", () => {
       close: vi.fn(async () => undefined),
     };
     const controller = new CallsController(backend, {
-      open: vi.fn(async () => session),
+      open: vi.fn(async () => connection),
     });
     controller.initialize();
     const connecting = socket.connect();
@@ -331,7 +331,7 @@ describe("CallsSocket", () => {
       { type: "auth", token: "pmfa_ct_abc" },
     ]);
     expect(socket.connected).toBe(false);
-    ws().receive({ type: "ready", session: "support" });
+    ws().receive({ type: "ready", connection: "support" });
     await connecting;
     expect(socket.connected).toBe(true);
 
@@ -339,7 +339,7 @@ describe("CallsSocket", () => {
       signaling: signaling(),
       incoming: socket,
     });
-    const session: CallMediaSession = {
+    const connection: CallMediaSession = {
       localStream: {} as MediaStream,
       remoteStream: {} as MediaStream,
       setMuted: vi.fn(),
@@ -347,7 +347,7 @@ describe("CallsSocket", () => {
       videoEnabled: () => false,
       close: vi.fn(async () => undefined),
     };
-    const media: CallMediaFactory = { open: vi.fn(async () => session) };
+    const media: CallMediaFactory = { open: vi.fn(async () => connection) };
     const controller = new CallsController(backend, media);
     controller.initialize();
 
@@ -558,7 +558,7 @@ describe("socket frame mapping", () => {
       type: "ready",
     });
     expect(
-      parseCallsSocketMessage(JSON.stringify({ type: "ready", session: 1 })),
+      parseCallsSocketMessage(JSON.stringify({ type: "ready", connection: 1 })),
     ).toBeUndefined();
     expect(
       parseCallsSocketMessage(JSON.stringify({ type: "error", code: "nope" })),

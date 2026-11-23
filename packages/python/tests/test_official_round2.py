@@ -115,7 +115,7 @@ def signed(value):
 def test_whole_body_batch_and_identity():
     e = {
         "id": "e",
-        "session": "",
+        "connection": "",
         "timestamp": "now",
         "event": "contact.update",
         "payload": {

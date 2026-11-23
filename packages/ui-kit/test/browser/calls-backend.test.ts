@@ -49,10 +49,10 @@ function feed() {
 
 function media(): {
   factory: CallMediaFactory;
-  session: CallMediaSession & { switchInput: ReturnType<typeof vi.fn> };
+  connection: CallMediaSession & { switchInput: ReturnType<typeof vi.fn> };
   listDevices: ReturnType<typeof vi.fn>;
 } {
-  const session = {
+  const connection = {
     localStream: {} as MediaStream,
     remoteStream: {} as MediaStream,
     setMuted: vi.fn(),
@@ -66,10 +66,10 @@ function media(): {
     { deviceId: "cam-1", kind: "videoinput" as const, label: "Webcam" },
   ]);
   const factory: CallMediaFactory = {
-    open: vi.fn(async () => session),
+    open: vi.fn(async () => connection),
     listDevices,
   };
-  return { factory, session, listDevices };
+  return { factory, connection, listDevices };
 }
 
 describe("incomingCallFromWebhook", () => {
@@ -232,7 +232,7 @@ describe("createSignalingCallsBackend", () => {
     // Leaving the active call closes this connection only, then the waiting
     // invitation is shown.
     await controller.leave();
-    expect(m.session.close).toHaveBeenCalledWith({ leave: true });
+    expect(m.connection.close).toHaveBeenCalledWith({ leave: true });
     expect(s.end).not.toHaveBeenCalled();
     expect(controller.getSnapshot()).toMatchObject({
       status: "incoming",
@@ -534,7 +534,7 @@ describe("createSignalingCallsBackend", () => {
     controller.setPreferredDevices({ audioInput: "mic-1" });
     await controller.place("+12025550123");
 
-    m.session.switchInput.mockRejectedValueOnce(new Error("device in use"));
+    m.connection.switchInput.mockRejectedValueOnce(new Error("device in use"));
     await controller.switchDevice("audioInput", "mic-2");
     // The capture kept mic-1, so the stored preference has to say so — or the
     // list shows a device that is not in use and the next call opens with it.
@@ -554,7 +554,7 @@ describe("createSignalingCallsBackend", () => {
     );
     fresh.initialize();
     await fresh.place("+12025550123");
-    m.session.switchInput.mockRejectedValueOnce(new Error("device in use"));
+    m.connection.switchInput.mockRejectedValueOnce(new Error("device in use"));
     await fresh.switchDevice("videoInput", "cam-9");
     expect(fresh.getSnapshot().selectedDevices).toEqual({});
     fresh.dispose();
@@ -575,7 +575,7 @@ describe("createSignalingCallsBackend", () => {
     await controller.place("+12025550123");
 
     let failFirst: (reason: Error) => void = () => undefined;
-    m.session.switchInput
+    m.connection.switchInput
       .mockImplementationOnce(
         () =>
           new Promise((_resolve, reject) => {
@@ -613,9 +613,9 @@ describe("createSignalingCallsBackend", () => {
       controller.initialize();
       controller.setPreferredDevices({ audioInput: "mic-1" });
       await controller.place("+12025550123");
-      // Media sessions run switches of one kind in order.
+      // Media connections run switches of one kind in order.
       const settle: ((error?: Error) => void)[] = [];
-      m.session.switchInput.mockImplementation(
+      m.connection.switchInput.mockImplementation(
         () =>
           new Promise<void>((resolve, reject) => {
             settle.push((error) => (error ? reject(error) : resolve()));
@@ -673,7 +673,7 @@ describe("createSignalingCallsBackend", () => {
     await expect(
       controller.switchDevice("audioInput", "mic-2"),
     ).resolves.toBeUndefined();
-    expect(m.session.switchInput).not.toHaveBeenCalled();
+    expect(m.connection.switchInput).not.toHaveBeenCalled();
   });
 
   it("stays quiet when a device switch fails after disposal", async () => {
@@ -690,7 +690,7 @@ describe("createSignalingCallsBackend", () => {
     await controller.place("+12025550123");
 
     let fail: (reason: Error) => void = () => undefined;
-    m.session.switchInput.mockImplementationOnce(
+    m.connection.switchInput.mockImplementationOnce(
       () =>
         new Promise((_resolve, reject) => {
           fail = reject;
@@ -761,7 +761,7 @@ describe("createSignalingCallsBackend", () => {
       },
     );
     await controller.switchDevice("audioInput", "mic-2");
-    expect(m.session.switchInput).toHaveBeenCalledWith(
+    expect(m.connection.switchInput).toHaveBeenCalledWith(
       "audio",
       "mic-2",
       expect.any(AbortSignal),

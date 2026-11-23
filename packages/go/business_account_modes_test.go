@@ -34,7 +34,7 @@ func TestBusinessAccountModesWire(t *testing.T) {
 					platform = nil
 				}
 				w.Header().Set("Content-Type", "application/json")
-				json.NewEncoder(w).Encode(map[string]any{"session": "demo /a", "accountType": account, "primaryPlatform": platform, "changed": true, "unlinkedDevices": []int{3, 7}})
+				json.NewEncoder(w).Encode(map[string]any{"connection": "demo /a", "accountType": account, "primaryPlatform": platform, "changed": true, "unlinkedDevices": []int{3, 7}})
 			}))
 			defer s.Close()
 			result, err := mustMessaging(t, s.URL).Testing().SetAccountMode(context.Background(), "demo /a", TestingAccountModeRequest{AccountType: account})
@@ -78,9 +78,9 @@ func TestBusinessAccountModesRejectBeforeTransport(t *testing.T) {
 
 func TestBusinessAccountModesRequireCompleteResults(t *testing.T) {
 	for _, reply := range []string{
-		`{"session":"demo","accountType":"business_app","primaryPlatform":"ios","changed":"false","unlinkedDevices":[]}`,
-		`{"session":"demo","accountType":"business_app","primaryPlatform":"ios","unlinkedDevices":[]}`,
-		`{"session":"demo","accountType":"personal","primaryPlatform":"ios","changed":false,"unlinkedDevices":[]}`,
+		`{"connection":"demo","accountType":"business_app","primaryPlatform":"ios","changed":"false","unlinkedDevices":[]}`,
+		`{"connection":"demo","accountType":"business_app","primaryPlatform":"ios","unlinkedDevices":[]}`,
+		`{"connection":"demo","accountType":"personal","primaryPlatform":"ios","changed":false,"unlinkedDevices":[]}`,
 	} {
 		s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			w.Header().Set("Content-Type", "application/json")
@@ -136,7 +136,7 @@ func TestBusinessQuickLinkModeAndPlatform(t *testing.T) {
 			t.Errorf("lost configuration: %#v", configuration)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		w.Write([]byte(`{"success":true,"data":{"id":"ql","url":"https://example.test/ql","session":"demo","expiresAt":null}}`))
+		w.Write([]byte(`{"success":true,"data":{"id":"ql","url":"https://example.test/ql","connection":"demo","expiresAt":null}}`))
 	}))
 	defer server.Close()
 	client := mustMessaging(t, server.URL)

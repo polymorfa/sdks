@@ -40,14 +40,14 @@ test("deterministic export, exact SDK/API pins, six languages and no unpublished
 
 test("rejects malformed and renamed spec placeholders", () => {
   for (const replacement of [
-    "{{session}}",
-    "{{session-id}}",
-    "fixture-session",
+    "{{connection}}",
+    "{{connection-id}}",
+    "fixture-connection",
   ]) {
     const c = copy();
-    c.operations.getSession.typescript.code =
-      c.operations.getSession.typescript.code.replace(
-        "{{sessionId}}",
+    c.operations.getConnection.typescript.code =
+      c.operations.getConnection.typescript.code.replace(
+        "{{connectionId}}",
         replacement,
       );
     assert.throws(

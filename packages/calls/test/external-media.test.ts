@@ -10,7 +10,7 @@ function inbound(
 ) {
   return new Call({
     id: "CALL-IN",
-    session: "support",
+    connection: "support",
     direction: "inbound",
     peer: "+15550100",
     video: false,
@@ -43,7 +43,7 @@ describe("externally managed call media", () => {
     const api = fakeApi();
     const call = new Call({
       id: "CALL-OUT",
-      session: "support",
+      connection: "support",
       direction: "outbound",
       peer: "+15550100",
       video: false,
@@ -67,7 +67,7 @@ describe("externally managed call media", () => {
         }),
     );
     const client = createInternalCallsClient({
-      session: "support",
+      connection: "support",
       api,
       mediaMode: "external",
       WebSocket: FakeWebSocket as unknown as typeof WebSocket,
@@ -102,7 +102,7 @@ describe("externally managed call media", () => {
     const api = fakeApi();
     const call = new Call({
       id: "C",
-      session: "s",
+      connection: "s",
       direction: "inbound",
       peer: "",
       video: false,
@@ -115,7 +115,7 @@ describe("externally managed call media", () => {
       () =>
         new Call({
           id: "C",
-          session: "s",
+          connection: "s",
           direction: "inbound",
           peer: "",
           video: false,
@@ -248,7 +248,7 @@ describe("answer, join and claims", () => {
       const t = timers();
       const call = new Call({
         id: "CALL-IN",
-        session: "support",
+        connection: "support",
         direction: "inbound",
         peer: "+15550100",
         video: false,
@@ -288,7 +288,7 @@ describe("answer, join and claims", () => {
     const t = timers();
     const call = new Call({
       id: "CALL-IN",
-      session: "support",
+      connection: "support",
       direction: "inbound",
       peer: "+15550100",
       video: false,

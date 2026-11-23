@@ -1,13 +1,13 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4",
+  "commit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
   "releaseStatus": "source-only",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "44a2cc304483d7cd4e12974b8f31df92a3b7880d21152aa70af0a50948b40cb1",
+      "sourceSha256": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
       "paths": {
-        "/messaging/{session}/contacts/{contactId}/business-profile": {
+        "/messaging/{connection}/contacts/{contactId}/business-profile": {
           "get": {
             "operationId": "getBusinessProfile",
             "tags": ["Contacts"],
@@ -18,7 +18,7 @@
               {
                 "schema": { "type": "string" },
                 "required": true,
-                "name": "session",
+                "name": "connection",
                 "in": "path"
               },
               {
@@ -201,9 +201,6 @@
                 }
               }
             },
-            "x-mint": {
-              "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">contacts:read</Badge>"
-            },
             "x-protocols": ["Linked Device API"],
             "description": "**Protocols:** Linked Device API\n\n**Required scope:** `contacts:read`"
           }
@@ -213,7 +210,7 @@
             "operationId": "createQuickLink",
             "tags": ["QuickLink"],
             "summary": "Create a QuickLink",
-            "description": "**Required scope:** `quicklink:manage`\n\nCreates a persistent hosted link that connects one WhatsApp number to a new session in the project.",
+            "description": "**Required scope:** `quicklink:manage`\n\nCreates a persistent hosted link that connects one WhatsApp number to a new connection in the project.",
             "security": [{ "BearerAuth": [] }],
             "x-required-scope": "quicklink:manage",
             "requestBody": {
@@ -397,19 +394,16 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">quicklink:manage</Badge>"
             }
           }
         },
-        "/messaging/{session}/phone/account-mode": {
+        "/messaging/{connection}/phone/account-mode": {
           "put": {
             "operationId": "setTestingAccountMode",
             "tags": ["Testing"],
             "security": [{ "BearerAuth": [] }],
-            "summary": "Change a Test number's account type or phone platform",
-            "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`\n\nChanges how the Test number presents itself. A change unlinks every companion, including the Number's own session, so each must pair again. Repeating the current mode changes nothing.",
+            "summary": "Change a Test connection's account type or phone platform",
+            "description": "**Protocols:** Linked Device API\n\n**Required scope:** `sandbox:write`\n\nChanges how the Test connection presents itself. A change unlinks every companion, including the Connection's own connection, so each must pair again. Repeating the current mode changes nothing.",
             "x-required-scope": "sandbox:write",
             "parameters": [
               {
@@ -417,10 +411,10 @@
                   "type": "string",
                   "minLength": 1,
                   "maxLength": 256,
-                  "description": "The Test number's session ID."
+                  "description": "The Test connection's connection ID."
                 },
                 "required": true,
-                "name": "session",
+                "name": "connection",
                 "in": "path"
               }
             ],
@@ -487,7 +481,7 @@
                 }
               },
               "403": {
-                "description": "Test numbers access required, or a client token was used",
+                "description": "Test connections access required, or a client token was used",
                 "headers": {
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
@@ -547,7 +541,7 @@
                 }
               },
               "409": {
-                "description": "The Test number is claimed in Inspector, or another mode change is pending. Unclaim it or retry.",
+                "description": "The Test connection is claimed in Inspector, or another mode change is pending. Unclaim it or retry.",
                 "headers": {
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
@@ -606,9 +600,6 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"green\" icon=\"laptop\">Linked Device API</Badge> <Badge color=\"yellow\" icon=\"key\">sandbox:write</Badge>"
             },
             "x-protocols": ["Linked Device API"]
           }
@@ -719,7 +710,7 @@
                   "code": {
                     "type": "string",
                     "enum": [
-                      "zero_knowledge_session",
+                      "zero_knowledge_connection",
                       "invalid_parameter",
                       "invalid_credential",
                       "entitlement_required",
@@ -770,7 +761,7 @@
                       "order_status_transition_invalid",
                       "order_cancellation_failed",
                       "call_opt_out_limit",
-                      "number_restricted",
+                      "connection_restricted",
                       "sip_trunk_in_use",
                       "sip_trunk_revision_conflict",
                       "sip_trunk_limit",
@@ -788,7 +779,7 @@
                       "upstream_failure",
                       "service_unavailable",
                       "credential_verification_unavailable",
-                      "session_not_ready",
+                      "connection_not_ready",
                       "command_dispatch_failed",
                       "result_unknown",
                       "parent_bsuid_not_supported",
@@ -810,7 +801,7 @@
                       "whatsapp_group_suspended",
                       "whatsapp_group_has_no_participants",
                       "bansafe_suspended",
-                      "bansafe_org_suspended",
+                      "bansafe_team_suspended",
                       "bansafe_cold_blocked",
                       "bansafe_cold_held",
                       "bansafe_throttled",
@@ -833,7 +824,7 @@
                   "request_log_url": {
                     "type": "string",
                     "format": "uri",
-                    "description": "Console page that shows this request. Returned only to organization and project credentials whose request was logged."
+                    "description": "Console page that shows this request. Returned only to team and project credentials whose request was logged."
                   }
                 },
                 "required": ["type", "code", "message", "param", "request_id"]
@@ -854,36 +845,36 @@
               "signalMode": {
                 "type": "string",
                 "enum": ["standard", "zero_knowledge"],
-                "description": "Signal key custody for a new Number. Inherits Customer then Project default; cannot change an existing Number. Customer-owned custody requires beta admission and real Linked Devices."
+                "description": "Signal key custody for a new Connection. Inherits Customer then Project default; cannot change an existing Connection. Customer-owned custody requires beta admission and real Linked Devices."
               },
               "purpose": {
                 "type": "string",
-                "enum": ["initial", "add_connection"],
-                "description": "Initial setup, or add a transport to an existing session without replacing the Number."
+                "enum": ["initial", "add_method"],
+                "description": "Initial setup, or add a method to an existing Connection without replacing the Connection."
               },
               "connectionGoal": {
                 "type": "string",
                 "enum": ["single", "hybrid"]
               },
-              "session": {
+              "connection": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 128,
-                "description": "Existing session name. Required only for add_connection."
+                "description": "Existing connection name. Required only for add_method."
               },
-              "addConnection": {
+              "addMethod": {
                 "type": "string",
                 "enum": ["linked_devices", "official_api"]
               },
               "projectId": {
                 "type": "string",
                 "format": "uuid",
-                "description": "Project that receives the connected number. Required for team keys with more than one project."
+                "description": "Project that receives the connected connection. Required for team keys with more than one project."
               },
               "customerId": {
                 "type": "string",
                 "format": "uuid",
-                "description": "Customer that owns the connected number when Customers is enabled for the project."
+                "description": "Customer that owns the connected connection when Customers is enabled for the project."
               },
               "billingControls": {
                 "type": "object",
@@ -902,14 +893,14 @@
                 },
                 "required": ["limitCredits", "priority"],
                 "additionalProperties": false,
-                "description": "Initial monthly spending limit and funding priority for a real Number. Requires a team key with billing:manage or a live team owner/admin on Pay-As-You-Go. Applied atomically before pairing admission."
+                "description": "Initial monthly spending limit and funding priority for a real Connection. Requires a team key with billing:manage or a live team owner/admin on Pay-As-You-Go. Applied atomically before pairing admission."
               },
               "externalId": {
                 "type": "string",
                 "minLength": 1,
                 "maxLength": 256,
                 "pattern": "^[^\\x00-\\x1f\\x7f]+$",
-                "description": "Integrator correlation copied to the resulting session. May repeat across invitations; does not grant access."
+                "description": "Integrator correlation copied to the resulting connection. May repeat across invitations; does not grant access."
               },
               "configuration": {
                 "$ref": "#/components/schemas/QuickLinkConfiguration"
@@ -958,7 +949,7 @@
                       "primaryPlatform": {
                         "type": "string",
                         "enum": ["android", "ios"],
-                        "description": "Primary phone platform the Test number emulates. Defaults to `android`. Not accepted when `accountType` is `meta_cloud`.",
+                        "description": "Primary phone platform the Test connection emulates. Defaults to `android`. Not accepted when `accountType` is `meta_cloud`.",
                         "x-enumDescriptions": {
                           "android": "An Android phone.",
                           "ios": "An iPhone."
@@ -1012,7 +1003,7 @@
                 "items": { "type": "string", "enum": ["qr", "pairing"] },
                 "minItems": 1,
                 "maxItems": 2,
-                "description": "Linked Devices methods offered for this connection."
+                "description": "Linked Devices methods offered for this method."
               },
               "defaultMethod": {
                 "type": "string",
@@ -1125,13 +1116,13 @@
             "properties": {
               "purpose": {
                 "type": "string",
-                "enum": ["initial", "add_connection", "reauthorization"]
+                "enum": ["initial", "add_method", "reauthorization"]
               },
               "connectionGoal": {
                 "type": "string",
                 "enum": ["single", "hybrid"]
               },
-              "addConnection": {
+              "addMethod": {
                 "type": "string",
                 "enum": ["linked_devices", "official_api"]
               },
@@ -1141,11 +1132,11 @@
               },
               "url": {
                 "type": "string",
-                "description": "Hosted connection URL. Share it only with the person holding the phone."
+                "description": "Hosted method URL. Share it only with the person holding the phone."
               },
-              "session": {
+              "connection": {
                 "type": "string",
-                "description": "Session name that receives the connected number."
+                "description": "Connection name that receives the connected connection."
               },
               "expiresAt": {
                 "type": "string",
@@ -1158,7 +1149,7 @@
               "connectionGoal",
               "id",
               "url",
-              "session",
+              "connection",
               "expiresAt"
             ]
           },
@@ -1184,7 +1175,7 @@
               "primaryPlatform": {
                 "type": "string",
                 "enum": ["android", "ios"],
-                "description": "Primary phone platform the Test number emulates. Defaults to `android`. Not accepted when `accountType` is `meta_cloud`.",
+                "description": "Primary phone platform the Test connection emulates. Defaults to `android`. Not accepted when `accountType` is `meta_cloud`.",
                 "x-enumDescriptions": {
                   "android": "An Android phone.",
                   "ios": "An iPhone."
@@ -1197,7 +1188,7 @@
           "TestingAccountMode": {
             "type": "object",
             "properties": {
-              "session": { "type": "string" },
+              "connection": { "type": "string" },
               "accountType": {
                 "type": "string",
                 "enum": [
@@ -1226,16 +1217,16 @@
               },
               "changed": {
                 "type": "boolean",
-                "description": "False when the Test number already used this mode. Nothing was unlinked."
+                "description": "False when the Test connection already used this mode. Nothing was unlinked."
               },
               "unlinkedDevices": {
                 "type": "array",
                 "items": { "type": "integer" },
-                "description": "Companions the phone unlinked. Each must pair again, including Polymorfa's own session."
+                "description": "Companions the phone unlinked. Each must pair again, including Polymorfa's own connection."
               }
             },
             "required": [
-              "session",
+              "connection",
               "accountType",
               "primaryPlatform",
               "changed",

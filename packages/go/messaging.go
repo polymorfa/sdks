@@ -10,7 +10,7 @@ type Messages struct{ t *transport }
 
 // Send validates one content variant and its interactive media before HTTP,
 // then submits an idempotent request with descriptor-specific version handling.
-func (r *Messages) Send(ctx context.Context, session string, b SendMessageRequest, opts ...RequestOptions) (Response[Envelope[MessageResult]], error) {
+func (r *Messages) Send(ctx context.Context, connection string, b SendMessageRequest, opts ...RequestOptions) (Response[Envelope[MessageResult]], error) {
 	if err := validateInteractiveContent(b.Content); err != nil {
 		return Response[Envelope[MessageResult]]{}, err
 	}
@@ -38,16 +38,16 @@ func (r *Messages) Send(ctx context.Context, session string, b SendMessageReques
 	if err != nil {
 		return Response[Envelope[MessageResult]]{}, err
 	}
-	return request[Envelope[MessageResult]](ctx, r.t, "POST", messageAction(session, "send"), nil, wire, o)
+	return request[Envelope[MessageResult]](ctx, r.t, "POST", messageAction(connection, "send"), nil, wire, o)
 }
-func messageAction(session, action string) string {
-	return "/messaging/" + escaped(session) + "/messages/" + action
+func messageAction(connection, action string) string {
+	return "/messaging/" + escaped(connection) + "/messages/" + action
 }
-func (r *Messages) OperationStatus(ctx context.Context, session, id string, opts ...RequestOptions) (Response[Envelope[MessageOperation]], error) {
+func (r *Messages) OperationStatus(ctx context.Context, connection, id string, opts ...RequestOptions) (Response[Envelope[MessageOperation]], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[MessageOperation]]{}, err
 	}
-	return request[Envelope[MessageOperation]](ctx, r.t, "GET", "/messaging/"+escaped(session)+"/operations/"+escaped(id), nil, nil, options(opts))
+	return request[Envelope[MessageOperation]](ctx, r.t, "GET", "/messaging/"+escaped(connection)+"/operations/"+escaped(id), nil, nil, options(opts))
 }
 func (r *Messages) MarkSeen(ctx context.Context, s string, b SeenRequest, o ...RequestOptions) (Response[Envelope[StatusResult]], error) {
 	return request[Envelope[StatusResult]](ctx, r.t, "POST", messageAction(s, "seen"), nil, b, options(o))
@@ -66,76 +66,76 @@ func (r *Messages) Star(ctx context.Context, s string, b StarRequest, o ...Reque
 	return request[Envelope[StatusResult]](ctx, r.t, "POST", messageAction(s, "star"), nil, b, options(o))
 }
 
-type MessagingSessions struct{ t *transport }
+type MessagingConnections struct{ t *transport }
 
-func sessionPath(s string) string { return "/platform/sessions/" + escaped(s) }
-func (r *MessagingSessions) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]PlatformSession]], error) {
+func connectionPath(s string) string { return "/platform/connections/" + escaped(s) }
+func (r *MessagingConnections) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]PlatformConnection]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[[]PlatformSession]]{}, err
+		return Response[Envelope[[]PlatformConnection]]{}, err
 	}
-	return request[Envelope[[]PlatformSession]](ctx, r.t, "GET", "/platform/sessions", nil, nil, options(o))
+	return request[Envelope[[]PlatformConnection]](ctx, r.t, "GET", "/platform/connections", nil, nil, options(o))
 }
-func (r *MessagingSessions) Retrieve(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[Session]], error) {
+func (r *MessagingConnections) Retrieve(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[Connection]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[Session]]{}, err
+		return Response[Envelope[Connection]]{}, err
 	}
-	return request[Envelope[Session]](ctx, r.t, "GET", sessionPath(s), nil, nil, options(o))
+	return request[Envelope[Connection]](ctx, r.t, "GET", connectionPath(s), nil, nil, options(o))
 }
-func (r *MessagingSessions) Update(ctx context.Context, s string, b UpdateSessionRequest, o ...RequestOptions) (Response[Envelope[Session]], error) {
+func (r *MessagingConnections) Update(ctx context.Context, s string, b UpdateConnectionRequest, o ...RequestOptions) (Response[Envelope[Connection]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[Session]]{}, err
+		return Response[Envelope[Connection]]{}, err
 	}
 	intent, err := configurationIntent(b)
 	if err != nil {
-		return Response[Envelope[Session]]{}, err
+		return Response[Envelope[Connection]]{}, err
 	}
-	return request[Envelope[Session]](ctx, r.t, "PUT", sessionPath(s), nil, b, deliveryOptions(options(o), intent))
+	return request[Envelope[Connection]](ctx, r.t, "PUT", connectionPath(s), nil, b, deliveryOptions(options(o), intent))
 }
-func (r *MessagingSessions) Delete(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[SessionLifecycleResult]], error) {
+func (r *MessagingConnections) Delete(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[ConnectionLifecycleResult]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[SessionLifecycleResult]]{}, err
+		return Response[Envelope[ConnectionLifecycleResult]]{}, err
 	}
-	return request[Envelope[SessionLifecycleResult]](ctx, r.t, "DELETE", sessionPath(s), nil, nil, options(o))
+	return request[Envelope[ConnectionLifecycleResult]](ctx, r.t, "DELETE", connectionPath(s), nil, nil, options(o))
 }
-func (r *MessagingSessions) Start(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[SessionLifecycleResult]], error) {
+func (r *MessagingConnections) Start(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[ConnectionLifecycleResult]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[SessionLifecycleResult]]{}, err
+		return Response[Envelope[ConnectionLifecycleResult]]{}, err
 	}
-	return request[Envelope[SessionLifecycleResult]](ctx, r.t, "POST", sessionPath(s)+"/start", nil, nil, options(o))
+	return request[Envelope[ConnectionLifecycleResult]](ctx, r.t, "POST", connectionPath(s)+"/start", nil, nil, options(o))
 }
-func (r *MessagingSessions) Stop(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[SessionLifecycleResult]], error) {
+func (r *MessagingConnections) Stop(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[ConnectionLifecycleResult]], error) {
 	if err := serverOnly(r.t); err != nil {
-		return Response[Envelope[SessionLifecycleResult]]{}, err
+		return Response[Envelope[ConnectionLifecycleResult]]{}, err
 	}
-	return request[Envelope[SessionLifecycleResult]](ctx, r.t, "POST", sessionPath(s)+"/stop", nil, nil, options(o))
+	return request[Envelope[ConnectionLifecycleResult]](ctx, r.t, "POST", connectionPath(s)+"/stop", nil, nil, options(o))
 }
-func (r *MessagingSessions) Restart(ctx context.Context, s string, o ...RequestOptions) (Response[OperationAccepted], error) {
-	if err := serverOnly(r.t); err != nil {
-		return Response[OperationAccepted]{}, err
-	}
-	return request[OperationAccepted](ctx, r.t, "POST", sessionPath(s)+"/restart", nil, nil, options(o))
-}
-func (r *MessagingSessions) Logout(ctx context.Context, s string, o ...RequestOptions) (Response[OperationAccepted], error) {
+func (r *MessagingConnections) Restart(ctx context.Context, s string, o ...RequestOptions) (Response[OperationAccepted], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[OperationAccepted]{}, err
 	}
-	return request[OperationAccepted](ctx, r.t, "POST", sessionPath(s)+"/logout", nil, nil, options(o))
+	return request[OperationAccepted](ctx, r.t, "POST", connectionPath(s)+"/restart", nil, nil, options(o))
 }
-func (r *MessagingSessions) Account(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[WhatsAppAccount]], error) {
+func (r *MessagingConnections) Logout(ctx context.Context, s string, o ...RequestOptions) (Response[OperationAccepted], error) {
+	if err := serverOnly(r.t); err != nil {
+		return Response[OperationAccepted]{}, err
+	}
+	return request[OperationAccepted](ctx, r.t, "POST", connectionPath(s)+"/logout", nil, nil, options(o))
+}
+func (r *MessagingConnections) Account(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[WhatsAppAccount]], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[WhatsAppAccount]]{}, err
 	}
-	return request[Envelope[WhatsAppAccount]](ctx, r.t, "GET", sessionPath(s)+"/me", nil, nil, options(o))
+	return request[Envelope[WhatsAppAccount]](ctx, r.t, "GET", connectionPath(s)+"/me", nil, nil, options(o))
 }
-func (r *MessagingSessions) QR(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[QRCode]], error) {
+func (r *MessagingConnections) QR(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[QRCode]], error) {
 	return request[Envelope[QRCode]](ctx, r.t, "GET", "/messaging/"+escaped(s)+"/pair/qr", url.Values{"format": {"json"}}, nil, options(o))
 }
-func (r *MessagingSessions) RequestPairingCode(ctx context.Context, s string, b PairingCodeRequest, o ...RequestOptions) (Response[Envelope[PairingCode]], error) {
+func (r *MessagingConnections) RequestPairingCode(ctx context.Context, s string, b PairingCodeRequest, o ...RequestOptions) (Response[Envelope[PairingCode]], error) {
 	return request[Envelope[PairingCode]](ctx, r.t, "POST", "/messaging/"+escaped(s)+"/pair/code", nil, b, options(o))
 }
 
 type QuickLinkConfiguration struct {
-	SessionConfigurationOverrides
+	ConnectionConfigurationOverrides
 	Testing               *QuickLinkTesting     `json:"testing,omitempty"`
 	ConnectionPreference  string                `json:"connectionPreference,omitempty"`
 	ConnectionEnforcement string                `json:"connectionEnforcement,omitempty"`
@@ -164,9 +164,9 @@ type CreateQuickLinkRequest struct {
 	SignalMode      *SignalCustodyMode      `json:"signalMode,omitempty"`
 	BillingControls *BillingControls        `json:"billingControls,omitempty"`
 	Purpose         string                  `json:"purpose,omitempty"`
-	Session         string                  `json:"session,omitempty"`
+	Connection      string                  `json:"connection,omitempty"`
 	ConnectionGoal  string                  `json:"connectionGoal,omitempty"`
-	AddConnection   string                  `json:"addConnection,omitempty"`
+	AddMethod       string                  `json:"addMethod,omitempty"`
 	ProjectID       string                  `json:"projectId,omitempty"`
 	CustomerID      string                  `json:"customerId,omitempty"`
 	ExternalID      string                  `json:"externalId,omitempty"`
@@ -175,10 +175,10 @@ type CreateQuickLinkRequest struct {
 type QuickLink struct {
 	Purpose        string  `json:"purpose"`
 	ConnectionGoal string  `json:"connectionGoal"`
-	AddConnection  string  `json:"addConnection,omitempty"`
+	AddMethod      string  `json:"addMethod,omitempty"`
 	ID             string  `json:"id"`
 	URL            string  `json:"url"`
-	Session        string  `json:"session"`
+	Connection     string  `json:"connection"`
 	ExpiresAt      *string `json:"expiresAt"`
 }
 type CloudSyncRequest struct {
@@ -203,12 +203,12 @@ type QuickLinkOnboarding struct {
 type QuickLinkStatus struct {
 	Purpose        string               `json:"purpose"`
 	ConnectionGoal string               `json:"connectionGoal"`
-	AddConnection  string               `json:"addConnection,omitempty"`
+	AddMethod      string               `json:"addMethod,omitempty"`
 	HybridPhase    *string              `json:"hybridPhase"`
 	Onboarding     *QuickLinkOnboarding `json:"onboarding,omitempty"`
 	ID             string               `json:"id"`
 	Status         string               `json:"status"`
-	Session        string               `json:"session"`
+	Connection     string               `json:"connection"`
 	ExpiresAt      *string              `json:"expiresAt"`
 	OpenedAt       *string              `json:"openedAt"`
 	ConnectedAt    *string              `json:"connectedAt"`
@@ -216,13 +216,13 @@ type QuickLinkStatus struct {
 	ErrorCode      *string              `json:"errorCode"`
 }
 type QuickLinkAvailability struct {
-	Allowed       bool    `json:"allowed"`
-	AddConnection *string `json:"addConnection"`
-	Connections   []struct {
+	Allowed   bool    `json:"allowed"`
+	AddMethod *string `json:"addMethod"`
+	Methods   []struct {
 		Kind    string `json:"kind"`
 		Status  string `json:"status"`
 		Enabled bool   `json:"enabled"`
-	} `json:"connections"`
+	} `json:"methods"`
 	ResumeQuickLinkID *string `json:"resumeQuickLinkId"`
 }
 type QuickLinks struct{ t *transport }
@@ -245,17 +245,17 @@ func (r *QuickLinks) Create(ctx context.Context, b CreateQuickLinkRequest, o ...
 		if b.BillingControls.Priority < 0 || b.BillingControls.Priority > 1000000 || b.BillingControls.LimitCredits != nil && *b.BillingControls.LimitCredits < 0 {
 			return Response[Envelope[QuickLink]]{}, validation("Invalid initial billing controls.")
 		}
-		if b.Purpose == "add_connection" || b.Configuration != nil && b.Configuration.Testing != nil {
-			return Response[Envelope[QuickLink]]{}, configuration("billingControls", "Initial billing controls require a real new number.")
+		if b.Purpose == "add_method" || b.Configuration != nil && b.Configuration.Testing != nil {
+			return Response[Envelope[QuickLink]]{}, configuration("billingControls", "Initial billing controls require a real new Connection.")
 		}
 	}
 	return request[Envelope[QuickLink]](ctx, r.t, "POST", "/messaging/quicklinks", nil, b, deliveryOptions(options(o), intent))
 }
-func (r *QuickLinks) Availability(ctx context.Context, projectID, session string, o ...RequestOptions) (Response[Envelope[QuickLinkAvailability]], error) {
+func (r *QuickLinks) Availability(ctx context.Context, projectID, connection string, o ...RequestOptions) (Response[Envelope[QuickLinkAvailability]], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[QuickLinkAvailability]]{}, err
 	}
-	return request[Envelope[QuickLinkAvailability]](ctx, r.t, "GET", "/messaging/quicklinks/availability", url.Values{"projectId": {projectID}, "session": {session}}, nil, options(o))
+	return request[Envelope[QuickLinkAvailability]](ctx, r.t, "GET", "/messaging/quicklinks/availability", url.Values{"projectId": {projectID}, "connection": {connection}}, nil, options(o))
 }
 func (r *QuickLinks) Retrieve(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[QuickLinkStatus]], error) {
 	if err := serverOnly(r.t); err != nil {
@@ -273,7 +273,7 @@ func (r *QuickLinks) Cancel(ctx context.Context, id string, o ...RequestOptions)
 type MintClientTokenRequest struct {
 	EphemeralID string `json:"ephemeralId"`
 	TTLSeconds  *int   `json:"ttlSeconds,omitempty"`
-	Session     string `json:"session,omitempty"`
+	Connection  string `json:"connection,omitempty"`
 	Customer    string `json:"customer,omitempty"`
 	// A nil ceiling is omitted; an explicit empty slice seals zero actions.
 	Allow []string `json:"allow,omitzero"`
@@ -314,8 +314,8 @@ func (r *ClientTokens) Mint(ctx context.Context, b MintClientTokenRequest, o ...
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[ClientTokenValue]]{}, err
 	}
-	if (b.Session == "") == (b.Customer == "") {
-		return Response[Envelope[ClientTokenValue]]{}, configuration("session", "Provide exactly one of session or customer.")
+	if (b.Connection == "") == (b.Customer == "") {
+		return Response[Envelope[ClientTokenValue]]{}, configuration("connection", "Provide exactly one of connection or customer.")
 	}
 	return request[Envelope[ClientTokenValue]](ctx, r.t, "POST", "/platform/client-tokens", nil, b, options(o))
 }
@@ -323,17 +323,17 @@ func (r *ClientTokens) RetrieveRules(ctx context.Context, s string, o ...Request
 	if err := serverOnly(r.t); err != nil {
 		return Response[Envelope[ClientRules]]{}, err
 	}
-	return request[Envelope[ClientRules]](ctx, r.t, "GET", sessionPath(s)+"/client-rules", nil, nil, options(o))
+	return request[Envelope[ClientRules]](ctx, r.t, "GET", connectionPath(s)+"/client-rules", nil, nil, options(o))
 }
 func (r *ClientTokens) UpdateRules(ctx context.Context, s string, b SetClientRulesRequest, o ...RequestOptions) (Response[Success], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Success]{}, err
 	}
-	return request[Success](ctx, r.t, "PUT", sessionPath(s)+"/client-rules", nil, b, options(o))
+	return request[Success](ctx, r.t, "PUT", connectionPath(s)+"/client-rules", nil, b, options(o))
 }
 func (r *ClientTokens) DeleteRules(ctx context.Context, s string, o ...RequestOptions) (Response[Success], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[Success]{}, err
 	}
-	return request[Success](ctx, r.t, "DELETE", sessionPath(s)+"/client-rules", nil, nil, options(o))
+	return request[Success](ctx, r.t, "DELETE", connectionPath(s)+"/client-rules", nil, nil, options(o))
 }

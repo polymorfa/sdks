@@ -49,7 +49,7 @@ pub trait MediaUploadTransport: Send + Sync {
     fn name(&self) -> &str;
     fn upload<'a>(
         &'a self,
-        session: &'a str,
+        connection: &'a str,
         body: EncryptedUploadBody<'a>,
         cancellation: CancellationToken,
     ) -> UploadTransportFuture<'a>;
@@ -58,12 +58,12 @@ pub trait MediaUploadTransport: Send + Sync {
 /// Encrypts locally and invokes an application-owned transport without exposing the media key.
 /// Transport errors are preserved; cancellation drops the in-progress upload future.
 pub async fn upload_with_transport(
-    session: &str,
+    connection: &str,
     source: MediaSource,
     options: MediaEncryptionOptions,
     transport: &dyn MediaUploadTransport,
 ) -> Result<MediaUploadResult> {
-    if session.is_empty() || transport.name().is_empty() {
+    if connection.is_empty() || transport.name().is_empty() {
         return Err(configuration("uploadTransport"));
     }
     let egress = transport.name().to_owned();
@@ -78,7 +78,7 @@ pub async fn upload_with_transport(
     };
     let location = tokio::select! { biased;
         _ = cancellation.cancelled() => return Err(cancelled()),
-        location = transport.upload(session, body, cancellation.clone()) => location?,
+        location = transport.upload(connection, body, cancellation.clone()) => location?,
     };
     Ok(MediaUploadResult {
         info: prepared.info,
@@ -105,7 +105,7 @@ impl MediaUploadTransport for BuiltinMediaUploadTransport<'_> {
     }
     fn upload<'a>(
         &'a self,
-        session: &'a str,
+        connection: &'a str,
         body: EncryptedUploadBody<'a>,
         cancellation: CancellationToken,
     ) -> UploadTransportFuture<'a> {
@@ -117,7 +117,7 @@ impl MediaUploadTransport for BuiltinMediaUploadTransport<'_> {
                 match &self.kind {
                     BuiltinKind::Relay => {
                         self.resource
-                            .upload_relay_prepared(session, body.prepared, request)
+                            .upload_relay_prepared(connection, body.prepared, request)
                             .await
                     }
                     BuiltinKind::Direct(settings) => {
@@ -126,7 +126,7 @@ impl MediaUploadTransport for BuiltinMediaUploadTransport<'_> {
                         direct.cancellation = cancellation.clone();
                         tokio::select! { biased;
                             _ = configured_cancellation.cancelled() => Err(cancelled()),
-                            result = self.resource.upload_direct_prepared(session, body.prepared, direct, request) => result,
+                            result = self.resource.upload_direct_prepared(connection, body.prepared, direct, request) => result,
                         }
                     }
                 }

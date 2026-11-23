@@ -43,7 +43,7 @@ const apiContract = JSON.parse(
 it("triggers a typed test event with overrides", async () => {
   const accepted = {
     event: "message.received",
-    session: "test-a",
+    connection: "test-a",
     delivery: "generated",
     eventId: "0199f1c2-7a4e-7c55-9d1e-3f0b8a2c6d10",
     source: "test",
@@ -110,15 +110,15 @@ it.each([true, false])(
   "sends the restriction fixture with restrictionActive=%s",
   async (restrictionActive) => {
     const accepted = {
-      event: "session.restriction_updated",
-      session: "test-a",
+      event: "connection.restriction_updated",
+      connection: "test-a",
       delivery: "generated",
       eventId: "0199f1c2-7a4e-7c55-9d1e-3f0b8a2c6d10",
       source: "test",
     };
     const { client: messaging, fetcher } = client(json(accepted, 202));
     const input: TriggerTestEventRequest = {
-      event: "session.restriction_updated",
+      event: "connection.restriction_updated",
       overrides: { restrictionActive },
     };
     expect(
@@ -140,7 +140,7 @@ it("sends a call restriction outcome supported by the API fixture", async () => 
   expect(JSON.parse(String(fetcher.mock.calls[0]![1]?.body))).toEqual(input);
 });
 
-it("surfaces a real-session refusal as an invalid request", async () => {
+it("surfaces a real-connection refusal as an invalid request", async () => {
   const { client: messaging } = client(
     json(
       {
@@ -171,7 +171,7 @@ it("rejects client tokens before transport", () => {
   });
   expect(() =>
     messaging.testing.triggerEvent("test-a", {
-      event: "session.status",
+      event: "connection.status",
     }),
   ).toThrow("requires a team key or project token");
   expect(() => messaging.testing.listEventFixtures()).toThrow(
@@ -205,7 +205,7 @@ it("surfaces the per-project rate limit", async () => {
 it("sends an optional Idempotency-Key and retries safely with it", async () => {
   const accepted = {
     event: "message.received",
-    session: "test-a",
+    connection: "test-a",
     delivery: "generated",
     eventId: "0199f1c2-7a4e-7c55-9d1e-3f0b8a2c6d10",
     source: "test",
@@ -238,8 +238,8 @@ it("omits Idempotency-Key when none is given", async () => {
   const { client: messaging, fetcher } = client(
     json(
       {
-        event: "session.status",
-        session: "test-a",
+        event: "connection.status",
+        connection: "test-a",
         delivery: "generated",
         eventId: null,
         source: "test",
@@ -248,7 +248,7 @@ it("omits Idempotency-Key when none is given", async () => {
     ),
   );
   await messaging.testing.triggerEvent("test-a", {
-    event: "session.status",
+    event: "connection.status",
   });
   const init = fetcher.mock.calls[0]![1];
   expect(new Headers(init?.headers).has("idempotency-key")).toBe(false);
@@ -257,7 +257,7 @@ it("omits Idempotency-Key when none is given", async () => {
 it("serializes restriction fixtures and restricted call endings", async () => {
   for (const input of [
     {
-      event: "session.restriction_updated",
+      event: "connection.restriction_updated",
       overrides: { restrictionActive: true },
     },
     {
@@ -269,7 +269,7 @@ it("serializes restriction fixtures and restricted call endings", async () => {
       json(
         {
           event: input.event,
-          session: "test-a",
+          connection: "test-a",
           delivery: "generated",
           eventId: null,
           source: "test",

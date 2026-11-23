@@ -11,7 +11,7 @@ internal static class DirectHistory41Tests
     internal const string Inline = """{"delivery":"descriptor","whatsapp_ids":{"linked_devices":"wa:2"},"syncType":"ON_DEMAND","chunkOrder":0,"fileLength":0,"inline":{"encoding":"zlib-base64-protobuf","data":"eA=="}}""";
     internal static WebhookEvent Parse(string payload)
     {
-        var body = Encoding.UTF8.GetBytes("{\"id\":\"event-id-not-wa-id\",\"session\":\"s\",\"timestamp\":\"2026-10-14T00:00:00Z\",\"event\":\"history.sync\",\"payload\":" + payload + "}");
+        var body = Encoding.UTF8.GetBytes("{\"id\":\"event-id-not-wa-id\",\"connection\":\"s\",\"timestamp\":\"2026-10-14T00:00:00Z\",\"event\":\"history.sync\",\"payload\":" + payload + "}");
         var signature = Convert.ToHexString(HMACSHA256.HashData("test-secret"u8.ToArray(), body)).ToLowerInvariant();
         return Webhooks.ConstructEvent(body, signature, "test-secret");
     }
@@ -36,6 +36,6 @@ internal static class DirectHistory41Tests
         {
             try { Parse(payload); throw new Exception("Invalid descriptor event accepted"); } catch (PolymorfaValidationException e) { Check(e.Code == "invalid_webhook_event", "Safe descriptor refusal"); }
         }
-        Console.WriteLine("PASS descriptor41 verified HMAC, named public branches, XOR/presence/numbers/identity/time/redaction; no download or storage claim");
+        Console.WriteLine("PASS descriptor41 verified HMAC, named public branches, XOR/presence/connections/identity/time/redaction; no download or storage claim");
     }
 }

@@ -215,7 +215,7 @@ final class ExistingCampaignValidation
             CampaignContractValidation::enum($params['status'], ['queued','sending','sent','delivered','read','failed','skipped'], 'status');
         }
         if (array_key_exists('reason', $params)) {
-            CampaignContractValidation::enum($params['reason'], ['opted_out','cold_held','campaign_cancelled','invalid_recipient','session_not_connected','ack_timeout','blocked_by_safety','send_failed','missing_variable','frequency_cap','other'], 'reason');
+            CampaignContractValidation::enum($params['reason'], ['opted_out','cold_held','campaign_cancelled','invalid_recipient','connection_not_connected','ack_timeout','blocked_by_safety','send_failed','missing_variable','frequency_cap','other'], 'reason');
         }
         if (array_key_exists('cursor', $params)) {
             CampaignContractValidation::text($params['cursor'], 'cursor', 1, 256);

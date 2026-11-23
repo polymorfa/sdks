@@ -211,31 +211,31 @@ func (c *SignalSidecarClient) Health(ctx context.Context) error {
 	}
 	return nil
 }
-func (c *SignalSidecarClient) Sessions(ctx context.Context) (SignalSessions, error) {
-	raw, err := c.request(ctx, "GET", "/v1/sessions", nil, true, 200)
+func (c *SignalSidecarClient) Connections(ctx context.Context) (SignalConnections, error) {
+	raw, err := c.request(ctx, "GET", "/v1/connections", nil, true, 200)
 	if err != nil {
-		return SignalSessions{}, err
+		return SignalConnections{}, err
 	}
-	var result SignalSessions
+	var result SignalConnections
 	var fields map[string]json.RawMessage
-	if json.Unmarshal(raw, &result) != nil || json.Unmarshal(raw, &fields) != nil || result.NodeID == "" || result.Sessions == nil {
-		return SignalSessions{}, signalInvalid()
+	if json.Unmarshal(raw, &result) != nil || json.Unmarshal(raw, &fields) != nil || result.NodeID == "" || result.Connections == nil {
+		return SignalConnections{}, signalInvalid()
 	}
-	var sessions []map[string]json.RawMessage
-	if json.Unmarshal(fields["sessions"], &sessions) != nil {
-		return SignalSessions{}, signalInvalid()
+	var connections []map[string]json.RawMessage
+	if json.Unmarshal(fields["connections"], &connections) != nil {
+		return SignalConnections{}, signalInvalid()
 	}
-	for _, session := range sessions {
+	for _, connection := range connections {
 		for _, field := range []string{"id", "lease_generation", "claimed", "has_device_keys", "state", "pn", "lid"} {
-			if session[field] == nil || (field != "pn" && field != "lid" && bytes.Equal(session[field], []byte("null"))) {
-				return SignalSessions{}, signalInvalid()
+			if connection[field] == nil || (field != "pn" && field != "lid" && bytes.Equal(connection[field], []byte("null"))) {
+				return SignalConnections{}, signalInvalid()
 			}
 		}
 	}
 	return result, nil
 }
-func (c *SignalSidecarClient) Send(ctx context.Context, session string, body SignalSendRequest) (SignalSendOutcome, error) {
-	if session == "" || !utf8.ValidString(session) || body.To == "" || !utf8.ValidString(body.To) || (body.Text != nil && !utf8.ValidString(*body.Text)) || (body.Text == nil) == (body.Media == nil) || (body.Text != nil && *body.Text == "") {
+func (c *SignalSidecarClient) Send(ctx context.Context, connection string, body SignalSendRequest) (SignalSendOutcome, error) {
+	if connection == "" || !utf8.ValidString(connection) || body.To == "" || !utf8.ValidString(body.To) || (body.Text != nil && !utf8.ValidString(*body.Text)) || (body.Text == nil) == (body.Media == nil) || (body.Text != nil && *body.Text == "") {
 		return SignalSendOutcome{}, validation("Signal sends require a target and exactly one non-empty text or media body.")
 	}
 	wire := map[string]any{"to": body.To}
@@ -248,7 +248,7 @@ func (c *SignalSidecarClient) Send(ctx context.Context, session string, body Sig
 		type mediaWire SignalMediaDescriptor
 		wire["media"] = mediaWire(*body.Media)
 	}
-	raw, err := c.request(ctx, "POST", "/v1/sessions/"+url.PathEscape(session)+"/messages", wire, true, 200)
+	raw, err := c.request(ctx, "POST", "/v1/connections/"+url.PathEscape(connection)+"/messages", wire, true, 200)
 	if err != nil {
 		return SignalSendOutcome{}, err
 	}

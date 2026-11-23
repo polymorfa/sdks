@@ -1,4 +1,4 @@
-//! Beta Number cache, readiness and delivery contracts. No provider access grant.
+//! Beta Connection cache, readiness and delivery contracts. No provider access grant.
 use crate::{
     models::SuccessEnvelope,
     transport::{encode, HttpTransport},
@@ -25,11 +25,11 @@ pub struct CatalogProductsParameters {
     pub cursor: Option<String>,
 }
 pub struct Catalogs<'a>(pub(crate) &'a HttpTransport);
-fn path(session: &str, id: Option<&str>) -> Result<String> {
-    if session.trim().is_empty() {
-        return Err(invalid("Provide a Number ID."));
+fn path(connection: &str, id: Option<&str>) -> Result<String> {
+    if connection.trim().is_empty() {
+        return Err(invalid("Provide a Connection ID."));
     }
-    let mut path = format!("/messaging/{}/catalogs", encode(session));
+    let mut path = format!("/messaging/{}/catalogs", encode(connection));
     if let Some(id) = id {
         if id.is_empty() || id.len() > 32 || !id.bytes().all(|b| b.is_ascii_digit()) {
             return Err(invalid("catalogId must contain 1 to 32 digits."));
@@ -42,28 +42,34 @@ fn path(session: &str, id: Option<&str>) -> Result<String> {
 impl Catalogs<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudCatalogCacheList>>> {
         self.0.server()?;
         self.0
-            .request::<_, ()>(Method::GET, &path(session, None)?, &[], None, options)
+            .request::<_, ()>(Method::GET, &path(connection, None)?, &[], None, options)
             .await
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudCatalogSync>>> {
         self.0.server()?;
         self.0
-            .request::<_, ()>(Method::GET, &path(session, Some(id))?, &[], None, options)
+            .request::<_, ()>(
+                Method::GET,
+                &path(connection, Some(id))?,
+                &[],
+                None,
+                options,
+            )
             .await
     }
     pub async fn list_products(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         p: &CatalogProductsParameters,
         options: RequestOptions,
@@ -90,7 +96,7 @@ impl Catalogs<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/products", path(session, Some(id))?),
+                &format!("{}/products", path(connection, Some(id))?),
                 &query,
                 None,
                 options,
@@ -99,7 +105,7 @@ impl Catalogs<'_> {
     }
     pub async fn sync(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudCatalogSync>>> {
@@ -109,7 +115,7 @@ impl Catalogs<'_> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/sync", path(session, Some(id))?),
+                &format!("{}/sync", path(connection, Some(id))?),
                 &[],
                 None,
                 options,

@@ -7,34 +7,34 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-export const GET = route("agent", ({ body, sessionOf }) =>
-  messaging().contacts.list(sessionOf(body)),
+export const GET = route("agent", ({ body, connectionOf }) =>
+  messaging().contacts.list(connectionOf(body)),
 );
 
-export const POST = route("agent", async ({ body, sessionOf }) => {
+export const POST = route("agent", async ({ body, connectionOf }) => {
   const contacts = messaging().contacts;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   const name = action(body);
   if (name === "check") {
-    return contacts.check(session, texts(body, "phones"));
+    return contacts.check(connection, texts(body, "phones"));
   }
-  if (name === "blocklist") return contacts.blocklist(session);
+  if (name === "blocklist") return contacts.blocklist(connection);
   const contactId = text(body, "contactId");
   switch (name) {
     case "retrieve":
-      return contacts.retrieve(session, contactId);
+      return contacts.retrieve(connection, contactId);
     case "picture":
-      return contacts.picture(session, contactId);
+      return contacts.picture(connection, contactId);
     case "info":
-      return contacts.info(session, contactId);
+      return contacts.info(connection, contactId);
     case "devices":
-      return contacts.devices(session, contactId);
+      return contacts.devices(connection, contactId);
     case "businessProfile":
-      return contacts.businessProfile(session, contactId);
+      return contacts.businessProfile(connection, contactId);
     case "block":
-      return contacts.block(session, contactId);
+      return contacts.block(connection, contactId);
     case "unblock":
-      return contacts.unblock(session, contactId);
+      return contacts.unblock(connection, contactId);
     default:
       return unknownAction(name);
   }

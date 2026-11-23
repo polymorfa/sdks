@@ -1,4 +1,4 @@
-"""Schema2 customer-owned storage contract, pinned to TypeScript 3bacf46."""
+"""Schema-3 customer-owned Connection storage contract."""
 
 from __future__ import annotations
 
@@ -19,7 +19,7 @@ from typing_extensions import TypedDict
 from ..transport import Json
 
 EntityName: TypeAlias = Literal[
-    "sessions",
+    "connections",
     "chats",
     "messages",
     "reactions",
@@ -38,7 +38,7 @@ EntityName: TypeAlias = Literal[
     "leases",
 ]
 FieldType = Literal["string", "number", "boolean", "json"]
-STORAGE_SCHEMA_VERSION = 2
+STORAGE_SCHEMA_VERSION = 3
 FINAL_VERSION = 2**53 - 1
 
 
@@ -57,7 +57,7 @@ class EntityDefinition(TypedDict):
 
 STORAGE_SCHEMA = cast(
     dict[EntityName, EntityDefinition],
-    json.loads(files(__package__).joinpath("schema.json").read_text()),
+    json.loads(files(__package__).joinpath("schema3.json").read_text()),
 )
 ENTITY_NAMES: tuple[EntityName, ...] = tuple(STORAGE_SCHEMA)
 
@@ -100,7 +100,7 @@ def canonical_json(value: Json) -> str:
     if not isinstance(value, bool) and isinstance(value, (int, float)):
         numeric = float(value)
         if not math.isfinite(numeric):
-            raise ValueError("Storage JSON numbers must be finite")
+            raise ValueError("Storage JSON connections must be finite")
         if numeric == 0:
             return "0"
         decimal = Decimal(repr(numeric))
@@ -251,7 +251,7 @@ def merge_fields(entity: EntityName, row: StoredRow, fields: Mapping[str, FieldW
 
 @dataclass(frozen=True)
 class ChatWatermarkGuard:
-    session_id: str
+    connection_id: str
     chat_id: str
     timestamp: float
 
@@ -277,7 +277,7 @@ class Delete:
 
 @dataclass(frozen=True)
 class ClearChat:
-    session_id: str
+    connection_id: str
     chat_id: str
     up_to: float
 
@@ -288,7 +288,7 @@ class Unset(Enum):
 
 @dataclass(frozen=True)
 class Checkpoint:
-    session_id: str
+    connection_id: str
     stream: str
     cursor: str
     expected_cursor: str | None | Unset = Unset.VALUE
@@ -301,7 +301,7 @@ StorageOperation: TypeAlias = Upsert | Patch | Delete | ClearChat | Checkpoint
 
 @dataclass(frozen=True)
 class OperationBatch:
-    session_id: str
+    connection_id: str
     operations: Sequence[StorageOperation]
     event_id: str | None = None
     event_type: str | None = None

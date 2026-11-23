@@ -33,7 +33,7 @@ func TestD1ApplicationSecretBoundaryPublic(t *testing.T) {
 			w.WriteHeader(401)
 			return
 		}
-		body, _ := json.Marshal(map[string]any{"contract": storage.D1BridgeContract, "schemaVersion": 2, "authority": authority, "tablePrefix": prefix, "data": map[string]any{"atomicCommit": true, "maxCommitSize": 50, "maxGetSize": 1000, "maxQuerySize": 1000, "maxBodyBytes": 8 * 1024 * 1024, "conditionalDeletes": true, "setupAllowed": false}})
+		body, _ := json.Marshal(map[string]any{"contract": storage.D1BridgeContract, "schemaVersion": storage.SchemaVersion, "authority": authority, "tablePrefix": prefix, "data": map[string]any{"atomicCommit": true, "maxCommitSize": 50, "maxGetSize": 1000, "maxQuerySize": 1000, "maxBodyBytes": 8 * 1024 * 1024, "conditionalDeletes": true, "setupAllowed": false}})
 		w.Header().Set("Polymorfa-Storage-Nonce", nonce)
 		w.Header().Set("Polymorfa-Storage-Signature", sign(nonce+".200."+string(body)))
 		w.Write(body)

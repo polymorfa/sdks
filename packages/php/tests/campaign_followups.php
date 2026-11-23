@@ -4,7 +4,7 @@ declare(strict_types=1);
 $minimalFollowUp = ['message' => ['type' => 'text','text' => 'Hi {{first_name}}']];
 $timedFollowUp = ['delaySeconds' => 60,'expirySeconds' => 86400,'message' => ['type' => 'template','templateId' => '44444444-4444-4444-8444-444444444444']];
 $followUpCampaign = array_replace($campaign, ['followUp' => $minimalFollowUp]);
-$followUpSummary = ['id' => 'followup','numberId' => 'sender','status' => 'scheduled','anchorKind' => 'read','firstDeliveredAt' => 1720000000001,'firstReadAt' => 1720000000002,'dueAt' => 1720000060002,'expiresAt' => 1720086400000,'sentAt' => null,'deliveredAt' => null,'readAt' => null,'repliedAt' => null,'reason' => null,'commandId' => null];
+$followUpSummary = ['id' => 'followup','connectionId' => 'sender','status' => 'scheduled','anchorKind' => 'read','firstDeliveredAt' => 1720000000001,'firstReadAt' => 1720000000002,'dueAt' => 1720000060002,'expiresAt' => 1720086400000,'sentAt' => null,'deliveredAt' => null,'readAt' => null,'repliedAt' => null,'reason' => null,'commandId' => null];
 $followUpReport = ['total' => 12,'waiting' => 1,'scheduled' => 2,'sending' => 3,'sent' => 4,'delivered' => 5,'read' => 6,'replied' => 7,'cancelled' => 8,'expired' => 9,'failed' => 10,'unknown' => 11,'nextDueAt' => 1720000000001];
 $followUpRecipient = array_replace($recipient, ['followUp' => $followUpSummary]);
 $followUpAnalytics = array_replace($analytics, ['followUps' => $followUpReport]);

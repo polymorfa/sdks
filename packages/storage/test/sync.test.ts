@@ -173,7 +173,7 @@ describe("durable stream synchronization", () => {
     ] as const) {
       const archive = {
         id: "strict-history-event",
-        session: "sync-fixture",
+        connection: "sync-fixture",
         timestamp: "2026-10-17T00:00:00Z",
         event: "history.sync" as const,
         payload: {
@@ -232,14 +232,14 @@ describe("durable stream synchronization", () => {
           code: "media_invalid_ciphertext",
         });
       else await done;
-      expect(await storage.hasEvent(archive.session, archive.id)).toBe(
+      expect(await storage.hasEvent(archive.connection, archive.id)).toBe(
         !rejected,
       );
       expect(await storage.getCheckpoint("*", "events")).toEqual(
         rejected ? null : expect.objectContaining({ cursor: delivered.cursor }),
       );
       const progress = await storage.get("history_progress", {
-        sessionId: archive.session,
+        connectionId: archive.connection,
         syncType: "RECENT",
       });
       expect(progress === null).toBe(rejected);

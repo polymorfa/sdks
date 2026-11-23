@@ -26,7 +26,7 @@ var templateFixtures = []operationFixture{
 	{"MessagingClient.Templates.Preview", "POST", "/messaging/projects/project/templates/template/preview", "", `{"values":{"name":"Alice"},"surface":"sandbox"}`, `{"data":{"text":"Hi Alice","surface":"sandbox"}}`, "data.text", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.Templates().Preview(ctx, "project", "template", PreviewProjectTemplateRequest{Values: map[string]string{"name": "Alice"}, Surface: "sandbox"}))
 	}},
-	{"MessagingClient.Templates.Submit", "POST", "/messaging/projects/project/templates/template/submit", "", `{"session":"s"}`, `{"data":{"submitted":true,"providerId":"provider"}}`, "data.providerId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Templates().Submit(ctx, "project", "template", SubmitProjectTemplateRequest{Session: "s"}))
+	{"MessagingClient.Templates.Submit", "POST", "/messaging/projects/project/templates/template/submit", "", `{"connection":"s"}`, `{"data":{"submitted":true,"providerId":"provider"}}`, "data.providerId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Templates().Submit(ctx, "project", "template", SubmitProjectTemplateRequest{Connection: "s"}))
 	}},
 }

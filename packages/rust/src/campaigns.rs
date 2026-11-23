@@ -153,7 +153,7 @@ wire_enum!(CampaignFollowUpAnchorKind{Delivered="delivered",Read="read"});
 #[serde(rename_all = "camelCase")]
 pub struct CampaignFollowUpSummary {
     pub id: String,
-    pub number_id: String,
+    pub connection_id: String,
     pub status: CampaignFollowUpStatus,
     #[serde(deserialize_with = "required_nullable")]
     pub anchor_kind: Option<CampaignFollowUpAnchorKind>,

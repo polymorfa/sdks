@@ -12,25 +12,25 @@ type WebhookHeader struct {
 	Value string `json:"value"`
 }
 type MessagingWebhook struct {
-	ID        string             `json:"id"`
-	TenantID  string             `json:"tenantId"`
-	Session   string             `json:"session,omitempty"`
-	URL       string             `json:"url"`
-	Events    []string           `json:"events"`
-	Retries   WebhookRetryConfig `json:"retries"`
-	Headers   []WebhookHeader    `json:"headers"`
-	Enabled   bool               `json:"enabled"`
-	Format    string             `json:"format,omitempty"`
-	CreatedAt string             `json:"createdAt"`
+	ID         string             `json:"id"`
+	TenantID   string             `json:"tenantId"`
+	Connection string             `json:"connection,omitempty"`
+	URL        string             `json:"url"`
+	Events     []string           `json:"events"`
+	Retries    WebhookRetryConfig `json:"retries"`
+	Headers    []WebhookHeader    `json:"headers"`
+	Enabled    bool               `json:"enabled"`
+	Format     string             `json:"format,omitempty"`
+	CreatedAt  string             `json:"createdAt"`
 }
 type CreateMessagingWebhookRequest struct {
-	Session string              `json:"session,omitempty"`
-	URL     string              `json:"url"`
-	Events  *[]string           `json:"events,omitempty"`
-	HMACKey string              `json:"hmacKey,omitempty"`
-	Retries *WebhookRetryConfig `json:"retries,omitempty"`
-	Headers *[]WebhookHeader    `json:"headers,omitempty"`
-	Format  string              `json:"format,omitempty"`
+	Connection string              `json:"connection,omitempty"`
+	URL        string              `json:"url"`
+	Events     *[]string           `json:"events,omitempty"`
+	HMACKey    string              `json:"hmacKey,omitempty"`
+	Retries    *WebhookRetryConfig `json:"retries,omitempty"`
+	Headers    *[]WebhookHeader    `json:"headers,omitempty"`
+	Format     string              `json:"format,omitempty"`
 }
 
 func (CreateMessagingWebhookRequest) String() string {

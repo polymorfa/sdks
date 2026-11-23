@@ -28,8 +28,8 @@ func memoryFor(t *testing.T, size int) *MemoryAdapter {
 	return m
 }
 func str(v string) *string { return &v }
-func upsert(entity, session string, key map[string]any, values map[string]any, version float64) Operation {
-	keyCopy := map[string]any{"sessionId": session}
+func upsert(entity, connection string, key map[string]any, values map[string]any, version float64) Operation {
+	keyCopy := map[string]any{"connectionId": connection}
 	for k, v := range key {
 		keyCopy[k] = v
 	}
@@ -49,7 +49,7 @@ func TestCanonicalNumbersUTF16AndTypedMerge(t *testing.T) {
 			t.Fatalf("canonical got%q want%q: %v", got, tc.want, err)
 		}
 	}
-	key := map[string]any{"sessionId": "s", "messageId": "m"}
+	key := map[string]any{"connectionId": "s", "messageId": "m"}
 	base, _ := EmptyRow("messages", key)
 	left, _, err := MergeFields("messages", base, Fields{"text": {Value: "a", Version: 0}})
 	if err != nil {
@@ -72,20 +72,20 @@ func TestCanonicalNumbersUTF16AndTypedMerge(t *testing.T) {
 func TestEngineClearAllChildrenAndLateWatermark(t *testing.T) {
 	ctx := context.Background()
 	e := engineFor(t, memoryFor(t, 3), EngineOptions{ClearPageSize: 1})
-	session := "clear"
-	guard := &Watermark{session, "chat", 100}
-	ops := []Operation{upsert("chats", session, map[string]any{"chatId": "chat"}, map[string]any{"lastMessageAt": 100}, 0), upsert("messages", session, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 100, "text": "private"}, 0), upsert("media", session, map[string]any{"messageId": "m"}, map[string]any{"mediaKey": "private"}, 0)}
+	connection := "clear"
+	guard := &Watermark{connection, "chat", 100}
+	ops := []Operation{upsert("chats", connection, map[string]any{"chatId": "chat"}, map[string]any{"lastMessageAt": 100}, 0), upsert("messages", connection, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 100, "text": "private"}, 0), upsert("media", connection, map[string]any{"messageId": "m"}, map[string]any{"mediaKey": "private"}, 0)}
 	for _, tc := range []struct{ entity, key string }{{"reactions", "senderId"}, {"receipts", "recipientId"}, {"poll_votes", "voterId"}} {
-		ops = append(ops, upsert(tc.entity, session, map[string]any{"messageId": "m", tc.key: "peer"}, map[string]any{"timestamp": 100}, 0))
+		ops = append(ops, upsert(tc.entity, connection, map[string]any{"messageId": "m", tc.key: "peer"}, map[string]any{"timestamp": 100}, 0))
 	}
 	for i := 1; i < len(ops); i++ {
 		ops[i].Guard = guard
 	}
-	if _, err := e.Apply(ctx, Batch{SessionID: session, EventID: str("first"), Operations: ops}); err != nil {
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, EventID: str("first"), Operations: ops}); err != nil {
 		t.Fatal(err)
 	}
-	clear := []Operation{upsert("chats", session, map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 100}, 100), {Kind: "clearChat", SessionID: session, ChatID: "chat", UpTo: 100}}
-	if _, err := e.Apply(ctx, Batch{SessionID: session, Operations: clear}); err != nil {
+	clear := []Operation{upsert("chats", connection, map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 100}, 100), {Kind: "clearChat", ConnectionID: connection, ChatID: "chat", UpTo: 100}}
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, Operations: clear}); err != nil {
 		t.Fatal(err)
 	}
 	for _, entity := range []string{"messages", "media", "reactions", "receipts", "poll_votes"} {
@@ -94,7 +94,7 @@ func TestEngineClearAllChildrenAndLateWatermark(t *testing.T) {
 			t.Fatal("clear retained child", entity)
 		}
 	}
-	if _, err := e.Apply(ctx, Batch{SessionID: session, EventID: str("late"), Operations: ops[1:]}); err != nil {
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, EventID: str("late"), Operations: ops[1:]}); err != nil {
 		t.Fatal(err)
 	}
 	if len(e.adapter.(*MemoryAdapter).rows["messages"]) != 0 {
@@ -105,31 +105,31 @@ func TestCheckpointCASDurableLeaseGenerationAndForeignRefusal(t *testing.T) {
 	ctx := context.Background()
 	m := memoryFor(t, 3)
 	e := engineFor(t, m, EngineOptions{})
-	session := "checkpoint"
-	op := Operation{Kind: "checkpoint", SessionID: session, Stream: "events", Cursor: "c1", ExpectedCursor: &ExpectedCursor{}}
-	if _, err := e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{op}}); err != nil {
+	connection := "checkpoint"
+	op := Operation{Kind: "checkpoint", ConnectionID: connection, Stream: "events", Cursor: "c1", ExpectedCursor: &ExpectedCursor{}}
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{op}}); err != nil {
 		t.Fatal(err)
 	}
-	id, _ := EncodeKey("leases", map[string]any{"sessionId": session})
+	id, _ := EncodeKey("leases", map[string]any{"connectionId": connection})
 	before, _ := revision(m.rows["leases"][id]["_rev"])
-	if _, err := e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{op}}); err == nil {
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{op}}); err == nil {
 		t.Fatal("explicit null accepted existing cursor")
 	}
 	op.ExpectedCursor = &ExpectedCursor{str("c1")}
 	op.Cursor = "c2"
-	if _, err := e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{op}}); err != nil {
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{op}}); err != nil {
 		t.Fatal(err)
 	}
 	after, _ := revision(m.rows["leases"][id]["_rev"])
 	if after <= before || m.rows["leases"][id]["owner"] != nil {
 		t.Fatal("lease generation reused/release deleted")
 	}
-	saved, err := e.GetCheckpoint(ctx, session, "events")
+	saved, err := e.GetCheckpoint(ctx, connection, "events")
 	if err != nil || saved.Cursor != "c2" {
 		t.Fatal("checkpoint", err)
 	}
-	for _, op := range []Operation{upsert("messages", "foreign", map[string]any{"messageId": "m"}, nil, 0), upsert("leases", session, nil, map[string]any{"owner": "bad"}, 0)} {
-		if _, err := e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{op}}); err == nil {
+	for _, op := range []Operation{upsert("messages", "foreign", map[string]any{"messageId": "m"}, nil, 0), upsert("leases", connection, nil, map[string]any{"owner": "bad"}, 0)} {
+		if _, err := e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{op}}); err == nil {
 			t.Fatal("foreign/lease write accepted")
 		}
 	}
@@ -176,7 +176,7 @@ func TestFirstFailedChunkCannotWriteLaterRowsOrEventMarker(t *testing.T) {
 			for i := 0; i < 5; i++ {
 				ops = append(ops, upsert("messages", "fault", map[string]any{"messageId": fmt.Sprint("m", i)}, map[string]any{"chatId": "chat", "timestamp": i}, 0))
 			}
-			batch := Batch{SessionID: "fault", EventID: str("event"), Operations: ops}
+			batch := Batch{ConnectionID: "fault", EventID: str("event"), Operations: ops}
 			if _, err := e.Apply(ctx, batch); err == nil {
 				t.Fatal("failed status accepted")
 			}
@@ -210,24 +210,24 @@ func TestConcurrentEnginesFenceEachChunk(t *testing.T) {
 			if i%2 == 0 {
 				e = b
 			}
-			_, err := e.Apply(ctx, Batch{SessionID: "concurrent", EventID: str(fmt.Sprint(i)), Operations: []Operation{upsert("messages", "concurrent", map[string]any{"messageId": "m"}, map[string]any{"text": fmt.Sprintf("%02d", i)}, float64(i))}})
+			_, err := e.Apply(ctx, Batch{ConnectionID: "concurrent", EventID: str(fmt.Sprint(i)), Operations: []Operation{upsert("messages", "concurrent", map[string]any{"messageId": "m"}, map[string]any{"text": fmt.Sprintf("%02d", i)}, float64(i))}})
 			if err != nil {
 				t.Error(err)
 			}
 		}(i)
 	}
 	wg.Wait()
-	row, err := a.Get(ctx, "messages", map[string]any{"sessionId": "concurrent", "messageId": "m"})
+	row, err := a.Get(ctx, "messages", map[string]any{"connectionId": "concurrent", "messageId": "m"})
 	if err != nil || row["text"] != "11" {
 		t.Fatal("concurrent merge", row, err)
 	}
 }
-func exerciseEngineRows(t *testing.T, adapter Adapter, session string) {
+func exerciseEngineRows(t *testing.T, adapter Adapter, connection string) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), 90*time.Second)
 	defer cancel()
 	e := engineFor(t, adapter, EngineOptions{})
-	raw, err := os.ReadFile("testdata/conformance-fixtures.json")
+	raw, err := os.ReadFile("testdata/conformance-fixtures.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -244,7 +244,7 @@ func exerciseEngineRows(t *testing.T, adapter Adapter, session string) {
 		d, _ := DefinitionOf(entity)
 		for _, row := range rows {
 			row = cloneRow(row)
-			row["sessionId"] = session
+			row["connectionId"] = connection
 			key := map[string]any{}
 			values := map[string]any{}
 			for _, f := range d.Key {
@@ -253,14 +253,14 @@ func exerciseEngineRows(t *testing.T, adapter Adapter, session string) {
 			for f := range d.Fields {
 				values[f] = row[f]
 			}
-			ops = append(ops, upsert(entity, session, key, values, 0))
+			ops = append(ops, upsert(entity, connection, key, values, 0))
 			expected[entity] = append(expected[entity], row)
 		}
 	}
 	for i := 0; i < 2000; i++ {
-		ops = append(ops, upsert("messages", session, map[string]any{"messageId": fmt.Sprintf("scale-%04d", i)}, map[string]any{"chatId": "scale-chat", "timestamp": float64(1800000000000 + i), "text": fmt.Sprint("row", i)}, 0))
+		ops = append(ops, upsert("messages", connection, map[string]any{"messageId": fmt.Sprintf("scale-%04d", i)}, map[string]any{"chatId": "scale-chat", "timestamp": float64(1800000000000 + i), "text": fmt.Sprint("row", i)}, 0))
 	}
-	if _, err := e.Apply(ctx, Batch{SessionID: session, EventID: str("history"), Operations: ops}); err != nil {
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, EventID: str("history"), Operations: ops}); err != nil {
 		t.Fatal(err)
 	}
 	for entity, rows := range expected {
@@ -281,13 +281,13 @@ func exerciseEngineRows(t *testing.T, adapter Adapter, session string) {
 			}
 		}
 	}
-	page, err := e.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"sessionId": session, "chatId": "scale-chat"}, Order: "asc", Limit: 257})
+	page, err := e.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"connectionId": connection, "chatId": "scale-chat"}, Order: "asc", Limit: 257})
 	if err != nil || len(page.Rows) != 257 || page.Next == nil {
 		t.Fatal("paging", err)
 	}
 	count := len(page.Rows)
 	for page.Next != nil {
-		page, err = e.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"sessionId": session, "chatId": "scale-chat"}, Order: "asc", Limit: 257, After: page.Next})
+		page, err = e.Query(ctx, "messages", Query{Index: "by_chat", Equals: map[string]string{"connectionId": connection, "chatId": "scale-chat"}, Order: "asc", Limit: 257, After: page.Next})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -296,7 +296,7 @@ func exerciseEngineRows(t *testing.T, adapter Adapter, session string) {
 	if count != 2000 {
 		t.Fatal("history row count", count)
 	}
-	if _, err := e.Apply(ctx, Batch{SessionID: session, EventID: str("history"), Operations: ops}); err != nil {
+	if _, err := e.Apply(ctx, Batch{ConnectionID: connection, EventID: str("history"), Operations: ops}); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -358,7 +358,7 @@ func TestNilJSONContainersRemainNullAndIdempotent(t *testing.T) {
 		if err != nil || cmp != 0 {
 			t.Fatal("nil JSON tie ordering", err)
 		}
-		row, _ := EmptyRow("messages", map[string]any{"sessionId": "nil", "messageId": "m"})
+		row, _ := EmptyRow("messages", map[string]any{"connectionId": "nil", "messageId": "m"})
 		row, _, err = MergeFields("messages", row, Fields{"extra": {Value: nil, Version: 1}})
 		if err != nil {
 			t.Fatal(err)
@@ -414,12 +414,12 @@ func TestClearQueryPlanningRenewsLeaseBeforeExpiry(t *testing.T) {
 			memory := memoryFor(t, 10)
 			adapter := &planningClockAdapter{Adapter: memory, now: &now}
 			engine := engineFor(t, adapter, EngineOptions{LeaseDuration: 10 * time.Second, Now: func() time.Time { return now }})
-			if _, err := engine.Apply(ctx, Batch{SessionID: "planning", Operations: []Operation{upsert("messages", "planning", map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 1}, 0)}}); err != nil {
+			if _, err := engine.Apply(ctx, Batch{ConnectionID: "planning", Operations: []Operation{upsert("messages", "planning", map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 1}, 0)}}); err != nil {
 				t.Fatal(err)
 			}
 			adapter.renewals = 0
 			adapter.queryStep = 4 * time.Second
-			leaseID, _ := EncodeKey("leases", map[string]any{"sessionId": "planning"})
+			leaseID, _ := EncodeKey("leases", map[string]any{"connectionId": "planning"})
 			if mode == "stolen" {
 				adapter.onQuery = func(count int) {
 					if count == 3 {
@@ -434,13 +434,13 @@ func TestClearQueryPlanningRenewsLeaseBeforeExpiry(t *testing.T) {
 			if mode == "expired" {
 				adapter.queryStep = 11 * time.Second
 			}
-			batch := Batch{SessionID: "planning", EventID: str("clear"), Operations: []Operation{upsert("chats", "planning", map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 1}, 1), {Kind: "clearChat", SessionID: "planning", ChatID: "chat", UpTo: 1}}}
+			batch := Batch{ConnectionID: "planning", EventID: str("clear"), Operations: []Operation{upsert("chats", "planning", map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 1}, 1), {Kind: "clearChat", ConnectionID: "planning", ChatID: "chat", UpTo: 1}}}
 			_, err := engine.Apply(ctx, batch)
 			marker, markerErr := engine.HasEvent(ctx, "planning", "clear")
 			if markerErr != nil {
 				t.Fatal(markerErr)
 			}
-			message, getErr := engine.Get(ctx, "messages", map[string]any{"sessionId": "planning", "messageId": "m"})
+			message, getErr := engine.Get(ctx, "messages", map[string]any{"connectionId": "planning", "messageId": "m"})
 			if getErr != nil {
 				t.Fatal(getErr)
 			}
@@ -464,7 +464,7 @@ func TestRowPlanningRenewsLeaseBetweenBoundedReads(t *testing.T) {
 	now := time.Unix(1700000000, 0)
 	adapter := &planningClockAdapter{Adapter: memoryFor(t, 10), now: &now, readStep: 4 * time.Second}
 	engine := engineFor(t, adapter, EngineOptions{LeaseDuration: 10 * time.Second, Now: func() time.Time { return now }})
-	_, err := engine.Apply(context.Background(), Batch{SessionID: "slow-reads", EventID: str("rows"), Operations: []Operation{
+	_, err := engine.Apply(context.Background(), Batch{ConnectionID: "slow-reads", EventID: str("rows"), Operations: []Operation{
 		upsert("messages", "slow-reads", map[string]any{"messageId": "m"}, map[string]any{"text": "message"}, 0),
 		upsert("chats", "slow-reads", map[string]any{"chatId": "c"}, map[string]any{"name": "chat"}, 0),
 		upsert("contacts", "slow-reads", map[string]any{"contactId": "p"}, map[string]any{"fullName": "contact"}, 0),

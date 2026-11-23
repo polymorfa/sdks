@@ -18,7 +18,7 @@ it("rejects unsupported atomic guarantees and unscoped index reads", async () =>
   await expect(
     adapter.query("messages", {
       index: "by_chat",
-      equals: { sessionId: "one" },
+      equals: { connectionId: "one" },
       limit: 10,
     }),
   ).rejects.toThrow("scope values");
@@ -45,7 +45,7 @@ it("rejects duplicate conditional writes without partially inserting a row", asy
   const adapter = memoryAdapter();
   const row = {
     ...emptyRow(STORAGE_SCHEMA.contacts, {
-      sessionId: "one",
+      connectionId: "one",
       contactId: "one",
     }),
     _rev: 1,
@@ -100,7 +100,7 @@ it("refuses an incomplete Cosmos batch receipt instead of reporting a durable co
   const adapter = cosmosAdapter(container, { namespace: "fixture" });
   const row = {
     ...emptyRow(STORAGE_SCHEMA.contacts, {
-      sessionId: "one",
+      connectionId: "one",
       contactId: "one",
     }),
     _rev: 1,

@@ -14,7 +14,7 @@ import { memoryAdapter } from "../src/adapters/memory.js";
 
 const fixture = JSON.parse(
   readFileSync(
-    new URL("../proto-number-fixtures.json", import.meta.url),
+    new URL("../proto-number-fixtures.v3.json", import.meta.url),
     "utf8",
   ),
 ) as {
@@ -52,7 +52,7 @@ describe("producer numeric-string contract", () => {
       const adapter = memoryAdapter();
       const storage = createStorage(adapter);
       const batch = reduceHistoryChunk({
-        sessionId: "numeric",
+        connectionId: "numeric",
         chunk: f.chunk,
         chunkId: f.name,
       });
@@ -65,7 +65,7 @@ describe("producer numeric-string contract", () => {
       expect(JSON.parse(JSON.stringify(snapshot(adapter)))).toEqual(f.rows);
       for (const [i, cleanup] of f.cleanup.entries()) {
         await storage.apply({
-          sessionId: "numeric",
+          connectionId: "numeric",
           operations: cleanup.operations,
         });
         await storage.apply({ ...batch, eventId: `${f.name}:late:${i}` });
@@ -80,12 +80,12 @@ describe("producer numeric-string contract", () => {
     const storage = createStorage(memoryAdapter());
     await expect(
       storage.apply({
-        sessionId: "numeric",
+        connectionId: "numeric",
         operations: [
           {
             kind: "upsert",
             entity: "messages",
-            key: { sessionId: "numeric", messageId: "strict" },
+            key: { connectionId: "numeric", messageId: "strict" },
             fields: { timestamp: { value: "16", version: 1 } },
           },
         ],
@@ -93,12 +93,12 @@ describe("producer numeric-string contract", () => {
     ).rejects.toThrow();
     await expect(
       storage.apply({
-        sessionId: "numeric",
+        connectionId: "numeric",
         operations: [
           {
             kind: "upsert",
             entity: "messages",
-            key: { sessionId: "numeric", messageId: "strict" },
+            key: { connectionId: "numeric", messageId: "strict" },
             fields: {
               timestamp: { value: 16, version: "16" as unknown as number },
             },

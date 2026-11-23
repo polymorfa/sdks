@@ -19,7 +19,7 @@ if ($autoload !== false && $autoload !== '') {
 $models = getenv('POLYMORFA_ELOQUENT_NATIVE_MODELS');
 if ($models !== false && $models !== '' && class_exists(Illuminate\Database\Capsule\Manager::class)) {
     $capsule = new Illuminate\Database\Capsule\Manager();
-    $capsule->addConnection(['driver' => 'sqlite','database' => ':memory:','prefix' => ''], 'storage_fixture');
+    $capsule->addMethod(['driver' => 'sqlite','database' => ':memory:','prefix' => ''], 'storage_fixture');
     $capsule->setAsGlobal();
     $capsule->bootEloquent();
     $connection = $capsule->getConnection('storage_fixture');
@@ -30,7 +30,7 @@ if ($models !== false && $models !== '' && class_exists(Illuminate\Database\Caps
         $adapter = EloquentSchema::adapter($connection);
         $adapter->setup();
         $engine = new Engine($adapter);
-        $engine->apply(new Batch('eloquent', [new Upsert('messages', ['sessionId' => 'eloquent','messageId' => 'one'], ['text' => new FieldWrite('query model', 0),'extra' => new FieldWrite((object)['nested' => [0,false,null]], 0)])]));
+        $engine->apply(new Batch('eloquent', [new Upsert('messages', ['connectionId' => 'eloquent','messageId' => 'one'], ['text' => new FieldWrite('query model', 0),'extra' => new FieldWrite((object)['nested' => [0,false,null]], 0)])]));
         $classes = [];
         foreach (EloquentSchema::models($namespace, connection:'storage_fixture') as $entity => $source) {
             $path = $directory.'/'.$entity.'.php';
@@ -39,7 +39,7 @@ if ($models !== false && $models !== '' && class_exists(Illuminate\Database\Caps
             $classes[$entity] = $namespace.'\\Stored'.str_replace(' ', '', ucwords(str_replace('_', ' ', $entity)));
         }
         $class = $classes['messages'];
-        $row = $class::query()->where('session_id', 'eloquent')->first();
+        $row = $class::query()->where('connection_id', 'eloquent')->first();
         storageCheck($row !== null && $row->text === 'query model' && $row->extra === ['nested' => [0,false,null]] && is_array($row->_v), 'actual Eloquent query casts exact nested scalars');
         foreach (['save','delete'] as $method) {
             $raised = false;

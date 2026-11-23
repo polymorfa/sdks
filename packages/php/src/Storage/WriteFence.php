@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Polymorfa\Storage;
 
-/** Same-session CAS fence for a child delete that omits its own revision. */
+/** Same-connection CAS fence for a child delete that omits its own revision. */
 final class WriteFence
 {
     /**

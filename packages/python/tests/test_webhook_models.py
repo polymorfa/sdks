@@ -80,7 +80,7 @@ CASES = [
         {
             "phoneNumber": "+1555",
             "action": "applied",
-            "scope": "number",
+            "scope": "connection",
             "rung": "throttle",
             "previousRung": "notify",
             "reason": "health",
@@ -117,7 +117,7 @@ CASES = [
     (
         ("bansafe.health_threshold",),
         {
-            "sessionId": "session_1",
+            "connectionId": "session_1",
             "projectId": "project_1",
             "health": 40.5,
             "threshold": 50,
@@ -167,7 +167,7 @@ CASES = [
             "callId": "call_1",
             "answeredBy": "server:default",
             "exclusive": True,
-            "sessionConnection": "linked_device",
+            "connectionMethod": "linked_device",
             "capabilities": {"video": True, "invite": False},
         },
     ),
@@ -200,7 +200,7 @@ CASES = [
             "reason": "pod_lost",
             "direction": "inbound",
             "hadVideo": True,
-            "sessionConnection": "cloud_api",
+            "connectionMethod": "cloud_api",
         },
     ),
     (("call.missed",), {"from": IDENTITY, "callId": "call_1", "reason": "timeout"}),
@@ -250,7 +250,7 @@ CASES = [
             "from": IDENTITY,
             "callId": "call_1",
             "hasVideo": True,
-            "sessionConnection": "cloud_api",
+            "connectionMethod": "cloud_api",
             "capabilities": {"video": True, "invite": False},
         },
     ),
@@ -275,7 +275,7 @@ CASES = [
         ("campaign.cap_reached",),
         {
             "campaignId": "campaign_1",
-            "sessionKey": "support",
+            "connectionKey": "support",
             "phone": "+1555",
             "capType": "daily",
             "capLimit": 1,
@@ -340,7 +340,7 @@ CASES = [
             "campaignId": "campaign_1",
             "recipientId": "recipient_1",
             "phone": "+1555",
-            "sessionKey": "support",
+            "connectionKey": "support",
             "externalMessageId": "message_1",
             "variantKey": "a",
             "attempt": 1,
@@ -377,7 +377,7 @@ CASES = [
         ("campaign.throttled",),
         {
             "campaignId": "campaign_1",
-            "sessionKey": "support",
+            "connectionKey": "support",
             "reason": "throttled",
             "deferredCount": 1,
             "at": 1234,
@@ -403,7 +403,7 @@ CASES = [
             "phone": "+1555",
             "source": "stop-keyword",
             "keyword": "STOP",
-            "session": "support",
+            "connection": "support",
             "projectId": "project_1",
         },
     ),
@@ -423,21 +423,24 @@ CASES = [
         },
     ),
     (("customer.archived", "customer.created", "customer.restored"), CUSTOMER),
-    (("customer.archiving",), {**CUSTOMER, "blockingNumberCount": 1, "revokedPairingLinkCount": 2}),
-    (("customer.enabled",), {**CUSTOMER, "migratedNumberCount": 1}),
     (
-        ("customer.number.attached",),
-        {**CUSTOMER, "sessionId": "session_1", "pairingLinkId": "pairing_1"},
+        ("customer.archiving",),
+        {**CUSTOMER, "blockingConnectionCount": 1, "revokedPairingLinkCount": 2},
+    ),
+    (("customer.enabled",), {**CUSTOMER, "migratedConnectionCount": 1}),
+    (
+        ("customer.connection.attached",),
+        {**CUSTOMER, "connectionId": "session_1", "pairingLinkId": "pairing_1"},
     ),
     (
-        ("customer.number.disconnected",),
-        {**CUSTOMER, "sessionId": "session_1", "reason": "disconnected"},
+        ("customer.connection.disconnected",),
+        {**CUSTOMER, "connectionId": "session_1", "reason": "disconnected"},
     ),
     (
-        ("customer.number.transferred",),
-        {**CUSTOMER, "sessionId": "session_1", "sourceCustomerId": "customer_0"},
+        ("customer.connection.transferred",),
+        {**CUSTOMER, "connectionId": "session_1", "sourceCustomerId": "customer_0"},
     ),
-    (("customer.pairing_link.connected",), {**PAIRING, "sessionId": "session_1"}),
+    (("customer.pairing_link.connected",), {**PAIRING, "connectionId": "session_1"}),
     (
         (
             "customer.pairing_link.created",
@@ -613,9 +616,9 @@ CASES = [
         },
     ),
     (
-        ("session.capabilities_updated",),
+        ("connection.capabilities_updated",),
         {
-            "session": "support",
+            "connection": "support",
             "projectId": "project_1",
             "status": "synced",
             "syncedAt": NOW,
@@ -634,7 +637,7 @@ CASES = [
         },
     ),
     (
-        ("session.connected",),
+        ("connection.connected",),
         {
             "phoneNumber": "+1555",
             "id": "1555",
@@ -644,13 +647,13 @@ CASES = [
             "businessName": "Business",
         },
     ),
-    (("session.logged_out",), {"reason": "device_removed", "code": 401}),
+    (("connection.logged_out",), {"reason": "device_removed", "code": 401}),
     (
-        ("session.phone_offline",),
+        ("connection.phone_offline",),
         {"daysSinceLastSeen": 10, "daysRemaining": 4, "lastSeen": NOW, "action": "reconnect"},
     ),
     (
-        ("session.restriction_updated",),
+        ("connection.restriction_updated",),
         {
             "type": "reachout_timelock",
             "active": True,
@@ -660,7 +663,7 @@ CASES = [
         },
     ),
     (
-        ("session.status",),
+        ("connection.status",),
         {
             "status": "connected",
             "statusReason": "ready",
@@ -693,7 +696,7 @@ CASES = [
             "sourceKind": "call",
             "sourceId": "call_1",
             "projectId": None,
-            "session": None,
+            "connection": None,
             "occurredAt": NOW,
             "recordedAt": NOW,
             "revision": 2,
@@ -726,7 +729,7 @@ EXPANDED = [(event_type, payload) for types, payload in CASES for event_type in 
 def test_known_payload_raw_signature_roundtrip_extra_fields_and_typed_guard(event_type, payload):
     envelope = {
         "id": "event_1",
-        "session": "",
+        "connection": "",
         "externalId": "external_1",
         "timestamp": NOW,
         "event": event_type,
@@ -799,7 +802,7 @@ def test_union_variants_unknown_event_and_known_bad_payload_are_preserved_withou
             },
         ),
         (
-            "session.status",
+            "connection.status",
             {
                 "source": "meta",
                 "kind": "account_update",
@@ -842,7 +845,7 @@ def test_union_variants_unknown_event_and_known_bad_payload_are_preserved_withou
     ]:
         envelope = {
             "id": "event_1",
-            "session": "",
+            "connection": "",
             "timestamp": NOW,
             "event": event_type,
             "payload": payload,

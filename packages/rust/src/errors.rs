@@ -149,7 +149,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "upstream_failure",
     "service_unavailable",
     "credential_verification_unavailable",
-    "session_not_ready",
+    "connection_not_ready",
     "hybrid_routing_paused",
     "hybrid_automation_unavailable",
     "hybrid_transport_unavailable",
@@ -174,7 +174,7 @@ pub const POLYMORFA_ERROR_CODES: &[&str] = &[
     "whatsapp_group_has_no_participants",
     "order_status_transition_invalid",
     "order_cancellation_failed",
-    "number_restricted",
+    "connection_restricted",
     "bansafe_suspended",
     "bansafe_team_suspended",
     "bansafe_cold_blocked",
@@ -255,7 +255,7 @@ pub const CAMPAIGN_CONTRACT_ERROR_CODES: &[&str] = &[
     "campaign_approval_required",
     "campaign_approval_stale",
     "campaign_variables_missing",
-    "zero_knowledge_session",
+    "zero_knowledge_connection",
 ];
 
 fn redact_text(value: &str) -> String {

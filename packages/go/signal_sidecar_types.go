@@ -8,9 +8,9 @@ import (
 	"unicode/utf8"
 )
 
-const SignalSidecarSourceCommit = "8aa191ef0d4c318229c91bcdf474bf2d79dac47c"
+const SignalSidecarSourceCommit = "61209057729b002a2122b898d744a8813a702fc7"
 
-type SignalSession struct {
+type SignalConnection struct {
 	ID              string  `json:"id"`
 	LeaseGeneration uint64  `json:"lease_generation"`
 	Claimed         bool    `json:"claimed"`
@@ -20,18 +20,18 @@ type SignalSession struct {
 	LID             *string `json:"lid"`
 }
 
-func (SignalSession) String() string               { return "SignalSession[redacted]" }
-func (v SignalSession) GoString() string           { return v.String() }
-func (SignalSession) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
+func (SignalConnection) String() string               { return "SignalConnection[redacted]" }
+func (v SignalConnection) GoString() string           { return v.String() }
+func (SignalConnection) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
 
-type SignalSessions struct {
-	NodeID   string          `json:"node_id"`
-	Sessions []SignalSession `json:"sessions"`
+type SignalConnections struct {
+	NodeID      string             `json:"node_id"`
+	Connections []SignalConnection `json:"connections"`
 }
 
-func (SignalSessions) String() string               { return "SignalSessions[redacted]" }
-func (v SignalSessions) GoString() string           { return v.String() }
-func (SignalSessions) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
+func (SignalConnections) String() string               { return "SignalConnections[redacted]" }
+func (v SignalConnections) GoString() string           { return v.String() }
+func (SignalConnections) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
 
 type SignalMediaDescriptor struct {
 	Kind              string  `json:"kind"`
@@ -107,7 +107,7 @@ func (SignalHistoryDescriptor) MarshalJSON() ([]byte, error) { return []byte(`{"
 type SignalEvent struct {
 	ID              string                   `json:"id"`
 	Type            string                   `json:"type"`
-	SessionID       string                   `json:"session_id"`
+	ConnectionID    string                   `json:"connection_id"`
 	Chat            string                   `json:"chat"`
 	Sender          string                   `json:"sender"`
 	SenderAlt       *string                  `json:"sender_alt,omitempty"`
@@ -149,7 +149,7 @@ func parseSignalEvent(raw []byte) (SignalEvent, error) {
 	if json.Unmarshal(raw, &fields) != nil || fields == nil {
 		return SignalEvent{}, signalInvalid()
 	}
-	for _, name := range []string{"id", "type", "session_id", "chat", "sender", "message_id", "timestamp", "is_from_me", "redelivered", "identity_changed", "message_proto"} {
+	for _, name := range []string{"id", "type", "connection_id", "chat", "sender", "message_id", "timestamp", "is_from_me", "redelivered", "identity_changed", "message_proto"} {
 		value, ok := fields[name]
 		if !ok || bytes.Equal(value, []byte("null")) {
 			return SignalEvent{}, signalInvalid()
@@ -159,7 +159,7 @@ func parseSignalEvent(raw []byte) (SignalEvent, error) {
 		return SignalEvent{}, signalInvalid()
 	}
 	var event SignalEvent
-	if json.Unmarshal(raw, &event) != nil || event.ID == "" || event.SessionID == "" || (event.Type != "message" && event.Type != "history.sync") {
+	if json.Unmarshal(raw, &event) != nil || event.ID == "" || event.ConnectionID == "" || (event.Type != "message" && event.Type != "history.sync") {
 		return SignalEvent{}, signalInvalid()
 	}
 	if event.Type == "history.sync" && (event.History == nil || len(event.MessageProto) != 0) {

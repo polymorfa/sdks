@@ -111,14 +111,14 @@ describe("MessagingClient groups", () => {
 
   it("maps every group read with encoded identifiers and response metadata", async () => {
     const { client, requests } = await groupsServer();
-    const session = "support/eu";
+    const connection = "support/eu";
     const groupId = "120363/group@g.us";
 
-    const listed = await client.groups.list(session, { apiVersion: "next" });
-    await client.groups.retrieve(session, groupId);
-    await client.groups.getJoinInfo(session, "invite/code");
-    await client.groups.getInviteCode(session, groupId);
-    await client.groups.listParticipants(session, groupId);
+    const listed = await client.groups.list(connection, { apiVersion: "next" });
+    await client.groups.retrieve(connection, groupId);
+    await client.groups.getJoinInfo(connection, "invite/code");
+    await client.groups.getInviteCode(connection, groupId);
+    await client.groups.listParticipants(connection, groupId);
 
     expectTypeOf(listed).toEqualTypeOf<ApiResponse<ListGroupsResponse>>();
     expect(listed.metadata.requestId).toBe("req_groups");
@@ -134,18 +134,18 @@ describe("MessagingClient groups", () => {
 
   it("maps group lifecycle mutations and preserves idempotency options", async () => {
     const { client, requests } = await groupsServer();
-    const session = "support/eu";
+    const connection = "support/eu";
     const groupId = "120363/group@g.us";
     const options = { idempotencyKey: "group-lifecycle" } as const;
 
     await client.groups.create(
-      session,
+      connection,
       { name: "Support", participants: ["15551234567"] },
       options,
     );
-    await client.groups.join(session, { code: "invite/code" }, options);
-    await client.groups.delete(session, groupId, options);
-    await client.groups.leave(session, groupId, options);
+    await client.groups.join(connection, { code: "invite/code" }, options);
+    await client.groups.delete(connection, groupId, options);
+    await client.groups.leave(connection, groupId, options);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /messaging/support%2Feu/groups",
@@ -169,15 +169,15 @@ describe("MessagingClient groups", () => {
 
   it("maps participant administration with exact request bodies", async () => {
     const { client, requests } = await groupsServer();
-    const session = "support";
+    const connection = "support";
     const groupId = "120363@g.us";
     const body = { participants: ["15551234567", "15557654321"] } as const;
     const options = { idempotencyKey: "group-participants" } as const;
 
-    await client.groups.addParticipants(session, groupId, body, options);
-    await client.groups.removeParticipants(session, groupId, body, options);
-    await client.groups.promoteParticipants(session, groupId, body, options);
-    await client.groups.demoteParticipants(session, groupId, body, options);
+    await client.groups.addParticipants(connection, groupId, body, options);
+    await client.groups.removeParticipants(connection, groupId, body, options);
+    await client.groups.promoteParticipants(connection, groupId, body, options);
+    await client.groups.demoteParticipants(connection, groupId, body, options);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /messaging/support/groups/120363%40g.us/participants/add",
@@ -195,49 +195,49 @@ describe("MessagingClient groups", () => {
 
   it("maps group profile, invite, and permission mutations", async () => {
     const { client, requests } = await groupsServer();
-    const session = "support";
+    const connection = "support";
     const groupId = "120363@g.us";
     const options = { idempotencyKey: "group-settings" } as const;
 
     await client.groups.setSubject(
-      session,
+      connection,
       groupId,
       { value: "Support" },
       options,
     );
     await client.groups.setDescription(
-      session,
+      connection,
       groupId,
       { value: "Customer support" },
       options,
     );
-    await client.groups.revokeInviteCode(session, groupId, options);
+    await client.groups.revokeInviteCode(connection, groupId, options);
     await client.groups.setPicture(
-      session,
+      connection,
       groupId,
       { url: "https://cdn.example.test/group.jpg" },
       options,
     );
     await client.groups.setInfoEditing(
-      session,
+      connection,
       groupId,
       { adminsOnly: true },
       options,
     );
     await client.groups.setMessaging(
-      session,
+      connection,
       groupId,
       { adminsOnly: false },
       options,
     );
     await client.groups.setMemberAddMode(
-      session,
+      connection,
       groupId,
       { mode: "all_member_add" },
       options,
     );
     await client.groups.setJoinApproval(
-      session,
+      connection,
       groupId,
       { required: true },
       options,

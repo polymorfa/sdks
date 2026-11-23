@@ -121,7 +121,7 @@ describe("browser call diagnostics", () => {
     let callbacks: CallMediaCallbacks | undefined;
     let received = 0;
     const getStats = vi.fn(async () => stats(received));
-    const session: CallMediaSession = {
+    const connection: CallMediaSession = {
       connectionId: "conn_media_0001",
       localStream: {
         getAudioTracks: () => [],
@@ -151,7 +151,7 @@ describe("browser call diagnostics", () => {
     };
     const opened: CallMediaFactory["open"] = async (_id, _video, c) => {
       callbacks = c;
-      return session;
+      return connection;
     };
     const media: CallMediaFactory = {
       open: vi.fn(options.open ?? opened),
@@ -165,7 +165,7 @@ describe("browser call diagnostics", () => {
     const reports = () => report.mock.calls.map(([id, body]) => ({ id, body }));
     return {
       controller,
-      session,
+      connection,
       report,
       reports,
       getStats,

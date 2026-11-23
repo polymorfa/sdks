@@ -6,7 +6,7 @@ import {
 
 // Served at /api/polymorfa/token, the default path of
 // createClientTokenProvider. Browser messaging and Calls components use the
-// same token; Calls also need the session's client rules to grant
+// same token; Calls also need the connection's client rules to grant
 // voip_place, voip_answer, and voip_signal.
 const messaging = new MessagingClient({
   credential: {
@@ -17,14 +17,14 @@ const messaging = new MessagingClient({
 
 export const POST = createClientTokenRoute({
   authorize: async (request) => {
-    // Replace with your application's session check.
+    // Replace with your application's connection check.
     const userId = request.headers.get("x-example-authenticated-user");
     return userId ? { userId } : null;
   },
   mint: createMessagingClientTokenMint({
     clientTokens: messaging.clientTokens,
     resolve: (subject) => ({
-      session: "support",
+      connection: "support",
       ephemeralId: subject.userId,
       ttlSeconds: 600,
     }),

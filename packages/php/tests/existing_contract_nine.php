@@ -13,13 +13,13 @@ foreach ($ecPrincipals as $principal) {
     $r = $ecRun('GET', '/messaging/name%20one/groups/group%40g.us/capabilities', null, ['success' => true,'data' => $ecCapabilities], fn () => $client->groups->getCapabilities('name one', 'group@g.us'), ['authorization' => $principal->authorization()]);
     ecCheck($r->data['data']['capabilities'][0]['value'] === null && $r->data['data']['capabilities'][1]['value'] === false, 'Group nullable capability and Client support');
 }
-$ecPhone = ['session' => 's','phone' => '+15555555555','online' => false,'devices' => [['deviceId' => 1],['deviceId' => 99]]];
+$ecPhone = ['connection' => 's','phone' => '+15555555555','online' => false,'devices' => [['deviceId' => 1],['deviceId' => 99]]];
 $ecTestingPath = '/messaging/s/phone';
 $ecNine = [
  ['getGroupCapabilities','GET','/messaging/s/groups/g/capabilities',null,['success' => true,'data' => $ecCapabilities],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->groups->getCapabilities('s', 'g', $o),200,'2026-09-22'],
  ['getTestingPhone','GET',$ecTestingPath,null,$ecPhone,fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->getPhone('s', $o),200,'2026-09-22'],
- ['sendTestingPhoneMessage','POST',$ecTestingPath.'/messages',['to' => '+15555555555','text' => 'hello'],['session' => 's','to' => '+15555555555','messageId' => null],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->sendPhoneMessage('s', ['to' => '+15555555555','text' => 'hello'], $o),202,'2026-09-22'],
- ['unlinkTestingPhoneDevice','POST',$ecTestingPath.'/devices/99/unlink',null,['session' => 's','deviceId' => 99,'unlinked' => true],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->unlinkPhoneDevice('s', 99, $o),200,'2026-09-22'],
+ ['sendTestingPhoneMessage','POST',$ecTestingPath.'/messages',['to' => '+15555555555','text' => 'hello'],['connection' => 's','to' => '+15555555555','messageId' => null],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->sendPhoneMessage('s', ['to' => '+15555555555','text' => 'hello'], $o),202,'2026-09-22'],
+ ['unlinkTestingPhoneDevice','POST',$ecTestingPath.'/devices/99/unlink',null,['connection' => 's','deviceId' => 99,'unlinked' => true],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->testing->unlinkPhoneDevice('s', 99, $o),200,'2026-09-22'],
  ['retryHistoryChunk','POST','/messaging/s/history/chunks/retry',['syncType' => 'FULL','chunkOrder' => 0,'regenerate' => false],['success' => true,'data' => ['requestId' => 'native-retry','status' => 'requested']],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->historySync->requestChunkRetry('s', ['syncType' => 'FULL','chunkOrder' => 0,'regenerate' => false], $o),200,'2026-10-14'],
  ['deleteHistoryMedia','POST','/messaging/s/history/media/delete',['directPath' => '/mms/history/file','fileEncSha256' => '//////////////////////////////////////////8=','encHandle' => 'handle','companionMetaNonce' => 'nonce'],['success' => true,'data' => ['status' => 'deleted']],fn (?Polymorfa\RequestOptions $o = null) => $ecMessaging->historySync->deleteChunk('s', '/mms/history/file', str_repeat("\xff", 32), 'handle', 'nonce', $o),200,'2026-10-14'],
 ];
@@ -57,7 +57,7 @@ foreach (['retry','delete'] as $kind) {
         ecRaises($invoke, Polymorfa\ServerException::class);
     }
 }
-$ecLog = ['id' => '1234567890123456789','projectId' => $ecProject,'createdAt' => '2026-10-16T00:00:00Z','method' => 'POST','route' => '/messaging/:session/messages/send','status' => null,'durationMs' => 0,'result' => 'failure','source' => 'api','requestId' => null,'traceId' => 'trace','errorCode' => 'future','mcpTool' => null,'credential' => null];
+$ecLog = ['id' => '1234567890123456789','projectId' => $ecProject,'createdAt' => '2026-10-16T00:00:00Z','method' => 'POST','route' => '/messaging/:connection/messages/send','status' => null,'durationMs' => 0,'result' => 'failure','source' => 'api','requestId' => null,'traceId' => 'trace','errorCode' => 'future','mcpTool' => null,'credential' => null];
 foreach ([$ecA,$ecB,$ecA] as $view) {
     $selected = $view === $ecA ? $ecProject : $ecBProject;
     $log = array_replace($ecLog, ['projectId' => $selected]);
@@ -111,12 +111,12 @@ $common = ['delivery' => 'descriptor','whatsapp_ids' => ['linked_devices' => 'ch
 $media = ['type' => 'md-msg-hist','directPath' => '/history/chunk','mediaKey' => 'opaque-key','fileSha256' => 'opaque-hash','fileEncSha256' => 'opaque-encrypted-hash'];
 $inline = ['encoding' => 'zlib-base64-protobuf','data' => 'eA=='];
 foreach ([['kind' => 'history','value' => ['provider' => []]],['whatsapp_ids' => ['linked_devices' => 'archive'],'mode' => 'deliver','syncType' => 'FULL','fileLength' => 0,'messages' => [],'conversationCount' => 0,'messageCount' => 0,'pushNameCount' => 0,'statusMessageCount' => 0,'whatsapp' => ['encoding' => 'gzip-base64-protobuf','data' => 'opaque']],$common + ['media' => $media],$common + ['inline' => $inline]] as $payload) {
-    $envelope = ['id' => 'event-uuid','session' => 's','timestamp' => '2026-10-16T00:00:00Z','event' => 'history.sync','payload' => $payload,'future' => false];
+    $envelope = ['id' => 'event-uuid','connection' => 's','timestamp' => '2026-10-16T00:00:00Z','event' => 'history.sync','payload' => $payload,'future' => false];
     $raw = json_encode($envelope, JSON_THROW_ON_ERROR);
     $event = Polymorfa\Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'fixture-secret'), 'fixture-secret');
     ecCheck($event->knownEvent() === $envelope && $event->raw['future'] === false, 'Signed history family and forward fields');
 }
 foreach ([$common,$common + ['media' => $media,'inline' => $inline],$common + ['media' => []],array_replace($common, ['progress' => 101,'inline' => $inline]),array_replace($common, ['fileLength' => -1,'inline' => $inline])] as $payload) {
-    $raw = json_encode(['id' => 'event','session' => 's','timestamp' => 'now','event' => 'history.sync','payload' => $payload], JSON_THROW_ON_ERROR);
+    $raw = json_encode(['id' => 'event','connection' => 's','timestamp' => 'now','event' => 'history.sync','payload' => $payload], JSON_THROW_ON_ERROR);
     ecRaises(fn () => Polymorfa\Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'fixture-secret'), 'fixture-secret'), Polymorfa\ValidationException::class);
 }

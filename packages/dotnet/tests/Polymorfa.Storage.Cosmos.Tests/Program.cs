@@ -38,7 +38,7 @@ try
     var options = new CosmosStorageOptions("csharp_native");
     var adapter = new CosmosStorageAdapter(container, options);
     await Conformance(adapter);
-    var keys = new Dictionary<string, string> { { "sessionId", "snapshot" }, { "messageId", "row" } };
+    var keys = new Dictionary<string, string> { { "connectionId", "snapshot" }, { "messageId", "row" } };
     var fields = StorageMerge.EmptyRow(StorageEntity.Messages, keys).Fields.ToDictionary(p => p.Key, p => p.Value);
     fields["text"] = JsonSerializer.SerializeToElement("original");
     fields["chatId"] = JsonSerializer.SerializeToElement("chat");
@@ -47,20 +47,20 @@ try
     handler.BeforeRead = () => { fields["text"] = JsonSerializer.SerializeToElement("mutated"); writes.Clear(); };
     Check((await adapter.CommitAsync(writes)).Ok);
     Check((await adapter.GetAsync(StorageEntity.Messages, new[] { row.Id }))[row.Id].Fields["text"].GetString() == "original");
-    var scope = new Dictionary<string, string> { { "sessionId", "snapshot" }, { "chatId", "chat" }, { "@namespace", "other" } };
-    handler.BeforeQuery = () => scope["sessionId"] = "other";
+    var scope = new Dictionary<string, string> { { "connectionId", "snapshot" }, { "chatId", "chat" }, { "@namespace", "other" } };
+    handler.BeforeQuery = () => scope["connectionId"] = "other";
     Check((await adapter.QueryAsync(StorageEntity.Messages, new("by_chat", scope, 10))).Single().Id == row.Id);
     var other = new CosmosStorageAdapter(container, new("another_customer"));
     Check((await other.GetAsync(StorageEntity.Messages, new[] { row.Id })).Count == 0);
-    Check((await other.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { { "sessionId", "snapshot" }, { "chatId", "chat" } }, 10))).Count == 0);
+    Check((await other.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { { "connectionId", "snapshot" }, { "chatId", "chat" } }, 10))).Count == 0);
     var bounded = new CosmosStorageAdapter(container, options with { MaxQueryRows = 1 });
-    try { await bounded.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { { "sessionId", "snapshot" }, { "chatId", "chat" } }, 10)); throw new Exception("Read bound ignored."); }
+    try { await bounded.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { { "connectionId", "snapshot" }, { "chatId", "chat" } }, 10)); throw new Exception("Read bound ignored."); }
     catch (StorageProviderException) { }
 
     // Change a row after the adapter reads its revision/ETag and before the native
     // atomic batch reaches the emulator. The first insert must roll back as well.
     var winner = row with { Revision = 2, Fields = row.Fields.ToDictionary(p => p.Key, p => p.Value) };
-    var candidate = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "sessionId", "race" }, { "messageId", "candidate" } }) with { Revision = 1 };
+    var candidate = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "connectionId", "race" }, { "messageId", "candidate" } }) with { Revision = 1 };
     handler.BeforeBatch = async () => Check((await adapter.CommitAsync(new StorageWrite[] { new StoragePut(StorageEntity.Messages, winner, 1) })).Ok);
     var raced = await adapter.CommitAsync(new StorageWrite[] { new StoragePut(StorageEntity.Messages, candidate, null), new StoragePut(StorageEntity.Messages, row with { Revision = 2 }, 1) });
     Check(!raced.Ok);
@@ -75,7 +75,7 @@ try
         @namespace = options.Namespace,
         entity = "messages",
         deleted = false,
-        row = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "sessionId", "safe" }, { "messageId", "different" } }) with { Revision = 1 }
+        row = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "connectionId", "safe" }, { "messageId", "different" } }) with { Revision = 1 }
     })))
     using (var response = await container.CreateItemStreamAsync(body, new PartitionKey(options.Namespace))) Check(response.IsSuccessStatusCode);
     try { await adapter.GetAsync(StorageEntity.Messages, new[] { malformedId }); throw new Exception("Corrupt document accepted."); }

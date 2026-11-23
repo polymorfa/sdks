@@ -229,21 +229,25 @@ def is_event(
 ) -> TypeGuard[TypedWebhookEvent[Literal["customer.enabled"], m.CustomerEnabledPayload]]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["customer.number.attached"]
+    event: TypedWebhookEvent[str, object], event_type: Literal["customer.connection.attached"]
 ) -> TypeGuard[
-    TypedWebhookEvent[Literal["customer.number.attached"], m.CustomerNumberAttachedPayload]
+    TypedWebhookEvent[Literal["customer.connection.attached"], m.CustomerConnectionAttachedPayload]
 ]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["customer.number.disconnected"]
+    event: TypedWebhookEvent[str, object], event_type: Literal["customer.connection.disconnected"]
 ) -> TypeGuard[
-    TypedWebhookEvent[Literal["customer.number.disconnected"], m.CustomerNumberDisconnectedPayload]
+    TypedWebhookEvent[
+        Literal["customer.connection.disconnected"], m.CustomerConnectionDisconnectedPayload
+    ]
 ]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["customer.number.transferred"]
+    event: TypedWebhookEvent[str, object], event_type: Literal["customer.connection.transferred"]
 ) -> TypeGuard[
-    TypedWebhookEvent[Literal["customer.number.transferred"], m.CustomerNumberTransferredPayload]
+    TypedWebhookEvent[
+        Literal["customer.connection.transferred"], m.CustomerConnectionTransferredPayload
+    ]
 ]: ...
 @overload
 def is_event(
@@ -353,34 +357,42 @@ def is_event(
 ) -> TypeGuard[TypedWebhookEvent[Literal["presence.update"], m.PresenceUpdatePayload]]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["session.capabilities_updated"]
+    event: TypedWebhookEvent[str, object], event_type: Literal["connection.capabilities_updated"]
 ) -> TypeGuard[
-    TypedWebhookEvent[Literal["session.capabilities_updated"], m.SessionCapabilitiesUpdatedPayload]
+    TypedWebhookEvent[
+        Literal["connection.capabilities_updated"], m.ConnectionCapabilitiesUpdatedPayload
+    ]
 ]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["session.connected"]
-) -> TypeGuard[TypedWebhookEvent[Literal["session.connected"], m.SessionConnectedPayload]]: ...
-@overload
-def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["session.logged_out"]
-) -> TypeGuard[TypedWebhookEvent[Literal["session.logged_out"], m.SessionLoggedOutPayload]]: ...
-@overload
-def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["session.phone_offline"]
+    event: TypedWebhookEvent[str, object], event_type: Literal["connection.connected"]
 ) -> TypeGuard[
-    TypedWebhookEvent[Literal["session.phone_offline"], m.SessionPhoneOfflinePayload]
+    TypedWebhookEvent[Literal["connection.connected"], m.ConnectionConnectedPayload]
 ]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["session.restriction_updated"]
+    event: TypedWebhookEvent[str, object], event_type: Literal["connection.logged_out"]
 ) -> TypeGuard[
-    TypedWebhookEvent[Literal["session.restriction_updated"], m.SessionRestrictionUpdatedPayload]
+    TypedWebhookEvent[Literal["connection.logged_out"], m.ConnectionLoggedOutPayload]
 ]: ...
 @overload
 def is_event(
-    event: TypedWebhookEvent[str, object], event_type: Literal["session.status"]
-) -> TypeGuard[TypedWebhookEvent[Literal["session.status"], m.SessionStatusPayload]]: ...
+    event: TypedWebhookEvent[str, object], event_type: Literal["connection.phone_offline"]
+) -> TypeGuard[
+    TypedWebhookEvent[Literal["connection.phone_offline"], m.ConnectionPhoneOfflinePayload]
+]: ...
+@overload
+def is_event(
+    event: TypedWebhookEvent[str, object], event_type: Literal["connection.restriction_updated"]
+) -> TypeGuard[
+    TypedWebhookEvent[
+        Literal["connection.restriction_updated"], m.ConnectionRestrictionUpdatedPayload
+    ]
+]: ...
+@overload
+def is_event(
+    event: TypedWebhookEvent[str, object], event_type: Literal["connection.status"]
+) -> TypeGuard[TypedWebhookEvent[Literal["connection.status"], m.ConnectionStatusPayload]]: ...
 @overload
 def is_event(
     event: TypedWebhookEvent[str, object], event_type: Literal["template.status"]

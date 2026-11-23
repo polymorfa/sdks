@@ -54,9 +54,9 @@ export function createStoreInboxSource(
         conversationId: conversation.id,
         load: (cursor, signal) => remote.load(cursor, signal),
         send: (message, signal) => remote.send(message, signal),
-        ...(conversation.session === undefined
+        ...(conversation.connection === undefined
           ? {}
-          : { session: conversation.session }),
+          : { connection: conversation.connection }),
         ...(options.onError === undefined ? {} : { onError: options.onError }),
       });
     },
@@ -108,7 +108,7 @@ function toInboxConversation(
   return {
     id: row.id,
     ...(group ? { kind: "group" as const } : {}),
-    ...(row.session === undefined ? {} : { session: row.session }),
+    ...(row.connection === undefined ? {} : { connection: row.connection }),
     ...(name === undefined ? {} : { name }),
     ...(contact?.phoneNumber === undefined
       ? {}

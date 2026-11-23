@@ -109,8 +109,8 @@ pub struct RotateWebhookSecretRequest {
 pub enum TestWebhookRequest {
     Custom {
         body: EncodedEventPayload,
-        #[serde(rename = "sessionId")]
-        session_id: String,
+        #[serde(rename = "connectionId")]
+        connection_id: String,
         #[serde(rename = "eventType", skip_serializing_if = "Option::is_none")]
         event_type: Option<String>,
     },

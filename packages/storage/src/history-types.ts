@@ -240,7 +240,7 @@ export interface HistoryIdentityIndex {
 }
 
 export interface HistoryChunkInput {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly chunk: HistorySyncChunk;
   readonly identities?: HistoryIdentityIndex;
   /**

@@ -8,7 +8,7 @@ use Polymorfa\Resources\WhatsAppMedia;
 function s3TypedUsage(object $officialClient, WhatsAppMedia $resource, MediaDescriptor $descriptor, string $scratch): void
 {
     $store = new S3MediaStore($officialClient, 'customer-bucket', prefix:'media/');
-    $store->uploadToWhatsApp($resource, 'session', 'object', new UploadWhatsAppMediaOptions('document', egress:'direct'));
+    $store->uploadToWhatsApp($resource, 'connection', 'object', new UploadWhatsAppMediaOptions('document', egress:'direct'));
     $result = $store->archive($descriptor, new S3ArchiveOptions('archive', metadata:['purpose' => 'customer'], scratchDirectory:$scratch));
     if ($result->bytes < 0) {
         throw new LogicException('Invalid archive size.');

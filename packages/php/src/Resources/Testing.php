@@ -26,10 +26,10 @@ final class Testing extends Resource
     }
     /** @param Trigger $input
      * @return ApiResponse<TriggerResult> */
-    public function triggerEvent(string $session, array $input, ?RequestOptions $options = null): ApiResponse
+    public function triggerEvent(string $connection, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<TriggerResult> */ return $this->request('POST', '/messaging/'.self::segment($session).'/test-events', $input, options:$options);
+        /** @var ApiResponse<TriggerResult> */ return $this->request('POST', '/messaging/'.self::segment($connection).'/test-events', $input, options:$options);
     }
     /** @return ApiResponse<array{fixtures:list<array{name:Fixture,description:string,overrides:list<string>}>}> */
     public function listEventFixtures(?RequestOptions $options = null): ApiResponse
@@ -38,39 +38,39 @@ final class Testing extends Resource
         /** @var ApiResponse<array{fixtures:list<array{name:Fixture,description:string,overrides:list<string>}>}> */ return $this->request('GET', '/messaging/test-events/fixtures', options:$options);
     }
     /** @return ApiResponse<Phone> */
-    public function getPhone(string $session, ?RequestOptions $options = null): ApiResponse
+    public function getPhone(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<Phone> */ return \Polymorfa\ExistingContract::bare($this->transport, 'GET', $this->phone($session), null, $options, 'testingPhone');
+        /** @var ApiResponse<Phone> */ return \Polymorfa\ExistingContract::bare($this->transport, 'GET', $this->phone($connection), null, $options, 'testingPhone');
     }
     /** @param array{to:string,text:string} $input
-     * @return ApiResponse<array{session:string,to:string,messageId:?string}> */
-    public function sendPhoneMessage(string $session, array $input, ?RequestOptions $options = null): ApiResponse
+     * @return ApiResponse<array{connection:string,to:string,messageId:?string}> */
+    public function sendPhoneMessage(string $connection, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{session:string,to:string,messageId:?string}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($session).'/messages', $input, $options, 'testingSend', 202);
+        /** @var ApiResponse<array{connection:string,to:string,messageId:?string}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($connection).'/messages', $input, $options, 'testingSend', 202);
     }
-    /** @return ApiResponse<array{session:string,deviceId:int,unlinked:true}> */
-    public function unlinkPhoneDevice(string $session, int $deviceId, ?RequestOptions $options = null): ApiResponse
+    /** @return ApiResponse<array{connection:string,deviceId:int,unlinked:true}> */
+    public function unlinkPhoneDevice(string $connection, int $deviceId, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         if ($deviceId < 1 || $deviceId > 99) {
             throw new ValidationException('deviceId must be a companion device ID from 1 to 99.');
-        } /** @var ApiResponse<array{session:string,deviceId:int,unlinked:true}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($session).'/devices/'.$deviceId.'/unlink', null, $options, 'testingUnlink');
+        } /** @var ApiResponse<array{connection:string,deviceId:int,unlinked:true}> */ return \Polymorfa\ExistingContract::bare($this->transport, 'POST', $this->phone($connection).'/devices/'.$deviceId.'/unlink', null, $options, 'testingUnlink');
     }
     /** @param AccountModeInput $input
      * @return ApiResponse<AccountMode> */
-    public function setAccountMode(string $session, array $input, ?RequestOptions $options = null): ApiResponse
+    public function setAccountMode(string $connection, array $input, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        \Polymorfa\CampaignContractValidation::text($session, 'session', 1, 256);
+        \Polymorfa\CampaignContractValidation::text($connection, 'connection', 1, 256);
         \Polymorfa\CampaignContractValidation::fields($input, ['accountType', 'primaryPlatform'], ['accountType']);
         \Polymorfa\BusinessAccountMode::fields($input, true);
         /** @var ApiResponse<AccountMode> */
-        return \Polymorfa\ExistingContract::bare($this->transport, 'PUT', '/messaging/'.self::segment($session).'/phone/account-mode', $input, $options, 'testingAccountMode');
+        return \Polymorfa\ExistingContract::bare($this->transport, 'PUT', $this->phone($connection).'/account-mode', $input, $options, 'testingAccountMode');
     }
-    private function phone(string $session): string
+    private function phone(string $connection): string
     {
-        return '/messaging/'.self::segment($session).'/phone';
+        return '/messaging/'.self::segment($connection).'/phone';
     }
 }

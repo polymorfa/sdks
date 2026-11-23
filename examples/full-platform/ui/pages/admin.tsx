@@ -150,7 +150,7 @@ function Table({
       caption={caption}
       rows={rows}
       rowKey={(row) =>
-        String(row.id ?? row.session ?? row.phone ?? JSON.stringify(row))
+        String(row.id ?? row.connection ?? row.phone ?? JSON.stringify(row))
       }
       empty="Nothing to show."
       columns={[
@@ -278,7 +278,7 @@ const TABS: readonly { id: string; label: string; icon: IconName }[] = [
   { id: "bansafe", label: "BanSafe", icon: "alert" },
   { id: "customers", label: "Customers", icon: "contacts" },
   { id: "audiences", label: "Audiences", icon: "campaigns" },
-  { id: "settings", label: "Session settings", icon: "settings" },
+  { id: "settings", label: "Connection settings", icon: "settings" },
   { id: "platform", label: "Platform", icon: "globe" },
   { id: "messaging", label: "Messaging API", icon: "code" },
 ];
@@ -419,7 +419,7 @@ function Panel({ tab }: { readonly tab: string }) {
                   <Table
                     caption="Pricing"
                     rows={rowsOf(field(data, "pricing"))}
-                    keys={["tier", "region", "perSessionDay", "perMessage"]}
+                    keys={["tier", "region", "perConnectionDay", "perMessage"]}
                   />
                 </Card>
               </>
@@ -465,11 +465,11 @@ function Panel({ tab }: { readonly tab: string }) {
                   }
                 />
               </Card>
-              <Card title="Session bans" className="flush">
+              <Card title="Connection bans" className="flush">
                 <Table
-                  caption="Session bans"
-                  rows={rowsOf(field(data, "sessionBans"))}
-                  keys={["session", "reason", "status", "createdAt"]}
+                  caption="Connection bans"
+                  rows={rowsOf(field(data, "connectionBans"))}
+                  keys={["connection", "reason", "status", "createdAt"]}
                 />
               </Card>
             </>
@@ -605,7 +605,7 @@ function Panel({ tab }: { readonly tab: string }) {
               <Table
                 caption="Events"
                 rows={rowsOf(field(data, "events"))}
-                keys={["type", "session", "createdAt"]}
+                keys={["type", "connection", "createdAt"]}
               />
             </Card>
           )}
@@ -621,7 +621,7 @@ function Panel({ tab }: { readonly tab: string }) {
                   caption="Number health"
                   rows={rowsOf(field(data, "numbers"))}
                   keys={[
-                    "session",
+                    "connection",
                     "phoneNumber",
                     "health",
                     "band",
@@ -633,7 +633,13 @@ function Panel({ tab }: { readonly tab: string }) {
                 <Table
                   caption="Findings"
                   rows={rowsOf(field(data, "findings"))}
-                  keys={["session", "code", "severity", "status", "createdAt"]}
+                  keys={[
+                    "connection",
+                    "code",
+                    "severity",
+                    "status",
+                    "createdAt",
+                  ]}
                 />
               </Card>
             </>
@@ -652,7 +658,7 @@ function Panel({ tab }: { readonly tab: string }) {
                   "name",
                   "externalCustomerId",
                   "status",
-                  "numberCount",
+                  "connectionCount",
                   "createdAt",
                 ]}
               />
@@ -691,12 +697,12 @@ function Panel({ tab }: { readonly tab: string }) {
       return (
         <Section path="/api/admin/settings">
           {(data, reload) => {
-            const config = field(data, "sessionConfiguration") as
+            const config = field(data, "connectionConfiguration") as
               Row | undefined;
             const quick = field(data, "quickLinkSettings") as Row | undefined;
             return (
               <div className="grid-2">
-                <Card title="Session defaults">
+                <Card title="Connection defaults">
                   <dl className="kv">
                     <div>
                       <dt>Team</dt>
@@ -803,7 +809,7 @@ function Panel({ tab }: { readonly tab: string }) {
             }
           >
             <p className="muted">
-              Browser tokens can only do what the session&apos;s client rules
+              Browser tokens can only do what the connection&apos;s client rules
               allow: sending messages and placing, answering and signaling calls
               from this app&apos;s origin.
             </p>

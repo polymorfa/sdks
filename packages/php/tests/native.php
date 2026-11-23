@@ -13,7 +13,13 @@ function nativeCases(array $cases, callable $makeClient, ?Polymorfa\Credential $
     $socket = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
     $address = stream_socket_get_name($socket, false);
     fclose($socket);
-    $server = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/native-server.php'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes, null, ['POLYMORFA_PHP_WIRE_STATE' => $state] + getenv());
+    // The CLI server logs each request. A pipe nobody drains can fill and block
+    // the single HTTP worker before it responds to the SDK.
+    $serverLog = fopen($scratch.'/case-'.getmypid().'.log', 'w');
+    if ($serverLog === false) {
+        throw new RuntimeException('Cannot open native PHP fixture server log.');
+    }
+    $server = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/native-server.php'], [0 => ['pipe','r'],1 => $serverLog,2 => $serverLog], $pipes, null, ['POLYMORFA_PHP_WIRE_STATE' => $state] + getenv());
     if (!is_resource($server)) {
         throw new RuntimeException('Cannot start native PHP fixture server.');
     }
@@ -42,6 +48,7 @@ function nativeCases(array $cases, callable $makeClient, ?Polymorfa\Credential $
         foreach ($pipes as $pipe) {
             fclose($pipe);
         }proc_close($server);
+        fclose($serverLog);
         if (file_exists($state)) {
             unlink($state);
         }

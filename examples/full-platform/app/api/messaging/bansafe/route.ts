@@ -3,26 +3,26 @@ import { env } from "../../../../lib/env.js";
 import { action, flag, route, unknownAction } from "../../../../lib/route.js";
 
 // BanSafe settings through the Messaging API.
-export const GET = route("admin", async ({ body, sessionOf }) => {
+export const GET = route("admin", async ({ body, connectionOf }) => {
   const banSafe = messaging().banSafe;
   const projectId = env.projectId();
-  const [safeMode, warmup, insurance, health, session] = await Promise.all([
+  const [safeMode, warmup, insurance, health, connection] = await Promise.all([
     banSafe.getProjectSafeMode(projectId),
     banSafe.getProjectWarmupPlan(projectId),
     banSafe.getProjectInsuranceEvidence(projectId),
     banSafe.getProjectHealthPolicy(projectId),
-    banSafe.getSessionSafeMode(sessionOf(body)),
+    banSafe.getConnectionSafeMode(connectionOf(body)),
   ]);
   return {
     safeMode: safeMode.data.data,
     warmup: warmup.data.data,
     insurance: insurance.data.data,
     health: health.data.data,
-    session: session.data.data,
+    connection: connection.data.data,
   };
 });
 
-export const POST = route("admin", async ({ body, sessionOf }) => {
+export const POST = route("admin", async ({ body, connectionOf }) => {
   const banSafe = messaging().banSafe;
   const projectId = env.projectId();
   switch (action(body)) {
@@ -51,14 +51,14 @@ export const POST = route("admin", async ({ body, sessionOf }) => {
         version: policy.version,
         enabled: true,
         threshold: 40,
-        sessionAction: "slow_down",
+        connectionAction: "slow_down",
         slowDownMps: 1,
         emailNotification: policy.integrations.emailConfigured,
         webhookNotification: policy.integrations.webhookConfigured,
       });
     }
-    case "sessionSafeMode":
-      return banSafe.updateSessionSafeMode(sessionOf(body), {
+    case "connectionSafeMode":
+      return banSafe.updateConnectionSafeMode(connectionOf(body), {
         presence: "inherit",
         typing: "inherit",
         reads: "all_inbound",

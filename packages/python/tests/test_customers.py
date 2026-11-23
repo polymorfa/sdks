@@ -19,8 +19,8 @@ CUSTOMER = {
     "updatedAt": 2,
 }
 SUMMARY = CUSTOMER | {
-    "numberCount": 2,
-    "connectedNumberCount": 1,
+    "connectionCount": 2,
+    "connectedConnectionCount": 1,
     "activePairingLinkState": None,
     "lastActivityAt": None,
     "needsAttention": True,
@@ -29,7 +29,7 @@ STATUS = {"enabled": True, "enabledAt": 1, "enabledBy": "user_1", "defaultCustom
 NUMBER = {
     "id": "number_1",
     "customerId": "customer_1",
-    "sessionId": "support",
+    "connectionId": "support",
     "name": None,
     "phoneMasked": "+1555••••567",
     "status": "CONNECTED",
@@ -41,7 +41,7 @@ EVENT = {
     "action": "updated",
     "fromStatus": None,
     "toStatus": None,
-    "sessionId": None,
+    "connectionId": None,
     "pairingLinkId": None,
     "metadata": {"fields": ["name", "phone", "externalCustomerId"]},
     "occurredAt": 1,
@@ -59,7 +59,7 @@ LINK = {
     "status": "active",
     "attemptCount": 0,
     "maxAttempts": 3,
-    "pendingSessionId": None,
+    "pendingConnectionId": None,
     "createdBy": None,
     "reservedAt": None,
     "openedAt": None,
@@ -96,7 +96,7 @@ CASES = [
         "/platform/projects/project_1/customers/enable",
         None,
         {},
-        STATUS | {"migratedNumberCount": 2},
+        STATUS | {"migratedConnectionCount": 2},
         lambda c: c.enable("project_1", options=O),
     ),
     ("POST", "/platform/customers", CREATE, {}, CUSTOMER, lambda c: c.create(CREATE, options=O)),
@@ -134,11 +134,11 @@ CASES = [
     ),
     (
         "GET",
-        "/platform/customers/customer_1/numbers",
+        "/platform/customers/customer_1/connections",
         None,
         {"projectId": "project_1"},
         [NUMBER],
-        lambda c: c.list_numbers("customer_1", "project_1"),
+        lambda c: c.list_connections("customer_1", "project_1"),
     ),
     (
         "GET",
@@ -182,11 +182,11 @@ CASES = [
     ),
     (
         "POST",
-        "/platform/customers/customer_1/numbers/support/transfer",
+        "/platform/customers/customer_1/connections/support/transfer",
         TRANSFER,
         {},
         NUMBER,
-        lambda c: c.transfer_number("customer_1", "support", TRANSFER, options=O),
+        lambda c: c.transfer_connection("customer_1", "support", TRANSFER, options=O),
     ),
 ]
 
@@ -248,12 +248,12 @@ async def test_customer_filtered_pagination_keeps_owning_project():
                 "search": "Ada",
                 "status": "all",
                 "isDefault": False,
-                "hasNumbers": True,
+                "hasConnections": True,
                 "needsAttention": True,
             }
         )
         assert (
-            page.items[0]["numberCount"] == 2
+            page.items[0]["connectionCount"] == 2
             and page.response.metadata.request_id == "req_customer_page"
         )
         assert len([item async for item in page]) == 2

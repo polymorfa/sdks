@@ -6,7 +6,7 @@ public sealed class MessagingClient : IDisposable
 {
     private readonly HttpTransport http;
     public Passkeys Passkeys { get; }
-    public MessagingSessions Sessions { get; }
+    public MessagingConnections Connections { get; }
     public Messages Messages { get; }
     public QuickLinks QuickLinks { get; }
     public MessagingWebhooks Webhooks { get; }
@@ -41,48 +41,48 @@ public sealed class MessagingClient : IDisposable
     public MessagingClient(Credential credential, ClientOptions? options = null)
     {
         if (credential.Kind != CredentialKind.ClientToken) credential.RequireServer();
-        http = new(credential, options ?? new()); Passkeys = new(http); Sessions = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); CloudOnboarding = new(http); Testing = new(http); ObservationPolicies = new(http); HybridLink = new(http); Templates = new(http); Campaigns = new(http); CloudGraph = new(http); CloudTemplates = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); OfficialGroups = new(http); Catalogs = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http); WhatsAppMedia = new(http); HistorySync = new(http);
+        http = new(credential, options ?? new()); Passkeys = new(http); Connections = new(http); Messages = new(http); QuickLinks = new(http); Webhooks = new(http); Calls = new(http); CloudOnboarding = new(http); Testing = new(http); ObservationPolicies = new(http); HybridLink = new(http); Templates = new(http); Campaigns = new(http); CloudGraph = new(http); CloudTemplates = new(http); Business = new(http); Channels = new(http); QuickReplies = new(http); BanSafe = new(http); Contacts = new(http); OfficialGroups = new(http); Catalogs = new(http); Groups = new(http); Chats = new(http); Labels = new(http); Presence = new(http); Profile = new(http); Privacy = new(http); ClientTokens = new(http); Identities = new(http); Users = new(http); Media = new(http); WhatsAppMedia = new(http); HistorySync = new(http);
     }
     public Task<RawCursorPage<T>> PaginateRawAsync<T>(RawRequest request, RawPageDecoder<T> decode, string cursorParameter = "cursor") => RawCursorPage<T>.LoadAsync(http, request, decode, cursorParameter);
     public Task<ApiResponse<T>> RawAsync<T>(HttpMethod method, string path, JsonElement? body = null, RequestOptions? options = null, IReadOnlyList<KeyValuePair<string, string>>? query = null) => http.RequestAsync<T>(method, path, body, options, query);
     public void Dispose() => http.Dispose();
 }
-public sealed partial class MessagingSessions
+public sealed partial class MessagingConnections
 {
     private readonly HttpTransport http;
-    internal MessagingSessions(HttpTransport http) => this.http = http;
-    private static string Path(string session) => $"/platform/sessions/{Uri.EscapeDataString(session)}";
-    public Task<ApiResponse<DataEnvelope<IReadOnlyList<PlatformSession>>>> ListAsync(RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<IReadOnlyList<PlatformSession>>>(HttpMethod.Get, "/platform/sessions", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<Session>>> RetrieveAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return ExistingContractCodec.Request<SuccessEnvelope<Session>>(http, HttpMethod.Get, Path(session), options: options); }
-    public Task<ApiResponse<SuccessEnvelope<Session>>> UpdateAsync(string session, UpdateSessionRequest body, RequestOptions? options = null) { http.Credential.RequireServer(); var captured = ConfigurationContract.Capture(body, body.Configuration, out var intent); return ExistingContractCodec.Request<SuccessEnvelope<Session>>(http, HttpMethod.Put, Path(session), captured, ExistingContractCodec.Options(options, intent)); }
-    public Task<ApiResponse<DataEnvelope<SessionRemoveResult>>> DeleteAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<SessionRemoveResult>>(HttpMethod.Delete, Path(session), null, options); }
-    public Task<ApiResponse<DataEnvelope<SessionStartResult>>> StartAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<SessionStartResult>>(HttpMethod.Post, Path(session) + "/start", null, options); }
-    public Task<ApiResponse<DataEnvelope<SessionStopResult>>> StopAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<SessionStopResult>>(HttpMethod.Post, Path(session) + "/stop", null, options); }
-    public Task<ApiResponse<OperationAccepted>> RestartAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<OperationAccepted>(HttpMethod.Post, Path(session) + "/restart", null, options); }
-    public Task<ApiResponse<OperationAccepted>> LogoutAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<OperationAccepted>(HttpMethod.Post, Path(session) + "/logout", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<WhatsAppAccount>>> AccountAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<WhatsAppAccount>>(HttpMethod.Get, Path(session) + "/me", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<QrCode>>> QrAsync(string session, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<QrCode>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(session)}/pair/qr", null, options, [new("format", "json")]);
-    public Task<ApiResponse<SuccessEnvelope<PairCode>>> RequestPairingCodeAsync(string session, PairCodeRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<PairCode>>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(session)}/pair/code", body, options);
+    internal MessagingConnections(HttpTransport http) => this.http = http;
+    private static string Path(string connection) => $"/platform/connections/{Uri.EscapeDataString(connection)}";
+    public Task<ApiResponse<DataEnvelope<IReadOnlyList<PlatformConnection>>>> ListAsync(RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<IReadOnlyList<PlatformConnection>>>(HttpMethod.Get, "/platform/connections", null, options); }
+    public Task<ApiResponse<SuccessEnvelope<Connection>>> RetrieveAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return ExistingContractCodec.Request<SuccessEnvelope<Connection>>(http, HttpMethod.Get, Path(connection), options: options); }
+    public Task<ApiResponse<SuccessEnvelope<Connection>>> UpdateAsync(string connection, UpdateConnectionRequest body, RequestOptions? options = null) { http.Credential.RequireServer(); var captured = ConfigurationContract.Capture(body, body.Configuration, out var intent); return ExistingContractCodec.Request<SuccessEnvelope<Connection>>(http, HttpMethod.Put, Path(connection), captured, ExistingContractCodec.Options(options, intent)); }
+    public Task<ApiResponse<DataEnvelope<ConnectionRemoveResult>>> DeleteAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<ConnectionRemoveResult>>(HttpMethod.Delete, Path(connection), null, options); }
+    public Task<ApiResponse<DataEnvelope<ConnectionStartResult>>> StartAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<ConnectionStartResult>>(HttpMethod.Post, Path(connection) + "/start", null, options); }
+    public Task<ApiResponse<DataEnvelope<ConnectionStopResult>>> StopAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<DataEnvelope<ConnectionStopResult>>(HttpMethod.Post, Path(connection) + "/stop", null, options); }
+    public Task<ApiResponse<OperationAccepted>> RestartAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<OperationAccepted>(HttpMethod.Post, Path(connection) + "/restart", null, options); }
+    public Task<ApiResponse<OperationAccepted>> LogoutAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<OperationAccepted>(HttpMethod.Post, Path(connection) + "/logout", null, options); }
+    public Task<ApiResponse<SuccessEnvelope<WhatsAppAccount>>> AccountAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<WhatsAppAccount>>(HttpMethod.Get, Path(connection) + "/me", null, options); }
+    public Task<ApiResponse<SuccessEnvelope<QrCode>>> QrAsync(string connection, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<QrCode>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(connection)}/pair/qr", null, options, [new("format", "json")]);
+    public Task<ApiResponse<SuccessEnvelope<PairCode>>> RequestPairingCodeAsync(string connection, PairCodeRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<PairCode>>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(connection)}/pair/code", body, options);
 }
 public sealed class Messages
 {
     private readonly HttpTransport http;
     internal Messages(HttpTransport http) => this.http = http;
-    private static string Path(string session, string action) => $"/messaging/{Uri.EscapeDataString(session)}/messages/{action}";
-    public Task<ApiResponse<SuccessEnvelope<MessageResponse>>> SendAsync(string session, SendMessageRequest body, RequestOptions? options = null)
+    private static string Path(string connection, string action) => $"/messaging/{Uri.EscapeDataString(connection)}/messages/{action}";
+    public Task<ApiResponse<SuccessEnvelope<MessageResponse>>> SendAsync(string connection, SendMessageRequest body, RequestOptions? options = null)
     {
         InteractiveMessages.Validate(body.Content);
         if (body.Conversation.Id is null && body.Conversation.PhoneNumber is null && body.Conversation.Bsuid is null && body.Conversation.Username is null) throw new PolymorfaValidationException("A conversation identifier is required.", "invalid_parameter");
         var descriptor = body.Content switch { DescriptorImageContent c => (c.Image, WhatsAppUploadMediaType.Image), DescriptorVideoContent c => (c.Video, WhatsAppUploadMediaType.Video), DescriptorFileContent c => (c.File, WhatsAppUploadMediaType.Document), DescriptorVoiceContent c => (c.Voice, c.Voice.Ptt == true ? WhatsAppUploadMediaType.Ptt : WhatsAppUploadMediaType.Audio), StickerContent c => (c.Sticker, WhatsAppUploadMediaType.Sticker), _ => ((WhatsAppMediaSendDescriptor?)null, default(WhatsAppUploadMediaType)) };
         if (body.Content is StickerContent { Sticker: null }) throw new PolymorfaConfigurationException("A sticker descriptor is required.");
         if (descriptor.Item1 is { } media) { media.Validate(descriptor.Item2); options = WhatsAppMediaResource.Version(options); }
-        return http.RequestAsync<SuccessEnvelope<MessageResponse>>(HttpMethod.Post, Path(session, "send"), body, (options ?? new()).WithIdempotency());
+        return http.RequestAsync<SuccessEnvelope<MessageResponse>>(HttpMethod.Post, Path(connection, "send"), body, (options ?? new()).WithIdempotency());
     }
-    public Task<ApiResponse<SuccessEnvelope<StatusResult>>> MarkSeenAsync(string session, SeenRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<StatusResult>>(HttpMethod.Post, Path(session, "seen"), body, options);
-    public Task<ApiResponse<SuccessEnvelope<StatusResult>>> SetTypingAsync(string session, TypingRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<StatusResult>>(HttpMethod.Post, Path(session, "typing"), body, options);
-    public Task<ApiResponse<SuccessEnvelope<MessageReceipt>>> ReactAsync(string session, ReactRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<MessageReceipt>>(HttpMethod.Post, Path(session, "react"), body, (options ?? new()).WithIdempotency());
-    public Task<ApiResponse<SuccessEnvelope<StatusResult>>> StarAsync(string session, StarRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<StatusResult>>(HttpMethod.Post, Path(session, "star"), body, options);
-    public Task<ApiResponse<SuccessEnvelope<MessageOperation>>> OperationStatusAsync(string session, string operationId, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<MessageOperation>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(session)}/operations/{Uri.EscapeDataString(operationId)}", null, options); }
+    public Task<ApiResponse<SuccessEnvelope<StatusResult>>> MarkSeenAsync(string connection, SeenRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<StatusResult>>(HttpMethod.Post, Path(connection, "seen"), body, options);
+    public Task<ApiResponse<SuccessEnvelope<StatusResult>>> SetTypingAsync(string connection, TypingRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<StatusResult>>(HttpMethod.Post, Path(connection, "typing"), body, options);
+    public Task<ApiResponse<SuccessEnvelope<MessageReceipt>>> ReactAsync(string connection, ReactRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<MessageReceipt>>(HttpMethod.Post, Path(connection, "react"), body, (options ?? new()).WithIdempotency());
+    public Task<ApiResponse<SuccessEnvelope<StatusResult>>> StarAsync(string connection, StarRequest body, RequestOptions? options = null) => http.RequestAsync<SuccessEnvelope<StatusResult>>(HttpMethod.Post, Path(connection, "star"), body, options);
+    public Task<ApiResponse<SuccessEnvelope<MessageOperation>>> OperationStatusAsync(string connection, string operationId, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<MessageOperation>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(connection)}/operations/{Uri.EscapeDataString(operationId)}", null, options); }
 }
 public sealed class QuickLinks
 {
@@ -92,14 +92,14 @@ public sealed class QuickLinks
     {
         http.Credential.RequireServer(); body ??= new();
         if (body.Configuration?.Testing?.Configuration is { } testing) BusinessAccountModeValidation.Fields(testing.AccountType, testing.PrimaryPlatform);
-        if (body.Purpose == "add_connection" && string.IsNullOrWhiteSpace(body.Session)) throw new PolymorfaValidationException("An add_connection link requires session.", "invalid_parameter");
-        if (body.BillingControls is { } billing && (billing.Priority < 0 || billing.Priority > 1_000_000 || billing.LimitCredits < 0 || billing.LimitCredits > 1_000_000 || billing.LimitCredits is decimal limit && decimal.Round(limit, 6) != limit || body.Purpose == "add_connection" || body.Configuration?.Testing is not null)) throw new PolymorfaValidationException("Invalid billingControls.", "invalid_parameter");
+        if (body.Purpose == "add_method" && string.IsNullOrWhiteSpace(body.Connection)) throw new PolymorfaValidationException("An add_method link requires connection.", "invalid_parameter");
+        if (body.BillingControls is { } billing && (billing.Priority < 0 || billing.Priority > 1_000_000 || billing.LimitCredits < 0 || billing.LimitCredits > 1_000_000 || billing.LimitCredits is decimal limit && decimal.Round(limit, 6) != limit || body.Purpose == "add_method" || body.Configuration?.Testing is not null)) throw new PolymorfaValidationException("Invalid billingControls.", "invalid_parameter");
         var captured = ConfigurationContract.QuickLink(body, out var intent);
         return http.RequestAsync<SuccessEnvelope<QuickLink>>(HttpMethod.Post, "/messaging/quicklinks", new CampaignCapturedBody(CampaignContractCodec.Encode(captured)), ExistingContractCodec.Options(options, intent));
     }
     public Task<ApiResponse<SuccessEnvelope<QuickLinkStatus>>> RetrieveAsync(string id, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<QuickLinkStatus>>(HttpMethod.Get, $"/messaging/quicklinks/{Uri.EscapeDataString(id)}", null, options); }
     public Task<ApiResponse<SuccessResponse>> CancelAsync(string id, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessResponse>(HttpMethod.Delete, $"/messaging/quicklinks/{Uri.EscapeDataString(id)}", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<HybridQuickLinkAvailability>>> AvailabilityAsync(string projectId, string session, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<HybridQuickLinkAvailability>>(HttpMethod.Get, "/messaging/quicklinks/availability", null, options, [new("projectId", projectId), new("session", session)]); }
+    public Task<ApiResponse<SuccessEnvelope<HybridQuickLinkAvailability>>> AvailabilityAsync(string projectId, string connection, RequestOptions? options = null) { http.Credential.RequireServer(); return http.RequestAsync<SuccessEnvelope<HybridQuickLinkAvailability>>(HttpMethod.Get, "/messaging/quicklinks/availability", null, options, [new("projectId", projectId), new("connection", connection)]); }
 }
 public sealed class MessagingWebhooks
 {

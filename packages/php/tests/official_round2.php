@@ -50,7 +50,7 @@ check(str_starts_with($request->getHeaderLine('Content-Type'), 'multipart/form-d
 check(str_contains($officialPictureBody, $jpeg) && str_contains($officialPictureBody, 'Content-Type: image/jpeg'), 'actual jpeg');
 raises(fn()=> $c->catalogs->retrieve('n','../'), ValidationException::class);
 raises(fn()=> $c->catalogs->listProducts('n','123',['limit'=>0]), ValidationException::class);
-$event = ['id'=>'e','session'=>'','timestamp'=>'now','event'=>'contact.update','payload'=>['id'=>'new','parentBsuid'=>'new-p','identityChange'=>['reason'=>'user_id_changed','messageId'=>'m','previous'=>['id'=>'old','parentBsuid'=>'old-p']]]];
+$event = ['id'=>'e','connection'=>'','timestamp'=>'now','event'=>'contact.update','payload'=>['id'=>'new','parentBsuid'=>'new-p','identityChange'=>['reason'=>'user_id_changed','messageId'=>'m','previous'=>['id'=>'old','parentBsuid'=>'old-p']]]];
 $batch = ['object'=>'event_batch','version'=>1,'id'=>'00000000-0000-4000-8000-000000000001','events'=>[$event,$event]];
 $signed = static function (array $value) { $raw=json_encode($value,JSON_THROW_ON_ERROR); return Webhooks::constructDelivery($raw,hash_hmac('sha256',$raw,'s'),'s'); };
 $value=$signed($batch);check($value instanceof WebhookEventBatch && count($value->events) === 2 && $value->events[0]->id === 'e', 'batch ordering');

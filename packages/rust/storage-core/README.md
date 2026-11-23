@@ -1,9 +1,9 @@
 # Polymorfa storage core
 
-Portable schema-2 contracts, canonical merge rules, validation, memory adapter,
+Portable schema-3 contracts, canonical merge rules, validation, memory adapter,
 event/history reducers and fenced storage engine. The native SDK re-exports this crate through
 `polymorfa_sdk::storage`; browser storage uses the same types and implementation.
-Source contract: `3bacf46f9c4213426314001586f5bae43aaa77de`.
+Source contract: `d80b581c9df122411e9149a7e39a33700a51571c`.
 
 Native futures and adapters retain `Send`/`Sync` bounds and Tokio timers. WASM
 uses browser-local futures, browser clocks/timers and cryptographic UUIDs.

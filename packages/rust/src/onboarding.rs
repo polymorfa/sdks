@@ -1,4 +1,4 @@
-//! Trusted-server continuation of QuickLinks and isolated simulated Test numbers.
+//! Trusted-server continuation of QuickLinks and isolated simulated Test connections.
 use crate::{
     transport::{encode, HttpTransport},
     ApiResponse, Error, ErrorKind, RequestOptions, Result,
@@ -53,19 +53,19 @@ pub struct HistoryFixtureCreated {
     pub fixture_id: String,
 }
 macro_rules! wire_enum{($name:ident{$($variant:ident=$wire:literal),*$(,)?})=>{#[derive(Clone,Copy,Debug,Deserialize,Serialize)]pub enum $name{$(#[serde(rename=$wire)]$variant),*}}}
-wire_enum!(TestEventFixture{MessageReceived="message.received",MessageAck="message.ack",MessageFailed="message.failed",CallReceived="call.received",CallMissed="call.missed",CallEnded="call.ended",SessionStatus="session.status",SessionRestrictionUpdated="session.restriction_updated",TemplateStatus="template.status"});
+wire_enum!(TestEventFixture{MessageReceived="message.received",MessageAck="message.ack",MessageFailed="message.failed",CallReceived="call.received",CallMissed="call.missed",CallEnded="call.ended",ConnectionStatus="connection.status",ConnectionRestrictionUpdated="connection.restriction_updated",TemplateStatus="template.status"});
 wire_enum!(TestMediaType{Image="image",Video="video",Audio="audio",Document="document",Sticker="sticker"});
 wire_enum!(TestAckStatus{Delivered="delivered",Read="read",Played="played",Error="error"});
-wire_enum!(TestFailureReason{InvalidRecipient="invalid_recipient",SessionNotConnected="session_not_connected",AckTimeout="ack_timeout",SendFailed="send_failed",BlockedBySafety="blocked_by_safety"});
+wire_enum!(TestFailureReason{InvalidRecipient="invalid_recipient",ConnectionNotConnected="connection_not_connected",AckTimeout="ack_timeout",SendFailed="send_failed",BlockedBySafety="blocked_by_safety"});
 wire_enum!(TestCallEndReason{UserHangup="user_hangup",Timeout="timeout",LostConnection="lost_connection",Rejected="rejected",CallRestricted="call_restricted"});
-wire_enum!(TestSessionStatus{Connecting="CONNECTING",Connected="CONNECTED",Disconnected="DISCONNECTED"});
+wire_enum!(TestConnectionStatus{Connecting="CONNECTING",Connected="CONNECTED",Disconnected="DISCONNECTED"});
 wire_enum!(TestStatusReason{ScanQr="SCAN_QR",AutoReconnect="AUTO_RECONNECT",Failed="FAILED",ManualStop="MANUAL_STOP",QrTimeout="QR_TIMEOUT",LoggedOut="LOGGED_OUT",TemporaryBan="TEMPORARY_BAN",StreamError="STREAM_ERROR"});
 wire_enum!(TestTemplateStatus{Approved="APPROVED",Rejected="REJECTED"});
 wire_enum!(TestDelivery{Generated="generated",Simulated="simulated"});
 wire_enum!(TestEventSource{Test="test",Runtime="runtime"});
 wire_enum!(TestOverrideField{Text="text",From="from",PushName="pushName",MediaType="mediaType",Caption="caption",AckStatus="ackStatus",MessageId="messageId",FailureReason="failureReason",Video="video",DurationSeconds="durationSeconds",CallEndReason="callEndReason",RestrictionActive="restrictionActive",Status="status",StatusReason="statusReason",TemplateName="templateName",TemplateStatus="templateStatus",Reason="reason"});
 macro_rules! overrides{($($field:ident:$ty:ty),*$(,)?)=>{#[derive(Clone,Debug,Default,Serialize,Deserialize)]#[serde(rename_all="camelCase")]pub struct TestEventOverrides{$(#[serde(skip_serializing_if="Option::is_none")]pub $field:Option<$ty>),*}}}
-overrides!(text:String,from:String,push_name:String,media_type:TestMediaType,caption:String,ack_status:TestAckStatus,message_id:String,failure_reason:TestFailureReason,video:bool,duration_seconds:f64,call_end_reason:TestCallEndReason,restriction_active:bool,status:TestSessionStatus,status_reason:TestStatusReason,template_name:String,template_status:TestTemplateStatus,reason:String);
+overrides!(text:String,from:String,push_name:String,media_type:TestMediaType,caption:String,ack_status:TestAckStatus,message_id:String,failure_reason:TestFailureReason,video:bool,duration_seconds:f64,call_end_reason:TestCallEndReason,restriction_active:bool,status:TestConnectionStatus,status_reason:TestStatusReason,template_name:String,template_status:TestTemplateStatus,reason:String);
 #[derive(Clone, Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TriggerTestEventRequest {
@@ -73,13 +73,13 @@ pub struct TriggerTestEventRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub overrides: Option<TestEventOverrides>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub from_number: Option<String>,
+    pub from_connection: Option<String>,
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TriggerTestEventResponse {
     pub event: TestEventFixture,
-    pub session: String,
+    pub connection: String,
     pub delivery: TestDelivery,
     pub event_id: Option<String>,
     pub source: TestEventSource,
@@ -101,7 +101,7 @@ pub struct TestingPhoneDevice {
 }
 #[derive(Clone, Debug, Deserialize, Serialize)]
 pub struct TestingPhone {
-    pub session: String,
+    pub connection: String,
     pub phone: String,
     pub online: bool,
     pub devices: Vec<TestingPhoneDevice>,
@@ -114,7 +114,7 @@ pub struct SendTestingPhoneMessageRequest {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SendTestingPhoneMessageResponse {
-    pub session: String,
+    pub connection: String,
     pub to: String,
     #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub message_id: Option<String>,
@@ -122,7 +122,7 @@ pub struct SendTestingPhoneMessageResponse {
 #[derive(Clone, Debug, Deserialize, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct UnlinkTestingPhoneDeviceResponse {
-    pub session: String,
+    pub connection: String,
     pub device_id: u8,
     pub unlinked: bool,
 }
@@ -164,8 +164,8 @@ impl CloudOnboarding<'_> {
 fn project_path(project: &str) -> String {
     format!("/messaging/projects/{}", encode(project))
 }
-fn phone_path(session: &str) -> String {
-    format!("/messaging/{}/phone", encode(session))
+fn phone_path(connection: &str) -> String {
+    format!("/messaging/{}/phone", encode(connection))
 }
 impl Testing<'_> {
     pub async fn create_history_fixture(
@@ -187,7 +187,7 @@ impl Testing<'_> {
     }
     pub async fn trigger_event(
         &self,
-        session: &str,
+        connection: &str,
         body: &TriggerTestEventRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<TriggerTestEventResponse>> {
@@ -195,7 +195,7 @@ impl Testing<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("/messaging/{}/test-events", encode(session)),
+                &format!("/messaging/{}/test-events", encode(connection)),
                 &[],
                 Some(body),
                 options,
@@ -211,16 +211,16 @@ impl Testing<'_> {
     }
     pub async fn get_phone(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<TestingPhone>> {
         self.0.server()?;
-        let response = self.0.get(&phone_path(session), options).await?;
+        let response = self.0.get(&phone_path(connection), options).await?;
         phone_response(response, 200, true)
     }
     pub async fn send_phone_message(
         &self,
-        session: &str,
+        connection: &str,
         body: &SendTestingPhoneMessageRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SendTestingPhoneMessageResponse>> {
@@ -229,7 +229,7 @@ impl Testing<'_> {
             .0
             .request(
                 Method::POST,
-                &format!("{}/messages", phone_path(session)),
+                &format!("{}/messages", phone_path(connection)),
                 &[],
                 Some(body),
                 options,
@@ -239,7 +239,7 @@ impl Testing<'_> {
     }
     pub async fn unlink_phone_device(
         &self,
-        session: &str,
+        connection: &str,
         device: u8,
         options: RequestOptions,
     ) -> Result<ApiResponse<UnlinkTestingPhoneDeviceResponse>> {
@@ -255,7 +255,7 @@ impl Testing<'_> {
             .0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/devices/{device}/unlink", phone_path(session)),
+                &format!("{}/devices/{device}/unlink", phone_path(connection)),
                 &[],
                 None,
                 options,

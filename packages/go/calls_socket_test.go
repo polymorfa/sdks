@@ -16,7 +16,7 @@ import (
 func TestCallsLifecycleNativeSocket(t *testing.T) {
 	done := make(chan error, 1)
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.URL.Path != "/voip/ws" || r.URL.Query().Get("session") != "support" || r.URL.Query().Get("participant") != "worker" || r.Header.Get("Authorization") != "" || r.URL.Query().Get("token") != "" {
+		if r.URL.Path != "/voip/ws" || r.URL.Query().Get("connection") != "support" || r.URL.Query().Get("participant") != "worker" || r.Header.Get("Authorization") != "" || r.URL.Query().Get("token") != "" {
 			t.Error("lifecycle URL/header boundary", r.URL, r.Header)
 		}
 		conn, err := websocket.Accept(w, r, nil)
@@ -38,7 +38,7 @@ func TestCallsLifecycleNativeSocket(t *testing.T) {
 		if auth.Type != "auth" || auth.Token != teamConfig("").Credential.Value {
 			t.Error("first message authentication")
 		}
-		wsjson.Write(ctx, conn, LifecycleFrame{Type: "ready", Session: "support", Participant: "worker"})
+		wsjson.Write(ctx, conn, LifecycleFrame{Type: "ready", Connection: "support", Participant: "worker"})
 		wsjson.Write(ctx, conn, LifecycleFrame{Type: "future_frame"})
 		wsjson.Write(ctx, conn, LifecycleFrame{Type: "event", Event: "call.offer", CallID: "call", Timestamp: "today", Payload: json.RawMessage(`{"direction":"inbound"}`)})
 		var candidate LifecycleFrame
@@ -51,7 +51,7 @@ func TestCallsLifecycleNativeSocket(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support", Participant: "worker"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Connection: "support", Participant: "worker"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -148,7 +148,7 @@ func TestCallsMediaNativeSocket(t *testing.T) {
 	defer s.Close()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
-	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support", Participant: "worker"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Connection: "support", Participant: "worker"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -206,7 +206,7 @@ func TestCallsAuthAndCodecFailures(t *testing.T) {
 		wsjson.Write(r.Context(), conn, LifecycleFrame{Type: "error", Code: "invalid_token", Message: "Refused"})
 	}))
 	defer s.Close()
-	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Session: "support"})
+	client, err := NewCallsClient(CallsClientConfig{Config: teamConfig(s.URL), Connection: "support"})
 	if err != nil {
 		t.Fatal(err)
 	}

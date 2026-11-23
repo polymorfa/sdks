@@ -16,7 +16,8 @@ export type WhatsAppMessageIds =
   | { readonly linked_devices: string; readonly official_api?: string }
   | { readonly linked_devices?: string; readonly official_api: string };
 
-export type MessagingConnection = "linked_device" | "cloud_api";
+export type ConnectionMethodKind = "linked_device" | "cloud_api";
+export type ConnectionMethod = ConnectionMethodKind | "hybrid";
 export type BartenderMode = "magic" | "passthrough" | "passthrough_plus";
 
 export interface CloudApiCredentials {
@@ -29,21 +30,23 @@ export interface CloudApiCredentials {
   readonly webhookVerifyToken: string;
 }
 
-export type { HistorySyncPolicy } from "./session-configuration.js";
+export type { HistorySyncPolicy } from "./connection-configuration.js";
 
-export interface Session {
+export interface Connection {
   readonly signalMode?: SignalCustodyMode;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly name: string;
   readonly externalId?: string;
   readonly tenantId: string;
-  readonly type: MessagingConnection;
+  readonly type: "whatsapp";
+  readonly method: ConnectionMethod;
+  readonly phoneNumberId?: string;
   readonly testMode: boolean;
   readonly status: string;
   readonly statusReason?: string;
-  readonly configuration?: import("./session-configuration.js").SessionConfigurationView;
+  readonly configuration?: import("./connection-configuration.js").ConnectionConfigurationView;
   /**
-   * WhatsApp's per-number new-chat cap. Returned by `sessions.retrieve` for
+   * WhatsApp's per-number new-chat cap. Returned by `connections.retrieve` for
    * linked-device numbers only; `null` until Polymorfa observed the number.
    */
   readonly newChatCapping?: NewChatCapping | null;
@@ -70,12 +73,12 @@ export interface NewChatCapping {
   readonly observedAt: string;
 }
 
-export interface UpdateSessionRequest {
-  readonly configuration: import("./session-configuration.js").SessionConfigurationPatch;
+export interface UpdateConnectionRequest {
+  readonly configuration: import("./connection-configuration.js").ConnectionConfigurationPatch;
   readonly revision: number;
 }
 
-export interface SessionOperation extends Session {
+export interface ConnectionOperation extends Connection {
   readonly operationId?: string;
 }
 
@@ -254,7 +257,7 @@ export type CampaignFollowUpStatus =
 export interface CampaignFollowUpSummary {
   readonly id: string;
   /** The number that sent the first message and sends the follow-up. */
-  readonly numberId: string;
+  readonly connectionId: string;
   readonly status: CampaignFollowUpStatus;
   /** Which receipt timed the follow-up; null before the first receipt. */
   readonly anchorKind: "delivered" | "read" | null;
@@ -652,12 +655,12 @@ export interface CallPeer {
   readonly username?: string;
 }
 
-/** One call on a number, read from the number's data region. */
-export interface SessionCallRecord {
+/** One call on a Connection, read from its data region. */
+export interface ConnectionCallRecord {
   readonly callId: string;
   readonly projectId: string;
-  /** The number's session name. */
-  readonly sessionId: string;
+  /** The Connection selector. */
+  readonly connectionId: string;
   readonly direction: "inbound" | "outbound";
   readonly upstream: "linked_device" | "cloud_api";
   readonly outcome:
@@ -673,21 +676,21 @@ export interface SessionCallRecord {
   readonly endReason: string | null;
 }
 
-export interface ListSessionCallsParams {
+export interface ListConnectionCallsParams {
   /** 1 to 100; default 25. */
   readonly limit?: number;
   readonly cursor?: string;
   readonly direction?: "inbound" | "outbound";
-  readonly outcome?: SessionCallRecord["outcome"];
+  readonly outcome?: ConnectionCallRecord["outcome"];
   /** Calls started at or after this ISO 8601 time. */
   readonly since?: string;
   /** Calls started before this ISO 8601 time. */
   readonly until?: string;
 }
 
-export interface ListSessionCallsResponse {
+export interface ListConnectionCallsResponse {
   readonly success: true;
-  readonly data: readonly SessionCallRecord[];
+  readonly data: readonly ConnectionCallRecord[];
   readonly nextCursor: string | null;
 }
 
@@ -1409,7 +1412,7 @@ export type GetBusinessProfileResponse = SuccessEnvelope<BusinessProfile>;
 
 export interface MessagingMediaInfo {
   readonly id: string;
-  readonly session: string;
+  readonly connection: string;
   readonly messageId: string;
   readonly mimeType: string;
   readonly fileLength: number;
@@ -1421,8 +1424,8 @@ export type GetMessagingMediaInfoResponse = SuccessEnvelope<MessagingMediaInfo>;
 
 export type ObservationMode = "off" | "events" | "cache";
 export type LabelObservationMode = ObservationMode | "project";
-export type SessionObservationMode = ObservationMode | "inherit";
-export type SessionLabelObservationMode = LabelObservationMode | "inherit";
+export type ConnectionObservationMode = ObservationMode | "inherit";
+export type ConnectionLabelObservationMode = LabelObservationMode | "inherit";
 
 export const PRESENCE_STATES = ["available", "unavailable"] as const;
 export const PRESENCE_OBSERVATION_STATUSES = [
@@ -1659,26 +1662,26 @@ export interface ProjectObservationPolicy {
   readonly quickReplyMode?: ObservationMode;
 }
 
-export interface SessionObservationPolicyValues {
+export interface ConnectionObservationPolicyValues {
   readonly presenceMode: ObservationMode;
   readonly typingMode: ObservationMode;
   readonly labelMode: LabelObservationMode;
   readonly quickReplyMode?: ObservationMode;
 }
 
-export interface SessionObservationPolicyOverrides {
-  readonly presenceMode: SessionObservationMode;
-  readonly typingMode: SessionObservationMode;
-  readonly labelMode: SessionLabelObservationMode;
-  readonly quickReplyMode?: SessionObservationMode;
+export interface ConnectionObservationPolicyOverrides {
+  readonly presenceMode: ConnectionObservationMode;
+  readonly typingMode: ConnectionObservationMode;
+  readonly labelMode: ConnectionLabelObservationMode;
+  readonly quickReplyMode?: ConnectionObservationMode;
 }
 
-export interface SessionObservationPolicy {
-  readonly sessionName: string;
+export interface ConnectionObservationPolicy {
+  readonly connectionName: string;
   readonly projectId: string;
-  readonly project: SessionObservationPolicyValues;
-  readonly override: SessionObservationPolicyOverrides;
-  readonly effective: SessionObservationPolicyValues;
+  readonly project: ConnectionObservationPolicyValues;
+  readonly override: ConnectionObservationPolicyOverrides;
+  readonly effective: ConnectionObservationPolicyValues;
 }
 
 export interface UpdateProjectObservationPolicyRequest {
@@ -1687,20 +1690,20 @@ export interface UpdateProjectObservationPolicyRequest {
   readonly labelMode?: LabelObservationMode;
 }
 
-export interface UpdateSessionObservationPolicyRequest {
-  readonly presenceMode: SessionObservationMode;
-  readonly typingMode: SessionObservationMode;
-  readonly labelMode?: SessionLabelObservationMode;
+export interface UpdateConnectionObservationPolicyRequest {
+  readonly presenceMode: ConnectionObservationMode;
+  readonly typingMode: ConnectionObservationMode;
+  readonly labelMode?: ConnectionLabelObservationMode;
 }
 
 export type GetProjectObservationPolicyResponse =
   SuccessEnvelope<ProjectObservationPolicy>;
 export type UpdateProjectObservationPolicyResponse =
   SuccessEnvelope<ProjectObservationPolicy>;
-export type GetSessionObservationPolicyResponse =
-  SuccessEnvelope<SessionObservationPolicy>;
-export type UpdateSessionObservationPolicyResponse =
-  SuccessEnvelope<SessionObservationPolicy>;
+export type GetConnectionObservationPolicyResponse =
+  SuccessEnvelope<ConnectionObservationPolicy>;
+export type UpdateConnectionObservationPolicyResponse =
+  SuccessEnvelope<ConnectionObservationPolicy>;
 
 export interface BusinessQuickReplyMutation {
   readonly shortcut: string;
@@ -1823,14 +1826,14 @@ export type GetGroupParticipantsResponse = SuccessEnvelope<
   readonly GroupParticipant[]
 >;
 
-/** Hybrid Link requires server-authorized availability on the Number. */
+/** Hybrid Link requires server-authorized availability on the Connection. */
 export type MessageTransport = "auto" | "linked_devices" | "official_api";
 export type MessageRoutingReason =
   | "explicit_transport"
   | "template"
   | "target_reference"
   | "only_eligible_transport"
-  | "session_rule"
+  | "connection_rule"
   | "project_rule"
   | "team_rule"
   | "default_linked_devices";
@@ -1927,9 +1930,9 @@ interface MintClientTokenBase {
   readonly ttlSeconds?: number;
 }
 
-/** A token limited to one session. */
-export interface MintSessionClientTokenRequest extends MintClientTokenBase {
-  readonly session: string;
+/** A token limited to one connection. */
+export interface MintConnectionClientTokenRequest extends MintClientTokenBase {
+  readonly connection: string;
   readonly customer?: never;
   readonly allow?: readonly (CustomerClientTokenAction | "mcp")[];
 }
@@ -1937,18 +1940,18 @@ export interface MintSessionClientTokenRequest extends MintClientTokenBase {
 /**
  * A token covering the numbers one Customer owns when it is minted (beta).
  * Each request also requires that the Customer still owns the number and
- * passes that session's client rules. Requires `customers:read`.
+ * passes that connection's client rules. Requires `customers:read`.
  */
 export interface MintCustomerClientTokenRequest extends MintClientTokenBase {
   /** Polymorfa Customer ID. Never pass your own external ID. */
   readonly customer: string;
   /** Immutable action ceiling. Omission uses the original Customer action set. */
   readonly allow?: readonly CustomerClientTokenAction[];
-  readonly session?: never;
+  readonly connection?: never;
 }
 
 export type MintClientTokenRequest =
-  MintSessionClientTokenRequest | MintCustomerClientTokenRequest;
+  MintConnectionClientTokenRequest | MintCustomerClientTokenRequest;
 
 export interface ClientTokenValue {
   readonly token: string;
@@ -2002,7 +2005,7 @@ export type ClientAction =
   | "voip_answer"
   | "voip_signal";
 
-/** Rules as returned by `GET /platform/sessions/{session}/client-rules`. */
+/** Rules as returned by `GET /platform/connections/{connection}/client-rules`. */
 export interface ClientRules {
   /**
    * Who client tokens may send to. Rules saved before `verified` was retired
@@ -2072,8 +2075,8 @@ export interface VoipPlaceCallRequest {
   readonly participants?: readonly string[];
   /** Public group ID; mutually exclusive with to and participants. */
   readonly groupId?: string;
-  /** Session that places the call. Required with a server credential. */
-  readonly session?: string;
+  /** Connection that places the call. Required with a server credential. */
+  readonly connection?: string;
   readonly video?: boolean;
   /** Claim the call for the placing participant. */
   readonly exclusive?: boolean;
@@ -2082,7 +2085,7 @@ export interface VoipPlaceCallRequest {
 
 export interface VoipPlaceCallResult {
   readonly callId: string;
-  readonly session: string;
+  readonly connection: string;
   readonly video: boolean;
 }
 
@@ -2090,7 +2093,7 @@ export type VoipPlaceCallResponse = SuccessEnvelope<VoipPlaceCallResult>;
 
 /** Server credentials only. Creates a reusable link without joining a call. */
 export interface VoipCreateCallLinkRequest {
-  readonly session: string;
+  readonly connection: string;
   readonly video?: boolean;
 }
 
@@ -2100,18 +2103,18 @@ export interface VoipPreviewCallLinkRequest extends VoipCreateCallLinkRequest {
 }
 
 export interface VoipCreatedCallLink {
-  readonly session: string;
+  readonly connection: string;
   readonly token: string;
   readonly url: string;
   readonly video: boolean;
 }
 
 export interface VoipPreviewedCallLink {
-  readonly session: string;
+  readonly connection: string;
   readonly video: boolean;
   readonly creator: ConversationIdentity;
   readonly approvalRequired: boolean;
-  /** WhatsApp-reported role for this Number, not an API permission grant. */
+  /** WhatsApp-reported role for this Connection, not an API permission grant. */
   readonly isAdmin: boolean;
 }
 
@@ -2243,14 +2246,14 @@ export interface VoipParticipant {
 
 export type VoipAddParticipantResponse = SuccessEnvelope<VoipParticipant>;
 
-/** Call settings for one session (`/platform/sessions/{session}/call-settings`). */
-export interface SessionCallSettings {
+/** Call settings for one connection (`/platform/connections/{connection}/call-settings`). */
+export interface ConnectionCallSettings {
   /** Read-only RFC3339 exclusion end, or null. Null is not a coverage guarantee. */
   readonly simultaneousCallsCoverageExcludedUntil: string | null;
   /**
-   * Whether the session can place, answer and receive calls. While `false`,
+   * Whether the connection can place, answer and receive calls. While `false`,
    * those actions fail with `calls_disabled`, incoming calls are declined and
-   * SIP trunks cannot call through the session. Calls in progress continue.
+   * SIP trunks cannot call through the connection. Calls in progress continue.
    */
   readonly callsEnabled: boolean;
   /**
@@ -2272,26 +2275,26 @@ export interface SessionCallSettings {
   /** Whether an answer from the SIP trunk claims the call. `true` by default. */
   readonly sipClaim: boolean;
   /**
-   * On a Cloud API session, whether Polymorfa Calls answers incoming calls.
-   * `false` by default: your Graph API integration answers them. Sessions on a
+   * On a Cloud API connection, whether Polymorfa Calls answers incoming calls.
+   * `false` by default: your Graph API integration answers them. Connections on a
    * linked device ignore it.
    */
   readonly hostCloudApiCalls: boolean;
   /**
-   * Simultaneous calls, `false` by default. When `true`, this Number holds
+   * Simultaneous calls, `false` by default. When `true`, this Connection holds
    * unlimited concurrent calls (incoming, placed and campaign calls).
-   * Linked-device Numbers only; Cloud API Numbers ignore it. WhatsApp's own
+   * Linked-device Connections only; Cloud API Connections ignore it. WhatsApp's own
    * apps never hold two calls at once, so this behavior is unusual for a
    * WhatsApp account. It voids Ban Insurance: a ban whose 30-day window
    * overlaps any period this setting was on is not refunded.
    */
   readonly simultaneousCalls: boolean;
   /**
-   * Increases on every change; `0` while the session uses the defaults. Send
+   * Increases on every change; `0` while the connection uses the defaults. Send
    * it as `expectedRevision` so an update cannot overwrite another change.
    */
   readonly revision: number;
-  /** ISO 8601 timestamp of the last change, or `null` while the session uses the defaults. */
+  /** ISO 8601 timestamp of the last change, or `null` while the connection uses the defaults. */
   readonly updatedAt: string | null;
 }
 
@@ -2301,8 +2304,8 @@ export type CallInboundRoute = "clients" | "sip_trunk";
  * Changes the settings you send; omitted settings keep their values. Send at
  * least one setting.
  */
-export interface UpdateSessionCallSettingsRequest {
-  /** `false` turns calling off for the session; `true` turns it back on. */
+export interface UpdateConnectionCallSettingsRequest {
+  /** `false` turns calling off for the connection; `true` turns it back on. */
   readonly callsEnabled?: boolean;
   /**
    * `true` lets the participants you connect hear each other as well as the
@@ -2312,15 +2315,15 @@ export interface UpdateSessionCallSettingsRequest {
   /** Where incoming WhatsApp calls ring. `clients` clears the trunk. */
   readonly inboundRoute?: CallInboundRoute;
   /**
-   * A trunk of the session's project with direction `outbound` or `both`.
+   * A trunk of the connection's project with direction `outbound` or `both`.
    * Required when switching to `sip_trunk`; omit it to keep the stored trunk.
    */
   readonly sipTrunkId?: string | null;
   readonly sipClaim?: boolean;
-  /** `true` has Polymorfa Calls answer a Cloud API session's incoming calls. */
+  /** `true` has Polymorfa Calls answer a Cloud API connection's incoming calls. */
   readonly hostCloudApiCalls?: boolean;
   /**
-   * `true` lets this linked-device Number hold unlimited concurrent calls;
+   * `true` lets this linked-device Connection hold unlimited concurrent calls;
    * `false` returns it to one call at a time. Applies to calls that start
    * after the change. Turning it on requires `acknowledgeRisk: true` and a
    * team API key (a project token is refused with `permission_denied`). It
@@ -2331,7 +2334,7 @@ export interface UpdateSessionCallSettingsRequest {
   /**
    * Required as `true` when the update turns `simultaneousCalls` on: confirms
    * that you accept the unusual-behavior risk and the loss of Ban Insurance
-   * for this Number. Sent alone, it is not a change. Later updates to other
+   * for this Connection. Sent alone, it is not a change. Later updates to other
    * settings need no new acknowledgment.
    */
   readonly acknowledgeRisk?: boolean;
@@ -2342,7 +2345,8 @@ export interface UpdateSessionCallSettingsRequest {
   readonly expectedRevision?: number;
 }
 
-export type SessionCallSettingsResponse = SuccessEnvelope<SessionCallSettings>;
+export type ConnectionCallSettingsResponse =
+  SuccessEnvelope<ConnectionCallSettings>;
 
 /** A person's call permission on a Cloud API number. */
 export type CallPermissionStatus =
@@ -2401,7 +2405,7 @@ export interface CallPermissionState {
   } | null;
 }
 
-/** `GET /messaging/{session}/call-permissions/{to}`. */
+/** `GET /messaging/{connection}/call-permissions/{to}`. */
 export interface CallPermission extends CallPermissionState {
   readonly conversation: ConversationIdentity;
 }
@@ -2410,8 +2414,8 @@ export type CallPermissionResponse = SuccessEnvelope<CallPermission>;
 
 /** Body for `POST /messaging/voip/calls/check`. */
 export interface VoipCheckCallRequest {
-  /** The session (number) that would place the call. */
-  readonly session: string;
+  /** The connection (number) that would place the call. */
+  readonly connection: string;
   /** User ID or phone number in E.164 format. */
   readonly to: string;
 }
@@ -2434,10 +2438,10 @@ export interface VoipCallCheck {
 
 export type VoipCheckCallResponse = SuccessEnvelope<VoipCallCheck>;
 
-export type ListSessionsResponse = SuccessEnvelope<readonly Session[]>;
-export type GetSessionResponse = SuccessEnvelope<Session>;
-export type UpdateSessionResponse = SuccessEnvelope<Session>;
-export type GetSessionAccountResponse = SuccessEnvelope<WhatsAppAccount>;
+export type ListConnectionsResponse = SuccessEnvelope<readonly Connection[]>;
+export type GetConnectionResponse = SuccessEnvelope<Connection>;
+export type UpdateConnectionResponse = SuccessEnvelope<Connection>;
+export type GetConnectionAccountResponse = SuccessEnvelope<WhatsAppAccount>;
 
 export type MessageKind =
   | "text"
@@ -2828,7 +2832,7 @@ export type PixKeyType = "CPF" | "CNPJ" | "EMAIL" | "PHONE" | "EVP";
 
 /**
  * A Brazil order with payment instructions (payment orders beta, Official API
- * Numbers only). Polymorfa validates and relays the order; it does not
+ * Connections only). Polymorfa validates and relays the order; it does not
  * collect, hold or confirm funds. Use a new `referenceId` for every order.
  */
 export interface PixDynamicCodePayment {
@@ -2879,7 +2883,7 @@ export interface OrderDetailsItemization {
 
 /**
  * A Brazil order with payment instructions (payment orders beta, Official API
- * Numbers only). Polymorfa validates and relays the order; it does not
+ * Connections only). Polymorfa validates and relays the order; it does not
  * collect, hold or confirm funds. Use a new `referenceId` for every order.
  */
 export type OrderDetailsMessageContent = {
@@ -3018,7 +3022,7 @@ export interface SeenRequest {
 
 export interface TypingRequest {
   readonly conversation: ConversationReference;
-  /** Required on Official Numbers: an inbound message to mark read while showing typing. */
+  /** Required on Official Connections: an inbound message to mark read while showing typing. */
   readonly id?: string;
   readonly state: "typing" | "recording" | "paused";
 }
@@ -3050,7 +3054,7 @@ export interface WebhookHeader {
 export interface Webhook {
   readonly id: string;
   readonly tenantId: string;
-  readonly session?: string;
+  readonly connection?: string;
   readonly url: string;
   readonly events: readonly string[];
   readonly retries: WebhookRetryConfig;
@@ -3059,7 +3063,7 @@ export interface Webhook {
   readonly format?: "native" | "meta";
   /**
    * First day without the phone on which this webhook receives
-   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * `connection.phone_offline` (7-13, default 10). WhatsApp signs the linked
    * device out on day 14. To stop the warning, leave the event out of
    * the webhook's events.
    */
@@ -3068,7 +3072,7 @@ export interface Webhook {
 }
 
 export interface CreateWebhookRequest {
-  readonly session?: string;
+  readonly connection?: string;
   readonly url: string;
   readonly events?: readonly string[];
   readonly hmacKey?: string;
@@ -3077,7 +3081,7 @@ export interface CreateWebhookRequest {
   readonly format?: "native" | "meta";
   /**
    * First day without the phone on which this webhook receives
-   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * `connection.phone_offline` (7-13, default 10). WhatsApp signs the linked
    * device out on day 14. To stop the warning, leave the event out of
    * the webhook's events.
    */
@@ -3094,7 +3098,7 @@ export interface UpdateWebhookRequest {
   readonly format?: "native" | "meta";
   /**
    * First day without the phone on which this webhook receives
-   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * `connection.phone_offline` (7-13, default 10). WhatsApp signs the linked
    * device out on day 14. To stop the warning, leave the event out of
    * the webhook's events.
    */
@@ -3219,7 +3223,7 @@ export interface PreviewProjectTemplateRequest {
 }
 
 export interface SubmitProjectTemplateRequest {
-  readonly session: string;
+  readonly connection: string;
 }
 
 export type ListProjectTemplatesResponse = SuccessEnvelope<

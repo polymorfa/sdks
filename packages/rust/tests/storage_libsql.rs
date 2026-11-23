@@ -27,7 +27,7 @@ fn row(id: &str) -> StoredRow {
     let mut row = empty_row(
         Entity::Messages,
         &RowKey::from([
-            ("sessionId".into(), "native-libsql".into()),
+            ("connectionId".into(), "native-libsql".into()),
             ("messageId".into(), id.into()),
         ]),
     )
@@ -107,7 +107,7 @@ async fn native_remote_libsql_schema2_conformance_and_rollback() {
     let contact = empty_row(
         Entity::Contacts,
         &RowKey::from([
-            ("sessionId".into(), "native-libsql".into()),
+            ("connectionId".into(), "native-libsql".into()),
             ("contactId".into(), "private-row".into()),
         ]),
     )

@@ -58,7 +58,7 @@ DRAFT = {
 CLOUD = {
     "id": "template_1",
     "tenantId": "team_1",
-    "session": "support",
+    "connection": "support",
     "wabaId": "123",
     "name": "welcome",
     "language": "en_US",
@@ -132,10 +132,10 @@ CASES = [
     (
         "POST",
         "/messaging/projects/support/templates/draft_1/submit",
-        {"session": "support"},
+        {"connection": "support"},
         {},
         {"success": True, "data": {"accepted": True, "operationId": "op_1"}},
-        lambda c: c.templates.submit("support", "draft_1", {"session": "support"}),
+        lambda c: c.templates.submit("support", "draft_1", {"connection": "support"}),
     ),
     (
         "GET",
@@ -259,7 +259,7 @@ async def test_typed_templates_and_graph(method, path, body, query, fixture, inv
 @pytest.mark.parametrize(
     "invoke",
     [
-        lambda c, o: c.templates.submit("support", "draft_1", {"session": "support"}, options=o),
+        lambda c, o: c.templates.submit("support", "draft_1", {"connection": "support"}, options=o),
         lambda c, o: c.cloud_templates.create("support", CLOUD_CREATE, options=o),
         lambda c, o: c.cloud_templates.update("support", "welcome", {"components": []}, options=o),
         lambda c, o: c.cloud_templates.delete("support", "welcome", options=o),

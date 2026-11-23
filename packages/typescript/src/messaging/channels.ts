@@ -27,76 +27,76 @@ export class ChannelsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListChannelsResponse>> {
     return this.transport.request({
       method: "GET",
-      path: channelsPath(session),
+      path: channelsPath(connection),
       ...options,
     });
   }
 
   create(
-    session: string,
+    connection: string,
     body: CreateChannelRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateChannelResponse>> {
     return this.transport.request({
       method: "POST",
-      path: channelsPath(session),
+      path: channelsPath(connection),
       body,
       ...options,
     });
   }
 
   retrieve(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetChannelResponse>> {
     return this.transport.request({
       method: "GET",
-      path: channelPath(session, channelId),
+      path: channelPath(connection, channelId),
       ...options,
     });
   }
 
   delete(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DeleteChannelResponse>> {
     return this.transport.request({
       method: "DELETE",
-      path: channelPath(session, channelId),
+      path: channelPath(connection, channelId),
       ...options,
     });
   }
 
   listMessages(
-    session: string,
+    connection: string,
     channelId: string,
     params: ChannelMessagesParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListChannelMessagesResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${channelPath(session, channelId)}/messages`,
+      path: `${channelPath(connection, channelId)}/messages`,
       query: { count: params.count, before: params.before },
       ...options,
     });
   }
 
   listMessageUpdates(
-    session: string,
+    connection: string,
     channelId: string,
     params: ChannelMessageUpdatesParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListChannelMessageUpdatesResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${channelPath(session, channelId)}/message-updates`,
+      path: `${channelPath(connection, channelId)}/message-updates`,
       query: {
         count: params.count,
         since: params.since,
@@ -107,13 +107,13 @@ export class ChannelsResource {
   }
 
   markMessageViewed(
-    session: string,
+    connection: string,
     channelId: string,
     messageId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<MarkChannelMessageViewedResponse>> {
     return this.messageAction(
-      session,
+      connection,
       channelId,
       messageId,
       "viewed",
@@ -123,14 +123,14 @@ export class ChannelsResource {
   }
 
   reactToMessage(
-    session: string,
+    connection: string,
     channelId: string,
     messageId: string,
     body: ChannelReactionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ReactToChannelMessageResponse>> {
     return this.messageAction(
-      session,
+      connection,
       channelId,
       messageId,
       "reaction",
@@ -140,64 +140,64 @@ export class ChannelsResource {
   }
 
   subscribeToLiveUpdates(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ChannelLiveUpdatesResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `${channelPath(session, channelId)}/live-updates`,
+      path: `${channelPath(connection, channelId)}/live-updates`,
       ...options,
     });
   }
 
   follow(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FollowChannelResponse>> {
-    return this.channelAction(session, channelId, "follow", options);
+    return this.channelAction(connection, channelId, "follow", options);
   }
 
   unfollow(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UnfollowChannelResponse>> {
-    return this.channelAction(session, channelId, "unfollow", options);
+    return this.channelAction(connection, channelId, "unfollow", options);
   }
 
   mute(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<MuteChannelResponse>> {
-    return this.channelAction(session, channelId, "mute", options);
+    return this.channelAction(connection, channelId, "mute", options);
   }
 
   unmute(
-    session: string,
+    connection: string,
     channelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<UnmuteChannelResponse>> {
-    return this.channelAction(session, channelId, "unmute", options);
+    return this.channelAction(connection, channelId, "unmute", options);
   }
 
   private channelAction<Status extends ChannelActionStatus>(
-    session: string,
+    connection: string,
     channelId: string,
     action: "follow" | "unfollow" | "mute" | "unmute",
     options: RequestOptions,
   ): Promise<ApiResponse<ChannelActionResponse<Status>>> {
     return this.transport.request({
       method: "POST",
-      path: `${channelPath(session, channelId)}/${action}`,
+      path: `${channelPath(connection, channelId)}/${action}`,
       ...options,
     });
   }
 
   private messageAction<Status extends ChannelActionStatus>(
-    session: string,
+    connection: string,
     channelId: string,
     messageId: string,
     action: "viewed" | "reaction",
@@ -206,17 +206,17 @@ export class ChannelsResource {
   ): Promise<ApiResponse<ChannelActionResponse<Status>>> {
     return this.transport.request({
       method: "POST",
-      path: `${channelPath(session, channelId)}/messages/${encodeURIComponent(messageId)}/${action}`,
+      path: `${channelPath(connection, channelId)}/messages/${encodeURIComponent(messageId)}/${action}`,
       ...(body === undefined ? {} : { body }),
       ...options,
     });
   }
 }
 
-function channelsPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/channels`;
+function channelsPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/channels`;
 }
 
-function channelPath(session: string, channelId: string): string {
-  return `${channelsPath(session)}/${encodeURIComponent(channelId)}`;
+function channelPath(connection: string, channelId: string): string {
+  return `${channelsPath(connection)}/${encodeURIComponent(channelId)}`;
 }

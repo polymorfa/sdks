@@ -4,7 +4,7 @@ using System.Text.Json;
 namespace Polymorfa.Sdk;
 
 public abstract record CallSocketFrame;
-public sealed record CallReady(string? Session, string? Participant, int? SampleRate, bool? Video, string? CallId, string? ConnectionId) : CallSocketFrame;
+public sealed record CallReady(string? Connection, string? Participant, int? SampleRate, bool? Video, string? CallId, string? ConnectionId) : CallSocketFrame;
 public sealed record CallLifecycleEvent(string Event, string CallId, JsonElement Payload, string Timestamp) : CallSocketFrame;
 public sealed record CallTrickleCandidate(string Candidate, string? SdpMid = null, double? SdpMLineIndex = null);
 public sealed record CallCandidate(string CallId, string? ConnectionId, CallTrickleCandidate Candidate) : CallSocketFrame;
@@ -54,7 +54,7 @@ public static class CallsProtocol
             var type = S("type"); var id = S("requestId");
             if (type == "pong") return new CallPong();
             if (type == "error" && S("code") is { } code && OptionalString("message")) return new CallSocketError(code, S("message"));
-            if (type == "ready") { var rate = U("sampleRate"); return ((!media && OptionalString("session") && OptionalString("participant")) || (media && rate is > 0 and <= int.MaxValue && B("video") is not null && OptionalString("callId") && OptionalString("connectionId"))) ? new CallReady(S("session"), S("participant"), media ? (int)rate : null, B("video"), S("callId"), S("connectionId")) : null; }
+            if (type == "ready") { var rate = U("sampleRate"); return ((!media && OptionalString("connection") && OptionalString("participant")) || (media && rate is > 0 and <= int.MaxValue && B("video") is not null && OptionalString("callId") && OptionalString("connectionId"))) ? new CallReady(S("connection"), S("participant"), media ? (int)rate : null, B("video"), S("callId"), S("connectionId")) : null; }
             if (!media)
             {
                 if (type == "event" && S("event") is { } name && S("callId") is { } call && S("timestamp") is { } timestamp && f.TryGetProperty("payload", out var payload)) return new CallLifecycleEvent(name, call, payload.Clone(), timestamp);

@@ -44,9 +44,9 @@ final class Media extends Resource
     {
         return WhatsAppMedia::downloadStream($input, $maxBytes, 'streaming', $cancellation)->writeToFile($destination, $overwrite, $maxBytes, $cancellation);
     }
-    /** @return ApiResponse<array{success:true,data:array{id:string,session:string,messageId:string,mimeType:string,fileLength:int,persisted:bool,s3Url?:?string}}> */
+    /** @return ApiResponse<array{success:true,data:array{id:string,connection:string,messageId:string,mimeType:string,fileLength:int,persisted:bool,s3Url?:?string}}> */
     public function retrieve(string $id, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{success:true,data:array{id:string,session:string,messageId:string,mimeType:string,fileLength:int,persisted:bool,s3Url?:?string}}> */ return $this->request('GET', '/messaging/media/'.self::segment($id).'/info', options:$options);
+    { /** @var ApiResponse<array{success:true,data:array{id:string,connection:string,messageId:string,mimeType:string,fileLength:int,persisted:bool,s3Url?:?string}}> */ return $this->request('GET', '/messaging/media/'.self::segment($id).'/info', options:$options);
     }
     /** @return ApiResponse<array{success:bool,message?:string}> */
     public function persist(string $id, ?RequestOptions $options = null): ApiResponse

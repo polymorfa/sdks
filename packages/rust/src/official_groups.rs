@@ -123,16 +123,16 @@ struct JoinRequestIds<'a> {
     join_request_ids: &'a [String],
 }
 pub struct OfficialGroups<'a>(pub(crate) &'a HttpTransport);
-fn groups(session: &str) -> String {
-    format!("/messaging/{}/official-groups", encode(session))
+fn groups(connection: &str) -> String {
+    format!("/messaging/{}/official-groups", encode(connection))
 }
-fn group(session: &str, id: &str) -> String {
-    format!("{}/{}", groups(session), encode(id))
+fn group(connection: &str, id: &str) -> String {
+    format!("{}/{}", groups(connection), encode(id))
 }
 impl OfficialGroups<'_> {
     pub async fn set_picture(
         &self,
-        session: &str,
+        connection: &str,
         group: &str,
         jpeg: &[u8],
         options: RequestOptions,
@@ -154,7 +154,7 @@ impl OfficialGroups<'_> {
             .request_multipart(
                 &format!(
                     "/messaging/{}/official-groups/{}/picture",
-                    encode(session),
+                    encode(connection),
                     encode(group)
                 ),
                 &format!("multipart/form-data; boundary={boundary}"),
@@ -168,7 +168,7 @@ impl OfficialGroups<'_> {
 
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         params: &ListOfficialGroupsParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupList>>> {
@@ -184,66 +184,66 @@ impl OfficialGroups<'_> {
             query.push(("after", v.clone()));
         }
         self.0
-            .request::<_, ()>(Method::GET, &groups(session), &query, None, options)
+            .request::<_, ()>(Method::GET, &groups(connection), &query, None, options)
             .await
     }
     pub async fn create(
         &self,
-        session: &str,
+        connection: &str,
         body: &CreateOfficialGroupRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CreateOfficialGroupResult>>> {
-        self.write(Method::POST, &groups(session), Some(body), options)
+        self.write(Method::POST, &groups(connection), Some(body), options)
             .await
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroup>>> {
         self.0.server()?;
-        self.0.get(&group(session, id), options).await
+        self.0.get(&group(connection, id), options).await
     }
     pub async fn update(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &UpdateOfficialGroupRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
-        self.write(Method::PATCH, &group(session, id), Some(body), options)
+        self.write(Method::PATCH, &group(connection, id), Some(body), options)
             .await
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
-        self.write::<_, ()>(Method::DELETE, &group(session, id), None, options)
+        self.write::<_, ()>(Method::DELETE, &group(connection, id), None, options)
             .await
     }
     pub async fn get_invite_link(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupInviteLink>>> {
         self.0.server()?;
         self.0
-            .get(&format!("{}/invite-link", group(session, id)), options)
+            .get(&format!("{}/invite-link", group(connection, id)), options)
             .await
     }
     pub async fn reset_invite_link(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupInviteLink>>> {
         self.write::<_, ()>(
             Method::POST,
-            &format!("{}/invite-link/reset", group(session, id)),
+            &format!("{}/invite-link/reset", group(connection, id)),
             None,
             options,
         )
@@ -251,14 +251,14 @@ impl OfficialGroups<'_> {
     }
     pub async fn remove_participants(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         participants: &[String],
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
         self.write(
             Method::POST,
-            &format!("{}/participants/remove", group(session, id)),
+            &format!("{}/participants/remove", group(connection, id)),
             Some(&Participants { participants }),
             options,
         )
@@ -266,7 +266,7 @@ impl OfficialGroups<'_> {
     }
     pub async fn list_join_requests(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         params: &OfficialGroupCursors,
         options: RequestOptions,
@@ -282,7 +282,7 @@ impl OfficialGroups<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/join-requests", group(session, id)),
+                &format!("{}/join-requests", group(connection, id)),
                 &query,
                 None,
                 options,
@@ -291,14 +291,14 @@ impl OfficialGroups<'_> {
     }
     pub async fn approve_join_requests(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         join_request_ids: &[String],
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupJoinRequestDecision>>> {
         self.write(
             Method::POST,
-            &format!("{}/join-requests/approve", group(session, id)),
+            &format!("{}/join-requests/approve", group(connection, id)),
             Some(&JoinRequestIds { join_request_ids }),
             options,
         )
@@ -306,14 +306,14 @@ impl OfficialGroups<'_> {
     }
     pub async fn reject_join_requests(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         join_request_ids: &[String],
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupJoinRequestDecision>>> {
         self.write(
             Method::POST,
-            &format!("{}/join-requests/reject", group(session, id)),
+            &format!("{}/join-requests/reject", group(connection, id)),
             Some(&JoinRequestIds { join_request_ids }),
             options,
         )
@@ -321,14 +321,14 @@ impl OfficialGroups<'_> {
     }
     pub async fn pin(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &PinOfficialGroupMessageRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<OfficialGroupChangeAccepted>>> {
         self.write(
             Method::POST,
-            &format!("{}/pins", group(session, id)),
+            &format!("{}/pins", group(connection, id)),
             Some(body),
             options,
         )

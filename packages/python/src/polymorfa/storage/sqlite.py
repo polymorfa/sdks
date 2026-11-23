@@ -1,4 +1,4 @@
-"""Native SQLite adapter with schema2 columns interoperable with the TS adapter."""
+"""Native SQLite adapter with schema3 columns interoperable with the TS adapter."""
 
 from __future__ import annotations
 
@@ -93,12 +93,25 @@ class SqliteAdapter:
             self._owns, self._threaded = True, True
         self._lock = asyncio.Lock()
 
-    async def _run(self, operation: Callable[[], T]) -> T:
+    def _require_schema(self) -> None:
+        meta = quote_identifier(self._prefix + "storage_schema")
+        rows = self._db.execute(
+            f'SELECT "version" FROM {meta} WHERE "id"=?', ("storage",)
+        ).fetchall()
+        if len(rows) != 1 or rows[0][0] != STORAGE_SCHEMA_VERSION:
+            raise ValueError("Customer-owned storage requires an explicit schema-3 migration")
+
+    async def _run(self, operation: Callable[[], T], *, verify: bool = True) -> T:
+        def guarded() -> T:
+            if verify:
+                self._require_schema()
+            return operation()
+
         async with self._lock:
             if not self._threaded:
-                return operation()
-            # Cancellation waits for the native transaction to settle before another operation.
-            running = asyncio.create_task(asyncio.to_thread(operation))
+                return guarded()
+            # Cancellation waits for the native transaction to settle before reuse.
+            running = asyncio.create_task(asyncio.to_thread(guarded))
             try:
                 return await asyncio.shield(running)
             except asyncio.CancelledError:
@@ -111,27 +124,38 @@ class SqliteAdapter:
 
     async def setup(self) -> None:
         def operation() -> None:
-            if self._create:
-                for statement in schema_statements(self._prefix):
-                    self._db.execute(statement)
             meta = quote_identifier(self._prefix + "storage_schema")
-            rows = self._db.execute(
-                f'SELECT "version" FROM {meta} WHERE "id"=?', ("storage",)
-            ).fetchall()
-            if rows and rows[0][0] != STORAGE_SCHEMA_VERSION:
-                raise ValueError(
-                    "Customer-owned storage schema version must equal2; apply its migration explicitly"
-                )
-            if not rows:
-                if not self._create:
-                    raise ValueError("Customer-owned storage schema2 is not initialized")
-                self._db.execute(
-                    f'INSERT INTO {meta} ("id","version") VALUES (?,?)',
-                    ("storage", STORAGE_SCHEMA_VERSION),
-                )
+            try:
+                rows = self._db.execute(
+                    f'SELECT "version" FROM {meta} WHERE "id"=?', ("storage",)
+                ).fetchall()
+            except sqlite3.OperationalError as error:
+                if "no such table:" not in str(error):
+                    raise
+                rows = []
+            if rows:
+                self._require_schema()
+                for entity in ENTITY_NAMES:
+                    self._db.execute(f"SELECT connection_id FROM {self._table(entity)} LIMIT 0")
+                return
+            if not self._create:
+                raise ValueError("Customer-owned storage schema-3 is not initialized")
+            for existing_table in (*ENTITY_NAMES, "sessions"):
+                name = self._prefix + existing_table
+                if self._db.execute(
+                    "SELECT name FROM sqlite_master WHERE type='table' AND name=?", (name,)
+                ).fetchone():
+                    raise ValueError("Existing storage tables require an explicit migration")
+            for statement in schema_statements(self._prefix):
+                self._db.execute(statement)
+            self._db.execute(
+                f'INSERT INTO {meta} ("id","version") VALUES (?,?)',
+                ("storage", STORAGE_SCHEMA_VERSION),
+            )
             self._db.commit()
+            self._require_schema()
 
-        await self._run(operation)
+        await self._run(operation, verify=False)
 
     def _decode(
         self, entity: EntityName, columns: Sequence[str], values: Sequence[object]
@@ -296,7 +320,7 @@ class SqliteAdapter:
 
     async def close(self) -> None:
         if self._owns:
-            await self._run(self._db.close)
+            await self._run(self._db.close, verify=False)
 
 
 def sqlite_adapter(

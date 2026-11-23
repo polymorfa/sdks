@@ -10,10 +10,10 @@ public sealed record ApiKeyDeactivation(bool Ok, string KeyId);
 public sealed record ProjectToken(string Id, string Start, string Last4, string? Label, long Scopes, long? ExpiresAt, long CreatedAt, long? LastUsedAt, long? RevokedAt);
 public sealed record AuditLog(string Id, string ActorEmail, string? ActorUserId, string? ActorRole, string Action, string Resource, string? ProjectId, string? ProjectName, string? Ip, string? UserAgent, long? Duration, string? Source, string? Description, string Result, JsonElement Metadata, long CreatedAt);
 public sealed record ListAuditLogsParameters(string? Action = null, string? Resource = null, int? Limit = null);
-public sealed record SessionBan(string Id, string SessionName, int? BanCode, string? BanReason, long? BanExpiresAt, long OccurredAt, string Status);
+public sealed record ConnectionBan(string Id, string ConnectionName, int? BanCode, string? BanReason, long? BanExpiresAt, long OccurredAt, string Status);
 public sealed record SecurityIncident(string Id, string KeyId, string TokenType, string Source, string? Url, string? Ref, string Resolution, long DetectedAt, long? AcknowledgedAt, string? AcknowledgedBy, long CreatedAt);
 public sealed record SecurityIncidentAcknowledgement(bool Acknowledged);
-public sealed record MintClientTokenRequest(string EphemeralId, string? Session = null, string? Customer = null, IReadOnlyList<string>? Allow = null, int? TtlSeconds = null);
+public sealed record MintClientTokenRequest(string EphemeralId, string? Connection = null, string? Customer = null, IReadOnlyList<string>? Allow = null, int? TtlSeconds = null);
 public sealed record ClientTokenValue(string Token, string ExpiresAt) { public override string ToString() => $"ClientTokenValue(redacted, expiresAt={ExpiresAt})"; }
 public sealed record ClientRules(string RecipientMode, string AllowedActions, int RateLimit, int MaxDaily, string AllowedOrigins, int ConversationTtlSeconds, int MaxConcurrency, int MaxSetupsPerMinute, string AllowedNumber, bool Enabled);
 public sealed record SetClientRulesRequest(string RecipientMode, bool Enabled, string? AllowedActions = null, int? RateLimit = null, int? MaxDaily = null, string? AllowedOrigins = null, int? ConversationTtlSeconds = null, int? MaxConcurrency = null, int? MaxSetupsPerMinute = null, string? AllowedNumber = null);
@@ -53,33 +53,33 @@ public sealed class SecurityIncidents : Resource
     public Task<ApiResponse<DataEnvelope<IReadOnlyList<SecurityIncident>>>> ListAsync(RequestOptions? options = null) => Get<DataEnvelope<IReadOnlyList<SecurityIncident>>>("/platform/incidents", options);
     public Task<ApiResponse<DataEnvelope<SecurityIncidentAcknowledgement>>> AcknowledgeAsync(string id, RequestOptions? options = null) => Post<DataEnvelope<SecurityIncidentAcknowledgement>>("/platform/incidents/" + E(id) + "/acknowledge", null, options);
 }
-public sealed class SessionBans : Resource
+public sealed class ConnectionBans : Resource
 {
-    internal SessionBans(HttpTransport http) : base(http) { }
-    public Task<ApiResponse<DataEnvelope<IReadOnlyList<SessionBan>>>> ListAsync(RequestOptions? options = null) => Get<DataEnvelope<IReadOnlyList<SessionBan>>>("/platform/bans", options);
-    public Task<ApiResponse<DataEnvelope<IReadOnlyList<SessionBan>>>> ListActiveAsync(RequestOptions? options = null) => Get<DataEnvelope<IReadOnlyList<SessionBan>>>("/platform/bans/active", options);
+    internal ConnectionBans(HttpTransport http) : base(http) { }
+    public Task<ApiResponse<DataEnvelope<IReadOnlyList<ConnectionBan>>>> ListAsync(RequestOptions? options = null) => Get<DataEnvelope<IReadOnlyList<ConnectionBan>>>("/platform/bans", options);
+    public Task<ApiResponse<DataEnvelope<IReadOnlyList<ConnectionBan>>>> ListActiveAsync(RequestOptions? options = null) => Get<DataEnvelope<IReadOnlyList<ConnectionBan>>>("/platform/bans/active", options);
 }
 public sealed class ClientTokens : Resource
 {
     internal ClientTokens(HttpTransport http) : base(http) { }
-    private static string Path(string session) => $"/platform/sessions/{E(session)}/client-rules";
+    private static string Path(string connection) => $"/platform/connections/{E(connection)}/client-rules";
     public Task<ApiResponse<SuccessEnvelope<ClientTokenValue>>> MintAsync(MintClientTokenRequest body, RequestOptions? options = null)
     {
         Http.Credential.RequireServer();
-        if (string.IsNullOrEmpty(body.Session) == string.IsNullOrEmpty(body.Customer)) throw new PolymorfaConfigurationException("Specify exactly one session or customer.");
+        if (string.IsNullOrEmpty(body.Connection) == string.IsNullOrEmpty(body.Customer)) throw new PolymorfaConfigurationException("Specify exactly one connection or customer.");
         return Post<SuccessEnvelope<ClientTokenValue>>("/platform/client-tokens", body, options);
     }
-    public Task<ApiResponse<SuccessEnvelope<ClientRules>>> RetrieveRulesAsync(string session, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<SuccessEnvelope<ClientRules>>(Path(session), options); }
-    public Task<ApiResponse<SuccessResponse>> UpdateRulesAsync(string session, SetClientRulesRequest body, RequestOptions? options = null) { Http.Credential.RequireServer(); return Put<SuccessResponse>(Path(session), body, options); }
-    public Task<ApiResponse<SuccessResponse>> DeleteRulesAsync(string session, RequestOptions? options = null) { Http.Credential.RequireServer(); return Delete<SuccessResponse>(Path(session), options); }
+    public Task<ApiResponse<SuccessEnvelope<ClientRules>>> RetrieveRulesAsync(string connection, RequestOptions? options = null) { Http.Credential.RequireServer(); return Get<SuccessEnvelope<ClientRules>>(Path(connection), options); }
+    public Task<ApiResponse<SuccessResponse>> UpdateRulesAsync(string connection, SetClientRulesRequest body, RequestOptions? options = null) { Http.Credential.RequireServer(); return Put<SuccessResponse>(Path(connection), body, options); }
+    public Task<ApiResponse<SuccessResponse>> DeleteRulesAsync(string connection, RequestOptions? options = null) { Http.Credential.RequireServer(); return Delete<SuccessResponse>(Path(connection), options); }
 }
 public sealed class Identities : Resource
 {
     internal Identities(HttpTransport http) : base(http) { }
-    public Task<ApiResponse<SuccessEnvelope<ResolveIdentityResult>>> ResolveAsync(string session, ResolveIdentityParameters parameters, RequestOptions? options = null) => Get<SuccessEnvelope<ResolveIdentityResult>>($"/messaging/{E(session)}/identities/resolve", options, parameters);
+    public Task<ApiResponse<SuccessEnvelope<ResolveIdentityResult>>> ResolveAsync(string connection, ResolveIdentityParameters parameters, RequestOptions? options = null) => Get<SuccessEnvelope<ResolveIdentityResult>>($"/messaging/{E(connection)}/identities/resolve", options, parameters);
 }
 public sealed class Users : Resource
 {
     internal Users(HttpTransport http) : base(http) { }
-    public Task<ApiResponse<SuccessEnvelope<UserSecurityCode>>> GetSecurityCodeAsync(string session, string user, RequestOptions? options = null) => Get<SuccessEnvelope<UserSecurityCode>>($"/messaging/{E(session)}/users/{E(user)}/security-code", options);
+    public Task<ApiResponse<SuccessEnvelope<UserSecurityCode>>> GetSecurityCodeAsync(string connection, string user, RequestOptions? options = null) => Get<SuccessEnvelope<UserSecurityCode>>($"/messaging/{E(connection)}/users/{E(user)}/security-code", options);
 }

@@ -13,7 +13,8 @@ from polymorfa.webhooks import WebhookEventBatch, construct_webhook_delivery
 
 FIXTURE = json.loads(
     (
-        Path(__file__).resolve().parents[3] / "contracts/fixtures/campaign-webhook-metadata.json"
+        Path(__file__).resolve().parents[3]
+        / "contracts/fixtures/connections/campaign-webhook-metadata.json"
     ).read_text()
 )
 

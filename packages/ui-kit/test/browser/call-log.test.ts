@@ -159,7 +159,7 @@ describe("CallLogController", () => {
 });
 
 describe("createApiCallLogSource", () => {
-  it("reads the number's calls with read_calls and maps callers", async () => {
+  it("reads the Connection's calls with read_calls and maps callers", async () => {
     const calls: string[] = [];
     const fetch = vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input instanceof Request ? input.url : input);
@@ -169,7 +169,7 @@ describe("createApiCallLogSource", () => {
           audience: "browser",
           expiresAt: Date.now() + 600_000,
           grant: {
-            session: "support",
+            connection: "support",
             conversations: "all",
             allow: ["read_calls"],
           },
@@ -180,8 +180,8 @@ describe("createApiCallLogSource", () => {
         data: [
           {
             callId: "c1",
-            projectId: null,
-            sessionId: "support",
+            projectId: "project_1",
+            connectionId: "support",
             direction: "inbound",
             upstream: "linked_device",
             outcome: "in_progress",
@@ -196,8 +196,8 @@ describe("createApiCallLogSource", () => {
           },
           {
             callId: "c0",
-            projectId: null,
-            sessionId: "support",
+            projectId: "project_1",
+            connectionId: "support",
             direction: "outbound",
             upstream: "linked_device",
             outcome: "answered",
@@ -248,7 +248,7 @@ describe("createApiCallLogSource", () => {
         value: "pmfa_ct_Zml4dHVyZQ",
         audience: "browser",
         expiresAt: Date.now() + 600_000,
-        grant: { session: "support", conversations: "all", allow: [] },
+        grant: { connection: "support", conversations: "all", allow: [] },
       }),
     );
     const client = new PolymorfaClient({ fetch });

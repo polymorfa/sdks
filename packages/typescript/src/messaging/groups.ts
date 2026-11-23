@@ -26,52 +26,52 @@ export class GroupsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListGroupsResponse>> {
-    return this.get(groupsPath(session), options);
+    return this.get(groupsPath(connection), options);
   }
 
   create(
-    session: string,
+    connection: string,
     body: CreateGroupRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateGroupResponse>> {
-    return this.mutate("POST", groupsPath(session), body, options);
+    return this.mutate("POST", groupsPath(connection), body, options);
   }
 
   getJoinInfo(
-    session: string,
+    connection: string,
     code: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupJoinInfoResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `${groupsPath(session)}/join-info`,
+      path: `${groupsPath(connection)}/join-info`,
       query: { code },
       ...options,
     });
   }
 
   join(
-    session: string,
+    connection: string,
     body: JoinGroupRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.mutate("POST", `${groupsPath(session)}/join`, body, options);
+    return this.mutate("POST", `${groupsPath(connection)}/join`, body, options);
   }
 
   retrieve(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupResponse>> {
-    return this.get(groupPath(session, groupId), options);
+    return this.get(groupPath(connection, groupId), options);
   }
 
   /** Enrolled number-capabilities beta. Unknown until a group sync; no chat open. */
   getCapabilities(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupCapabilitiesResponse>> {
@@ -80,7 +80,7 @@ export class GroupsResource {
       {
         ...existingOptions(options),
         method: "GET",
-        path: `${groupPath(session, groupId)}/capabilities`,
+        path: `${groupPath(connection, groupId)}/capabilities`,
       },
       "groupCapabilities",
       true,
@@ -88,48 +88,54 @@ export class GroupsResource {
   }
 
   delete(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.mutate(
       "DELETE",
-      groupPath(session, groupId),
+      groupPath(connection, groupId),
       undefined,
       options,
     );
   }
 
   leave(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.mutate(
       "POST",
-      `${groupPath(session, groupId)}/leave`,
+      `${groupPath(connection, groupId)}/leave`,
       undefined,
       options,
     );
   }
 
   setSubject(
-    session: string,
-    groupId: string,
-    body: SetGroupFieldRequest,
-    options: RequestOptions = {},
-  ): Promise<ApiResponse<SuccessResponse>> {
-    return this.putGroupSubresource(session, groupId, "subject", body, options);
-  }
-
-  setDescription(
-    session: string,
+    connection: string,
     groupId: string,
     body: SetGroupFieldRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.putGroupSubresource(
-      session,
+      connection,
+      groupId,
+      "subject",
+      body,
+      options,
+    );
+  }
+
+  setDescription(
+    connection: string,
+    groupId: string,
+    body: SetGroupFieldRequest,
+    options: RequestOptions = {},
+  ): Promise<ApiResponse<SuccessResponse>> {
+    return this.putGroupSubresource(
+      connection,
       groupId,
       "description",
       body,
@@ -138,87 +144,93 @@ export class GroupsResource {
   }
 
   getInviteCode(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupInviteCodeResponse>> {
-    return this.get(`${groupPath(session, groupId)}/invite-code`, options);
+    return this.get(`${groupPath(connection, groupId)}/invite-code`, options);
   }
 
   revokeInviteCode(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<RevokeGroupInviteCodeResponse>> {
     return this.mutate(
       "POST",
-      `${groupPath(session, groupId)}/invite-code/revoke`,
+      `${groupPath(connection, groupId)}/invite-code/revoke`,
       undefined,
       options,
     );
   }
 
   listParticipants(
-    session: string,
+    connection: string,
     groupId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetGroupParticipantsResponse>> {
-    return this.get(`${groupPath(session, groupId)}/participants`, options);
+    return this.get(`${groupPath(connection, groupId)}/participants`, options);
   }
 
   addParticipants(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupParticipantsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.participantAction(session, groupId, "add", body, options);
+    return this.participantAction(connection, groupId, "add", body, options);
   }
 
   removeParticipants(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupParticipantsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.participantAction(session, groupId, "remove", body, options);
+    return this.participantAction(connection, groupId, "remove", body, options);
   }
 
   promoteParticipants(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupParticipantsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.adminAction(session, groupId, "promote", body, options);
+    return this.adminAction(connection, groupId, "promote", body, options);
   }
 
   demoteParticipants(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupParticipantsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.adminAction(session, groupId, "demote", body, options);
+    return this.adminAction(connection, groupId, "demote", body, options);
   }
 
   setPicture(
-    session: string,
+    connection: string,
     groupId: string,
     body: SetGroupPictureRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.putGroupSubresource(session, groupId, "picture", body, options);
+    return this.putGroupSubresource(
+      connection,
+      groupId,
+      "picture",
+      body,
+      options,
+    );
   }
 
   setInfoEditing(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupAdminOnlySettingRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.putGroupSubresource(
-      session,
+      connection,
       groupId,
       "settings/info-edit",
       body,
@@ -227,13 +239,13 @@ export class GroupsResource {
   }
 
   setMessaging(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupAdminOnlySettingRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.putGroupSubresource(
-      session,
+      connection,
       groupId,
       "settings/messages",
       body,
@@ -242,13 +254,13 @@ export class GroupsResource {
   }
 
   setMemberAddMode(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupMemberAddModeRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.putGroupSubresource(
-      session,
+      connection,
       groupId,
       "settings/member-add",
       body,
@@ -257,13 +269,13 @@ export class GroupsResource {
   }
 
   setJoinApproval(
-    session: string,
+    connection: string,
     groupId: string,
     body: GroupJoinApprovalRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.putGroupSubresource(
-      session,
+      connection,
       groupId,
       "settings/join-approval",
       body,
@@ -279,7 +291,7 @@ export class GroupsResource {
   }
 
   private putGroupSubresource<TBody>(
-    session: string,
+    connection: string,
     groupId: string,
     resource:
       | "subject"
@@ -294,14 +306,14 @@ export class GroupsResource {
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.mutate(
       "PUT",
-      `${groupPath(session, groupId)}/${resource}`,
+      `${groupPath(connection, groupId)}/${resource}`,
       body,
       options,
     );
   }
 
   private participantAction(
-    session: string,
+    connection: string,
     groupId: string,
     action: "add" | "remove",
     body: GroupParticipantsRequest,
@@ -309,14 +321,14 @@ export class GroupsResource {
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.mutate(
       "POST",
-      `${groupPath(session, groupId)}/participants/${action}`,
+      `${groupPath(connection, groupId)}/participants/${action}`,
       body,
       options,
     );
   }
 
   private adminAction(
-    session: string,
+    connection: string,
     groupId: string,
     action: "promote" | "demote",
     body: GroupParticipantsRequest,
@@ -324,7 +336,7 @@ export class GroupsResource {
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.mutate(
       "POST",
-      `${groupPath(session, groupId)}/admin/${action}`,
+      `${groupPath(connection, groupId)}/admin/${action}`,
       body,
       options,
     );
@@ -340,10 +352,10 @@ export class GroupsResource {
   }
 }
 
-function groupsPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/groups`;
+function groupsPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/groups`;
 }
 
-function groupPath(session: string, groupId: string): string {
-  return `${groupsPath(session)}/${encodeURIComponent(groupId)}`;
+function groupPath(connection: string, groupId: string): string {
+  return `${groupsPath(connection)}/${encodeURIComponent(groupId)}`;
 }

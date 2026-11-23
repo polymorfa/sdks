@@ -12,7 +12,7 @@ fn project_template() -> serde_json::Value {
     json!({"id":"template","name":"hello","category":"UTILITY","language":"en_US","status":"draft","kind":"standard","definition":definition_json(),"sampleValues":null,"cloudLinks":[{"id":"cloud"}],"createdAt":1000,"updatedAt":2000})
 }
 fn cloud_template() -> serde_json::Value {
-    json!({"id":"template","tenantId":"tenant","session":"support","wabaId":"waba","name":"hello","language":"en_US","category":"UTILITY","status":"APPROVED","components":[{"type":"BODY","text":"Hello"}],"metaTemplateId":"meta","qualityScore":"GREEN","createdAt":"2026-10-10","updatedAt":"2026-10-11"})
+    json!({"id":"template","tenantId":"tenant","connection":"support","wabaId":"waba","name":"hello","language":"en_US","category":"UTILITY","status":"APPROVED","components":[{"type":"BODY","text":"Hello"}],"metaTemplateId":"meta","qualityScore":"GREEN","createdAt":"2026-10-10","updatedAt":"2026-10-11"})
 }
 #[tokio::test]
 async fn project_draft_templates_definition_and_operations_native_wire() {
@@ -99,13 +99,13 @@ async fn project_draft_templates_definition_and_operations_native_wire() {
         client,
         "POST",
         "/messaging/projects/project/templates/template/submit",
-        Some(json!({"session":"support"})),
+        Some(json!({"connection":"support"})),
         json!({"success":true,"data":{"accepted":true,"name":"hello"}}),
         client.templates().submit(
             "project",
             "template",
             &SubmitProjectTemplateRequest {
-                session: "support".into()
+                connection: "support".into()
             },
             RequestOptions::default()
         )

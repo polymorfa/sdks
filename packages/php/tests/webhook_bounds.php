@@ -153,7 +153,7 @@ function boundedVerify(string $kind, object $request, ?int $limit = null): Polym
     };
     return $limit === null ? WebhookRequest::$method($request, 'secret') : WebhookRequest::$method($request, 'secret', $limit);
 }
-$boundedRaw = '{ "id":"bounded","session":"synthetic","timestamp":"2026-10-17T00:00:00Z","event":"future.event","payload":{"x":1}}';
+$boundedRaw = '{ "id":"bounded","connection":"synthetic","timestamp":"2026-10-17T00:00:00Z","event":"future.event","payload":{"x":1}}';
 foreach (['symfony','laravel','psr'] as $kind) {
     $request = boundedRequest($kind, $boundedRaw, ['999999999999999999999999999999999999']);
     webhookBoundError(fn () => boundedVerify($kind, $request, 200), 'webhook_body_too_large', 413);

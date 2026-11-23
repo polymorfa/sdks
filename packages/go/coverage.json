@@ -5,7 +5,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "path": "/messaging/{connection}/business/collections/{collectionId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.DeleteCollection",
       "testFile": "business_test.go"
@@ -13,7 +13,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/products/{productId}",
+      "path": "/messaging/{connection}/business/products/{productId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.DeleteProduct",
       "testFile": "business_test.go"
@@ -21,7 +21,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "path": "/messaging/{connection}/business/profile/cover-photo/{coverPhotoId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.DeleteCoverPhoto",
       "testFile": "business_test.go"
@@ -29,7 +29,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "path": "/messaging/{connection}/business/quick-replies/{quickReplyId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.Delete",
       "testFile": "observations_test.go"
@@ -37,7 +37,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/channels/{id}",
+      "path": "/messaging/{connection}/channels/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Delete",
       "testFile": "channels_test.go"
@@ -45,7 +45,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.DeleteMessage",
       "testFile": "chat_presence_privacy_test.go"
@@ -53,7 +53,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/groups/{id}",
+      "path": "/messaging/{connection}/groups/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.Delete",
       "testFile": "groups_test.go"
@@ -61,7 +61,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/labels/{labelId}",
+      "path": "/messaging/{connection}/labels/{labelId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.Delete",
       "testFile": "observations_test.go"
@@ -69,7 +69,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/official-groups/{group}",
+      "path": "/messaging/{connection}/official-groups/{group}",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.Delete",
       "testFile": "official_groups_test.go"
@@ -77,7 +77,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/profile/picture",
+      "path": "/messaging/{connection}/profile/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.DeletePicture",
       "testFile": "contacts_test.go"
@@ -85,7 +85,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/templates/{name}",
+      "path": "/messaging/{connection}/templates/{name}",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.Delete",
       "testFile": "cloud_templates_test.go"
@@ -133,7 +133,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/catalog",
+      "path": "/messaging/{connection}/business/catalog",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetCatalog",
       "testFile": "business_test.go"
@@ -141,7 +141,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/collections",
+      "path": "/messaging/{connection}/business/collections",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.ListCollections",
       "testFile": "business_test.go"
@@ -149,7 +149,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "path": "/messaging/{connection}/business/collections/{collectionId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetCollection",
       "testFile": "business_test.go"
@@ -157,7 +157,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/compliance",
+      "path": "/messaging/{connection}/business/compliance",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetMerchantCompliance",
       "testFile": "business_test.go"
@@ -165,7 +165,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/eligibility",
+      "path": "/messaging/{connection}/business/eligibility",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetEligibility",
       "testFile": "business_test.go"
@@ -173,7 +173,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/linked-accounts",
+      "path": "/messaging/{connection}/business/linked-accounts",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetLinkedAccounts",
       "testFile": "business_test.go"
@@ -181,7 +181,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/products/{productId}",
+      "path": "/messaging/{connection}/business/products/{productId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetProduct",
       "testFile": "business_test.go"
@@ -189,7 +189,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/profile",
+      "path": "/messaging/{connection}/business/profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetProfile",
       "testFile": "business_test.go"
@@ -197,7 +197,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/quick-replies",
+      "path": "/messaging/{connection}/business/quick-replies",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.List",
       "testFile": "observations_test.go"
@@ -205,7 +205,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/call-permissions/{to}",
+      "path": "/messaging/{connection}/call-permissions/{to}",
       "status": "covered",
       "sdkMethod": "MessagingClient.VoIP.RetrieveCallPermission",
       "testFile": "voip_test.go"
@@ -213,7 +213,39 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels",
+      "path": "/messaging/{connection}/calls",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ConnectionCalls.List",
+      "testFile": "connection_calls_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/catalogs",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Catalogs.List",
+      "testFile": "official_round2_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/catalogs/{catalogId}",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Catalogs.Retrieve",
+      "testFile": "official_round2_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/catalogs/{catalogId}/products",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Catalogs.ListProducts",
+      "testFile": "official_round2_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/channels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.List",
       "testFile": "channels_test.go"
@@ -221,7 +253,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels/{id}",
+      "path": "/messaging/{connection}/channels/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Retrieve",
       "testFile": "channels_test.go"
@@ -229,7 +261,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels/{id}/message-updates",
+      "path": "/messaging/{connection}/channels/{id}/message-updates",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ListMessageUpdates",
       "testFile": "channels_test.go"
@@ -237,7 +269,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels/{id}/messages",
+      "path": "/messaging/{connection}/channels/{id}/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ListMessages",
       "testFile": "channels_test.go"
@@ -245,7 +277,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats",
+      "path": "/messaging/{connection}/chats",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.List",
       "testFile": "chat_presence_privacy_test.go"
@@ -253,7 +285,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}",
+      "path": "/messaging/{connection}/chats/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.Retrieve",
       "testFile": "chat_presence_privacy_test.go"
@@ -261,7 +293,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/messages",
+      "path": "/messaging/{connection}/chats/{conversation}/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.ListMessages",
       "testFile": "chat_presence_privacy_test.go"
@@ -269,7 +301,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.RetrieveMessage",
       "testFile": "chat_presence_privacy_test.go"
@@ -277,7 +309,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}/media",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.DownloadMessageMedia",
       "testFile": "binary_system_test.go"
@@ -285,7 +317,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/service-window",
+      "path": "/messaging/{connection}/chats/{conversation}/service-window",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.GetServiceWindow",
       "testFile": "chat_presence_privacy_test.go"
@@ -293,15 +325,15 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/cloud-credentials",
+      "path": "/messaging/{connection}/cloud-credentials",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.GetCloudCredentialHealth",
+      "sdkMethod": "MessagingClient.Connections.GetCloudCredentialHealth",
       "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts",
+      "path": "/messaging/{connection}/contacts",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.List",
       "testFile": "contacts_test.go"
@@ -309,7 +341,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}",
+      "path": "/messaging/{connection}/contacts/{contactId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Check",
       "testFile": "contacts_test.go"
@@ -317,7 +349,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/business-profile",
+      "path": "/messaging/{connection}/contacts/{contactId}/business-profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.BusinessProfile",
       "testFile": "contacts_test.go"
@@ -325,7 +357,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/devices",
+      "path": "/messaging/{connection}/contacts/{contactId}/devices",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Devices",
       "testFile": "contacts_test.go"
@@ -333,7 +365,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/info",
+      "path": "/messaging/{connection}/contacts/{contactId}/info",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Info",
       "testFile": "contacts_test.go"
@@ -341,7 +373,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/picture",
+      "path": "/messaging/{connection}/contacts/{contactId}/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Picture",
       "testFile": "contacts_test.go"
@@ -349,7 +381,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/blocked",
+      "path": "/messaging/{connection}/contacts/blocked",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Blocklist",
       "testFile": "contacts_test.go"
@@ -357,7 +389,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/check",
+      "path": "/messaging/{connection}/contacts/check",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Check",
       "testFile": "contacts_test.go"
@@ -365,7 +397,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups",
+      "path": "/messaging/{connection}/groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.List",
       "testFile": "groups_test.go"
@@ -373,7 +405,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}",
+      "path": "/messaging/{connection}/groups/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.GetJoinInfo",
       "testFile": "groups_test.go"
@@ -381,7 +413,15 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}/invite-code",
+      "path": "/messaging/{connection}/groups/{id}/capabilities",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/groups/{id}/invite-code",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.GetInviteCode",
       "testFile": "groups_test.go"
@@ -389,7 +429,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}/participants",
+      "path": "/messaging/{connection}/groups/{id}/participants",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.ListParticipants",
       "testFile": "groups_test.go"
@@ -397,7 +437,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/join-info",
+      "path": "/messaging/{connection}/groups/join-info",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.GetJoinInfo",
       "testFile": "groups_test.go"
@@ -405,7 +445,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/hybrid-link",
+      "path": "/messaging/{connection}/hybrid-link",
       "status": "covered",
       "sdkMethod": "MessagingClient.HybridLink.State",
       "testFile": "observations_test.go"
@@ -413,7 +453,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/identities/resolve",
+      "path": "/messaging/{connection}/identities/resolve",
       "status": "covered",
       "sdkMethod": "MessagingClient.Identities.Resolve",
       "testFile": "contacts_test.go"
@@ -421,7 +461,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/labels",
+      "path": "/messaging/{connection}/labels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.List",
       "testFile": "observations_test.go"
@@ -429,7 +469,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "path": "/messaging/{connection}/labels/chats/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.ListForChat",
       "testFile": "observations_test.go"
@@ -437,23 +477,31 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/meta-pricing",
+      "path": "/messaging/{connection}/marketing-messages/status",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.GetMetaPricing",
+      "sdkMethod": "MessagingClient.CloudMarketing.GetStatus",
+      "testFile": "official_round2_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/meta-pricing",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Connections.GetMetaPricing",
       "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/observation-policy",
+      "path": "/messaging/{connection}/observation-policy",
       "status": "covered",
-      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForSession",
+      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForConnection",
       "testFile": "observations_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups",
+      "path": "/messaging/{connection}/official-groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.List",
       "testFile": "official_groups_test.go"
@@ -461,7 +509,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups/{group}",
+      "path": "/messaging/{connection}/official-groups/{group}",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.Retrieve",
       "testFile": "official_groups_test.go"
@@ -469,7 +517,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups/{group}/invite-link",
+      "path": "/messaging/{connection}/official-groups/{group}/invite-link",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.GetInviteLink",
       "testFile": "official_groups_test.go"
@@ -477,7 +525,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups/{group}/join-requests",
+      "path": "/messaging/{connection}/official-groups/{group}/join-requests",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ListJoinRequests",
       "testFile": "official_groups_test.go"
@@ -485,7 +533,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/operations/{operationId}",
+      "path": "/messaging/{connection}/operations/{operationId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.OperationStatus",
       "testFile": "operations_test.go"
@@ -493,15 +541,39 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/pair/qr",
+      "path": "/messaging/{connection}/pair/qr",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.QR",
+      "sdkMethod": "MessagingClient.Connections.QR",
       "testFile": "operations_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/presence",
+      "path": "/messaging/{connection}/passkey/challenge/{ticketId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/passkey/confirmation",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/phone",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.GetPhone",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/presence",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.Get",
       "testFile": "chat_presence_privacy_test.go"
@@ -509,7 +581,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/presence/{conversation}",
+      "path": "/messaging/{connection}/presence/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.GetForChat",
       "testFile": "chat_presence_privacy_test.go"
@@ -517,7 +589,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/privacy",
+      "path": "/messaging/{connection}/privacy",
       "status": "covered",
       "sdkMethod": "MessagingClient.Privacy.Get",
       "testFile": "chat_presence_privacy_test.go"
@@ -525,7 +597,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/profile",
+      "path": "/messaging/{connection}/profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.Get",
       "testFile": "contacts_test.go"
@@ -533,15 +605,23 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/safe-mode",
+      "path": "/messaging/{connection}/safe-mode",
       "status": "covered",
-      "sdkMethod": "MessagingClient.BanSafe.GetSessionSafeMode",
+      "sdkMethod": "MessagingClient.BanSafe.GetConnectionSafeMode",
       "testFile": "project_health_test.go"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/templates",
+      "path": "/messaging/{connection}/stickers",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/{connection}/templates",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.List",
       "testFile": "cloud_templates_test.go"
@@ -549,7 +629,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/templates/{name}",
+      "path": "/messaging/{connection}/templates/{name}",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.Retrieve",
       "testFile": "cloud_templates_test.go"
@@ -557,7 +637,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/users/{id}/security-code",
+      "path": "/messaging/{connection}/users/{id}/security-code",
       "status": "covered",
       "sdkMethod": "MessagingClient.Users.GetSecurityCode",
       "testFile": "contacts_test.go"
@@ -645,6 +725,14 @@
     {
       "family": "messaging",
       "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows/{id}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "status": "covered",
       "sdkMethod": "MessagingClient.Campaigns.List",
@@ -669,10 +757,26 @@
     {
       "family": "messaging",
       "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/links",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
       "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients",
       "status": "covered",
       "sdkMethod": "MessagingClient.Campaigns.ListRecipients",
       "testFile": "campaigns_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "messaging",
@@ -713,6 +817,14 @@
       "status": "covered",
       "sdkMethod": "MessagingClient.HybridLink.GetPolicy",
       "testFile": "observations_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "GET",
+      "path": "/messaging/test-events/fixtures",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.ListEventFixtures",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -762,7 +874,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/catalog/cart",
+      "path": "/messaging/{connection}/business/catalog/cart",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetCartEnabled",
       "testFile": "business_test.go"
@@ -770,7 +882,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "path": "/messaging/{connection}/business/collections/{collectionId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.UpdateCollection",
       "testFile": "business_test.go"
@@ -778,7 +890,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "path": "/messaging/{connection}/business/products/{productId}/visibility",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetProductVisibility",
       "testFile": "business_test.go"
@@ -786,7 +898,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/profile",
+      "path": "/messaging/{connection}/business/profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.UpdateProfile",
       "testFile": "business_test.go"
@@ -794,7 +906,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/official-groups/{group}",
+      "path": "/messaging/{connection}/official-groups/{group}",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.Update",
       "testFile": "official_groups_test.go"
@@ -802,7 +914,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/templates/{name}",
+      "path": "/messaging/{connection}/templates/{name}",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.Update",
       "testFile": "cloud_templates_test.go"
@@ -833,7 +945,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/catalog",
+      "path": "/messaging/{connection}/business/catalog",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.CreateCatalog",
       "testFile": "business_test.go"
@@ -841,7 +953,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/collections",
+      "path": "/messaging/{connection}/business/collections",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.CreateCollection",
       "testFile": "business_test.go"
@@ -849,7 +961,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
+      "path": "/messaging/{connection}/business/collections/{collectionId}/appeal",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.AppealCollection",
       "testFile": "business_test.go"
@@ -857,7 +969,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/collections/reorder",
+      "path": "/messaging/{connection}/business/collections/reorder",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.ReorderCollections",
       "testFile": "business_test.go"
@@ -865,7 +977,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/orders/{orderId}/lookup",
+      "path": "/messaging/{connection}/business/orders/{orderId}/lookup",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetOrder",
       "testFile": "business_test.go"
@@ -873,7 +985,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/products",
+      "path": "/messaging/{connection}/business/products",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.CreateProduct",
       "testFile": "business_test.go"
@@ -881,7 +993,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/products/{productId}/appeal",
+      "path": "/messaging/{connection}/business/products/{productId}/appeal",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.AppealProduct",
       "testFile": "business_test.go"
@@ -889,7 +1001,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/quick-replies",
+      "path": "/messaging/{connection}/business/quick-replies",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.Create",
       "testFile": "observations_test.go"
@@ -897,7 +1009,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/calls/{callId}/reject",
+      "path": "/messaging/{connection}/calls/{callId}/reject",
       "status": "covered",
       "sdkMethod": "MessagingClient.VoIP.Reject",
       "testFile": "voip_test.go"
@@ -905,7 +1017,15 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels",
+      "path": "/messaging/{connection}/catalogs/{catalogId}/sync",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Catalogs.Sync",
+      "testFile": "official_round2_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/channels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Create",
       "testFile": "channels_test.go"
@@ -913,7 +1033,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/follow",
+      "path": "/messaging/{connection}/channels/{id}/follow",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Follow",
       "testFile": "channels_test.go"
@@ -921,7 +1041,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/live-updates",
+      "path": "/messaging/{connection}/channels/{id}/live-updates",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.SubscribeToLiveUpdates",
       "testFile": "channels_test.go"
@@ -929,7 +1049,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
+      "path": "/messaging/{connection}/channels/{id}/messages/{messageId}/reaction",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ReactToMessage",
       "testFile": "channels_test.go"
@@ -937,7 +1057,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
+      "path": "/messaging/{connection}/channels/{id}/messages/{messageId}/viewed",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.MarkMessageViewed",
       "testFile": "channels_test.go"
@@ -945,7 +1065,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/mute",
+      "path": "/messaging/{connection}/channels/{id}/mute",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Mute",
       "testFile": "channels_test.go"
@@ -953,7 +1073,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/unfollow",
+      "path": "/messaging/{connection}/channels/{id}/unfollow",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Unfollow",
       "testFile": "channels_test.go"
@@ -961,7 +1081,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/unmute",
+      "path": "/messaging/{connection}/channels/{id}/unmute",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.Unmute",
       "testFile": "channels_test.go"
@@ -969,7 +1089,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/chats/{conversation}/archive",
+      "path": "/messaging/{connection}/chats/{conversation}/archive",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.Archive",
       "testFile": "chat_presence_privacy_test.go"
@@ -977,7 +1097,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/chats/{conversation}/unarchive",
+      "path": "/messaging/{connection}/chats/{conversation}/unarchive",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.Unarchive",
       "testFile": "chat_presence_privacy_test.go"
@@ -985,15 +1105,15 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/cloud-credentials/reauthorize",
+      "path": "/messaging/{connection}/cloud-credentials/reauthorize",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.ReauthorizeCloudCredentials",
+      "sdkMethod": "MessagingClient.Connections.ReauthorizeCloudCredentials",
       "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/contacts/{contactId}/block",
+      "path": "/messaging/{connection}/contacts/{contactId}/block",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Block",
       "testFile": "contacts_test.go"
@@ -1001,7 +1121,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/contacts/{contactId}/unblock",
+      "path": "/messaging/{connection}/contacts/{contactId}/unblock",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.Unblock",
       "testFile": "contacts_test.go"
@@ -1009,7 +1129,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups",
+      "path": "/messaging/{connection}/groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.Create",
       "testFile": "groups_test.go"
@@ -1017,7 +1137,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/admin/demote",
+      "path": "/messaging/{connection}/groups/{id}/admin/demote",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.DemoteParticipants",
       "testFile": "groups_test.go"
@@ -1025,7 +1145,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/admin/promote",
+      "path": "/messaging/{connection}/groups/{id}/admin/promote",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.PromoteParticipants",
       "testFile": "groups_test.go"
@@ -1033,7 +1153,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
+      "path": "/messaging/{connection}/groups/{id}/invite-code/revoke",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.RevokeInviteCode",
       "testFile": "groups_test.go"
@@ -1041,7 +1161,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/leave",
+      "path": "/messaging/{connection}/groups/{id}/leave",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.Leave",
       "testFile": "groups_test.go"
@@ -1049,7 +1169,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/participants/add",
+      "path": "/messaging/{connection}/groups/{id}/participants/add",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.AddParticipants",
       "testFile": "groups_test.go"
@@ -1057,7 +1177,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/participants/remove",
+      "path": "/messaging/{connection}/groups/{id}/participants/remove",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.RemoveParticipants",
       "testFile": "groups_test.go"
@@ -1065,7 +1185,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/join",
+      "path": "/messaging/{connection}/groups/join",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.Join",
       "testFile": "groups_test.go"
@@ -1073,7 +1193,23 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/labels",
+      "path": "/messaging/{connection}/history/chunks/retry",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/history/media/delete",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/labels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.Create",
       "testFile": "observations_test.go"
@@ -1081,7 +1217,23 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/react",
+      "path": "/messaging/{connection}/media/upload-grants",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/media/uploads",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/messages/react",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.React",
       "testFile": "operations_test.go"
@@ -1089,7 +1241,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/seen",
+      "path": "/messaging/{connection}/messages/seen",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.MarkSeen",
       "testFile": "operations_test.go"
@@ -1097,7 +1249,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/send",
+      "path": "/messaging/{connection}/messages/send",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.Send",
       "testFile": "operations_test.go"
@@ -1105,7 +1257,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/star",
+      "path": "/messaging/{connection}/messages/star",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.Star",
       "testFile": "operations_test.go"
@@ -1113,7 +1265,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/typing",
+      "path": "/messaging/{connection}/messages/typing",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.SetTyping",
       "testFile": "operations_test.go"
@@ -1121,7 +1273,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups",
+      "path": "/messaging/{connection}/official-groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.Create",
       "testFile": "official_groups_test.go"
@@ -1129,7 +1281,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
+      "path": "/messaging/{connection}/official-groups/{group}/invite-link/reset",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ResetInviteLink",
       "testFile": "official_groups_test.go"
@@ -1137,7 +1289,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
+      "path": "/messaging/{connection}/official-groups/{group}/join-requests/approve",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ApproveJoinRequests",
       "testFile": "official_groups_test.go"
@@ -1145,7 +1297,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
+      "path": "/messaging/{connection}/official-groups/{group}/join-requests/reject",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.RejectJoinRequests",
       "testFile": "official_groups_test.go"
@@ -1153,7 +1305,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/participants/remove",
+      "path": "/messaging/{connection}/official-groups/{group}/participants/remove",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.RemoveParticipants",
       "testFile": "official_groups_test.go"
@@ -1161,7 +1313,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/pins",
+      "path": "/messaging/{connection}/official-groups/{group}/pins",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.Pin",
       "testFile": "official_groups_test.go"
@@ -1169,15 +1321,55 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/pair/code",
+      "path": "/messaging/{connection}/pair/code",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.RequestPairingCode",
+      "sdkMethod": "MessagingClient.Connections.RequestPairingCode",
       "testFile": "operations_test.go"
     },
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/presence",
+      "path": "/messaging/{connection}/passkey/assertion",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/passkey/challenge",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/passkey/confirmation",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/phone/devices/{deviceId}/unlink",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDevice",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/phone/messages",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.SendPhoneMessage",
+      "testFile": "supplements_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/presence",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.Set",
       "testFile": "chat_presence_privacy_test.go"
@@ -1185,7 +1377,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/presence/{conversation}/subscribe",
+      "path": "/messaging/{connection}/presence/{conversation}/subscribe",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.Subscribe",
       "testFile": "chat_presence_privacy_test.go"
@@ -1193,10 +1385,42 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/templates",
+      "path": "/messaging/{connection}/stickers/recents/bootstrap",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/stickers/recents/remove",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/stickers/reuploads",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/templates",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.Create",
       "testFile": "cloud_templates_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/{connection}/test-events",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.TriggerEvent",
+      "testFile": "cloud_audiences_test.go"
     },
     {
       "family": "messaging",
@@ -1205,6 +1429,14 @@
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudOnboarding.Advance",
       "testFile": "cloud_audiences_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/customer-pairing/exchange",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "messaging",
@@ -1224,10 +1456,34 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/projects/{projectId}/test-history-fixtures",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Testing.CreateHistoryFixture",
+      "testFile": "cloud_audiences_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/projects/{projectSlug}/campaigns",
       "status": "covered",
       "sdkMethod": "MessagingClient.Campaigns.Create",
       "testFile": "campaigns_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/enrollments",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Campaigns().Enroll",
+      "testFile": "campaign_segments_drip_test.go"
     },
     {
       "family": "messaging",
@@ -1288,6 +1544,14 @@
     {
       "family": "messaging",
       "method": "POST",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/test-send",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
       "path": "/messaging/projects/{projectSlug}/templates",
       "status": "covered",
       "sdkMethod": "MessagingClient.Templates.Create",
@@ -1313,9 +1577,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/quicklinks",
-      "status": "partial",
-      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (primaryPlatform) that this SDK does not yet type.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.Create",
+      "testFile": "operations_test.go"
     },
     {
       "family": "messaging",
@@ -1427,6 +1691,14 @@
       "testFile": "voip_test.go"
     },
     {
+      "testFile": "voip_test.go",
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/waiting-room",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.VoIP.ModerateWaitingRoom"
+    },
+    {
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/voip/calls/check",
@@ -1441,6 +1713,14 @@
       "status": "partial",
       "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (phoneOfflineStartDay) that this SDK does not yet type.",
       "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/passkey/verify",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "messaging",
@@ -1473,16 +1753,32 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/quicklink/{token}/connection",
+      "path": "/quicklink/{token}/history",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/method",
       "status": "excluded",
       "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
     },
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/quicklink/{token}/history",
+      "path": "/quicklink/{token}/passkey",
       "status": "excluded",
-      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/quicklink/{token}/passkey/confirmation",
+      "status": "excluded",
+      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "messaging",
@@ -1508,7 +1804,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/compliance",
+      "path": "/messaging/{connection}/business/compliance",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetMerchantCompliance",
       "testFile": "business_test.go"
@@ -1516,7 +1812,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/products/{productId}",
+      "path": "/messaging/{connection}/business/products/{productId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.UpdateProduct",
       "testFile": "business_test.go"
@@ -1524,7 +1820,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/profile/cover-photo",
+      "path": "/messaging/{connection}/business/profile/cover-photo",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetCoverPhoto",
       "testFile": "business_test.go"
@@ -1532,7 +1828,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "path": "/messaging/{connection}/business/quick-replies/{quickReplyId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.Replace",
       "testFile": "observations_test.go"
@@ -1540,7 +1836,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/chats/{conversation}/disappearing",
+      "path": "/messaging/{connection}/chats/{conversation}/disappearing",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.SetDisappearingTimer",
       "testFile": "chat_presence_privacy_test.go"
@@ -1548,7 +1844,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.EditMessage",
       "testFile": "chat_presence_privacy_test.go"
@@ -1556,7 +1852,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/description",
+      "path": "/messaging/{connection}/groups/{id}/description",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetDescription",
       "testFile": "groups_test.go"
@@ -1564,7 +1860,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/picture",
+      "path": "/messaging/{connection}/groups/{id}/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetPicture",
       "testFile": "groups_test.go"
@@ -1572,7 +1868,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/info-edit",
+      "path": "/messaging/{connection}/groups/{id}/settings/info-edit",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetInfoEditing",
       "testFile": "groups_test.go"
@@ -1580,7 +1876,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/join-approval",
+      "path": "/messaging/{connection}/groups/{id}/settings/join-approval",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetJoinApproval",
       "testFile": "groups_test.go"
@@ -1588,7 +1884,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/member-add",
+      "path": "/messaging/{connection}/groups/{id}/settings/member-add",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetMemberAddMode",
       "testFile": "groups_test.go"
@@ -1596,7 +1892,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/messages",
+      "path": "/messaging/{connection}/groups/{id}/settings/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetMessaging",
       "testFile": "groups_test.go"
@@ -1604,7 +1900,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/subject",
+      "path": "/messaging/{connection}/groups/{id}/subject",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetSubject",
       "testFile": "groups_test.go"
@@ -1612,7 +1908,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/hybrid-link",
+      "path": "/messaging/{connection}/hybrid-link",
       "status": "covered",
       "sdkMethod": "MessagingClient.HybridLink.SetPaused",
       "testFile": "observations_test.go"
@@ -1620,7 +1916,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/labels/{labelId}",
+      "path": "/messaging/{connection}/labels/{labelId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.Update",
       "testFile": "observations_test.go"
@@ -1628,7 +1924,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "path": "/messaging/{connection}/labels/chats/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.ReplaceForChat",
       "testFile": "observations_test.go"
@@ -1636,7 +1932,23 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/privacy/{setting}",
+      "path": "/messaging/{connection}/official-groups/{group}/picture",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.OfficialGroups.SetPicture",
+      "testFile": "official_round2_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{connection}/phone/account-mode",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{connection}/privacy/{setting}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Privacy.Set",
       "testFile": "chat_presence_privacy_test.go"
@@ -1644,7 +1956,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/privacy/disappearing/default",
+      "path": "/messaging/{connection}/privacy/disappearing/default",
       "status": "covered",
       "sdkMethod": "MessagingClient.Privacy.SetDefaultDisappearingTimer",
       "testFile": "chat_presence_privacy_test.go"
@@ -1652,7 +1964,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/profile/name",
+      "path": "/messaging/{connection}/profile/name",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.SetName",
       "testFile": "contacts_test.go"
@@ -1660,7 +1972,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/profile/picture",
+      "path": "/messaging/{connection}/profile/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.SetPicture",
       "testFile": "contacts_test.go"
@@ -1668,7 +1980,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/profile/status",
+      "path": "/messaging/{connection}/profile/status",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.SetStatus",
       "testFile": "contacts_test.go"
@@ -1676,10 +1988,18 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/safe-mode",
+      "path": "/messaging/{connection}/safe-mode",
       "status": "covered",
-      "sdkMethod": "MessagingClient.BanSafe.UpdateSessionSafeMode",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateConnectionSafeMode",
       "testFile": "project_health_test.go"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
+      "path": "/messaging/{connection}/stickers/favorite",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "messaging",
@@ -1716,6 +2036,14 @@
     {
       "family": "messaging",
       "method": "PUT",
+      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reply-flow",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "PUT",
       "path": "/messaging/routing/hybrid",
       "status": "covered",
       "sdkMethod": "MessagingClient.HybridLink.SetPolicy",
@@ -1734,7 +2062,7 @@
       "method": "DELETE",
       "path": "/api/account/meta-app",
       "status": "excluded",
-      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+      "reason": "Dashboard identity and account controls require a live browser account connection; not part of the machine SDK."
     },
     {
       "family": "platform",
@@ -1767,14 +2095,15 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/members/{memberId}",
+      "path": "/console/keys/{keyId}",
       "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+      "reason": "Moved from DELETE /platform/keys/{keyId} to a dashboard-identity Console route by polymorfa/polymorfa#887; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/console/team/avatar",
+      "path": "/console/members/{memberId}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -1788,6 +2117,14 @@
     {
       "family": "platform",
       "method": "DELETE",
+      "path": "/console/projects/{projectId}/regional-data/access/{accessId}",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
       "path": "/console/quicklink/logo",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -1796,6 +2133,13 @@
       "family": "platform",
       "method": "DELETE",
       "path": "/console/sip-trunks/{trunkId}",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -1819,6 +2163,30 @@
       "path": "/console/webhooks/{webhookId}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-profile-imports/{jobId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-profiles/{phone}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/audience-segments/{segmentId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().Delete",
+      "testFile": "campaign_segments_drip_test.go"
     },
     {
       "family": "platform",
@@ -1851,6 +2219,22 @@
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.Delete",
       "testFile": "campaigns_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/connections/{connection}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ClientTokens.DeleteRules",
+      "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "DELETE",
+      "path": "/platform/connections/{connectionId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.Delete",
+      "testFile": "platform_connections_test.go"
     },
     {
       "family": "platform",
@@ -1919,22 +2303,6 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/platform/sessions/{session}/client-rules",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.ClientTokens.DeleteRules",
-      "testFile": "operations_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/platform/sessions/{sessionId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.Delete",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
       "sdkMethod": "TeamClient.SIPTrunks.Delete",
@@ -1988,9 +2356,25 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/api/account/feature-terms",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/api/account/legal",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/api/account/meta-app",
       "status": "excluded",
-      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+      "reason": "Dashboard identity and account controls require a live browser account connection; not part of the machine SDK."
     },
     {
       "family": "platform",
@@ -2037,7 +2421,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/call-settings/{sessionId}",
+      "path": "/console/call-settings/{connectionId}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -2058,6 +2442,13 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/connection-configuration/{connectionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/deployments",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -2068,6 +2459,13 @@
       "path": "/console/insights/analytics",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/connection-options",
+      "status": "excluded",
+      "reason": "Private Console selector requires dashboard identity; team API keys and project tokens are not accepted."
     },
     {
       "family": "platform",
@@ -2086,13 +2484,6 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/insights/number-options",
-      "status": "excluded",
-      "reason": "Private Console selector requires dashboard identity; team API keys and project tokens are not accepted."
-    },
-    {
-      "family": "platform",
-      "method": "GET",
       "path": "/console/insights/preferences",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -2103,6 +2494,21 @@
       "path": "/console/insights/usage",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/insights/vitals",
+      "status": "excluded",
+      "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/keys",
+      "status": "excluded",
+      "reason": "Moved from GET /platform/keys to a dashboard-identity Console route by polymorfa/polymorfa#887; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "platform",
@@ -2135,13 +2541,6 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/teams/{slug}",
-      "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "GET",
       "path": "/console/profile",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -2149,9 +2548,41 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs/{catalogId}",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs/{catalogId}/products",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/console/projects/{projectId}/logging",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; team API keys and project tokens are not accepted."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/projects/{projectId}/regional-data/settings",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "platform",
@@ -2166,13 +2597,6 @@
       "path": "/console/sandbox/pool",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/session-configuration/{sessionId}",
-      "status": "excluded",
-      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
     },
     {
       "family": "platform",
@@ -2199,6 +2623,13 @@
       "family": "platform",
       "method": "GET",
       "path": "/console/teams",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/console/teams/{slug}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -2247,6 +2678,78 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/analytics",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Analytics.Get",
+      "testFile": "calls_analytics_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/analytics/metrics",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Analytics.Metrics",
+      "testFile": "calls_analytics_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profile-imports/{jobId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profiles",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profiles/{phone}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-profiles/{phone}/consent",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().List",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments/{segmentId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().Retrieve",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/audience-segments/{segmentId}/preview",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().Preview",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/audiences",
       "status": "covered",
       "sdkMethod": "TeamClient.Audiences.List",
@@ -2281,7 +2784,7 @@
       "method": "GET",
       "path": "/platform/bans",
       "status": "covered",
-      "sdkMethod": "TeamClient.SessionBans.List",
+      "sdkMethod": "TeamClient.ConnectionBans.List",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2289,7 +2792,7 @@
       "method": "GET",
       "path": "/platform/bans/active",
       "status": "covered",
-      "sdkMethod": "TeamClient.SessionBans.ListActive",
+      "sdkMethod": "TeamClient.ConnectionBans.ListActive",
       "testFile": "security_optouts_test.go"
     },
     {
@@ -2351,7 +2854,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/health/{session}",
+      "path": "/platform/bansafe/health/{connection}",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.GetHealth",
       "testFile": "bansafe_test.go"
@@ -2359,7 +2862,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/health/{session}/history",
+      "path": "/platform/bansafe/health/{connection}/history",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.ListHealthHistory",
       "testFile": "bansafe_test.go"
@@ -2383,7 +2886,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/telemetry/{session}",
+      "path": "/platform/bansafe/telemetry/{connection}",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.GetTelemetry",
       "testFile": "bansafe_test.go"
@@ -2391,7 +2894,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/telemetry/{session}/history",
+      "path": "/platform/bansafe/telemetry/{connection}/history",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.ListTelemetryHistory",
       "testFile": "bansafe_test.go"
@@ -2511,6 +3014,30 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/campaign-reply-flows/{replyFlowId}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-settings",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Campaigns().GetFrequencyCap",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/campaigns",
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.List",
@@ -2535,6 +3062,14 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/approvals",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/campaigns/{campaignId}/conversions",
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.Conversions",
@@ -2551,10 +3086,98 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/links",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/campaigns/{campaignId}/recipients",
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.Recipients",
       "testFile": "campaigns_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/campaigns/{campaignId}/recipients/export",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connection-configuration",
+      "status": "covered",
+      "sdkMethod": "TeamClient.ConnectionConfiguration.Retrieve",
+      "testFile": "settings_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.List",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connection}/call-settings",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.VoIP.RetrieveCallSettings",
+      "testFile": "voip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connection}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ClientTokens.RetrieveRules",
+      "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connectionId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.Retrieve",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connectionId}/capabilities",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.GetCapabilities",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connectionId}/me",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Connections.Account",
+      "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connectionId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.GetSafeMode",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/connections/{connectionId}/tier-quotes/{quoteId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.RetrieveTierChange",
+      "testFile": "platform_connections_test.go"
     },
     {
       "family": "platform",
@@ -2575,17 +3198,17 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/customers/{customerId}/events",
+      "path": "/platform/customers/{customerId}/connections",
       "status": "covered",
-      "sdkMethod": "TeamClient.Customers.ListEvents",
+      "sdkMethod": "TeamClient.Customers.ListConnections",
       "testFile": "customers_test.go"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/customers/{customerId}/numbers",
+      "path": "/platform/customers/{customerId}/events",
       "status": "covered",
-      "sdkMethod": "TeamClient.Customers.ListNumbers",
+      "sdkMethod": "TeamClient.Customers.ListEvents",
       "testFile": "customers_test.go"
     },
     {
@@ -2611,6 +3234,14 @@
       "status": "covered",
       "sdkMethod": "TeamClient.Events.Retrieve",
       "testFile": "developer_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/feature-terms",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -2783,6 +3414,22 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/optouts/confirmation-settings",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/optouts/confirmation-summary",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/optouts/settings",
       "status": "covered",
       "sdkMethod": "TeamClient.OptOuts.GetSettings",
@@ -2795,6 +3442,30 @@
       "status": "covered",
       "sdkMethod": "TeamClient.Projects.List",
       "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Analytics.Get",
+      "testFile": "calls_analytics_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/analytics/metrics",
+      "status": "covered",
+      "sdkMethod": "ProjectClient.Analytics.Metrics",
+      "testFile": "calls_analytics_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/customers/{customerId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -2879,10 +3550,26 @@
     {
       "family": "platform",
       "method": "GET",
+      "path": "/platform/projects/{projectId}/request-logs",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
       "path": "/platform/projects/{projectId}/safe-mode",
       "status": "covered",
       "sdkMethod": "TeamClient.Projects.GetSafeMode",
       "testFile": "project_health_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "GET",
+      "path": "/platform/projects/{projectId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -2947,78 +3634,6 @@
       "status": "covered",
       "sdkMethod": "TeamClient.QuickLinkSettings.Retrieve",
       "testFile": "settings_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/session-configuration",
-      "status": "covered",
-      "sdkMethod": "TeamClient.SessionConfiguration.Retrieve",
-      "testFile": "settings_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.List",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{session}/call-settings",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.VoIP.RetrieveCallSettings",
-      "testFile": "voip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{session}/client-rules",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.ClientTokens.RetrieveRules",
-      "testFile": "operations_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{sessionId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.Retrieve",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{sessionId}/capabilities",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.GetCapabilities",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{sessionId}/me",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.Account",
-      "testFile": "operations_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.GetSafeMode",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.RetrieveTierChange",
-      "testFile": "platform_sessions_test.go"
     },
     {
       "family": "platform",
@@ -3180,13 +3795,6 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/console/team",
-      "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
       "path": "/console/profile",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3208,6 +3816,13 @@
     {
       "family": "platform",
       "method": "PATCH",
+      "path": "/console/team",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
       "path": "/console/voice/audio/{assetId}",
       "status": "excluded",
       "reason": "Console-only voice routes require dashboard membership; server SDK uses Platform voice routes."
@@ -3222,10 +3837,26 @@
     {
       "family": "platform",
       "method": "PATCH",
+      "path": "/platform/audience-segments/{segmentId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().Update",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
       "path": "/platform/campaigns/{campaignId}",
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.Update",
       "testFile": "campaigns_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PATCH",
+      "path": "/platform/connections/{connectionId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.SetTierOverride",
+      "testFile": "platform_connections_test.go"
     },
     {
       "family": "platform",
@@ -3262,14 +3893,6 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/platform/sessions/{sessionId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.SetTierOverride",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
       "path": "/platform/sip-trunks/{trunkId}",
       "status": "covered",
       "sdkMethod": "TeamClient.SIPTrunks.Update",
@@ -3301,23 +3924,47 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/api/account/feature-terms/{key}/accept",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/feature-terms/{key}/withdraw",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/api/account/features/enrollment",
       "status": "excluded",
-      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+      "reason": "Dashboard identity and account controls require a live browser account connection; not part of the machine SDK."
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/api/account/features/evaluate",
       "status": "excluded",
-      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+      "reason": "Dashboard identity and account controls require a live browser account connection; not part of the machine SDK."
     },
     {
       "family": "platform",
       "method": "POST",
       "path": "/api/account/features/exposure",
       "status": "excluded",
-      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+      "reason": "Dashboard identity and account controls require a live browser account connection; not part of the machine SDK."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/api/account/legal/accept",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "platform",
@@ -3336,7 +3983,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/bansafe/enforcement/{session}/appeal",
+      "path": "/console/bansafe/enforcement/{connection}/appeal",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3374,6 +4021,22 @@
       "path": "/console/calls/{callId}/connections/{connectionId}/remove",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/campaigns/{campaignId}/approvals/{approvalId}/approve",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/campaigns/{campaignId}/approvals/{approvalId}/reject",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "platform",
@@ -3427,27 +4090,6 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/team-invitations/{invitationId}/accept",
-      "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/team/avatar/uploads",
-      "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/teams/ensure",
-      "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
       "path": "/console/profile/avatar/uploads",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
@@ -3462,9 +4104,33 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs/{catalogId}/sync",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/console/projects/{projectId}/icon",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/regional-data/access",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/projects/{projectId}/regional-data/client-tokens",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
     },
     {
       "family": "platform",
@@ -3476,14 +4142,14 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/team",
+      "path": "/console/quicklink/logo/project",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/quicklink/logo/project",
+      "path": "/console/quicklink/logo/team",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3511,7 +4177,28 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/console/team-invitations/{invitationId}/accept",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/team/avatar/uploads",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/console/teams/{teamId}/delete",
+      "status": "excluded",
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/console/teams/ensure",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3567,6 +4254,30 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/audience-profile-imports",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-segments",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().Create",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audience-segments/preview",
+      "status": "covered",
+      "sdkMethod": "TeamClient.AudienceSegments().PreviewRules",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/audiences",
       "status": "covered",
       "sdkMethod": "TeamClient.Audiences.Create",
@@ -3579,6 +4290,14 @@
       "status": "covered",
       "sdkMethod": "TeamClient.Audiences.AddMembers",
       "testFile": "cloud_audiences_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/audiences/from-campaign",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -3623,6 +4342,14 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/campaign-reply-flows",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/campaigns",
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.Create",
@@ -3651,6 +4378,14 @@
       "status": "covered",
       "sdkMethod": "TeamClient.Campaigns.Duplicate",
       "testFile": "campaigns_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/enrollments",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Campaigns().Enroll",
+      "testFile": "campaign_segments_drip_test.go"
     },
     {
       "family": "platform",
@@ -3711,10 +4446,110 @@
     {
       "family": "platform",
       "method": "POST",
+      "path": "/platform/campaigns/{campaignId}/test-send",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
       "path": "/platform/client-tokens",
       "status": "covered",
       "sdkMethod": "MessagingClient.ClientTokens.Mint",
       "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/handoff-ack",
+      "status": "excluded",
+      "reason": "Encrypted connection handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/handoff-import",
+      "status": "excluded",
+      "reason": "Encrypted connection handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/handoff-keys",
+      "status": "excluded",
+      "reason": "Encrypted connection handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/inspector/claim/release",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/logout",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Connections.Logout",
+      "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/restart",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Connections.Restart",
+      "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/start",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.Start",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/stop",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.Stop",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/tier-quotes",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.QuoteTierChange",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/{connectionId}/upload-appstate-keys",
+      "status": "excluded",
+      "reason": "Encrypted connection handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/delete",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.DeleteMany",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/connections/stop",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.StopMany",
+      "testFile": "platform_connections_test.go"
     },
     {
       "family": "platform",
@@ -3735,9 +4570,9 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
+      "path": "/platform/customers/{customerId}/connections/{connectionId}/transfer",
       "status": "covered",
-      "sdkMethod": "TeamClient.Customers.TransferNumber",
+      "sdkMethod": "TeamClient.Customers.TransferConnection",
       "testFile": "customers_test.go"
     },
     {
@@ -3763,6 +4598,22 @@
       "status": "covered",
       "sdkMethod": "TeamClient.Events.Replay",
       "testFile": "developer_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/feature-terms/{key}/accept",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "POST",
+      "path": "/platform/feature-terms/{key}/withdraw",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -3991,90 +4842,6 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/handoff-ack",
-      "status": "excluded",
-      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/handoff-import",
-      "status": "excluded",
-      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/handoff-keys",
-      "status": "excluded",
-      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/logout",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.Logout",
-      "testFile": "operations_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/restart",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.Restart",
-      "testFile": "operations_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/start",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.Start",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/stop",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.Stop",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/tier-quotes",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.QuoteTierChange",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
-      "status": "excluded",
-      "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/delete",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.DeleteMany",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/stop",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.StopMany",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
       "path": "/platform/sip-trunks",
       "status": "covered",
       "sdkMethod": "TeamClient.SIPTrunks.Create",
@@ -4172,7 +4939,7 @@
       "method": "PUT",
       "path": "/api/account/meta-app",
       "status": "excluded",
-      "reason": "Dashboard identity and account controls require a live browser account session; not part of the machine SDK."
+      "reason": "Dashboard identity and account controls require a live browser account connection; not part of the machine SDK."
     },
     {
       "family": "platform",
@@ -4191,9 +4958,24 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/call-settings/{sessionId}",
+      "path": "/console/call-settings/{connectionId}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/campaign-settings",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/console/connection-configuration/{connectionId}",
+      "status": "excluded",
+      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
     },
     {
       "family": "platform",
@@ -4206,13 +4988,6 @@
       "family": "platform",
       "method": "PUT",
       "path": "/console/notifications/preferences",
-      "status": "excluded",
-      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/console/team/avatar",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -4240,6 +5015,14 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/console/projects/{projectId}/regional-data/settings",
+      "status": "excluded",
+      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
+      "milestone": "not-server-sdk"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/console/projects/{projectId}/setup",
       "status": "excluded",
       "reason": "Console-only project setup uses dashboard identity and is unavailable to SDK credentials."
@@ -4254,9 +5037,17 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/session-configuration/{sessionId}",
+      "path": "/console/team/avatar",
       "status": "excluded",
-      "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
+      "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/audience-profiles/{phone}",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -4309,6 +5100,62 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/platform/campaign-settings/frequency-cap",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Campaigns().UpdateFrequencyCap",
+      "testFile": "campaign_segments_drip_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/campaigns/{campaignId}/reply-flow",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/connection-configuration",
+      "status": "covered",
+      "sdkMethod": "TeamClient.ConnectionConfiguration.Update",
+      "testFile": "settings_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/connections/{connection}/call-settings",
+      "status": "partial",
+      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (acceptTerms, termsLocale) that this SDK does not yet type.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/connections/{connection}/client-rules",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.ClientTokens.UpdateRules",
+      "testFile": "operations_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/connections/{connectionId}",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.Update",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/connections/{connectionId}/safe-mode",
+      "status": "covered",
+      "sdkMethod": "TeamClient.Connections.UpdateSafeMode",
+      "testFile": "platform_connections_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/platform/flows/{flowId}/endpoint",
       "status": "covered",
       "sdkMethod": "ProjectClient.Flows.SetEndpoint",
@@ -4325,10 +5172,26 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/platform/optouts/confirmation-settings",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/platform/optouts/settings",
       "status": "covered",
       "sdkMethod": "TeamClient.OptOuts.UpdateSettings",
       "testFile": "security_optouts_test.go"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
+      "path": "/platform/projects/{projectId}/customers/{customerId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
     },
     {
       "family": "platform",
@@ -4357,6 +5220,14 @@
     {
       "family": "platform",
       "method": "PUT",
+      "path": "/platform/projects/{projectId}/signal-custody",
+      "status": "missing",
+      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
+      "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "platform",
+      "method": "PUT",
       "path": "/platform/projects/{projectId}/warmup-plan",
       "status": "covered",
       "sdkMethod": "TeamClient.Projects.UpdateWarmupPlan",
@@ -4369,869 +5240,6 @@
       "status": "covered",
       "sdkMethod": "TeamClient.QuickLinkSettings.Update",
       "testFile": "settings_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/session-configuration",
-      "status": "covered",
-      "sdkMethod": "TeamClient.SessionConfiguration.Update",
-      "testFile": "settings_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/sessions/{session}/call-settings",
-      "status": "partial",
-      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (acceptTerms, termsLocale) that this SDK does not yet type.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/sessions/{session}/client-rules",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.ClientTokens.UpdateRules",
-      "testFile": "operations_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/sessions/{sessionId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.Update",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/sessions/{sessionId}/safe-mode",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.UpdateSafeMode",
-      "testFile": "platform_sessions_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/analytics",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Analytics.Get",
-      "testFile": "calls_analytics_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/analytics",
-      "status": "covered",
-      "sdkMethod": "ProjectClient.Analytics.Get",
-      "testFile": "calls_analytics_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/analytics/metrics",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Analytics.Metrics",
-      "testFile": "calls_analytics_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/analytics/metrics",
-      "status": "covered",
-      "sdkMethod": "ProjectClient.Analytics.Metrics",
-      "testFile": "calls_analytics_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/insights/vitals",
-      "status": "excluded",
-      "reason": "Dashboard-only operational error vitals require a live Console identity; server API keys do not grant this authority."
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/calls",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/catalogs",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Catalogs.List",
-      "testFile": "official_round2_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/catalogs/{catalogId}",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Catalogs.Retrieve",
-      "testFile": "official_round2_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/catalogs/{catalogId}/products",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Catalogs.ListProducts",
-      "testFile": "official_round2_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/groups/{id}/capabilities",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/marketing-messages/status",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.CloudMarketing.GetStatus",
-      "testFile": "official_round2_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/passkey/challenge/{ticketId}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/passkey/confirmation",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/phone",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Testing.GetPhone",
-      "testFile": "supplements_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/{session}/stickers",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows/{id}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/links",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/recipients/export",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "GET",
-      "path": "/messaging/test-events/fixtures",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Testing.ListEventFixtures",
-      "testFile": "cloud_audiences_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/catalogs/{catalogId}/sync",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Catalogs.Sync",
-      "testFile": "official_round2_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/history/chunks/retry",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/history/media/delete",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/media/upload-grants",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/media/uploads",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/passkey/assertion",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/passkey/challenge",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/passkey/confirmation",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDevice",
-      "testFile": "supplements_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/phone/messages",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Testing.SendPhoneMessage",
-      "testFile": "supplements_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/stickers/recents/bootstrap",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/stickers/recents/remove",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/stickers/reuploads",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/{session}/test-events",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Testing.TriggerEvent",
-      "testFile": "cloud_audiences_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/customer-pairing/exchange",
-      "status": "excluded",
-      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/projects/{projectId}/test-history-fixtures",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Testing.CreateHistoryFixture",
-      "testFile": "cloud_audiences_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/projects/{projectSlug}/campaign-reply-flows",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/enrollments",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.Campaigns().Enroll",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/test-send",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/passkey/verify",
-      "status": "excluded",
-      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/quicklink/{token}/passkey",
-      "status": "excluded",
-      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "messaging",
-      "method": "POST",
-      "path": "/quicklink/{token}/passkey/confirmation",
-      "status": "excluded",
-      "reason": "Credential-free public route used by hosted pairing pages, browser extensions or customer invitations, not by server SDK callers.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
-      "path": "/messaging/{session}/official-groups/{group}/picture",
-      "status": "covered",
-      "sdkMethod": "MessagingClient.OfficialGroups.SetPicture",
-      "testFile": "official_round2_test.go"
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
-      "path": "/messaging/{session}/phone/account-mode",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
-      "path": "/messaging/{session}/stickers/favorite",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "messaging",
-      "method": "PUT",
-      "path": "/messaging/projects/{projectSlug}/campaigns/{id}/reply-flow",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/console/keys/{keyId}",
-      "status": "excluded",
-      "reason": "Moved from DELETE /platform/keys/{keyId} to a dashboard-identity Console route by polymorfa/polymorfa#887; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/console/projects/{projectId}/regional-data/access/{accessId}",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/platform/audience-profile-imports/{jobId}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/platform/audience-profiles/{phone}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "DELETE",
-      "path": "/platform/audience-segments/{segmentId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().Delete",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/api/account/feature-terms",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/api/account/legal",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/keys",
-      "status": "excluded",
-      "reason": "Moved from GET /platform/keys to a dashboard-identity Console route by polymorfa/polymorfa#887; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}/products",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/console/projects/{projectId}/regional-data/settings",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-profile-imports/{jobId}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-profiles",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-profiles/{phone}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-profiles/{phone}/consent",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-segments",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().List",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-segments/{segmentId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().Retrieve",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/audience-segments/{segmentId}/preview",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().Preview",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/campaign-reply-flows/{replyFlowId}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/campaign-settings",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/campaign-settings/frequency-cap",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Campaigns().GetFrequencyCap",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/campaigns/{campaignId}/approvals",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/campaigns/{campaignId}/links",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/campaigns/{campaignId}/recipients/export",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/feature-terms",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/optouts/confirmation-settings",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/optouts/confirmation-summary",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/customers/{customerId}/signal-custody",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/request-logs",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "GET",
-      "path": "/platform/projects/{projectId}/signal-custody",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PATCH",
-      "path": "/platform/audience-segments/{segmentId}",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().Update",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/api/account/feature-terms/{key}/accept",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/api/account/feature-terms/{key}/withdraw",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/api/account/legal/accept",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/campaigns/{campaignId}/approvals/{approvalId}/approve",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/campaigns/{campaignId}/approvals/{approvalId}/reject",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}/sync",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/projects/{projectId}/regional-data/access",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/console/projects/{projectId}/regional-data/client-tokens",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/audience-profile-imports",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/audience-segments",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().Create",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/audience-segments/preview",
-      "status": "covered",
-      "sdkMethod": "TeamClient.AudienceSegments().PreviewRules",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/audiences/from-campaign",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/campaign-reply-flows",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/campaigns/{campaignId}/enrollments",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Campaigns().Enroll",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/campaigns/{campaignId}/test-send",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/feature-terms/{key}/accept",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/feature-terms/{key}/withdraw",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "POST",
-      "path": "/platform/sessions/{sessionId}/inspector/claim/release",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/console/campaign-settings",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/console/projects/{projectId}/regional-data/settings",
-      "status": "excluded",
-      "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
-      "milestone": "not-server-sdk"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/audience-profiles/{phone}",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/campaign-settings/frequency-cap",
-      "status": "covered",
-      "sdkMethod": "TeamClient.Campaigns().UpdateFrequencyCap",
-      "testFile": "campaign_segments_drip_test.go"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/campaigns/{campaignId}/reply-flow",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/optouts/confirmation-settings",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/projects/{projectId}/customers/{customerId}/signal-custody",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
-    },
-    {
-      "family": "platform",
-      "method": "PUT",
-      "path": "/platform/projects/{projectId}/signal-custody",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
     }
   ],
   "supplements": {

@@ -81,11 +81,11 @@ function query(params: Query): Record<string, string> {
 
 const DISAPPEARING = new Set([0, 86_400, 604_800, 7_776_000]);
 
-/** Shared request helper for one session's resources. */
-abstract class SessionResource {
+/** Shared request helper for one connection's resources. */
+abstract class ConnectionResource {
   constructor(
     protected readonly transport: BrowserTransport,
-    protected readonly session: string,
+    protected readonly connection: string,
   ) {}
   protected call<T>(
     method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE",
@@ -95,7 +95,7 @@ abstract class SessionResource {
   ): Promise<BrowserActionResponse<T>> {
     return this.transport.request({
       method,
-      path: `/messaging/${encodeURIComponent(this.session)}${path}`,
+      path: `/messaging/${encodeURIComponent(this.connection)}${path}`,
       ...(extra.body === undefined ? {} : { body: extra.body }),
       ...(extra.query === undefined ? {} : { query: query(extra.query) }),
       ...options,
@@ -108,7 +108,7 @@ abstract class SessionResource {
  * (`conversations_read`; the API answers `hms_not_enabled` where storage is
  * off), and chat changes (`conversations_manage`).
  */
-export class BrowserChatsResource extends SessionResource {
+export class BrowserChatsResource extends ConnectionResource {
   list(
     params: BrowserListChatsParams = {},
     options: BrowserActionOptions = {},
@@ -234,7 +234,7 @@ export class BrowserChatsResource extends SessionResource {
 }
 
 /** Labels (`labels_read`, `labels_manage`). Colors are 0 to 19. */
-export class BrowserLabelsResource extends SessionResource {
+export class BrowserLabelsResource extends ConnectionResource {
   list(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/labels", options);
   }
@@ -297,7 +297,7 @@ export class BrowserLabelsResource extends SessionResource {
 }
 
 /** The account's own profile and privacy (`profile_read`, `profile_manage`). */
-export class BrowserProfileResource extends SessionResource {
+export class BrowserProfileResource extends ConnectionResource {
   retrieve(
     options: BrowserActionOptions = {},
   ): Promise<Envelope<BrowserRecord>> {
@@ -370,7 +370,7 @@ export class BrowserProfileResource extends SessionResource {
 }
 
 /** Channels (`channels_read`, `channels_manage`). */
-export class BrowserChannelsResource extends SessionResource {
+export class BrowserChannelsResource extends ConnectionResource {
   list(options: BrowserActionOptions = {}): Promise<Envelope<BrowserRecord>> {
     return this.call("GET", "/channels", options);
   }
@@ -430,7 +430,7 @@ export class BrowserChannelsResource extends SessionResource {
 }
 
 /** Catalog reads (`business_read`). */
-export class BrowserCatalogResource extends SessionResource {
+export class BrowserCatalogResource extends ConnectionResource {
   catalog(
     options: BrowserActionOptions = {},
   ): Promise<Envelope<BrowserRecord>> {

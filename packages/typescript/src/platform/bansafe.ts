@@ -17,7 +17,7 @@ import type {
   BanSafeIncidentReceipt,
   BanSafeIncidentsEnvelope,
   BanSafeSignalDefinition,
-  BanSafeNumberDetail,
+  BanSafeConnectionDetail,
   BanSafeTelemetryDetail,
   BanSafeTelemetryHistoryEnvelope,
   DataEnvelope,
@@ -44,23 +44,23 @@ export class BanSafeResource {
   }
 
   getHealth(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<DataEnvelope<BanSafeNumberDetail>>> {
+  ): Promise<ApiResponse<DataEnvelope<BanSafeConnectionDetail>>> {
     return this.get(
-      `/platform/bansafe/health/${encodeURIComponent(session)}`,
+      `/platform/bansafe/health/${encodeURIComponent(connection)}`,
       {},
       options,
     );
   }
 
   listHealthHistory(
-    session: string,
+    connection: string,
     params: ListBanSafeHealthHistoryParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BanSafeHealthHistory>>> {
     return this.get(
-      `/platform/bansafe/health/${encodeURIComponent(session)}/history`,
+      `/platform/bansafe/health/${encodeURIComponent(connection)}/history`,
       params,
       options,
     );
@@ -73,23 +73,23 @@ export class BanSafeResource {
   }
 
   getTelemetry(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<DataEnvelope<BanSafeTelemetryDetail>>> {
     return this.get(
-      `/platform/bansafe/telemetry/${encodeURIComponent(session)}`,
+      `/platform/bansafe/telemetry/${encodeURIComponent(connection)}`,
       {},
       options,
     );
   }
 
   listTelemetryHistory(
-    session: string,
+    connection: string,
     params: ListBanSafeTelemetryHistoryParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<BanSafeTelemetryHistoryEnvelope>> {
     return this.get(
-      `/platform/bansafe/telemetry/${encodeURIComponent(session)}/history`,
+      `/platform/bansafe/telemetry/${encodeURIComponent(connection)}/history`,
       params,
       options,
     );

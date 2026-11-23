@@ -67,7 +67,7 @@ const authenticatedGet = route(
   { demo: "handler" },
 );
 
-// Signed links let Polymorfa fetch an upload without a session cookie.
+// Signed links let Polymorfa fetch an upload without a connection cookie.
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   if (url.searchParams.has("sig")) {

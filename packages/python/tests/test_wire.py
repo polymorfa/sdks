@@ -11,7 +11,7 @@ import pytest
 from polymorfa import AsyncMessagingClient, Credential, PolymorfaError, RequestOptions
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURES = json.loads((ROOT / "contracts/fixtures/behavior.json").read_text())
+FIXTURES = json.loads((ROOT / "contracts/fixtures/connections/behavior.json").read_text())
 
 
 @pytest.fixture(scope="module")
@@ -48,9 +48,9 @@ async def test_shared_wire_scenario(fixture_url, scenario):
         ) as client:
 
             async def run():
-                if scenario["id"] == "sessions-list":
-                    result = await client.sessions.list(options=options)
-                    assert result.data["data"][0]["sessionId"] == "session_fixture"
+                if scenario["id"] == "connections-list":
+                    result = await client.connections.list(options=options)
+                    assert result.data["data"][0]["connectionId"] == "session_fixture"
                     return result
                 if scenario["id"] == "message-send":
                     result = await client.messages.send("support", request["body"], options=options)

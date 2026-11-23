@@ -3,14 +3,14 @@ using Polymorfa.Sdk;
 internal static class RequestLogTests
 {
     private const string Key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
-    private const string Item = "{\"id\":\"log1\",\"projectId\":\"p1\",\"createdAt\":\"2026-10-11T00:00:00Z\",\"method\":\"POST\",\"route\":\"/messaging/:session/messages\",\"status\":200,\"durationMs\":1.234567,\"result\":\"success\",\"source\":\"api\",\"requestId\":\"request1\",\"traceId\":null,\"errorCode\":null,\"mcpTool\":null,\"credential\":{\"type\":\"team_key\",\"id\":\"key1\",\"last4\":\"aaaa\"}}";
+    private const string Item = "{\"id\":\"log1\",\"projectId\":\"p1\",\"createdAt\":\"2026-10-11T00:00:00Z\",\"method\":\"POST\",\"route\":\"/messaging/:connection/messages\",\"status\":200,\"durationMs\":1.234567,\"result\":\"success\",\"source\":\"api\",\"requestId\":\"request1\",\"traceId\":null,\"errorCode\":null,\"mcpTool\":null,\"credential\":{\"type\":\"team_key\",\"id\":\"key1\",\"last4\":\"aaaa\"}}";
     private static string Page(string items = Item, string follow = "follow1") => "{\"data\":[" + items + "],\"page\":{\"hasMore\":false,\"nextCursor\":null,\"followCursor\":\"" + follow + "\"}}";
     public static async Task RunAsync()
     {
         using var wire = new WireFixture { Authorization = "Bearer " + Key };
         using var client = new TeamClient(Credential.TeamApiKey(Key), new() { BaseUrl = wire.Url });
-        var serve = wire.ServeAsync("GET", "/platform/projects/p1/request-logs?status=404%2C5xx&method=GET%2CPOST&route=%2Fmessaging%2F%3Asession%2Fmessages&source=api&limit=2", null, Page());
-        var page = await client.RequestLogs.ListAsync(new("p1", 2, Filters: new(Status: ["404", "5xx"], Method: ["GET", "POST"], Route: "/messaging/:session/messages", Source: "api"))); await serve;
+        var serve = wire.ServeAsync("GET", "/platform/projects/p1/request-logs?status=404%2C5xx&method=GET%2CPOST&route=%2Fmessaging%2F%3Aconnection%2Fmessages&source=api&limit=2", null, Page());
+        var page = await client.RequestLogs.ListAsync(new("p1", 2, Filters: new(Status: ["404", "5xx"], Method: ["GET", "POST"], Route: "/messaging/:connection/messages", Source: "api"))); await serve;
         ResourceTests.Equal(page.Items[0].DurationMs, 1.234567m); ResourceTests.Equal(page.Items[0].Credential?.Last4, "aaaa"); ResourceTests.Equal(page.Metadata.RequestId, "req_native");
         serve = wire.ServeAsync("GET", "/platform/projects/p1/request-logs?after=follow1&limit=10", null, Page("", "follow2")); page = await client.Project("p1").RequestLogs.FollowAsync(new("follow1", Limit: 10)); await serve; ResourceTests.Equal(page.FollowCursor, "follow2");
         try { await client.RequestLogs.ListAsync(new("p1", Cursor: "cursor", Filters: new(Source: "api"))); throw new Exception("cursor filters accepted"); } catch (PolymorfaValidationException) { }

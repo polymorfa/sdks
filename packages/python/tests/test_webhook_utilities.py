@@ -15,7 +15,7 @@ from polymorfa import (
 
 EVENT = {
     "id": "event_1",
-    "session": "",
+    "connection": "",
     "timestamp": "2026-10-11T00:00:00Z",
     "event": "future.event",
     "payload": {"text": "héllo", "future": [1, False, None]},
@@ -80,7 +80,7 @@ def test_invalid_tolerance(tolerance):
     [
         (b"\xff", "invalid_webhook_body"),
         (
-            b'{"id":"x","session":"","event":"future","timestamp":"now","payload":NaN}',
+            b'{"id":"x","connection":"","event":"future","timestamp":"now","payload":NaN}',
             "invalid_webhook_json",
         ),
         (b"{}", "invalid_webhook_event"),

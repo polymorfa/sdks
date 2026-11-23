@@ -1,8 +1,8 @@
 {
   "repository": "polymorfa/polymorfa",
-  "sourceCommit": "113d91b12a1db19cbddc4130cea308f38663bb9d",
+  "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
   "sourcePath": "apps/api/docs/openapi.management.json",
-  "sourceSha256": "f1d08f7f9605a39b0c96da1567ba2231bc8c456e2ef039a9ea67db8a4a252fac",
+  "sourceSha256": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559",
   "scope": "Analytics operations and their referenced schemas only; all other SDK operations retain contracts/source.json",
   "published": false,
   "paths": {
@@ -11,14 +11,14 @@
         "operationId": "exportWhatsAppAnalyticsMetrics",
         "tags": ["Analytics"],
         "summary": "Export analytics metrics",
-        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a number.",
+        "description": "**Required scope:** `connections:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain connection/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a connection.",
         "security": [
           {
             "ApiKeyAuth": []
           }
         ],
         "x-polymorfa-resource-boundary": "project",
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "connections:read",
         "parameters": [
           {
             "schema": {
@@ -33,11 +33,11 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "One number record UUID, within the authorized project or team."
+              "description": "One connection record UUID, within the authorized project or team."
             },
             "required": false,
-            "description": "One number record UUID, within the authorized project or team.",
-            "name": "sessionId",
+            "description": "One connection record UUID, within the authorized project or team.",
+            "name": "connectionId",
             "in": "query"
           },
           {
@@ -298,9 +298,6 @@
             }
           }
         },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
-        },
         "x-audience": "public"
       }
     },
@@ -309,14 +306,14 @@
         "operationId": "exportProjectWhatsAppAnalyticsMetrics",
         "tags": ["Analytics"],
         "summary": "Export project analytics metrics",
-        "description": "**Required scope:** `sessions:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain number/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a number.",
+        "description": "**Required scope:** `connections:read`\n\nAuthenticated metrics for a customer's Prometheus or OpenTelemetry Collector. Requires live Analytics enablement. Disabled Analytics returns only enablement and export-window metrics, with no business measurements. All samples are gauges: counts describe an overlapping window, not monotonic counters. Do not use rate() or increase() on them. Labels contain connection/project record IDs and bounded categories, never contact identities or message content. Null or unmeasured values are omitted; coverage and observation timestamps are included. API request vitals retain project/team scope even when filtering a connection.",
         "security": [
           {
             "ApiKeyAuth": []
           }
         ],
         "x-polymorfa-resource-boundary": "project",
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "connections:read",
         "parameters": [
           {
             "schema": {
@@ -331,11 +328,11 @@
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "One number record UUID, within the authorized project or team."
+              "description": "One connection record UUID, within the authorized project or team."
             },
             "required": false,
-            "description": "One number record UUID, within the authorized project or team.",
-            "name": "sessionId",
+            "description": "One connection record UUID, within the authorized project or team.",
+            "name": "connectionId",
             "in": "query"
           },
           {
@@ -596,9 +593,6 @@
             }
           }
         },
-        "x-mint": {
-          "content": "<Badge color=\"yellow\" icon=\"key\">sessions:read</Badge>"
-        },
         "x-audience": "public"
       }
     },
@@ -606,12 +600,12 @@
       "get": {
         "operationId": "getWhatsAppAnalytics",
         "tags": ["Analytics"],
-        "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number exposes at most 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 number/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts. Recipient country and recipient linked-device-count fields refine joint conversation metadata. Recipient activity remains hourly even for long date ranges, supporting incoming-message timing in an explicit time zone. Delivery signals do not prove reading; read signals are distinct. Presence subscriptions are best-effort around permitted direct sends, reuse a live bounded local lease, preserve observation-off policies and never poll every contact. Missing presence is Unknown, not offline.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "summary": "Get WhatsApp connection analytics",
+        "description": "Aggregated connection activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved connections carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original connection/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number exposes at most 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 connection/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts. Recipient country and recipient linked-device-count fields refine joint conversation metadata. Recipient activity remains hourly even for long date ranges, supporting incoming-message timing in an explicit time zone. Delivery signals do not prove reading; read signals are distinct. Presence subscriptions are best-effort around permitted direct sends, reuse a live bounded local lease, preserve observation-off policies and never poll every contact. Missing presence is Unknown, not offline.\n\nRequires `connections:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "connections:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -631,13 +625,13 @@
             }
           },
           {
-            "name": "sessionId",
+            "name": "connectionId",
             "in": "query",
             "required": false,
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "Number record UUID."
+              "description": "Connection record UUID."
             }
           },
           {
@@ -670,6 +664,13 @@
                   "type": "string"
                 },
                 "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{32}$"
+                },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
               },
               "Polymorfa-Version": {
                 "schema": {
@@ -715,12 +716,12 @@
       "get": {
         "operationId": "getProjectWhatsAppAnalytics",
         "tags": ["Analytics"],
-        "summary": "Get WhatsApp number analytics",
-        "description": "Aggregated number activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved numbers carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original number/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number exposes at most 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 number/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts. Recipient country and recipient linked-device-count fields refine joint conversation metadata. Recipient activity remains hourly even for long date ranges, supporting incoming-message timing in an explicit time zone. Delivery signals do not prove reading; read signals are distinct. Presence subscriptions are best-effort around permitted direct sends, reuse a live bounded local lease, preserve observation-off policies and never poll every contact. Missing presence is Unknown, not offline.\n\nRequires `sessions:read`. Project tokens only access resources in their own project.",
+        "summary": "Get WhatsApp connection analytics",
+        "description": "Aggregated connection activity and operational vitals. Returns disabled with null summary and empty data until a team owner or admin enables Analytics. Conversation rates use completed 24-hour direct-chat cohorts, booked in the period when they mature; missing or dropped cohort coverage returns null rates. Read means an observed read receipt, not a verified app open. No contact identifiers or message content. Linked Devices telemetry only; unsupported or unobserved connections carry measured=false. Bucket timestamps use UTC. Activity series use hourly buckets for ranges up to 48 hours and daily buckets for longer ranges. Call series use daily buckets. Message metadata compares direct sends and completed conversations by type, coarse text/caption length, source, calling code and observed device count. Device observations are bounded samples. Calling-code shares describe conversations, not distinct people or location. Presence signals require existing subscriptions. Primary phone activity spans end at their last observed signal and close after 15 minutes without evidence. Quiet gaps end at the next observed signal. Duration sums and averages count completed intervals and exclude open or restart-censored intervals; they do not measure phone online/offline or power state. Metadata collection uses the current team opt-in; disable erases these aggregates and stale queued metadata is rejected. Calls aggregate retained records by their immutable original connection/project ownership, including supported Official API calls; message measured/coverage fields do not apply to calls. Call series groups starts by UTC day. Answer rate excludes still-ringing calls; timing fields have explicit observation counts. Missed-call follow-up observes an answered outgoing call to the same pseudonymous contact within 24h, including after the requested end; only completed windows with a known contact form the denominator. It does not prove callback intent. Quality uses reported measurements, latest cumulative app reports per connection and per-call averages. Breakdown counts can overlap. Disabling hides this call view without deleting operational call history. Device analytics estimates sending client families from message ID prefixes, not verified hardware. Customer/account distributions count observed live direct messages, not unique people or installed devices; unknown is included. Older retained buckets lack device coverage and return null shares. Each number exposes at most 25 of its own device indexes, coarse reported class and last observed sending activity. A list change makes inventory membership/count unknown until another full list. Inventory is null in the combined summary. No recipient device identity or raw message ID is retained by this analytics block. Joint conversation breakdown rows retain first outgoing message type, length band, send source, inferred calling code and observed customer device-count class together with UTC completion bucket. Combine rows matching all selected categories to drill into countries and message attributes without inferring intersections from independent marginal totals. Calling codes do not establish current location and shared codes do not identify a unique country. Counts describe completed 24-hour conversation cohorts, not distinct customers. Rates and averages are null when coverage is missing, dropped or truncated. At most 4096 connection/time/category groups are returned in one scope, prioritizing largest groups and marking truncation; raw reply latency sums support weighted aggregation. Connection/call vitals and live message platform distributions are separate measurements, not recipient-country filtered cohorts. Recipient country and recipient linked-device-count fields refine joint conversation metadata. Recipient activity remains hourly even for long date ranges, supporting incoming-message timing in an explicit time zone. Delivery signals do not prove reading; read signals are distinct. Presence subscriptions are best-effort around permitted direct sends, reuse a live bounded local lease, preserve observation-off policies and never poll every contact. Missing presence is Unknown, not offline.\n\nRequires `connections:read`. Project tokens only access resources in their own project.",
         "x-audience": "public",
         "x-polymorfa-resource-boundary": "project",
         "x-excluded-from-public": false,
-        "x-required-scope": "sessions:read",
+        "x-required-scope": "connections:read",
         "security": [
           {
             "ApiKeyAuth": []
@@ -740,13 +741,13 @@
             }
           },
           {
-            "name": "sessionId",
+            "name": "connectionId",
             "in": "query",
             "required": false,
             "schema": {
               "type": "string",
               "format": "uuid",
-              "description": "Number record UUID."
+              "description": "Connection record UUID."
             }
           },
           {
@@ -779,6 +780,13 @@
                   "type": "string"
                 },
                 "description": "Stable request correlation identifier."
+              },
+              "X-Trace-Id": {
+                "schema": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{32}$"
+                },
+                "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
               },
               "Polymorfa-Version": {
                 "schema": {
@@ -835,6 +843,7 @@
                   "invalid_request_error",
                   "authentication_error",
                   "permission_error",
+                  "billing_error",
                   "conflict_error",
                   "rate_limit_error",
                   "api_error",
@@ -844,11 +853,16 @@
               "code": {
                 "type": "string",
                 "enum": [
+                  "zero_knowledge_connection",
                   "invalid_parameter",
                   "invalid_credential",
                   "entitlement_required",
                   "cloud_template_authority_restricted",
                   "gate_limit_reached",
+                  "billing_credit_required",
+                  "addon_required",
+                  "safe_mode_not_entitled",
+                  "warmup_plan_not_entitled",
                   "method_not_allowed",
                   "permission_denied",
                   "missing_scope",
@@ -861,17 +875,21 @@
                   "stream_cursor_expired",
                   "stream_connection_limit_reached",
                   "state_conflict",
+                  "team_deletion_scheduled",
                   "hybrid_routing_paused",
                   "hybrid_choice_required",
                   "hybrid_transition_ineligible",
                   "hybrid_automation_unavailable",
+                  "hybrid_group_linked_devices_unavailable",
                   "hybrid_transport_unavailable",
                   "hybrid_target_reference_unavailable",
                   "send_outcome_unknown",
+                  "terms_acceptance_required",
+                  "terms_activation_blocked",
                   "idempotency_conflict",
                   "idempotency_in_progress",
-                  "idempotency_completed",
                   "idempotency_outcome_unknown",
+                  "idempotency_replay_unavailable",
                   "call_claimed",
                   "call_not_ringing",
                   "connection_limit",
@@ -886,7 +904,7 @@
                   "order_status_transition_invalid",
                   "order_cancellation_failed",
                   "call_opt_out_limit",
-                  "number_restricted",
+                  "connection_restricted",
                   "sip_trunk_in_use",
                   "sip_trunk_revision_conflict",
                   "sip_trunk_limit",
@@ -904,16 +922,21 @@
                   "upstream_failure",
                   "service_unavailable",
                   "credential_verification_unavailable",
-                  "session_not_ready",
+                  "connection_not_ready",
                   "command_dispatch_failed",
                   "result_unknown",
+                  "parent_bsuid_not_supported",
                   "recipient_not_on_whatsapp",
                   "conversation_window_closed",
                   "template_not_approved",
                   "media_too_large",
                   "whatsapp_rate_limited",
                   "new_chat_limit_reached",
+                  "marketing_disabled_on_cloud_api",
                   "whatsapp_account_restricted",
+                  "whatsapp_authorization_required",
+                  "whatsapp_payment_method_required",
+                  "whatsapp_number_not_registered",
                   "whatsapp_groups_ineligible",
                   "whatsapp_group_creation_paused",
                   "whatsapp_group_limit_reached",
@@ -929,7 +952,10 @@
                   "bansafe_accounting_unavailable",
                   "bansafe_send_outcome_unknown",
                   "campaigns_not_entitled",
-                  "campaign_throughput_capped"
+                  "campaign_throughput_capped",
+                  "campaign_approval_required",
+                  "campaign_approval_stale",
+                  "campaign_variables_missing"
                 ]
               },
               "message": {
@@ -1157,15 +1183,15 @@
                       "droppedReceiptJoins"
                     ]
                   },
-                  "totalNumbers": {
+                  "totalConnections": {
                     "type": "integer",
                     "minimum": 0
                   },
-                  "measuredNumbers": {
+                  "measuredConnections": {
                     "type": "integer",
                     "minimum": 0
                   },
-                  "connectedNumbers": {
+                  "connectedConnections": {
                     "type": "integer",
                     "minimum": 0
                   },
@@ -2088,7 +2114,7 @@
                         "properties": {
                           "listObserved": {
                             "type": "boolean",
-                            "description": "True after a full device list for this number was observed."
+                            "description": "True after a full device list for this connection was observed."
                           },
                           "listCurrent": {
                             "type": "boolean",
@@ -2206,7 +2232,7 @@
                       "accountPlatforms",
                       "inventory"
                     ],
-                    "description": "Observed message client-family distributions and a bounded inventory of this number's own devices. The combined summary has null inventory."
+                    "description": "Observed message client-family distributions and a bounded inventory of this connection's own devices. The combined summary has null inventory."
                   },
                   "conversationBreakdown": {
                     "type": "object",
@@ -2230,7 +2256,7 @@
                       },
                       "truncated": {
                         "type": "boolean",
-                        "description": "True when the requested scope exceeded 4096 number/time/category groups. The largest groups are retained; rates and averages are null."
+                        "description": "True when the requested scope exceeded 4096 connection/time/category groups. The largest groups are retained; rates and averages are null."
                       },
                       "buckets": {
                         "type": "array",
@@ -2244,7 +2270,7 @@
                             },
                             "complete": {
                               "type": "boolean",
-                              "description": "True when this UTC time bucket has joint category coverage and no conversations or records were dropped. A summary bucket also requires every scoped number to have a bucket."
+                              "description": "True when this UTC time bucket has joint category coverage and no conversations or records were dropped. A summary bucket also requires every scoped connection to have a bucket."
                             }
                           },
                           "required": ["ts", "complete"]
@@ -2293,6 +2319,21 @@
                                 "campaign": "Campaign send.",
                                 "other": "Other or unclassified send source."
                               }
+                            },
+                            "recipientCountry": {
+                              "type": "string",
+                              "pattern": "^(unknown|[A-Z]{2})$",
+                              "description": "Calling country inferred from a full phone number or valid BSUID prefix; Unknown for missing historical metadata. Not current location."
+                            },
+                            "recipientDeviceCount": {
+                              "type": "string",
+                              "enum": [
+                                "primary_only",
+                                "one_linked",
+                                "two_plus_linked",
+                                "unknown"
+                              ],
+                              "description": "Observed linked-device range; device zero is the primary and is excluded from linked counts."
                             },
                             "callingCode": {
                               "type": "string",
@@ -2345,6 +2386,8 @@
                             "messageType",
                             "textBand",
                             "origin",
+                            "recipientCountry",
+                            "recipientDeviceCount",
                             "callingCode",
                             "customerDevices",
                             "completedConversations",
@@ -2370,6 +2413,126 @@
                       "rows"
                     ],
                     "description": "Completed 24-hour conversation cohorts grouped jointly by completion bucket, first outgoing message metadata, calling code and observed device-count class."
+                  },
+                  "recipientActivity": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                      "measured": {
+                        "type": "boolean"
+                      },
+                      "complete": {
+                        "type": "boolean"
+                      },
+                      "observedBuckets": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "droppedSignals": {
+                        "type": "integer",
+                        "minimum": 0
+                      },
+                      "truncated": {
+                        "type": "boolean"
+                      },
+                      "rows": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": false,
+                          "properties": {
+                            "ts": {
+                              "type": "integer",
+                              "description": "Unix milliseconds."
+                            },
+                            "recipientCountry": {
+                              "type": "string",
+                              "pattern": "^(unknown|[A-Z]{2})$"
+                            },
+                            "recipientDeviceCount": {
+                              "type": "string",
+                              "enum": [
+                                "primary_only",
+                                "one_linked",
+                                "two_plus_linked",
+                                "unknown"
+                              ]
+                            },
+                            "deviceSource": {
+                              "type": "string",
+                              "enum": ["primary", "linked", "unknown"]
+                            },
+                            "incomingMessages": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "deliveryReceipts": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "readReceipts": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "onlineSignals": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "offlineSignals": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "typingSignals": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "lastSignalAt": {
+                              "type": "integer",
+                              "description": "Unix milliseconds."
+                            },
+                            "quietGaps": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "quietGapMs": {
+                              "type": "integer",
+                              "minimum": 0
+                            },
+                            "averageQuietGapMs": {
+                              "type": "number",
+                              "minimum": 0,
+                              "nullable": true
+                            }
+                          },
+                          "required": [
+                            "ts",
+                            "recipientCountry",
+                            "recipientDeviceCount",
+                            "deviceSource",
+                            "incomingMessages",
+                            "deliveryReceipts",
+                            "readReceipts",
+                            "onlineSignals",
+                            "offlineSignals",
+                            "typingSignals",
+                            "lastSignalAt",
+                            "quietGaps",
+                            "quietGapMs",
+                            "averageQuietGapMs"
+                          ]
+                        },
+                        "maxItems": 4096
+                      }
+                    },
+                    "required": [
+                      "measured",
+                      "complete",
+                      "observedBuckets",
+                      "droppedSignals",
+                      "truncated",
+                      "rows"
+                    ],
+                    "description": "Hourly aggregate recipient observations, grouped jointly by connectioning country, observed linked-device count and sender-device class. Incoming messages and matched delivery/read receipts are deduplicated by native message and device in bounded memory. Presence is user-level and uses Unknown device source. Quiet gaps of at least 15 minutes are completed gaps between observed signals on the same device, never verified offline periods. No recipient identity, native message ID or recipient device index is retained. Coverage is explicit; older retained buckets are unmeasured. Message telemetry remains Linked Devices only; Official API message activity is not measured."
                   }
                 },
                 "required": [
@@ -2389,9 +2552,9 @@
                   "streamErrors",
                   "keepaliveTimeouts",
                   "engagement",
-                  "totalNumbers",
-                  "measuredNumbers",
-                  "connectedNumbers",
+                  "totalConnections",
+                  "measuredConnections",
+                  "connectedConnections",
                   "messageAnalysis",
                   "customerActivity",
                   "accountActivity",
@@ -2403,13 +2566,13 @@
               }
             ]
           },
-          "numbers": {
+          "connections": {
             "type": "array",
             "items": {
               "type": "object",
               "additionalProperties": false,
               "properties": {
-                "sessionId": {
+                "connectionId": {
                   "type": "string",
                   "format": "uuid"
                 },
@@ -3490,7 +3653,7 @@
                       "properties": {
                         "listObserved": {
                           "type": "boolean",
-                          "description": "True after a full device list for this number was observed."
+                          "description": "True after a full device list for this connection was observed."
                         },
                         "listCurrent": {
                           "type": "boolean",
@@ -3608,7 +3771,7 @@
                     "accountPlatforms",
                     "inventory"
                   ],
-                  "description": "Observed message client-family distributions and a bounded inventory of this number's own devices. The combined summary has null inventory."
+                  "description": "Observed message client-family distributions and a bounded inventory of this connection's own devices. The combined summary has null inventory."
                 },
                 "conversationBreakdown": {
                   "type": "object",
@@ -3632,7 +3795,7 @@
                     },
                     "truncated": {
                       "type": "boolean",
-                      "description": "True when the requested scope exceeded 4096 number/time/category groups. The largest groups are retained; rates and averages are null."
+                      "description": "True when the requested scope exceeded 4096 connection/time/category groups. The largest groups are retained; rates and averages are null."
                     },
                     "buckets": {
                       "type": "array",
@@ -3646,7 +3809,7 @@
                           },
                           "complete": {
                             "type": "boolean",
-                            "description": "True when this UTC time bucket has joint category coverage and no conversations or records were dropped. A summary bucket also requires every scoped number to have a bucket."
+                            "description": "True when this UTC time bucket has joint category coverage and no conversations or records were dropped. A summary bucket also requires every scoped connection to have a bucket."
                           }
                         },
                         "required": ["ts", "complete"]
@@ -3695,6 +3858,21 @@
                               "campaign": "Campaign send.",
                               "other": "Other or unclassified send source."
                             }
+                          },
+                          "recipientCountry": {
+                            "type": "string",
+                            "pattern": "^(unknown|[A-Z]{2})$",
+                            "description": "Calling country inferred from a full phone number or valid BSUID prefix; Unknown for missing historical metadata. Not current location."
+                          },
+                          "recipientDeviceCount": {
+                            "type": "string",
+                            "enum": [
+                              "primary_only",
+                              "one_linked",
+                              "two_plus_linked",
+                              "unknown"
+                            ],
+                            "description": "Observed linked-device range; device zero is the primary and is excluded from linked counts."
                           },
                           "callingCode": {
                             "type": "string",
@@ -3747,6 +3925,8 @@
                           "messageType",
                           "textBand",
                           "origin",
+                          "recipientCountry",
+                          "recipientDeviceCount",
                           "callingCode",
                           "customerDevices",
                           "completedConversations",
@@ -3772,10 +3952,130 @@
                     "rows"
                   ],
                   "description": "Completed 24-hour conversation cohorts grouped jointly by completion bucket, first outgoing message metadata, calling code and observed device-count class."
+                },
+                "recipientActivity": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "measured": {
+                      "type": "boolean"
+                    },
+                    "complete": {
+                      "type": "boolean"
+                    },
+                    "observedBuckets": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "droppedSignals": {
+                      "type": "integer",
+                      "minimum": 0
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    },
+                    "rows": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "properties": {
+                          "ts": {
+                            "type": "integer",
+                            "description": "Unix milliseconds."
+                          },
+                          "recipientCountry": {
+                            "type": "string",
+                            "pattern": "^(unknown|[A-Z]{2})$"
+                          },
+                          "recipientDeviceCount": {
+                            "type": "string",
+                            "enum": [
+                              "primary_only",
+                              "one_linked",
+                              "two_plus_linked",
+                              "unknown"
+                            ]
+                          },
+                          "deviceSource": {
+                            "type": "string",
+                            "enum": ["primary", "linked", "unknown"]
+                          },
+                          "incomingMessages": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "deliveryReceipts": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "readReceipts": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "onlineSignals": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "offlineSignals": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "typingSignals": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "lastSignalAt": {
+                            "type": "integer",
+                            "description": "Unix milliseconds."
+                          },
+                          "quietGaps": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "quietGapMs": {
+                            "type": "integer",
+                            "minimum": 0
+                          },
+                          "averageQuietGapMs": {
+                            "type": "number",
+                            "minimum": 0,
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "ts",
+                          "recipientCountry",
+                          "recipientDeviceCount",
+                          "deviceSource",
+                          "incomingMessages",
+                          "deliveryReceipts",
+                          "readReceipts",
+                          "onlineSignals",
+                          "offlineSignals",
+                          "typingSignals",
+                          "lastSignalAt",
+                          "quietGaps",
+                          "quietGapMs",
+                          "averageQuietGapMs"
+                        ]
+                      },
+                      "maxItems": 4096
+                    }
+                  },
+                  "required": [
+                    "measured",
+                    "complete",
+                    "observedBuckets",
+                    "droppedSignals",
+                    "truncated",
+                    "rows"
+                  ],
+                  "description": "Hourly aggregate recipient observations, grouped jointly by connectioning country, observed linked-device count and sender-device class. Incoming messages and matched delivery/read receipts are deduplicated by native message and device in bounded memory. Presence is user-level and uses Unknown device source. Quiet gaps of at least 15 minutes are completed gaps between observed signals on the same device, never verified offline periods. No recipient identity, native message ID or recipient device index is retained. Coverage is explicit; older retained buckets are unmeasured. Message telemetry remains Linked Devices only; Official API message activity is not measured."
                 }
               },
               "required": [
-                "sessionId",
+                "connectionId",
                 "projectId",
                 "name",
                 "backend",
@@ -3846,7 +4146,7 @@
                   "type": "integer",
                   "minimum": 0
                 },
-                "sessionId": {
+                "connectionId": {
                   "type": "string",
                   "format": "uuid"
                 },
@@ -3900,7 +4200,7 @@
                 "averageBusinessResponseMs",
                 "onlineMs",
                 "disconnects",
-                "sessionId",
+                "connectionId",
                 "customerOnlineSignals",
                 "customerTypingSignals",
                 "primaryPhoneMessages",
@@ -3995,7 +4295,7 @@
                   "type": "integer",
                   "minimum": 0
                 },
-                "sessionId": {
+                "connectionId": {
                   "type": "string",
                   "format": "uuid"
                 },
@@ -4022,7 +4322,7 @@
                 "p95PickupMs",
                 "shortAnswered",
                 "video",
-                "sessionId",
+                "connectionId",
                 "ts"
               ]
             }
@@ -4033,12 +4333,16 @@
           "period",
           "requestVitals",
           "summary",
-          "numbers",
+          "connections",
           "series",
           "callSeries"
         ]
       }
     }
   },
-  "family": "platform"
+  "family": "platform",
+  "previousExport": {
+    "path": "contracts/history/pre-connections/analytics-device-signals.json",
+    "sha256": "68086bd358c750833d3a37d83a1136ffb83d52ab8b16c28801734abc2c7e427a"
+  }
 }

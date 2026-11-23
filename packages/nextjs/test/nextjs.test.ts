@@ -100,14 +100,14 @@ describe("createMessagingClientTokenMint", () => {
 
   it.each([
     [
-      "both session and customer",
+      "both connection and customer",
       {
-        session: "support",
+        connection: "support",
         customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
         ephemeralId: "u",
       },
     ],
-    ["neither session nor customer", { ephemeralId: "u" }],
+    ["neither connection nor customer", { ephemeralId: "u" }],
   ])("refuses %s before minting", async (_label, input) => {
     const mint = vi.fn();
     const adapter = createMessagingClientTokenMint({
@@ -134,7 +134,7 @@ describe("createMessagingClientTokenMint", () => {
       },
     }));
     const resolve = vi.fn(async () => ({
-      session: "support",
+      connection: "support",
       ephemeralId: "user-1-tab-1",
       ttlSeconds: 600,
     }));
@@ -152,7 +152,7 @@ describe("createMessagingClientTokenMint", () => {
     expect(resolve).toHaveBeenCalledWith({ userId: "user-1" }, request);
     expect(mint).toHaveBeenCalledWith(
       {
-        session: "support",
+        connection: "support",
         ephemeralId: "user-1-tab-1",
         ttlSeconds: 600,
       },
@@ -174,7 +174,7 @@ describe("createMessagingClientTokenMint", () => {
         }),
       },
       resolve: async () => ({
-        session: "support",
+        connection: "support",
         ephemeralId: "user-1-tab-1",
       }),
     });
@@ -210,7 +210,7 @@ describe("createMessagingClientTokenMint", () => {
       mint: createMessagingClientTokenMint({
         clientTokens: messaging.clientTokens,
         resolve: (subject) => ({
-          session: "support",
+          connection: "support",
           ephemeralId: subject.userId,
         }),
       }),
@@ -230,7 +230,7 @@ describe("createMessagingClientTokenMint", () => {
     expect(new URL(url).pathname).toBe("/platform/client-tokens");
     expect(init.method).toBe("POST");
     expect(JSON.parse(init.body as string)).toEqual({
-      session: "support",
+      connection: "support",
       ephemeralId: "user-1",
     });
   });
@@ -249,12 +249,12 @@ describe("createTemplateBuilderRoute", () => {
         templates: messaging.templates,
         authorize: () => ({ userId: "user_1" }),
         resolveProjectSlug: () => "support",
-        resolveSubmissionSession: () => "cloud",
+        resolveSubmissionConnection: () => "cloud",
       }),
     ).not.toThrow();
   });
 
-  it("keeps project scope and the submission session under application control", async () => {
+  it("keeps project scope and the submission connection under application control", async () => {
     const createdTemplate = {
       id: "tpl_1",
       name: "order_ready",
@@ -287,7 +287,7 @@ describe("createTemplateBuilderRoute", () => {
     const route = createTemplateBuilderRoute({
       authorize: async () => ({ userId: "user_1", projectId: "project_1" }),
       resolveProjectSlug: async () => "support/eu",
-      resolveSubmissionSession: async () => "cloud/support",
+      resolveSubmissionConnection: async () => "cloud/support",
       templates: {
         create,
         retrieve: vi.fn(),
@@ -320,7 +320,7 @@ describe("createTemplateBuilderRoute", () => {
         body: JSON.stringify({
           action: "submit",
           templateId: "tpl_1",
-          session: "attacker-controlled",
+          connection: "attacker-controlled",
         }),
       }),
     );
@@ -343,7 +343,7 @@ describe("createTemplateBuilderRoute", () => {
     expect(submit).toHaveBeenCalledWith(
       "support/eu",
       "tpl_1",
-      { session: "cloud/support" },
+      { connection: "cloud/support" },
       { signal: expect.any(AbortSignal) },
     );
   });
@@ -363,7 +363,7 @@ describe("createTemplateBuilderRoute", () => {
     const unauthorized = createTemplateBuilderRoute({
       authorize: async () => null,
       resolveProjectSlug: async () => "support",
-      resolveSubmissionSession: async () => "cloud",
+      resolveSubmissionConnection: async () => "cloud",
       templates,
     });
     const denied = await unauthorized(
@@ -378,7 +378,7 @@ describe("createTemplateBuilderRoute", () => {
     const failing = createTemplateBuilderRoute({
       authorize: async () => ({ userId: "user_1" }),
       resolveProjectSlug: async () => "support",
-      resolveSubmissionSession: async () => "cloud",
+      resolveSubmissionConnection: async () => "cloud",
       templates,
     });
     const failed = await failing(

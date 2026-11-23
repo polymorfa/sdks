@@ -27,7 +27,7 @@
                 await harness.InvokeVoidAsync("report", result); StateHasChanged(); return;
             }
             await using var adapter = await IndexedDbStorageAdapter.ConnectAsync(JS, new("browser-tests") { DatabaseName = "polymorfa_cs_browser_" + id });
-            var key = new Dictionary<string,string> { { "sessionId", "durable" }, { "messageId", "native-wasm" } };
+            var key = new Dictionary<string,string> { { "connectionId", "durable" }, { "messageId", "native-wasm" } };
             var row = StorageMerge.EmptyRow(StorageEntity.Messages, key) with { Revision = 1 };
             if (!reopen) { await adapter.SetupAsync(); if (!(await adapter.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row, null) })).Ok) throw new Exception("Native write rejected"); }
             if ((await adapter.GetAsync(StorageEntity.Messages, new[] { row.Id })).Count != 1) throw new Exception("Durable native read failed");

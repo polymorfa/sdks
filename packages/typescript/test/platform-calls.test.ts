@@ -48,7 +48,7 @@ function record(callId: string): CallRecord {
   return {
     callId,
     projectId: PROJECT_ID,
-    sessionId: "support",
+    connectionId: "support",
     direction: "inbound",
     upstream: "linked_device",
     outcome: "answered",
@@ -92,7 +92,9 @@ function projectClient(fetch: typeof globalThis.fetch) {
 
 function csv(rows: readonly string[], cursor?: string): Response {
   return new Response(
-    ["callId,projectId,sessionId", ...rows].map((row) => `${row}\r\n`).join(""),
+    ["callId,projectId,connectionId", ...rows]
+      .map((row) => `${row}\r\n`)
+      .join(""),
     {
       headers: {
         "content-type": "text/csv; charset=utf-8",
@@ -125,7 +127,7 @@ describe("Platform call analytics", () => {
     );
     const client = teamClient(fetch);
     const result = await client.calls.stats({
-      sessionId: "support",
+      connectionId: "support",
       direction: "inbound",
       upstream: "cloud_api",
       outcome: "answered",
@@ -141,7 +143,7 @@ describe("Platform call analytics", () => {
     expect(sent.url.pathname).toBe("/platform/calls/stats");
     expect(sent.authorization).toBe(`Bearer ${TEAM_API_KEY}`);
     expect(Object.fromEntries(sent.url.searchParams)).toEqual({
-      sessionId: "support",
+      connectionId: "support",
       direction: "inbound",
       upstream: "cloud_api",
       outcome: "answered",
@@ -233,7 +235,7 @@ describe("Platform call analytics", () => {
       () => client.calls.stats({ until: "2026-09-01T24:00:00Z" }),
       () => client.calls.stats({ until: "Tue, 01 Sep 2026 00:00:00 GMT" }),
       () => client.calls.stats({ until: new Date(Number.NaN) }),
-      () => client.calls.stats({ sessionId: "" }),
+      () => client.calls.stats({ connectionId: "" }),
       () => client.calls.stats({ timezone: "x".repeat(65) }),
       () => client.calls.list({ limit: 0 }),
       () => client.calls.list({ limit: 101 }),
@@ -293,7 +295,7 @@ describe("Platform call analytics", () => {
     });
     expect(page.data).toEqual({
       format: "csv",
-      body: "callId,projectId,sessionId\r\ncall-1,p,support\r\n",
+      body: "callId,projectId,connectionId\r\ncall-1,p,support\r\n",
       nextCursor: "next-page",
     });
     const sent = call(fetch, 0);
@@ -376,7 +378,7 @@ describe("Platform call analytics", () => {
       chunks.push(chunk);
     }
     expect(chunks.join("")).toBe(
-      'callId,projectId,sessionId\r\ncall-1,p,support\r\ncall-2,p,"multi\r\nline"\r\n',
+      'callId,projectId,connectionId\r\ncall-1,p,support\r\ncall-2,p,"multi\r\nline"\r\n',
     );
     expect(fetch).toHaveBeenCalledTimes(3);
     expect(call(fetch, 1).url.searchParams.get("cursor")).toBe("page-2");
@@ -428,7 +430,7 @@ describe("Platform call analytics", () => {
     await expect(walk()).rejects.toBeInstanceOf(PolymorfaServerError);
     expect(fetch).toHaveBeenCalledTimes(2);
     expect(chunks).toEqual([
-      "callId,projectId,sessionId\r\ncall-1,p,support\r\n",
+      "callId,projectId,connectionId\r\ncall-1,p,support\r\n",
     ]);
   });
 

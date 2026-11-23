@@ -59,13 +59,13 @@ describe("SseParser", () => {
       eventsFromFrame({
         event: "presence.update",
         id: "9",
-        data: '{"session":"s","timestamp":"t","payload":{}}',
+        data: '{"connection":"s","timestamp":"t","payload":{}}',
       }),
     ).toEqual([
       {
         id: "9",
         event: "presence.update",
-        session: "s",
+        connection: "s",
         timestamp: "t",
         payload: {},
       },

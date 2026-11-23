@@ -29,22 +29,22 @@ public sealed class WhatsAppEncryptedUploadBody
 public interface IWhatsAppMediaUploadTransport
 {
     string Name { get; }
-    Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default);
+    Task<WhatsAppUploadLocation> UploadAsync(string connection, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default);
 }
 
 public sealed partial class WhatsAppMediaResource
 {
     /// <summary>Invokes a custom ciphertext-only transport. Its own errors remain unchanged.</summary>
-    public async Task<WhatsAppMediaUploadResult> UploadAsync(string session, PreparedWhatsAppUpload prepared, IWhatsAppMediaUploadTransport transport, CancellationToken cancellation = default)
+    public async Task<WhatsAppMediaUploadResult> UploadAsync(string connection, PreparedWhatsAppUpload prepared, IWhatsAppMediaUploadTransport transport, CancellationToken cancellation = default)
     {
-        if (string.IsNullOrEmpty(session) || transport is null || string.IsNullOrEmpty(transport.Name)) throw new PolymorfaConfigurationException("A session and named upload transport are required.");
+        if (string.IsNullOrEmpty(connection) || transport is null || string.IsNullOrEmpty(transport.Name)) throw new PolymorfaConfigurationException("A connection and named upload transport are required.");
         if (cancellation.IsCancellationRequested) throw new PolymorfaCancelledException();
         var egress = transport.Name;
         var info = prepared.Info with { MediaKey = prepared.Info.MediaKey.ToArray(), FileSha256 = prepared.Info.FileSha256.ToArray(), FileEncSha256 = prepared.Info.FileEncSha256.ToArray() };
         var body = new WhatsAppEncryptedUploadBody(prepared, cancellation);
         try
         {
-            var location = await transport.UploadAsync(session, body, cancellation).WaitAsync(cancellation).ConfigureAwait(false);
+            var location = await transport.UploadAsync(connection, body, cancellation).WaitAsync(cancellation).ConfigureAwait(false);
             if (cancellation.IsCancellationRequested) throw new PolymorfaCancelledException();
             return new(info, location, egress);
         }
@@ -61,7 +61,7 @@ public sealed partial class WhatsAppMediaResource
     private sealed class BuiltinUploadTransport(WhatsAppMediaResource resource, WhatsAppDirectUploadOptions? direct, RequestOptions? request) : IWhatsAppMediaUploadTransport
     {
         public string Name => direct is null ? "relay" : "direct";
-        public async Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default)
+        public async Task<WhatsAppUploadLocation> UploadAsync(string connection, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default)
         {
             using var stop = CancellationTokenSource.CreateLinkedTokenSource(cancellation, request?.CancellationToken ?? default, direct?.CancellationToken ?? default);
             if (stop.IsCancellationRequested) throw new PolymorfaCancelledException();
@@ -69,8 +69,8 @@ public sealed partial class WhatsAppMediaResource
             try
             {
                 var work = direct is null
-                    ? resource.UploadRelayAsync(session, body.Prepared, options)
-                    : resource.UploadDirectAsync(session, body.Prepared, direct with { CancellationToken = stop.Token }, options);
+                    ? resource.UploadRelayAsync(connection, body.Prepared, options)
+                    : resource.UploadDirectAsync(connection, body.Prepared, direct with { CancellationToken = stop.Token }, options);
                 return (await work.WaitAsync(stop.Token).ConfigureAwait(false)).Location;
             }
             catch (OperationCanceledException) when (stop.IsCancellationRequested) { throw new PolymorfaCancelledException(); }

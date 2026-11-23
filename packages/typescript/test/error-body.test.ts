@@ -143,7 +143,7 @@ describe("error codes", () => {
       "new_chat_limit_reached",
       "whatsapp_account_restricted",
       "bansafe_throttled",
-      "session_not_ready",
+      "connection_not_ready",
     ]) {
       expect(isKnownPolymorfaErrorCode(code), code).toBe(true);
     }
@@ -238,7 +238,7 @@ describe("error codes", () => {
       "campaign_approval_required",
       "campaign_approval_stale",
       "campaign_variables_missing",
-      "zero_knowledge_session",
+      "zero_knowledge_connection",
     ];
     const supplement = await readFile(
       new URL(

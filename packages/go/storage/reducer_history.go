@@ -19,10 +19,10 @@ type HistoryIdentityIndex struct {
 	Messages      []HistoryMessageIdentity
 }
 type HistoryInput struct {
-	SessionID  string
-	Chunk      map[string]any
-	ChunkID    *string
-	Identities *HistoryIdentityIndex
+	ConnectionID string
+	Chunk        map[string]any
+	ChunkID      *string
+	Identities   *HistoryIdentityIndex
 }
 type HistoryKeys struct {
 	conversations, contacts map[string]string
@@ -272,7 +272,7 @@ func historyMediaWrites(media *mappedContent, chat string, version float64) Fiel
 
 // ReduceWebMessageInfo consumes complete, application-decoded protocol JSON.
 // The caller retains original protobuf bytes returned by the history codec.
-func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys, chatJID string) []Operation {
+func ReduceWebMessageInfo(info map[string]any, connection string, keys *HistoryKeys, chatJID string) []Operation {
 	key := object(info["key"])
 	jid := text(first(nonempty(key["remoteJid"]), nonempty(chatJID)))
 	if jid == "" {
@@ -302,7 +302,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 	var guard *Watermark
 	if timestamp != nil {
 		at = *timestamp
-		guard = &Watermark{session, chat, at}
+		guard = &Watermark{connection, chat, at}
 	}
 	content := unwrap(object(info["message"]))
 	ops := []Operation{}
@@ -319,7 +319,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			f := cleared(contentFields)
 			put(f, "chatId", chat, 0)
 			put(f, "revokedAt", at, FinalVersion)
-			return []Operation{rowOperation("messages", session, map[string]any{"messageId": target}, f, nil), rowOperation("media", session, map[string]any{"messageId": target}, cleared(mediaSecrets), nil)}
+			return []Operation{rowOperation("messages", connection, map[string]any{"messageId": target}, f, nil), rowOperation("media", connection, map[string]any{"messageId": target}, cleared(mediaSecrets), nil)}
 		}
 		if kind == 14 {
 			version := at
@@ -332,7 +332,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			}
 			put(mapped.fields, "chatId", chat, 0)
 			put(mapped.fields, "editedAt", version, version)
-			return []Operation{rowOperation("messages", session, map[string]any{"messageId": target}, mapped.fields, guard)}
+			return []Operation{rowOperation("messages", connection, map[string]any{"messageId": target}, mapped.fields, guard)}
 		}
 		return nil
 	}
@@ -346,7 +346,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			version = *n
 		}
 		f := Fields{"chatId": {chat, 0}, "emoji": {text(reaction["text"]), version}, "timestamp": {version, version}}
-		return []Operation{rowOperation("reactions", session, map[string]any{"messageId": target, "senderId": senderID}, f, nil)}
+		return []Operation{rowOperation("reactions", connection, map[string]any{"messageId": target, "senderId": senderID}, f, nil)}
 	}
 	fields := Fields{"chatId": {chat, 0}, "fromMe": {own, 0}, "timestamp": {at, 0}}
 	putIf(fields, "senderId", nonempty(senderID), 0)
@@ -375,7 +375,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			revoked = *n
 		}
 		put(fields, "revokedAt", revoked, FinalVersion)
-		ops = append(ops, rowOperation("media", session, map[string]any{"messageId": id}, cleared(mediaSecrets), nil))
+		ops = append(ops, rowOperation("media", connection, map[string]any{"messageId": id}, cleared(mediaSecrets), nil))
 	} else if len(content) > 0 {
 		mapped := mapHistoryContent(content, 0)
 		if mapped != nil {
@@ -391,9 +391,9 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			put(fields, "type", "unknown", 0)
 		}
 	}
-	ops = append(ops, rowOperation("messages", session, map[string]any{"messageId": id}, fields, guard))
+	ops = append(ops, rowOperation("messages", connection, map[string]any{"messageId": id}, fields, guard))
 	if media != nil {
-		ops = append(ops, rowOperation("media", session, map[string]any{"messageId": id}, historyMediaWrites(media, chat, 0), guard))
+		ops = append(ops, rowOperation("media", connection, map[string]any{"messageId": id}, historyMediaWrites(media, chat, 0), guard))
 	}
 	for _, entry := range list(info["userReceipt"]) {
 		r := object(entry)
@@ -417,7 +417,7 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 		statusFields(f, status, receiptAt)
 		f["timestamp"] = f["statusAt"]
 		delete(f, "statusAt")
-		ops = append(ops, rowOperation("receipts", session, map[string]any{"messageId": id, "recipientId": keys.ContactID(user)}, f, guard))
+		ops = append(ops, rowOperation("receipts", connection, map[string]any{"messageId": id, "recipientId": keys.ContactID(user)}, f, guard))
 	}
 	for _, entry := range list(info["reactions"]) {
 		r := object(entry)
@@ -438,14 +438,14 @@ func ReduceWebMessageInfo(info map[string]any, session string, keys *HistoryKeys
 			version = *n
 		}
 		f := Fields{"chatId": {chat, 0}, "emoji": {text(r["text"]), version}, "timestamp": {version, version}}
-		ops = append(ops, rowOperation("reactions", session, map[string]any{"messageId": id, "senderId": reactor}, f, guard))
+		ops = append(ops, rowOperation("reactions", connection, map[string]any{"messageId": id, "senderId": reactor}, f, guard))
 	}
 	if !own && senderJID != "" && text(info["pushName"]) != "" && timestamp != nil {
-		ops = append(ops, rowOperation("contacts", session, map[string]any{"contactId": keys.ContactID(senderJID)}, Fields{"jid": {NormalizeJID(senderJID), 0}, "pushName": {info["pushName"], *timestamp}}, nil))
+		ops = append(ops, rowOperation("contacts", connection, map[string]any{"contactId": keys.ContactID(senderJID)}, Fields{"jid": {NormalizeJID(senderJID), 0}, "pushName": {info["pushName"], *timestamp}}, nil))
 	}
 	return ops
 }
-func conversationOperations(session string, c map[string]any, keys *HistoryKeys) []Operation {
+func conversationOperations(connection string, c map[string]any, keys *HistoryKeys) []Operation {
 	jid := text(c["id"])
 	if jid == "" {
 		return nil
@@ -481,7 +481,7 @@ func conversationOperations(session string, c map[string]any, keys *HistoryKeys)
 	if last != nil {
 		put(f, "lastMessageAt", *last, *last)
 	}
-	ops := []Operation{rowOperation("chats", session, map[string]any{"chatId": chat}, f, nil)}
+	ops := []Operation{rowOperation("chats", connection, map[string]any{"chatId": chat}, f, nil)}
 	if kind == "group" {
 		g := Fields{"jid": {bare, 0}}
 		putIf(g, "subject", nonempty(c["name"]), snapshot)
@@ -490,7 +490,7 @@ func conversationOperations(session string, c map[string]any, keys *HistoryKeys)
 		if s := text(c["createdBy"]); s != "" {
 			put(g, "createdBy", NormalizeJID(s), 0)
 		}
-		ops = append(ops, rowOperation("groups", session, map[string]any{"groupId": chat}, g, nil))
+		ops = append(ops, rowOperation("groups", connection, map[string]any{"groupId": chat}, g, nil))
 		for _, entry := range list(c["participant"]) {
 			p := object(entry)
 			user := text(p["userJid"])
@@ -503,18 +503,18 @@ func conversationOperations(session string, c map[string]any, keys *HistoryKeys)
 				role = "member"
 			}
 			m := Fields{"jid": {NormalizeJID(user), 0}, "role": {role, snapshot}, "active": {true, snapshot}, "changedAt": {snapshot, snapshot}}
-			ops = append(ops, rowOperation("group_participants", session, map[string]any{"groupId": chat, "participantId": keys.ContactID(user)}, m, nil))
+			ops = append(ops, rowOperation("group_participants", connection, map[string]any{"groupId": chat, "participantId": keys.ContactID(user)}, m, nil))
 		}
 	}
 	for _, entry := range list(c["messages"]) {
 		if info, ok := object(entry)["message"].(map[string]any); ok {
-			ops = append(ops, ReduceWebMessageInfo(info, session, keys, bare)...)
+			ops = append(ops, ReduceWebMessageInfo(info, connection, keys, bare)...)
 		}
 	}
 	return ops
 }
 func ReduceHistoryChunk(input HistoryInput) (Batch, error) {
-	if input.SessionID == "" || input.Chunk == nil {
+	if input.ConnectionID == "" || input.Chunk == nil {
 		return Batch{}, invalid()
 	}
 	count := 0
@@ -526,7 +526,7 @@ func ReduceHistoryChunk(input HistoryInput) (Batch, error) {
 	messageCount := 0
 	for _, entry := range list(input.Chunk["conversations"]) {
 		c := object(entry)
-		ops = append(ops, conversationOperations(input.SessionID, c, keys)...)
+		ops = append(ops, conversationOperations(input.ConnectionID, c, keys)...)
 		messageCount += len(list(c["messages"]))
 	}
 	for _, entry := range list(input.Chunk["pushnames"]) {
@@ -536,7 +536,7 @@ func ReduceHistoryChunk(input HistoryInput) (Batch, error) {
 			continue
 		}
 		f := Fields{"jid": {NormalizeJID(jid), 0}, "pushName": {name, 0}}
-		ops = append(ops, rowOperation("contacts", input.SessionID, map[string]any{"contactId": keys.ContactID(jid)}, f, nil))
+		ops = append(ops, rowOperation("contacts", input.ConnectionID, map[string]any{"contactId": keys.ContactID(jid)}, f, nil))
 	}
 	for _, entry := range list(input.Chunk["phoneNumberToLidMappings"]) {
 		m := object(entry)
@@ -547,7 +547,7 @@ func ReduceHistoryChunk(input HistoryInput) (Batch, error) {
 		phone := "+" + strings.Split(NormalizeJID(pn), "@")[0]
 		for _, jid := range []string{pn, lid} {
 			f := Fields{"phoneNumber": {phone, 0}, "lidJid": {NormalizeJID(lid), 0}}
-			ops = append(ops, rowOperation("contacts", input.SessionID, map[string]any{"contactId": keys.ContactID(jid)}, f, nil))
+			ops = append(ops, rowOperation("contacts", input.ConnectionID, map[string]any{"contactId": keys.ContactID(jid)}, f, nil))
 		}
 	}
 	for _, entry := range list(input.Chunk["pastParticipants"]) {
@@ -572,7 +572,7 @@ func ReduceHistoryChunk(input HistoryInput) (Batch, error) {
 				why = "removed"
 			}
 			f := Fields{"jid": {NormalizeJID(user), 0}, "active": {false, left}, "leaveReason": {why, left}, "changedAt": {left, left}}
-			ops = append(ops, rowOperation("group_participants", input.SessionID, map[string]any{"groupId": keys.ChatID(group), "participantId": keys.ContactID(user)}, f, nil))
+			ops = append(ops, rowOperation("group_participants", input.ConnectionID, map[string]any{"groupId": keys.ChatID(group), "participantId": keys.ContactID(user)}, f, nil))
 		}
 	}
 	progress := map[string]any{"syncType": input.Chunk["syncType"], "conversationCount": len(list(input.Chunk["conversations"])), "messageCount": messageCount, "pushNameCount": len(list(input.Chunk["pushnames"]))}
@@ -581,8 +581,8 @@ func ReduceHistoryChunk(input HistoryInput) (Batch, error) {
 			progress[f] = n
 		}
 	}
-	ops = append(ops, historyProgressOperations(input.SessionID, progress)...)
-	batch := Batch{SessionID: input.SessionID, EventType: strValue("history.chunk"), Operations: ops}
+	ops = append(ops, historyProgressOperations(input.ConnectionID, progress)...)
+	batch := Batch{ConnectionID: input.ConnectionID, EventType: strValue("history.chunk"), Operations: ops}
 	if input.ChunkID != nil {
 		batch.EventID = strValue("history:" + *input.ChunkID)
 	}
@@ -592,7 +592,7 @@ func strValue(s string) *string { return &s }
 
 // ReduceHistoryData requires an explicit complete-schema decoder result. The
 // codec's minimal core view is not silently treated as a fully decoded chunk.
-func ReduceHistoryData(session string, data *polymorfa.HistorySyncData, chunkID *string, index *HistoryIdentityIndex) (Batch, error) {
+func ReduceHistoryData(connection string, data *polymorfa.HistorySyncData, chunkID *string, index *HistoryIdentityIndex) (Batch, error) {
 	if data == nil || data.Decoded == nil {
 		return Batch{}, storageError("complete_history_decoder_required")
 	}
@@ -600,5 +600,5 @@ func ReduceHistoryData(session string, data *polymorfa.HistorySyncData, chunkID 
 	if !ok {
 		return Batch{}, storageError("complete_history_decoder_required")
 	}
-	return ReduceHistoryChunk(HistoryInput{session, chunk, chunkID, index})
+	return ReduceHistoryChunk(HistoryInput{connection, chunk, chunkID, index})
 }

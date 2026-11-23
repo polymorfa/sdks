@@ -61,25 +61,25 @@ export class CatalogsResource {
   ) {}
 
   list(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<
     ApiResponse<SuccessEnvelope<{ readonly catalogs: readonly CatalogSync[] }>>
   > {
     return this.transport.request({
       method: "GET",
-      path: this.path(session),
+      path: this.path(connection),
       ...options,
     });
   }
   retrieve(
-    session: string,
+    connection: string,
     catalogId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<CatalogSync>>> {
     return this.transport.request({
       method: "GET",
-      path: this.path(session, catalogId),
+      path: this.path(connection, catalogId),
       ...options,
     });
   }
@@ -88,20 +88,20 @@ export class CatalogsResource {
    * A full sync can take 50 seconds; this method allows 60 seconds by default.
    */
   sync(
-    session: string,
+    connection: string,
     catalogId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessEnvelope<CatalogSync>>> {
     return this.transport.request({
       method: "POST",
-      path: `${this.path(session, catalogId)}/sync`,
+      path: `${this.path(connection, catalogId)}/sync`,
       timeoutMs: 60_000,
       ...options,
       maxNetworkRetries: 0,
     });
   }
   listProducts(
-    session: string,
+    connection: string,
     catalogId: string,
     params: ListCatalogProductsParams = {},
     options: RequestOptions = {},
@@ -124,23 +124,23 @@ export class CatalogsResource {
       );
     return this.transport.request({
       method: "GET",
-      path: `${this.path(session, catalogId)}/products`,
+      path: `${this.path(connection, catalogId)}/products`,
       query: { ...params },
       ...options,
     });
   }
-  private path(session: string, catalogId?: string): string {
+  private path(connection: string, catalogId?: string): string {
     if (this.credentialType === "clientToken")
       throw new PolymorfaConfigurationError(
         "Catalog sync requires a team API key or project token.",
         "credential",
       );
-    if (!session.trim())
-      throw new PolymorfaValidationError("Provide a Number ID.");
+    if (!connection.trim())
+      throw new PolymorfaValidationError("Provide a Connection ID.");
     if (catalogId !== undefined && !/^[0-9]{1,32}$/.test(catalogId))
       throw new PolymorfaValidationError(
         "catalogId must contain 1 to 32 digits.",
       );
-    return `/messaging/${encodeURIComponent(session)}/catalogs${catalogId === undefined ? "" : `/${encodeURIComponent(catalogId)}`}`;
+    return `/messaging/${encodeURIComponent(connection)}/catalogs${catalogId === undefined ? "" : `/${encodeURIComponent(catalogId)}`}`;
   }
 }

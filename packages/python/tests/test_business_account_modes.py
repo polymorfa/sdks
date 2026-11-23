@@ -20,7 +20,7 @@ KEY = Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k")
 )
 async def test_business_account_modes_wire(account):
     reply = {
-        "session": "demo /a",
+        "connection": "demo /a",
         "accountType": account,
         "primaryPlatform": None if account == "meta_cloud" else "android",
         "changed": True,
@@ -71,7 +71,7 @@ async def test_business_account_mode_rejects_client_tokens():
 
 async def test_business_account_mode_checks_required_response_shape():
     reply = {
-        "session": "demo",
+        "connection": "demo",
         "accountType": "business_app",
         "primaryPlatform": "ios",
         "changed": "false",
@@ -125,7 +125,7 @@ async def test_business_quicklink_keeps_mode_and_platform_with_simulation_fields
                 "data": {
                     "id": "ql",
                     "url": "https://example.test/ql",
-                    "session": "demo",
+                    "connection": "demo",
                     "expiresAt": None,
                 },
             },

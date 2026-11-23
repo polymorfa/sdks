@@ -9,10 +9,10 @@ use Polymorfa\WebhookEvent;
 /** Deterministic handwritten policy for the 24 stored native webhook kinds. */
 final class EventReducer
 {
-    public const TYPES = ['blocklist.update','chat.archive','chat.clear','chat.delete','chat.mute','chat.read','contact.update','group.participant','group.update','history.sync','labels.update','message.ack','message.delete','message.edited','message.reaction','message.received','message.revoked','message.sent','message.update','message.vote','newsletter.update','session.connected','session.logged_out','session.status'];
+    public const TYPES = ['blocklist.update','chat.archive','chat.clear','chat.delete','chat.mute','chat.read','contact.update','group.participant','group.update','history.sync','labels.update','message.ack','message.delete','message.edited','message.reaction','message.received','message.revoked','message.sent','message.update','message.vote','newsletter.update','connection.connected','connection.logged_out','connection.status'];
     public static function reduce(WebhookEvent $event): Batch
     {
-        return new Batch($event->session, self::operations($event->event, $event->session, Reduction::record($event->payload), Reduction::iso($event->timestamp)), $event->id, $event->event);
+        return new Batch($event->connection, self::operations($event->event, $event->connection, Reduction::record($event->payload), Reduction::iso($event->timestamp)), $event->id, $event->event);
     }
     public static function ackStatus(?string $v): ?string
     {
@@ -50,17 +50,17 @@ final class EventReducer
                 }
             } else {
                 Reduction::put($f, $kind === 'chat.clear' ? 'clearedAt' : 'deletedAt', $at, $at);
-                return [new Upsert('chats', ['sessionId' => $s,'chatId' => $chat], $f),new ClearChat($s, $chat, $at)];
+                return [new Upsert('chats', ['connectionId' => $s,'chatId' => $chat], $f),new ClearChat($s, $chat, $at)];
             }
-            return $f === [] ? [] : [new Upsert('chats', ['sessionId' => $s,'chatId' => $chat], $f)];
+            return $f === [] ? [] : [new Upsert('chats', ['connectionId' => $s,'chatId' => $chat], $f)];
         }
-        if (in_array($kind, ['session.connected','session.status','session.logged_out'], true)) {
-            if ($kind === 'session.connected') {
+        if (in_array($kind, ['connection.connected','connection.status','connection.logged_out'], true)) {
+            if ($kind === 'connection.connected') {
                 Reduction::put($f, 'connected', true, $at);
                 foreach (['phoneNumber' => 'phoneNumber','waId' => 'id','pushName' => 'pushName','phonePlatform' => 'phonePlatform','accountType' => 'accountType','businessName' => 'businessName'] as $target => $source) {
                     Reduction::present($f, $target, Reduction::text($p[$source] ?? null), $at);
                 }
-            } elseif ($kind === 'session.status') {
+            } elseif ($kind === 'connection.status') {
                 if (!is_string($p['status'] ?? null)) {
                     return [];
                 } Reduction::put($f, 'status', $p['status'], $at);
@@ -70,7 +70,7 @@ final class EventReducer
                 Reduction::present($f, 'loggedOutReason', Reduction::text($p['reason'] ?? null), $at);
                 Reduction::present($f, 'loggedOutCode', Reduction::number($p['code'] ?? null), $at);
             }
-            return [new Upsert('sessions', ['sessionId' => $s], $f)];
+            return [new Upsert('connections', ['connectionId' => $s], $f)];
         }
         if ($kind === 'contact.update') {
             $id = Reduction::text($p['id'] ?? null);
@@ -85,7 +85,7 @@ final class EventReducer
             } else {
                 Reduction::present($f, 'pictureId', Reduction::text($p['pictureId'] ?? null), $at);
             }
-            return $f === [] ? [] : [new Upsert('contacts', ['sessionId' => $s,'contactId' => $id], $f)];
+            return $f === [] ? [] : [new Upsert('contacts', ['connectionId' => $s,'contactId' => $id], $f)];
         }
         if ($kind === 'blocklist.update') {
             $ops = [];
@@ -96,7 +96,7 @@ final class EventReducer
                     continue;
                 } $f = ['blocked' => new FieldWrite($action === 'block', $at)];
                 Reduction::present($f, 'phoneNumber', Reduction::text($change['phoneNumber'] ?? null), $at);
-                $ops[] = new Upsert('contacts', ['sessionId' => $s,'contactId' => $id], $f);
+                $ops[] = new Upsert('contacts', ['connectionId' => $s,'contactId' => $id], $f);
             } return $ops;
         }
         if ($kind === 'group.update') {
@@ -112,13 +112,13 @@ final class EventReducer
             }
             $chat = ['kind' => new FieldWrite('group', 0)];
             Reduction::present($chat, 'name', Reduction::text($p['newSubject'] ?? null), $at);
-            return [new Upsert('groups', ['sessionId' => $s,'groupId' => $id], $f),new Upsert('chats', ['sessionId' => $s,'chatId' => $id], $chat)];
+            return [new Upsert('groups', ['connectionId' => $s,'groupId' => $id], $f),new Upsert('chats', ['connectionId' => $s,'chatId' => $id], $chat)];
         }
         if ($kind === 'group.participant') {
             $group = Reduction::text($p['id'] ?? null);
             if ($group === null) {
                 return [];
-            } $ops = [new Upsert('groups', ['sessionId' => $s,'groupId' => $group], [])];
+            } $ops = [new Upsert('groups', ['connectionId' => $s,'groupId' => $group], [])];
             foreach (['joined','left','promoted','demoted'] as $action) {
                 foreach (Reduction::records($p[$action] ?? null) as $person) {
                     $id = Reduction::text($person['id'] ?? null);
@@ -130,7 +130,7 @@ final class EventReducer
                     };
                     Reduction::present($f, 'phoneNumber', Reduction::text($person['phoneNumber'] ?? null), $at);
                     Reduction::put($f, 'changedAt', $at, $at);
-                    $ops[] = new Upsert('group_participants', ['sessionId' => $s,'groupId' => $group,'participantId' => $id], $f);
+                    $ops[] = new Upsert('group_participants', ['connectionId' => $s,'groupId' => $group,'participantId' => $id], $f);
                 }
             } return $ops;
         }
@@ -140,7 +140,7 @@ final class EventReducer
                 return [];
             } $f['kind'] = new FieldWrite('channel', 0);
             Reduction::put($f, 'muted', array_key_exists('muted', $p) ? $p['muted'] : Unspecified::Value, $at);
-            return [new Upsert('chats', ['sessionId' => $s,'chatId' => $id], $f)];
+            return [new Upsert('chats', ['connectionId' => $s,'chatId' => $id], $f)];
         }
         if ($kind === 'history.sync' && ($p['kind'] ?? null) !== 'history') {
             return HistoryReducer::progress($s, HistoryReducer::syncType($p['syncType'] ?? null), Reduction::number($p['chunkOrder'] ?? null), Reduction::number($p['progress'] ?? null), Reduction::number($p['conversationCount'] ?? null), Reduction::number($p['messageCount'] ?? null), Reduction::number($p['pushNameCount'] ?? null));
@@ -154,18 +154,18 @@ final class EventReducer
                 foreach (['color','orderIndex'] as $name) {
                     Reduction::present($f, $name, Reduction::number($p[$name] ?? null), $version);
                 } Reduction::put($f, 'deleted', $p['deleted'] ?? false, $version);
-                return [new Upsert('labels', ['sessionId' => $s,'labelId' => $label], $f)];
+                return [new Upsert('labels', ['connectionId' => $s,'labelId' => $label], $f)];
             }
             if (in_array($action, ['label_association_chat','label_association_message'], true) && $label !== null && is_bool($p['labeled'] ?? null)) {
                 $target = $action === 'label_association_chat' ? Reduction::text(Reduction::record($p['from'] ?? null)['id'] ?? null) : Reduction::text($p['messageId'] ?? null);
                 if ($target !== null) {
-                    return [new Upsert('label_associations', ['sessionId' => $s,'labelId' => $label,'targetKind' => $action === 'label_association_chat' ? 'chat' : 'message','targetId' => $target], ['labeled' => new FieldWrite($p['labeled'], $version),'changedAt' => new FieldWrite($version, $version)])];
+                    return [new Upsert('label_associations', ['connectionId' => $s,'labelId' => $label,'targetKind' => $action === 'label_association_chat' ? 'chat' : 'message','targetId' => $target], ['labeled' => new FieldWrite($p['labeled'], $version),'changedAt' => new FieldWrite($version, $version)])];
                 }
             }
             if ($action === 'star' && Reduction::text($p['messageId'] ?? null) !== null && is_bool($p['starred'] ?? null)) {
                 Reduction::put($f, 'starred', $p['starred'], $version);
                 Reduction::present($f, 'chatId', Reduction::text(Reduction::record($p['from'] ?? null)['id'] ?? null), 0);
-                return [new Upsert('messages', ['sessionId' => $s,'messageId' => $p['messageId']], $f)];
+                return [new Upsert('messages', ['connectionId' => $s,'messageId' => $p['messageId']], $f)];
             }
         }
         return [];
@@ -204,7 +204,7 @@ final class EventReducer
             }
         }
         Reduction::present($f, 'lastMessageAt', $timestamp, $timestamp ?? 0);
-        return [new Upsert('chats', ['sessionId' => $s,'chatId' => $id], $f)];
+        return [new Upsert('chats', ['connectionId' => $s,'chatId' => $id], $f)];
     }
     /**
      * @param array<string,mixed> $p
@@ -249,7 +249,7 @@ final class EventReducer
         Reduction::present($f, 'cloudMessageId', Reduction::text($ids['official_api'] ?? null), 0);
         $guard = $timestamp === null ? null : new Watermark($s, $chat, $timestamp);
         $group = is_bool($p['isGroup'] ?? null) ? $p['isGroup'] : null;
-        $key = ['sessionId' => $s,'messageId' => $id];
+        $key = ['connectionId' => $s,'messageId' => $id];
         if ($sent) {
             Reduction::present($f, 'type', $kind, 0);
             Reduction::status($f, 'sent', $timestamp);
@@ -281,7 +281,7 @@ final class EventReducer
             $c = Reduction::record($p['conversation'] ?? null);
             $ref = $group ? Reduction::record($c['sender'] ?? null) : $c;
             Reduction::present($f, 'phoneNumber', Reduction::text($ref['phoneNumber'] ?? null), $timestamp);
-            $ops[] = new Upsert('contacts', ['sessionId' => $s,'contactId' => $sender], $f);
+            $ops[] = new Upsert('contacts', ['connectionId' => $s,'contactId' => $sender], $f);
         }
         return $ops;
     }
@@ -297,7 +297,7 @@ final class EventReducer
             if ($identity === null || $target === null || $identity[4] === null) {
                 return [];
             } $v = $identity[2] ?? $at;
-            return [new Upsert('reactions', ['sessionId' => $s,'messageId' => $target,'senderId' => $identity[4]], ['chatId' => new FieldWrite($identity[1], 0),'emoji' => new FieldWrite(is_string($p['reaction'] ?? null) ? $p['reaction'] : '', $v),'timestamp' => new FieldWrite($v, $v)])];
+            return [new Upsert('reactions', ['connectionId' => $s,'messageId' => $target,'senderId' => $identity[4]], ['chatId' => new FieldWrite($identity[1], 0),'emoji' => new FieldWrite(is_string($p['reaction'] ?? null) ? $p['reaction'] : '', $v),'timestamp' => new FieldWrite($v, $v)])];
         }
         if (in_array($kind, ['message.revoked','message.delete'], true)) {
             $target = Reduction::text($p[$kind === 'message.revoked' ? 'revokedId' : 'id'] ?? null);
@@ -306,7 +306,7 @@ final class EventReducer
             } $f = Reduction::cleared(Reduction::CONTENT);
             $f['chatId'] = new FieldWrite($chat, 0);
             $f[$kind === 'message.revoked' ? 'revokedAt' : 'deletedAt'] = new FieldWrite($kind === 'message.revoked' ? ($identity[2] ?? $at) : $at, Rows::FINAL_VERSION);
-            $key = ['sessionId' => $s,'messageId' => $target];
+            $key = ['connectionId' => $s,'messageId' => $target];
             return [new Upsert('messages', $key, $f),new Upsert('media', $key, Reduction::cleared(Reduction::MEDIA_SECRETS))];
         }
         if ($kind === 'message.ack') {
@@ -322,10 +322,10 @@ final class EventReducer
                     continue;
                 } $f = ['chatId' => new FieldWrite($chat, 0)];
                 Reduction::status($f, $status, $v);
-                $ops[] = new Upsert('messages', ['sessionId' => $s,'messageId' => $id], $f);
+                $ops[] = new Upsert('messages', ['connectionId' => $s,'messageId' => $id], $f);
                 $f['timestamp'] = $f['statusAt'];
                 unset($f['statusAt']);
-                $ops[] = new Upsert('receipts', ['sessionId' => $s,'messageId' => $id,'recipientId' => $recipient], $f);
+                $ops[] = new Upsert('receipts', ['connectionId' => $s,'messageId' => $id,'recipientId' => $recipient], $f);
             } return $ops;
         }
         if ($kind === 'message.vote') {
@@ -334,7 +334,7 @@ final class EventReducer
             if ($id === null || $voter === null || $chat === null) {
                 return [];
             } $v = Reduction::millis($p['timestamp'] ?? null) ?? $at;
-            return [new Upsert('poll_votes', ['sessionId' => $s,'messageId' => $id,'voterId' => $voter], ['chatId' => new FieldWrite($chat, 0),'selectedHashes' => new FieldWrite($p['selectedHashes'] ?? [], $v),'timestamp' => new FieldWrite($v, $v)])];
+            return [new Upsert('poll_votes', ['connectionId' => $s,'messageId' => $id,'voterId' => $voter], ['chatId' => new FieldWrite($chat, 0),'selectedHashes' => new FieldWrite($p['selectedHashes'] ?? [], $v),'timestamp' => new FieldWrite($v, $v)])];
         }
         return [];
     }

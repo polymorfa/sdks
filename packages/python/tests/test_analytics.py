@@ -11,7 +11,7 @@ from polymorfa import (
 )
 
 PROJECT = "00000000-0000-4000-8000-000000000001"
-SESSION = "00000000-0000-4000-8000-000000000002"
+CONNECTION = "00000000-0000-4000-8000-000000000002"
 CALL = {
     "total": 2,
     "answered": 1,
@@ -241,7 +241,7 @@ SERIES = {
     "phoneActivityMs": 1.5,
     "phoneQuietGaps": 1,
     "phoneQuietMs": 1.5,
-    "sessionId": SESSION,
+    "connectionId": CONNECTION,
     "ts": 1,
     "outgoingMessages": 1,
     "incomingMessages": 1,
@@ -252,21 +252,21 @@ SERIES = {
     "disconnects": 0,
 }
 ANALYTICS = {
-    "callSeries": [{**CALL, "sessionId": SESSION, "ts": 1}],
+    "callSeries": [{**CALL, "connectionId": CONNECTION, "ts": 1}],
     "enabled": True,
     "period": {"start": 0, "end": 1},
     "requestVitals": {"requests": 2, "failures": 1, "errorRate": 0.5},
     "summary": {
         **METRICS,
         "deviceAnalytics": {**DEVICES, "inventory": None},
-        "totalNumbers": 1,
-        "measuredNumbers": 1,
-        "connectedNumbers": 1,
+        "totalConnections": 1,
+        "measuredConnections": 1,
+        "connectedConnections": 1,
     },
-    "numbers": [
+    "connections": [
         {
             **METRICS,
-            "sessionId": SESSION,
+            "connectionId": CONNECTION,
             "projectId": PROJECT,
             "projectName": "Support",
             "name": "support",
@@ -286,11 +286,11 @@ async def test_public_analytics_methods_full_typed_response_and_bound_route(scop
     project = scope != "team"
     path = f"/platform/projects/{PROJECT}/analytics" if project else "/platform/analytics"
     params = (
-        {"projectId": PROJECT.upper(), "sessionId": SESSION, "start": 0, "end": 1}
+        {"projectId": PROJECT.upper(), "connectionId": CONNECTION, "start": 0, "end": 1}
         if method == "get"
         else {
             "projectId": PROJECT.upper(),
-            "sessionId": SESSION,
+            "connectionId": CONNECTION,
             "windowHours": 24,
             "segments": True,
             "format": "openmetrics",
@@ -363,7 +363,7 @@ async def test_analytics_disabled_response_and_default_prometheus_format():
                     "period": {"start": 0, "end": 1},
                     "requestVitals": {"requests": 0, "failures": 0, "errorRate": None},
                     "summary": None,
-                    "numbers": [],
+                    "connections": [],
                     "series": [],
                     "callSeries": [],
                 }
@@ -390,7 +390,7 @@ async def test_analytics_disabled_response_and_default_prometheus_format():
         {"windowHours": 1.5},
         {"segments": "yes"},
         {"format": "json"},
-        {"sessionId": "bad"},
+        {"connectionId": "bad"},
     ],
 )
 async def test_metrics_invalid_controls_fail_before_request(params):
@@ -411,7 +411,7 @@ async def test_metrics_invalid_controls_fail_before_request(params):
     "params",
     [
         {"projectId": "bad"},
-        {"sessionId": "bad"},
+        {"connectionId": "bad"},
         {"start": -1},
         {"start": True},
         {"end": 1.5},
@@ -432,7 +432,7 @@ async def test_analytics_invalid_filters_ranges_and_bound_project(params):
         with pytest.raises(ValidationError):
             await client.analytics.get(params)
         with pytest.raises(ValidationError):
-            await client.project(PROJECT).analytics.get({"projectId": SESSION})
+            await client.project(PROJECT).analytics.get({"projectId": CONNECTION})
     assert not seen
 
 

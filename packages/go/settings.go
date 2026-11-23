@@ -90,32 +90,32 @@ func (r *QuickLinkSettingsResource) Update(ctx context.Context, b UpdateQuickLin
 	return unwrapped[QuickLinkSettings](ctx, r.t, "PUT", "/platform/quicklink", nil, body, options(o))
 }
 
-type SessionConfigurationResource struct {
+type ConnectionConfigurationResource struct {
 	t         *transport
 	projectID string
 }
 
-func (c *TeamClient) SessionConfiguration() *SessionConfigurationResource {
-	return &SessionConfigurationResource{t: c.t}
+func (c *TeamClient) ConnectionConfiguration() *ConnectionConfigurationResource {
+	return &ConnectionConfigurationResource{t: c.t}
 }
-func (c *ProjectClient) SessionConfiguration() *SessionConfigurationResource {
-	return &SessionConfigurationResource{c.t, c.projectID}
+func (c *ProjectClient) ConnectionConfiguration() *ConnectionConfigurationResource {
+	return &ConnectionConfigurationResource{c.t, c.projectID}
 }
-func (r *SessionConfigurationResource) Retrieve(ctx context.Context, o ...RequestOptions) (Response[SessionConfigurationView], error) {
+func (r *ConnectionConfigurationResource) Retrieve(ctx context.Context, o ...RequestOptions) (Response[ConnectionConfigurationView], error) {
 	q := url.Values{}
 	setString(q, "projectId", r.projectID)
-	return unwrapped[SessionConfigurationView](ctx, r.t, "GET", "/platform/session-configuration", q, nil, options(o))
+	return unwrapped[ConnectionConfigurationView](ctx, r.t, "GET", "/platform/connection-configuration", q, nil, options(o))
 }
-func (r *SessionConfigurationResource) Update(ctx context.Context, b UpdateSessionRequest, o ...RequestOptions) (Response[SessionConfigurationView], error) {
+func (r *ConnectionConfigurationResource) Update(ctx context.Context, b UpdateConnectionRequest, o ...RequestOptions) (Response[ConnectionConfigurationView], error) {
 	intent, err := configurationIntent(b)
 	if err != nil {
-		return Response[SessionConfigurationView]{}, err
+		return Response[ConnectionConfigurationView]{}, err
 	}
 	body := struct {
-		UpdateSessionRequest
+		UpdateConnectionRequest
 		ProjectID string `json:"projectId,omitempty"`
 	}{b, r.projectID}
-	return unwrapped[SessionConfigurationView](ctx, r.t, "PUT", "/platform/session-configuration", nil, body, deliveryOptions(options(o), intent))
+	return unwrapped[ConnectionConfigurationView](ctx, r.t, "PUT", "/platform/connection-configuration", nil, body, deliveryOptions(options(o), intent))
 }
 
 // PlatformPayload is intentionally open in the pinned TypeScript contract.

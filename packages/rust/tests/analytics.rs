@@ -15,17 +15,17 @@ fn metrics() -> Value {
 fn analytics() -> Value {
     let mut summary = metrics();
     summary.as_object_mut().unwrap().extend(
-        json!({"totalNumbers":1,"measuredNumbers":1,"connectedNumbers":1})
+        json!({"totalConnections":1,"measuredConnections":1,"connectedConnections":1})
             .as_object()
             .unwrap()
             .clone(),
     );
     let mut number = metrics();
-    number.as_object_mut().unwrap().extend(json!({"sessionId":"sid","projectId":PROJECT,"projectName":"project","name":"support","backend":"linked_device","status":"connected"}).as_object().unwrap().clone());
+    number.as_object_mut().unwrap().extend(json!({"connectionId":"sid","projectId":PROJECT,"projectName":"project","name":"support","backend":"linked_device","status":"connected"}).as_object().unwrap().clone());
     let mut call = outcomes();
-    call["sessionId"] = json!("sid");
+    call["connectionId"] = json!("sid");
     call["ts"] = json!(1000);
-    json!({"callSeries":[call],"enabled":true,"period":{"start":0,"end":1000},"requestVitals":{"requests":1,"failures":0,"errorRate":0.0},"summary":summary,"numbers":[number],"series":[{"customerOnlineSignals":1,"customerTypingSignals":1,"primaryPhoneMessages":1,"otherDeviceMessages":0,"primaryPhoneReplies":1,"phoneActivePeriods":1,"completedPhoneActivityPeriods":1,"phoneActivityMs":1000,"phoneQuietGaps":1,"phoneQuietMs":2000,"sessionId":"sid","ts":1000,"outgoingMessages":1,"incomingMessages":1,"sendFailures":0,"businessReplies":1,"averageBusinessResponseMs":1000.5,"onlineMs":5000,"disconnects":0}]})
+    json!({"callSeries":[call],"enabled":true,"period":{"start":0,"end":1000},"requestVitals":{"requests":1,"failures":0,"errorRate":0.0},"summary":summary,"connections":[number],"series":[{"customerOnlineSignals":1,"customerTypingSignals":1,"primaryPhoneMessages":1,"otherDeviceMessages":0,"primaryPhoneReplies":1,"phoneActivePeriods":1,"completedPhoneActivityPeriods":1,"phoneActivityMs":1000,"phoneQuietGaps":1,"phoneQuietMs":2000,"connectionId":"sid","ts":1000,"outgoingMessages":1,"incomingMessages":1,"sendFailures":0,"businessReplies":1,"averageBusinessResponseMs":1000.5,"onlineMs":5000,"disconnects":0}]})
 }
 #[tokio::test]
 async fn team_and_project_typed_aggregate_breakdowns_native_wire() {
@@ -38,7 +38,7 @@ async fn team_and_project_typed_aggregate_breakdowns_native_wire() {
         client.analytics().get(
             &AnalyticsParameters {
                 project_id: Some(PROJECT.into()),
-                session_id: None,
+                connection_id: None,
                 start: Some(0),
                 end: Some(1000)
             },
@@ -54,7 +54,7 @@ async fn team_and_project_typed_aggregate_breakdowns_native_wire() {
         client.project(PROJECT).unwrap().analytics().get(
             &AnalyticsParameters {
                 project_id: Some(PROJECT.into()),
-                session_id: None,
+                connection_id: None,
                 start: Some(0),
                 end: Some(1000)
             },
@@ -66,7 +66,7 @@ async fn team_and_project_typed_aggregate_breakdowns_native_wire() {
         "GET",
         "/platform/analytics",
         None,
-        json!({"data":{"callSeries":[],"enabled":false,"period":{"start":0,"end":1000},"requestVitals":{"requests":0,"failures":0,"errorRate":null},"summary":null,"numbers":[],"series":[]}}),
+        json!({"data":{"callSeries":[],"enabled":false,"period":{"start":0,"end":1000},"requestVitals":{"requests":0,"failures":0,"errorRate":null},"summary":null,"connections":[],"series":[]}}),
         client
             .analytics()
             .get(&Default::default(), Default::default())
@@ -203,11 +203,11 @@ async fn collector_prometheus_openmetrics_and_invalid_content_native_wire() {
 #[tokio::test]
 async fn partial_unknown_inventory_and_unavailable_metrics_remain_distinct_on_both_routes() {
     let mut a = analytics();
-    for owner in ["summary", "numbers"] {
+    for owner in ["summary", "connections"] {
         let row = if owner == "summary" {
             &mut a["summary"]
         } else {
-            &mut a["numbers"][0]
+            &mut a["connections"][0]
         };
         row["deviceAnalytics"]["complete"] = json!(false);
         row["deviceAnalytics"]["customerPlatforms"][0]["platform"] = json!("unknown");
@@ -266,6 +266,6 @@ async fn partial_unknown_inventory_and_unavailable_metrics_remain_distinct_on_bo
         .get(&Default::default(), Default::default())
         .await
         .unwrap();
-    assert!(!result.data.numbers[0].metrics.device_analytics.complete);
+    assert!(!result.data.connections[0].metrics.device_analytics.complete);
     server.await.unwrap();
 }

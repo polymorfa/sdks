@@ -156,3 +156,17 @@ export async function publicRows(name) {
     database.close();
   }
 }
+
+export async function prepareSchema2(name, row, keepOpen = false) {
+  const names = ["sessions","chats","messages","reactions","receipts","poll_votes","contacts","groups","group_participants","media","labels","label_associations","history_chunks","history_progress","checkpoints","events","leases"];
+  const database = await new Promise((resolve,reject) => {
+    const request = indexedDB.open(name,2);
+    request.onupgradeneeded = () => {
+      for (const entity of names) request.result.createObjectStore(entity,{keyPath:"_id"});
+      request.transaction.objectStore("leases").put({_id:"__storage_namespace__",owner:"browser-tests"});
+      if(row){const{connectionId,...rest}=row;request.transaction.objectStore("messages").put({...rest,sessionId:connectionId});}
+    };
+    request.onsuccess=()=>resolve(request.result);request.onerror=()=>reject(request.error);
+  });
+  if(keepOpen)held.set(name,database);else database.close();
+}

@@ -67,8 +67,8 @@ impl TeamClient {
     pub fn ban_safe(&self) -> crate::bansafe::BanSafe<'_> {
         crate::bansafe::BanSafe(&self.http)
     }
-    pub fn session_bans(&self) -> crate::team_controls::SessionBans<'_> {
-        crate::team_controls::SessionBans(&self.http)
+    pub fn connection_bans(&self) -> crate::team_controls::ConnectionBans<'_> {
+        crate::team_controls::ConnectionBans(&self.http)
     }
     pub fn campaigns(&self) -> crate::campaigns::PlatformCampaigns<'_> {
         crate::campaigns::PlatformCampaigns(&self.http)
@@ -97,14 +97,14 @@ impl TeamClient {
     pub fn project(&self, project_id: impl Into<String>) -> Result<ProjectClient> {
         ProjectClient::from_transport(self.http.clone(), project_id.into())
     }
-    pub fn sessions(&self) -> crate::platform_sessions::PlatformSessions<'_> {
-        crate::platform_sessions::PlatformSessions(&self.http)
+    pub fn connections(&self) -> crate::platform_connections::PlatformConnections<'_> {
+        crate::platform_connections::PlatformConnections(&self.http)
     }
     pub fn projects(&self) -> Projects<'_> {
         Projects(&self.http)
     }
-    pub fn session_configuration(&self) -> crate::settings::SessionDefaults<'_> {
-        crate::settings::SessionDefaults {
+    pub fn connection_configuration(&self) -> crate::settings::ConnectionDefaults<'_> {
+        crate::settings::ConnectionDefaults {
             http: &self.http,
             project_id: None,
         }
@@ -215,8 +215,8 @@ impl ProjectClient {
     pub fn project_id(&self) -> &str {
         &self.project_id
     }
-    pub fn session_configuration(&self) -> crate::settings::SessionDefaults<'_> {
-        crate::settings::SessionDefaults {
+    pub fn connection_configuration(&self) -> crate::settings::ConnectionDefaults<'_> {
+        crate::settings::ConnectionDefaults {
             http: &self.http,
             project_id: Some(&self.project_id),
         }

@@ -7,7 +7,7 @@ namespace Polymorfa\Resources;
 use Polymorfa\{ApiResponse, ClientTokenModels, Models, ConfigurationException, RequestOptions};
 
 /**
- * @phpstan-import-type MintSession from ClientTokenModels
+ * @phpstan-import-type MintConnection from ClientTokenModels
  * @phpstan-import-type MintCustomer from ClientTokenModels
  * @phpstan-import-type TokenValue from ClientTokenModels
  * @phpstan-import-type ClientRules from ClientTokenModels
@@ -16,47 +16,47 @@ use Polymorfa\{ApiResponse, ClientTokenModels, Models, ConfigurationException, R
  */
 final class ClientTokens extends Resource
 {
-    /** @param MintSession|MintCustomer $body
+    /** @param MintConnection|MintCustomer $body
      * @return ApiResponse<array{success:bool,data:TokenValue}> */
     public function mint(array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        $session = self::hasTarget($body['session'] ?? null);
+        $connection = self::hasTarget($body['connection'] ?? null);
         $customer = self::hasTarget($body['customer'] ?? null);
-        if ($session === $customer) {
-            throw new ConfigurationException($session ? 'customer' : 'session');
+        if ($connection === $customer) {
+            throw new ConfigurationException($connection ? 'customer' : 'connection');
         }
         /** @var ApiResponse<array{success:bool,data:TokenValue}> */
         return $this->request('POST', '/platform/client-tokens', $body, options:$options);
     }
     /** @return ApiResponse<array{success:bool,data:ClientRules}> */
-    public function retrieveRules(string $session, ?RequestOptions $options = null): ApiResponse
+    public function retrieveRules(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         /** @var ApiResponse<array{success:bool,data:ClientRules}> */
-        return $this->request('GET', self::path($session), options:$options);
+        return $this->request('GET', self::path($connection), options:$options);
     }
     /** @param SetRules $body
      * @return ApiResponse<Success> */
-    public function updateRules(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function updateRules(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         /** @var ApiResponse<Success> */
-        return $this->request('PUT', self::path($session), $body, options:$options);
+        return $this->request('PUT', self::path($connection), $body, options:$options);
     }
     /** @return ApiResponse<Success> */
-    public function deleteRules(string $session, ?RequestOptions $options = null): ApiResponse
+    public function deleteRules(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         /** @var ApiResponse<Success> */
-        return $this->request('DELETE', self::path($session), options:$options);
+        return $this->request('DELETE', self::path($connection), options:$options);
     }
     private static function hasTarget(mixed $target): bool
     {
         return is_string($target) && $target !== '';
     }
-    private static function path(string $session): string
+    private static function path(string $connection): string
     {
-        return '/platform/sessions/'.self::segment($session).'/client-rules';
+        return '/platform/connections/'.self::segment($connection).'/client-rules';
     }
 }

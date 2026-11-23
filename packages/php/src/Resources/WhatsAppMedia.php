@@ -46,10 +46,10 @@ final class WhatsAppMedia extends Resource
     {
         return isset($data['data']) && is_array($data['data']) ? $data['data'] : $data;
     }
-    public function createUploadGrant(string $session, string $kind, string $fileEncSha256, ?RequestOptions $options = null): WhatsAppUploadGrant
+    public function createUploadGrant(string $connection, string $kind, string $fileEncSha256, ?RequestOptions $options = null): WhatsAppUploadGrant
     {
         $this->server();
-        $response = $this->request('POST', '/messaging/'.self::segment($session).'/media/upload-grants', self::uploadRequest($kind, $fileEncSha256), options:self::options($options));
+        $response = $this->request('POST', '/messaging/'.self::segment($connection).'/media/upload-grants', self::uploadRequest($kind, $fileEncSha256), options:self::options($options));
         $data = self::unwrap($response->data);
         $host = $data['host'] ?? null;
         $target = $data['uploadUrl'] ?? null;
@@ -65,14 +65,14 @@ final class WhatsAppMedia extends Resource
         return new WhatsAppUploadGrant($host, $target, $expiry);
     }
     /** @param \Closure(?CancellationToken):StreamInterface $open */
-    public function relayUpload(string $session, EncryptedMediaInfo $info, #[\SensitiveParameter] \Closure $open, ?RequestOptions $options = null): WhatsAppUploadLocation
+    public function relayUpload(string $connection, EncryptedMediaInfo $info, #[\SensitiveParameter] \Closure $open, ?RequestOptions $options = null): WhatsAppUploadLocation
     {
         $query = self::uploadRequest($info->mediaType, $info->fileEncSha256);
         if (isset($query['ptt'])) {
             $query['ptt'] = $query['ptt'] ? 'true' : 'false';
         }
         // This held route has no replay ledger, even with a caller key.
-        $response = $this->request('POST', '/messaging/'.self::segment($session).'/media/uploads', new BinaryRequestBody($open, $info->encryptedLength), $query, \Polymorfa\ExistingContract::options($options, true)->withoutRetries());
+        $response = $this->request('POST', '/messaging/'.self::segment($connection).'/media/uploads', new BinaryRequestBody($open, $info->encryptedLength), $query, \Polymorfa\ExistingContract::options($options, true)->withoutRetries());
         $data = self::unwrap($response->data);
         return self::location($data, false);
     }
@@ -87,12 +87,12 @@ final class WhatsAppMedia extends Resource
         }
         return new WhatsAppUploadLocation($path, $url, is_string($handle) && $handle !== '' ? $handle : null);
     }
-    public function uploadBytes(string $session, #[\SensitiveParameter] string $plaintext, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
+    public function uploadBytes(string $connection, #[\SensitiveParameter] string $plaintext, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
     {
-        return $this->upload($session, static fn (?CancellationToken $cancellation): StreamInterface => Utils::streamFor($plaintext), $options);
+        return $this->upload($connection, static fn (?CancellationToken $cancellation): StreamInterface => Utils::streamFor($plaintext), $options);
     }
     /** @param \Closure(?CancellationToken):StreamInterface $source Fresh immutable plaintext; SDK closes returned streams. */
-    public function upload(string $session, #[\SensitiveParameter] \Closure $source, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
+    public function upload(string $connection, #[\SensitiveParameter] \Closure $source, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
     {
         if ($options->uploadTransport === null && $options->egress === 'direct') {
             $this->server();
@@ -100,7 +100,7 @@ final class WhatsAppMedia extends Resource
         if ($options->uploadTransport instanceof BuiltinWhatsAppMediaUploadTransport) {
             $options->uploadTransport->assertAllowed();
         }
-        self::segment($session);
+        self::segment($connection);
         $cancellation = $options->requestOptions?->cancellation;
         $first = self::openSource($source, $cancellation);
         try {
@@ -132,22 +132,22 @@ final class WhatsAppMedia extends Resource
                 $token->throwIfCancelled();
             };
             $open = static fn (?CancellationToken $child): StreamInterface => new EncryptedUploadStream(self::openSource($source, $child), $info, $options->maxBytes, $child);
-            $body = new WhatsAppEncryptedUploadBody($info, $open, static function (self $resource, string $targetSession, string $mode, UploadWhatsAppMediaOptions $builtin) use ($source, $info, $options, $token): WhatsAppUploadLocation {
+            $body = new WhatsAppEncryptedUploadBody($info, $open, static function (self $resource, string $targetConnection, string $mode, UploadWhatsAppMediaOptions $builtin) use ($source, $info, $options, $token): WhatsAppUploadLocation {
                 $request = $builtin->requestOptions ?? new RequestOptions();
                 $request = new RequestOptions($request->timeout, $request->maxNetworkRetries, $request->apiVersion, $request->idempotencyKey, $request->headers, CancellationToken::linked(...array_values(array_filter([$request->cancellation, $token]))));
                 $policy = new UploadWhatsAppMediaOptions($info->mediaType, $info->mimeType, $info->mediaKey, $mode, $options->maxBytes, $request, $builtin->http, $builtin->maxAttempts, $builtin->documentPartSize);
                 if ($mode === 'direct') {
                     $resource->assertDirectAllowed();
-                    return $resource->directUpload($targetSession, $source, $info, $policy);
+                    return $resource->directUpload($targetConnection, $source, $info, $policy);
                 }
                 if ($mode !== 'relay') {
                     throw new ConfigurationException('egress');
                 }
-                return $resource->relayUpload($targetSession, $info, static fn (?CancellationToken $child): StreamInterface => new EncryptedUploadStream(self::openSource($source, $child), $info, $options->maxBytes, $child), $request);
+                return $resource->relayUpload($targetConnection, $info, static fn (?CancellationToken $child): StreamInterface => new EncryptedUploadStream(self::openSource($source, $child), $info, $options->maxBytes, $child), $request);
             }, $token);
             try {
                 try {
-                    $location = $extension->upload($session, $body);
+                    $location = $extension->upload($connection, $body);
                 } catch (\Throwable) {
                     $check();
                     throw new MediaIntegrityException('The custom encrypted upload transport failed.', 'media_upload_transport_failed');
@@ -164,9 +164,9 @@ final class WhatsAppMedia extends Resource
                 $body->finish();
             }
         } elseif ($options->egress === 'relay') {
-            $location = $this->relayUpload($session, $info, static fn (?CancellationToken $token): StreamInterface => new EncryptedUploadStream(self::openSource($source, $token), $info, $options->maxBytes, $token), $options->requestOptions);
+            $location = $this->relayUpload($connection, $info, static fn (?CancellationToken $token): StreamInterface => new EncryptedUploadStream(self::openSource($source, $token), $info, $options->maxBytes, $token), $options->requestOptions);
         } else {
-            $location = $this->directUpload($session, $source, $info, $options);
+            $location = $this->directUpload($connection, $source, $info, $options);
         }
         return new WhatsAppMediaUploadResult($info, $location, $egress);
     }
@@ -327,14 +327,14 @@ final class WhatsAppMedia extends Resource
         throw $last ?? new ConnectionException('Media upload attempts exhausted.', 'connection_error');
     }
     /** @param \Closure(?CancellationToken):StreamInterface $source */
-    private function directUpload(string $session, #[\SensitiveParameter] \Closure $source, EncryptedMediaInfo $info, UploadWhatsAppMediaOptions $options): WhatsAppUploadLocation
+    private function directUpload(string $connection, #[\SensitiveParameter] \Closure $source, EncryptedMediaInfo $info, UploadWhatsAppMediaOptions $options): WhatsAppUploadLocation
     {
         $this->server();
         $http = $options->http ?? new Client(['allow_redirects' => false]);
         $requestOptions = $options->requestOptions ?? new RequestOptions();
         $token = $requestOptions->cancellation;
         $deadline = hrtime(true) / 1e9 + ($requestOptions->timeout ?? 30);
-        $refresh = fn (): WhatsAppUploadGrant => $this->createUploadGrant($session, $info->mediaType, $info->fileEncSha256, self::options($options->requestOptions, self::remaining($deadline)));
+        $refresh = fn (): WhatsAppUploadGrant => $this->createUploadGrant($connection, $info->mediaType, $info->fileEncSha256, self::options($options->requestOptions, self::remaining($deadline)));
         $grant = $refresh();
         $post = static function (array $query, ?StreamInterface $stream, int $length) use ($http, &$grant, $info, $deadline, $token): array {
             return self::post($http, self::target($grant, $info, $query), $stream, $length, $deadline, $token);

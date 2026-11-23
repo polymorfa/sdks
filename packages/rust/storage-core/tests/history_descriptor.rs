@@ -31,7 +31,7 @@ async fn standalone_core_descriptor_validation_modes_and_replay() {
         let s = Storage::new(a.clone(), Default::default()).unwrap();
         let e = StorageEvent {
             id: "event".into(),
-            session: "session".into(),
+            connection: "connection".into(),
             timestamp: "2026-10-17T00:00:00Z".into(),
             event: "history.sync".into(),
             payload: f[branch].clone(),
@@ -91,7 +91,7 @@ async fn archive_null_no_decoder_callback_failure_and_cloud_remain_unchanged() {
         let s = Storage::new(a.clone(), Default::default()).unwrap();
         let e = StorageEvent {
             id: "event".into(),
-            session: "session".into(),
+            connection: "connection".into(),
             timestamp: "2026-10-17T00:00:00Z".into(),
             event: "history.sync".into(),
             payload: if mode == "cloud" {
@@ -113,7 +113,7 @@ async fn archive_null_no_decoder_callback_failure_and_cloud_remain_unchanged() {
         assert_eq!(result.is_err(), mode == "error");
         assert_eq!(a.rows(Entity::Messages).len(), usize::from(mode == "full"));
         assert_eq!(
-            s.has_event("session", "event").await.unwrap(),
+            s.has_event("connection", "event").await.unwrap(),
             mode != "error"
         );
     }
@@ -134,7 +134,7 @@ async fn raw_unprojected_descriptor_fields_fail_before_writes() {
         }
         let e = StorageEvent {
             id: "event".into(),
-            session: "session".into(),
+            connection: "connection".into(),
             timestamp: "2026-10-17T00:00:00Z".into(),
             event: "history.sync".into(),
             payload,
@@ -152,7 +152,7 @@ async fn raw_unprojected_descriptor_fields_fail_before_writes() {
             .is_err(),
             "unprojected {branch} consumed"
         );
-        assert!(!s.has_event("session", "event").await.unwrap());
+        assert!(!s.has_event("connection", "event").await.unwrap());
         assert!(a.rows(Entity::HistoryProgress).is_empty());
         assert!(a.rows(Entity::Messages).is_empty());
     }

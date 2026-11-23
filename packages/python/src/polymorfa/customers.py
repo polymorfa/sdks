@@ -33,8 +33,8 @@ class Customer(TypedDict):
 
 
 class CustomerSummary(Customer):
-    numberCount: int
-    connectedNumberCount: int
+    connectionCount: int
+    connectedConnectionCount: int
     activePairingLinkState: str | None
     lastActivityAt: int | None
     needsAttention: bool
@@ -48,7 +48,7 @@ class CustomersStatus(TypedDict):
 
 
 class CustomersEnabled(CustomersStatus):
-    migratedNumberCount: int
+    migratedConnectionCount: int
 
 
 class CustomerProject(TypedDict, total=False):
@@ -68,14 +68,14 @@ class ListCustomers(TypedDict):
     search: NotRequired[str]
     status: NotRequired[Status | Literal["all"]]
     isDefault: NotRequired[bool]
-    hasNumbers: NotRequired[bool]
+    hasConnections: NotRequired[bool]
     needsAttention: NotRequired[bool]
 
 
-class CustomerNumber(TypedDict):
+class CustomerConnection(TypedDict):
     id: str
     customerId: str
-    sessionId: str
+    connectionId: str
     name: str | None
     phoneMasked: str | None
     status: str
@@ -92,7 +92,7 @@ class CustomerEvent(TypedDict):
     action: str
     fromStatus: str | None
     toStatus: str | None
-    sessionId: str | None
+    connectionId: str | None
     pairingLinkId: str | None
     metadata: EventMetadata
     occurredAt: int
@@ -111,7 +111,7 @@ class PairingLink(TypedDict):
     status: Literal["active", "opened", "connecting", "connected", "failed", "expired", "revoked"]
     attemptCount: int
     maxAttempts: int
-    pendingSessionId: str | None
+    pendingConnectionId: str | None
     createdBy: str | None
     reservedAt: int | None
     openedAt: int | None
@@ -138,7 +138,7 @@ class CreatePairingLink(TypedDict, total=False):
     expiresInSeconds: int
 
 
-class TransferNumber(TypedDict):
+class TransferConnection(TypedDict):
     projectId: str
     sourceCustomerId: str
     confirm: Literal[True]
@@ -191,7 +191,7 @@ class Customers(PlatformResource):
             "search": params.get("search"),
             "status": params.get("status"),
             "isDefault": params.get("isDefault"),
-            "hasNumbers": params.get("hasNumbers"),
+            "hasConnections": params.get("hasConnections"),
             "needsAttention": params.get("needsAttention"),
         }
         return await self._page("/platform/customers", query, options)
@@ -240,12 +240,12 @@ class Customers(PlatformResource):
             options=options,
         )
 
-    async def list_numbers(
+    async def list_connections(
         self, customer_id: str, project_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[builtins.list[CustomerNumber]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[CustomerConnection]]]:
         return await self._request(
             "GET",
-            f"/platform/customers/{segment(customer_id)}/numbers",
+            f"/platform/customers/{segment(customer_id)}/connections",
             query={"projectId": project_id},
             options=options,
         )
@@ -300,12 +300,17 @@ class Customers(PlatformResource):
             options=options,
         )
 
-    async def transfer_number(
-        self, customer_id: str, session_id: str, body: TransferNumber, *, options: RequestOptions
-    ) -> ApiResponse[DataEnvelope[CustomerNumber]]:
+    async def transfer_connection(
+        self,
+        customer_id: str,
+        connection_id: str,
+        body: TransferConnection,
+        *,
+        options: RequestOptions,
+    ) -> ApiResponse[DataEnvelope[CustomerConnection]]:
         return await self._request(
             "POST",
-            f"/platform/customers/{segment(customer_id)}/numbers/{segment(session_id)}/transfer",
+            f"/platform/customers/{segment(customer_id)}/connections/{segment(connection_id)}/transfer",
             body=body,
             options=options,
         )

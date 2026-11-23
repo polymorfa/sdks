@@ -67,19 +67,19 @@ async fn participant_group_and_client_calls_need_no_dummy_fields_and_preserve_vi
     for (body, wire) in [
         (
             PlaceCallRequest {
-                session: Some("s".into()),
+                connection: Some("s".into()),
                 participants: Some(vec!["+15551234567".into(), "+15551234568".into()]),
                 ..Default::default()
             },
-            json!({"session":"s","participants":["+15551234567","+15551234568"]}),
+            json!({"connection":"s","participants":["+15551234567","+15551234568"]}),
         ),
         (
             PlaceCallRequest {
-                session: Some("s".into()),
+                connection: Some("s".into()),
                 group_id: Some("123@g.us".into()),
                 ..Default::default()
             },
-            json!({"session":"s","groupId":"123@g.us"}),
+            json!({"connection":"s","groupId":"123@g.us"}),
         ),
     ] {
         let (base, server) = support::wire(

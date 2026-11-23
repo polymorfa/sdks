@@ -8,7 +8,7 @@ from polymorfa import AsyncClient, Credential, ValidationError
 ID = "AAAAAAAA-AAAA-AAAA-AAAA-AAAAAAAAAAAA"
 LOWER = ID.lower()
 BUDGET = {
-    "scope": "number",
+    "scope": "connection",
     "resourceId": LOWER,
     "projectId": LOWER,
     "name": "Support",
@@ -31,7 +31,7 @@ PRIORITIES = {
     "revision": 2,
     "projects": [{"id": LOWER, "name": "Support", "priority": 1}],
     "customers": [{"id": LOWER, "name": "Customer", "priority": 2, "projectId": LOWER}],
-    "numbers": [{"id": LOWER, "name": "Number", "priority": 3, "projectId": LOWER}],
+    "connections": [{"id": LOWER, "name": "Number", "priority": 3, "projectId": LOWER}],
 }
 SET = {
     "limitCredits": 1.125001,
@@ -53,7 +53,7 @@ CASES = [
         "/platform/billing/usage",
         None,
         {},
-        {"activeNumbers": 3, "totalChargedCents": 1.125},
+        {"activeConnections": 3, "totalChargedCents": 1.125},
         lambda b: b.usage(),
     ),
     (
@@ -66,9 +66,9 @@ CASES = [
                 "id": "transaction_1",
                 "amountCents": 1.125,
                 "balanceAfterCents": 125.125,
-                "type": "number",
+                "type": "connection",
                 "description": "Daily usage",
-                "sessionId": None,
+                "connectionId": None,
                 "projectId": None,
                 "tier": "standard",
                 "currency": None,
@@ -97,19 +97,19 @@ CASES = [
     ),
     (
         "GET",
-        f"/platform/billing/controls/number/{LOWER}",
+        f"/platform/billing/controls/connection/{LOWER}",
         None,
         {},
         CONTROLS,
-        lambda b: b.get_resource_controls("number", ID),
+        lambda b: b.get_resource_controls("connection", ID),
     ),
     (
         "PUT",
-        f"/platform/billing/controls/number/{LOWER}",
+        f"/platform/billing/controls/connection/{LOWER}",
         SET,
         {},
         CONTROLS,
-        lambda b: b.set_resource_controls("number", ID, SET),
+        lambda b: b.set_resource_controls("connection", ID, SET),
     ),
     (
         "GET",
@@ -156,11 +156,11 @@ CASES = [
     (
         "PUT",
         "/platform/billing/priorities",
-        {"scope": "number", "projectId": LOWER, "resourceIds": [LOWER], "expectedRevision": 1},
+        {"scope": "connection", "projectId": LOWER, "resourceIds": [LOWER], "expectedRevision": 1},
         {},
         PRIORITIES,
         lambda b: b.reorder_priorities(
-            {"scope": "number", "projectId": ID, "resourceIds": [ID], "expectedRevision": 1}
+            {"scope": "connection", "projectId": ID, "resourceIds": [ID], "expectedRevision": 1}
         ),
     ),
     (
@@ -171,7 +171,7 @@ CASES = [
             "projectId": LOWER,
             "resources": [
                 {"scope": "customer", "resourceId": LOWER},
-                {"scope": "number", "resourceId": LOWER},
+                {"scope": "connection", "resourceId": LOWER},
             ],
             "expectedRevision": 1,
         },
@@ -183,7 +183,7 @@ CASES = [
                 "projectId": ID,
                 "resources": [
                     {"scope": "customer", "resourceId": ID},
-                    {"scope": "number", "resourceId": ID},
+                    {"scope": "connection", "resourceId": ID},
                 ],
                 "expectedRevision": 1,
             }
@@ -225,7 +225,7 @@ async def test_billing_guards_reject_before_network():
     ) as client:
         b = client.billing
         for invoke in [
-            lambda: b.get_resource_controls("number", "not-uuid"),
+            lambda: b.get_resource_controls("connection", "not-uuid"),
             lambda: b.get_resource_controls("unknown", ID),
             lambda: b.set_limit("project", ID, {"limitCredits": 0.0000001, "expectedRevision": 1}),
             lambda: b.set_limit(
@@ -235,10 +235,10 @@ async def test_billing_guards_reject_before_network():
             lambda: b.set_resource_controls(
                 "project", ID, SET | {"expectedPriorityRevision": 2147483647}
             ),
-            lambda: b.set_priority("number", ID, {"priority": 1.5, "expectedRevision": 1}),
-            lambda: b.set_priority("number", ID, {"priority": 1000001, "expectedRevision": 1}),
-            lambda: b.get_limits({"scope": "number"}),
-            lambda: b.get_priorities({"scope": "number"}),
+            lambda: b.set_priority("connection", ID, {"priority": 1.5, "expectedRevision": 1}),
+            lambda: b.set_priority("connection", ID, {"priority": 1000001, "expectedRevision": 1}),
+            lambda: b.get_limits({"scope": "connection"}),
+            lambda: b.get_priorities({"scope": "connection"}),
             lambda: b.reorder_priorities(
                 {"scope": "project", "resourceIds": [ID, LOWER], "expectedRevision": 1}
             ),
@@ -247,8 +247,8 @@ async def test_billing_guards_reject_before_network():
                     "scope": "resource",
                     "projectId": ID,
                     "resources": [
-                        {"scope": "number", "resourceId": ID},
-                        {"scope": "number", "resourceId": LOWER},
+                        {"scope": "connection", "resourceId": ID},
+                        {"scope": "connection", "resourceId": LOWER},
                     ],
                     "expectedRevision": 1,
                 }

@@ -104,11 +104,11 @@ function Rail() {
 function ConnectionHealth() {
   const { bootstrap, setBootstrap, navigate } = useDesk();
   useLiveEvents({
-    "session.status": (event) =>
+    "connection.status": (event) =>
       setBootstrap((current) => ({
         ...current,
         connections: current.connections.map((connection) =>
-          connection.id === event.session && "status" in event.payload
+          connection.id === event.connection && "status" in event.payload
             ? { ...connection, status: event.payload.status }
             : connection,
         ),
@@ -217,7 +217,7 @@ function AgentMenu() {
           icon: "logout",
           danger: true,
           onSelect: () => {
-            // Cached conversations never outlive the session on this device.
+            // Cached conversations never outlive the connection on this device.
             void clearDeviceConversationCache().finally(() => {
               const form = document.getElementById("sign-out-form");
               if (form instanceof HTMLFormElement) form.requestSubmit();

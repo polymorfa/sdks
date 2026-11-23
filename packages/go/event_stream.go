@@ -206,7 +206,7 @@ func (s *EventStream) consume(ctx context.Context, yield func(EventStreamItem, e
 					if e != nil {
 						return &Error{Kind: ServerError, Code: "invalid_response", Message: "Invalid stream payload encoding.", Metadata: md}, false
 					}
-					event, e := ParseVerifiedWebhookEvent(bytes)
+					event, e := parseStreamWebhook(bytes)
 					if e != nil {
 						return &Error{Kind: ServerError, Code: "invalid_response", Message: "Invalid streamed webhook payload.", Metadata: md, Cause: e}, false
 					}

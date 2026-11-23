@@ -11,7 +11,7 @@ use polymorfa_sdk::storage::{
 use serde_json::Value;
 use std::sync::Arc;
 fn fixture() -> Value {
-    serde_json::from_str(include_str!("fixtures/history-edit-guard/fixture.json")).unwrap()
+    serde_json::from_str(include_str!("fixtures/history-edit-guard/fixture.v3.json")).unwrap()
 }
 async fn run_case(adapter: Arc<dyn StorageAdapter>, c: &Value) -> Vec<String> {
     adapter.setup().await.unwrap();
@@ -21,7 +21,7 @@ async fn run_case(adapter: Arc<dyn StorageAdapter>, c: &Value) -> Vec<String> {
     for (i, step) in c["steps"].as_array().unwrap().iter().enumerate() {
         let b = if let Some(h) = step.get("history") {
             reduce_history_chunk(&HistoryChunkInput {
-                session_id: h["sessionId"].as_str().unwrap().into(),
+                connection_id: h["connectionId"].as_str().unwrap().into(),
                 chunk: serde_json::from_value(h["chunk"].clone()).unwrap(),
                 identities: None,
                 chunk_id: Some(h["chunkId"].as_str().unwrap().into()),

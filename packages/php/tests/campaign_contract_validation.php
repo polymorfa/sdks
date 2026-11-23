@@ -99,7 +99,7 @@ ccThrows(fn () => $ccTeam->audienceProfiles->imports->create(['replayKey' => 'ov
 ccCheck($ccObservations() === [], 'Over-budget and outbound normalized keyword requests refuse before HTTP');
 
 $ccScalarBody = [...$ccSendBody, 'variables' => ['0' => false, 'tiny' => 1e-7, 'fixed' => 1e-6, 'large' => 1e21, 'zero' => -0.0]];
-$ccScalarWire = '{"sessionId":"'.$ccSendBody['sessionId'].'","to":"'.$ccSendBody['to'].'","variables":{"0":false,"tiny":1e-7,"fixed":0.000001,"large":1e+21,"zero":0}}';
+$ccScalarWire = '{"connectionId":"'.$ccSendBody['connectionId'].'","to":"'.$ccSendBody['to'].'","variables":{"0":false,"tiny":1e-7,"fixed":0.000001,"large":1e+21,"zero":0}}';
 $ccConfigure(['method' => 'POST', 'path' => '/messaging/projects/slug/campaigns/'.$ccCampaign.'/test-send', 'bodySha256' => hash('sha256', $ccScalarWire), 'maxBodyBytes' => strlen($ccScalarWire), 'response' => $ccMessagingJson($ccSendData)]);
 $ccMessaging->campaigns->testSend('slug', $ccCampaign, $ccScalarBody);
 echo "Strict request validation, compact quotas and scalar wire spellings passed.\n";

@@ -13,9 +13,9 @@ function invalidExistingContracts(Polymorfa\Client $team, Polymorfa\MessagingCli
     $team->campaigns->launch($id, ['projectId' => $p,'scheduledAt' => null]);
     $m->campaigns->launch('slug', $id, ['skipMissingVariables' => 0]);
     $m->campaigns->listRecipients('slug', $id, ['reason' => 'unknown_reason']);
-    $team->sessionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0]);
-    $m->sessions->update('s', ['configuration' => ['reset' => ['signalMode']],'revision' => 0]);
-    $m->quickLinks->create(['purpose' => 'add_connection','session' => 's']);
+    $team->connectionConfiguration->update(['configuration' => ['set' => ['historySync' => ['delivery' => 'archive']]],'revision' => 0]);
+    $m->connections->update('s', ['configuration' => ['reset' => ['signalMode']],'revision' => 0]);
+    $m->quickLinks->create(['purpose' => 'add_method','connection' => 's']);
     $m->quickLinks->create(['signalMode' => 'invalid']);
     $m->messages->send('s', ['conversation' => ['id' => 'chat'],'content' => ['sticker' => []]]);
     $m->historySync->requestChunkRetry('s', ['syncType' => 'UNKNOWN','chunkOrder' => 0]);

@@ -29,7 +29,7 @@ func TestCallSettingsCoverageEndResponseOnly(t *testing.T) {
 		for _, method := range []string{"GET", "PUT"} {
 			t.Run(c.Name+method, func(t *testing.T) {
 				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-					if r.Method != method || r.URL.Path != "/platform/sessions/support/call-settings" {
+					if r.Method != method || r.URL.Path != "/platform/connections/support/call-settings" {
 						t.Error(r.Method, r.URL)
 					}
 					if method == "PUT" {
@@ -52,7 +52,7 @@ func TestCallSettingsCoverageEndResponseOnly(t *testing.T) {
 				}))
 				defer server.Close()
 				client := mustMessaging(t, server.URL)
-				var response Response[Envelope[SessionCallSettings]]
+				var response Response[Envelope[ConnectionCallSettings]]
 				var err error
 				if method == "GET" {
 					response, err = client.VoIP().RetrieveCallSettings(context.Background(), "support")
@@ -72,7 +72,7 @@ func TestCallSettingsCoverageEndResponseOnly(t *testing.T) {
 			})
 		}
 	}
-	var older SessionCallSettings
+	var older ConnectionCallSettings
 	legacy, err := json.Marshal(fixture.Settings)
 	if err != nil {
 		t.Fatal(err)

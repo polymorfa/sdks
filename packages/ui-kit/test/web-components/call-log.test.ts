@@ -39,7 +39,7 @@ const client = () =>
         audience: "browser",
         expiresAt: Date.now() + 600_000,
         grant: {
-          session: "support",
+          connection: "support",
           conversations: "all",
           allow: ["read_messages"],
         },
@@ -128,7 +128,7 @@ describe("<pmfa-call-log>", () => {
             audience: "browser",
             expiresAt: Date.now() + 600_000,
             grant: {
-              session: "support",
+              connection: "support",
               conversations: "all",
               allow: ["read_calls"],
             },
@@ -139,7 +139,7 @@ describe("<pmfa-call-log>", () => {
             {
               callId,
               projectId: null,
-              sessionId: "support",
+              connectionId: "support",
               direction: "inbound",
               upstream: "linked_device",
               outcome: "missed",

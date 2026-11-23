@@ -9,73 +9,73 @@ import {
   unknownAction,
 } from "../../../../lib/route.js";
 
-export const GET = route("agent", ({ body, sessionOf }) =>
-  messaging().groups.list(sessionOf(body)),
+export const GET = route("agent", ({ body, connectionOf }) =>
+  messaging().groups.list(connectionOf(body)),
 );
 
-export const POST = route("agent", async ({ body, sessionOf }) => {
+export const POST = route("agent", async ({ body, connectionOf }) => {
   const groups = messaging().groups;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   const name = action(body);
   switch (name) {
     case "create":
-      return groups.create(session, {
+      return groups.create(connection, {
         name: text(body, "name"),
         participants: texts(body, "participants"),
       });
     case "joinInfo":
-      return groups.getJoinInfo(session, text(body, "code"));
+      return groups.getJoinInfo(connection, text(body, "code"));
     case "join":
-      return groups.join(session, { code: text(body, "code") });
+      return groups.join(connection, { code: text(body, "code") });
   }
 
   const groupId = text(body, "groupId");
   const participants = () => ({ participants: texts(body, "participants") });
   switch (name) {
     case "retrieve":
-      return groups.retrieve(session, groupId);
+      return groups.retrieve(connection, groupId);
     case "delete":
-      return groups.delete(session, groupId);
+      return groups.delete(connection, groupId);
     case "leave":
-      return groups.leave(session, groupId);
+      return groups.leave(connection, groupId);
     case "setSubject":
-      return groups.setSubject(session, groupId, {
+      return groups.setSubject(connection, groupId, {
         value: text(body, "value"),
       });
     case "setDescription":
-      return groups.setDescription(session, groupId, {
+      return groups.setDescription(connection, groupId, {
         value: text(body, "value"),
       });
     case "inviteCode":
-      return groups.getInviteCode(session, groupId);
+      return groups.getInviteCode(connection, groupId);
     case "revokeInviteCode":
-      return groups.revokeInviteCode(session, groupId);
+      return groups.revokeInviteCode(connection, groupId);
     case "participants":
-      return groups.listParticipants(session, groupId);
+      return groups.listParticipants(connection, groupId);
     case "addParticipants":
-      return groups.addParticipants(session, groupId, participants());
+      return groups.addParticipants(connection, groupId, participants());
     case "removeParticipants":
-      return groups.removeParticipants(session, groupId, participants());
+      return groups.removeParticipants(connection, groupId, participants());
     case "promoteParticipants":
-      return groups.promoteParticipants(session, groupId, participants());
+      return groups.promoteParticipants(connection, groupId, participants());
     case "demoteParticipants":
-      return groups.demoteParticipants(session, groupId, participants());
+      return groups.demoteParticipants(connection, groupId, participants());
     case "setPicture":
-      return groups.setPicture(session, groupId, { url: text(body, "url") });
+      return groups.setPicture(connection, groupId, { url: text(body, "url") });
     case "setInfoEditing":
-      return groups.setInfoEditing(session, groupId, {
+      return groups.setInfoEditing(connection, groupId, {
         adminsOnly: flag(body, "adminsOnly"),
       });
     case "setMessaging":
-      return groups.setMessaging(session, groupId, {
+      return groups.setMessaging(connection, groupId, {
         adminsOnly: flag(body, "adminsOnly"),
       });
     case "setMemberAddMode":
-      return groups.setMemberAddMode(session, groupId, {
+      return groups.setMemberAddMode(connection, groupId, {
         mode: oneOf(body, "mode", ["admin_add", "all_member_add"]),
       });
     case "setJoinApproval":
-      return groups.setJoinApproval(session, groupId, {
+      return groups.setJoinApproval(connection, groupId, {
         required: flag(body, "required"),
       });
     default:

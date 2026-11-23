@@ -6,7 +6,7 @@ namespace Polymorfa\Storage;
 
 final readonly class Watermark
 {
-    public function __construct(public string $sessionId, public string $chatId, public int|float $timestamp)
+    public function __construct(public string $connectionId, public string $chatId, public int|float $timestamp)
     {
     }
 }

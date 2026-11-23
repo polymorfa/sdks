@@ -70,7 +70,7 @@ final class S3MediaStore implements \JsonSerializable
             throw new ConnectionException('The media store request failed.', 'media_store_failed');
         }
     }
-    public function uploadToWhatsApp(MediaResource $media, string $session, string $key, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
+    public function uploadToWhatsApp(MediaResource $media, string $connection, string $key, UploadWhatsAppMediaOptions $options): WhatsAppMediaUploadResult
     {
         $key = $this->key($key);
         $request = $options->requestOptions ?? new RequestOptions();
@@ -106,7 +106,7 @@ final class S3MediaStore implements \JsonSerializable
         $request = $options->requestOptions ?? new RequestOptions();
         $bounded = new UploadWhatsAppMediaOptions($options->mediaType, $mime, $options->mediaKey, $options->egress, $options->maxBytes, new RequestOptions(self::check($token, $deadline), $request->maxNetworkRetries, $request->apiVersion, $request->idempotencyKey, $request->headers, $token), $options->http, $options->maxAttempts, $options->documentPartSize, $options->uploadTransport);
         try {
-            return $media->upload($session, $source, $bounded);
+            return $media->upload($connection, $source, $bounded);
         } catch (\Throwable $error) {
             self::check($token, $deadline);
             if ($error instanceof PolymorfaException) {

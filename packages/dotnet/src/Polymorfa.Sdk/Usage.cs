@@ -3,17 +3,17 @@ using System.Text.Json;
 
 namespace Polymorfa.Sdk;
 
-public sealed record UsageRecord(string Id, string Meter, decimal Quantity, string Unit, IReadOnlyDictionary<string, JsonElement> Dimensions, string KeySource, string SourceKind, string SourceId, string? ProjectId, string? Session, string OccurredAt, string RecordedAt, long Revision, string PricingState, UsageRateCard? RateCard, decimal? PricedCredits);
+public sealed record UsageRecord(string Id, string Meter, decimal Quantity, string Unit, IReadOnlyDictionary<string, JsonElement> Dimensions, string KeySource, string SourceKind, string SourceId, string? ProjectId, string? Connection, string OccurredAt, string RecordedAt, long Revision, string PricingState, UsageRateCard? RateCard, decimal? PricedCredits);
 public sealed record UsageRecordPage(IReadOnlyList<UsageRecord> Records, string? NextCursor);
 public sealed record UsageMeterTotal(string Meter, string Unit, string KeySource, decimal Quantity, long Records);
-public sealed record UsageNumberTotal(string Session, string? ProjectId, IReadOnlyList<UsageMeterTotal> Meters);
-public sealed record UsageSummary(string Period, string Start, string End, string? ProjectId, string? Session, bool BillingEnabled, IReadOnlyList<UsageMeterTotal> Meters, IReadOnlyList<UsageNumberTotal> Numbers, bool NumbersTruncated);
+public sealed record UsageConnectionTotal(string Connection, string? ProjectId, IReadOnlyList<UsageMeterTotal> Meters);
+public sealed record UsageSummary(string Period, string Start, string End, string? ProjectId, string? Connection, bool BillingEnabled, IReadOnlyList<UsageMeterTotal> Meters, IReadOnlyList<UsageConnectionTotal> Connections, bool ConnectionsTruncated);
 public sealed record UsageGateDecisions(long WouldBlock, long Blocked, long EvaluationError);
 public sealed record UsageGate(string Key, string Kind, string Subject, string Mode, bool Active, decimal? Limit, decimal? Used, string? Unit, bool? OverLimit, UsageGateDecisions Decisions);
-public sealed record UsageGateList(string? Session, IReadOnlyList<UsageGate> Gates);
-public sealed record UsageSummaryParameters(string? ProjectId = null, string? Session = null, string? Period = null);
-public sealed record UsageRecordParameters(string? ProjectId = null, string? Session = null, string? Period = null, string? CallId = null, string? Meter = null, int? Limit = null, string? Cursor = null);
-public sealed record UsageGateParameters(string? ProjectId = null, string? Session = null);
+public sealed record UsageGateList(string? Connection, IReadOnlyList<UsageGate> Gates);
+public sealed record UsageSummaryParameters(string? ProjectId = null, string? Connection = null, string? Period = null);
+public sealed record UsageRecordParameters(string? ProjectId = null, string? Connection = null, string? Period = null, string? CallId = null, string? Meter = null, int? Limit = null, string? Cursor = null);
+public sealed record UsageGateParameters(string? ProjectId = null, string? Connection = null);
 public sealed class Usage : Resource
 {
     private readonly string? projectId;

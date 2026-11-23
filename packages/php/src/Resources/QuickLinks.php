@@ -26,7 +26,7 @@ final class QuickLinks extends Resource
     public function create(array $body = [], ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\SessionDeliveryValidation::quickLink($body));
+        $options = \Polymorfa\ExistingContract::options($options, \Polymorfa\ConnectionDeliveryValidation::quickLink($body));
         $this->validateBilling($body);
         if (isset($body['configuration']['testing']['configuration'])) {
             \Polymorfa\BusinessAccountMode::fields($body['configuration']['testing']['configuration']);
@@ -38,11 +38,11 @@ final class QuickLinks extends Resource
     /**
  *
  * @return ApiResponse<array{success:true,data:Availability}> */
-    public function availability(string $projectId, string $session, ?RequestOptions $options = null): ApiResponse
+    public function availability(string $projectId, string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         /** @var ApiResponse<array{success:true,data:Availability}> */
-        return $this->request('GET', '/messaging/quicklinks/availability', query: ['projectId' => $projectId, 'session' => $session], options: $options);
+        return $this->request('GET', '/messaging/quicklinks/availability', query: ['projectId' => $projectId, 'connection' => $connection], options: $options);
     }
     /**
  *
@@ -77,7 +77,7 @@ final class QuickLinks extends Resource
         if (($limit !== null && (!is_int($limit) && !is_float($limit) || !is_finite($limit) || $limit < 0 || $limit > 1000000 || (float)number_format($limit, 6, '.', '') !== (float)$limit)) || !is_int($priority) || $priority < 0 || $priority > 1000000) {
             throw new ValidationException('Invalid initial billing controls.', 'invalid_billing_control');
         }
-        if (($body['purpose'] ?? '') === 'add_connection' || is_array($body['configuration'] ?? null) && isset($body['configuration']['testing'])) {
+        if (($body['purpose'] ?? '') === 'add_method' || is_array($body['configuration'] ?? null) && isset($body['configuration']['testing'])) {
             throw new ConfigurationException('billingControls');
         }
     }

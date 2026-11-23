@@ -51,7 +51,7 @@ function apiClient(
         value: "pmfa_ct_Zml4dHVyZQ",
         audience: "browser",
         expiresAt: Date.now() + 600_000,
-        grant: { session: "support", conversations: "all", allow },
+        grant: { connection: "support", conversations: "all", allow },
       });
     const parsed = new URL(url);
     const method =
@@ -147,7 +147,7 @@ describe("ContactDirectoryController", () => {
     });
     void directory.load();
     directory.setSource({
-      list: async () => [{ id: "7", name: "Other session" }],
+      list: async () => [{ id: "7", name: "Other connection" }],
     });
     old.resolve(people);
     await vi.waitFor(() =>
@@ -711,7 +711,7 @@ describe("handler source group events", () => {
     onMessage!({
       data: JSON.stringify({
         id: "evt_1",
-        session: "support",
+        connection: "support",
         event: "message.received",
         timestamp: "2026-10-27T10:00:00Z",
         payload: {

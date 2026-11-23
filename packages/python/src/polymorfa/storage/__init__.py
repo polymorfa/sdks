@@ -1,4 +1,4 @@
-"""Customer-owned schema2 storage; no database credential comes from Polymorfa."""
+"""Customer-owned schema3 storage; no database credential comes from Polymorfa."""
 
 from .convex import ConvexAdapter, ConvexFunctionReferences, convex_adapter
 from .core import (

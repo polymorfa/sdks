@@ -26,7 +26,7 @@ import { isWhatsAppMediaUrl } from "./whatsapp.js";
 export const CUSTOMER_OWNED_API_VERSION = "2026-10-14";
 
 /**
- * `POST /messaging/{session}/media/upload-grants` request.
+ * `POST /messaging/{connection}/media/upload-grants` request.
  * @experimental Requires the 2026-10-14 API contract.
  */
 export interface WhatsAppUploadGrantRequest {
@@ -38,7 +38,7 @@ export interface WhatsAppUploadGrantRequest {
 }
 
 /**
- * A short-lived WhatsApp upload credential for one session. `auth` is a
+ * A short-lived WhatsApp upload credential for one connection. `auth` is a
  * bearer secret: never log or store it.
  * @experimental Requires the 2026-10-14 API contract.
  */
@@ -54,7 +54,7 @@ export interface WhatsAppUploadGrant {
 }
 
 /**
- * `POST /messaging/{session}/media/uploads` response. The request body
+ * `POST /messaging/{connection}/media/uploads` response. The request body
  * is `ciphertext || mac10` (`application/octet-stream`) with query
  * parameters `type`, `fileEncSha256` (base64url) and optional `ptt`.
  * The encrypted length is carried in `Content-Length`.
@@ -68,7 +68,7 @@ export interface WhatsAppRelayUploadResponse {
 
 /**
  * Asks the phone to send a history chunk again (peer data operation
- * `HISTORY_SYNC_CHUNK_RETRY`). `POST /messaging/{session}/history/chunks/retry`.
+ * `HISTORY_SYNC_CHUNK_RETRY`). `POST /messaging/{connection}/history/chunks/retry`.
  * @experimental Requires the 2026-10-14 API contract.
  */
 export interface HistorySyncChunkRetryRequest {
@@ -94,8 +94,8 @@ export interface HistorySyncChunkRetryResponse {
 }
 
 /**
- * Asks the session to delete a processed history blob from the WhatsApp CDN.
- * `POST /messaging/{session}/history/media/delete`.
+ * Asks the connection to delete a processed history blob from the WhatsApp CDN.
+ * `POST /messaging/{connection}/history/media/delete`.
  * @experimental Requires the 2026-10-14 API contract.
  */
 export interface HistorySyncChunkDeleteRequest {
@@ -108,14 +108,14 @@ export interface HistorySyncChunkDeleteRequest {
 
 /** @internal */
 export const DIRECT_MEDIA_PATHS = Object.freeze({
-  uploadGrants: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/media/upload-grants`,
-  relayUploads: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/media/uploads`,
-  historyChunkRetries: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/history/chunks/retry`,
-  historyChunkDeletions: (session: string) =>
-    `/messaging/${encodeURIComponent(session)}/history/media/delete`,
+  uploadGrants: (connection: string) =>
+    `/messaging/${encodeURIComponent(connection)}/media/upload-grants`,
+  relayUploads: (connection: string) =>
+    `/messaging/${encodeURIComponent(connection)}/media/uploads`,
+  historyChunkRetries: (connection: string) =>
+    `/messaging/${encodeURIComponent(connection)}/history/chunks/retry`,
+  historyChunkDeletions: (connection: string) =>
+    `/messaging/${encodeURIComponent(connection)}/history/media/delete`,
 });
 
 function uploadRequest(
@@ -173,17 +173,17 @@ export class DirectMediaApi {
   }
 
   async createUploadGrant(
-    session: string,
+    connection: string,
     request: WhatsAppUploadGrantRequest,
     options: RequestOptions = {},
   ): Promise<WhatsAppUploadGrant> {
     this.assertServerCredential();
     // These source-only routes have no server replay ledger, even with a key.
     options = { ...existingOptions(options), maxNetworkRetries: 0 };
-    contractString(session, "session");
+    contractString(connection, "connection");
     const response = await this.transport.request<unknown>({
       method: "POST",
-      path: DIRECT_MEDIA_PATHS.uploadGrants(session),
+      path: DIRECT_MEDIA_PATHS.uploadGrants(connection),
       body: uploadRequest(request.mediaType, request.fileEncSha256),
       ...options,
       apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
@@ -220,7 +220,7 @@ export class DirectMediaApi {
   }
 
   async relayUpload(
-    session: string,
+    connection: string,
     request: WhatsAppUploadGrantRequest & {
       readonly body: ReadableStream<Uint8Array> | Uint8Array;
     },
@@ -238,7 +238,7 @@ export class DirectMediaApi {
       ...options,
       apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
       method: "POST",
-      path: DIRECT_MEDIA_PATHS.relayUploads(session),
+      path: DIRECT_MEDIA_PATHS.relayUploads(connection),
       query,
       headers: {
         ...options.headers,
@@ -259,12 +259,12 @@ export class DirectMediaApi {
   }
 
   async requestHistoryChunkRetry(
-    session: string,
+    connection: string,
     request: HistorySyncChunkRetryRequest,
     options: RequestOptions = {},
   ): Promise<HistorySyncChunkRetryResponse> {
     this.assertServerCredential();
-    contractString(session, "session");
+    contractString(connection, "connection");
     const value = contractFields(
       request,
       ["syncType", "chunkOrder", "chunkMessageId", "regenerate"],
@@ -308,7 +308,7 @@ export class DirectMediaApi {
     options = { ...existingOptions(options), maxNetworkRetries: 0 };
     const response = await this.transport.request<unknown>({
       method: "POST",
-      path: DIRECT_MEDIA_PATHS.historyChunkRetries(session),
+      path: DIRECT_MEDIA_PATHS.historyChunkRetries(connection),
       body: { ...request },
       ...options,
       apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,
@@ -320,12 +320,12 @@ export class DirectMediaApi {
   }
 
   async deleteHistoryChunk(
-    session: string,
+    connection: string,
     request: HistorySyncChunkDeleteRequest,
     options: RequestOptions = {},
   ): Promise<void> {
     this.assertServerCredential();
-    contractString(session, "session");
+    contractString(connection, "connection");
     const value = contractFields(
       request,
       ["directPath", "fileEncSha256", "encHandle", "companionMetaNonce"],
@@ -358,7 +358,7 @@ export class DirectMediaApi {
     options = { ...existingOptions(options), maxNetworkRetries: 0 };
     const response = await this.transport.request<unknown>({
       method: "POST",
-      path: DIRECT_MEDIA_PATHS.historyChunkDeletions(session),
+      path: DIRECT_MEDIA_PATHS.historyChunkDeletions(connection),
       body: { ...request },
       ...options,
       apiVersion: options.apiVersion ?? CUSTOMER_OWNED_API_VERSION,

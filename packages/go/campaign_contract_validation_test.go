@@ -40,13 +40,13 @@ func TestCampaignContractValidation(t *testing.T) {
 			return validateReplySend(CampaignReplyButtons{Body: "body", Buttons: []CampaignReplyButton{{ID: "a", Text: strings.Repeat("é", 11)}}})
 		}},
 		{"null variables", func() error {
-			v := CampaignTestSendRequest{SessionID: contractID, To: "123", Variables: cptr(map[string]CampaignVariable(nil))}
+			v := CampaignTestSendRequest{ConnectionID: contractID, To: "123", Variables: cptr(map[string]CampaignVariable(nil))}
 			return validateTestSend(v)
 		}},
 		{"ambiguous scalar", func() error { return validateCampaignScalar(CampaignVariable{String: cptr("x"), Bool: cptr(false)}) }},
 		{"infinite scalar", func() error { return validateCampaignScalar(CampaignVariable{Number: cptr(math.Inf(1))}) }},
 		{"UTF16 units", func() error {
-			return validateTestSend(CampaignTestSendRequest{SessionID: contractID, To: "123", Variables: cptr(map[string]CampaignVariable{"a": {String: cptr(strings.Repeat("🙂", 513))}})})
+			return validateTestSend(CampaignTestSendRequest{ConnectionID: contractID, To: "123", Variables: cptr(map[string]CampaignVariable{"a": {String: cptr(strings.Repeat("🙂", 513))}})})
 		}},
 		{"attribute object", func() error { var v AudienceProfileAttribute; return json.Unmarshal([]byte(`{"a":true}`), &v) }},
 		{"nil attributes", func() error { v := contractProfile(); v.Attributes = nil; return validateProfilePut(v) }},
@@ -121,7 +121,7 @@ func TestCampaignContractValidation(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	v := CampaignTestSendRequest{SessionID: contractID, To: "123", Variables: cptr(map[string]CampaignVariable{"a": {String: cptr(strings.Repeat("🙂", 512))}})}
+	v := CampaignTestSendRequest{ConnectionID: contractID, To: "123", Variables: cptr(map[string]CampaignVariable{"a": {String: cptr(strings.Repeat("🙂", 512))}})}
 	if err := validateTestSend(v); err != nil {
 		t.Fatal(err)
 	}

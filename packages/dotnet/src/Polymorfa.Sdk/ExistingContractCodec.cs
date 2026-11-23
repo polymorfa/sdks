@@ -47,17 +47,17 @@ internal static class ExistingContractCodec
         if (type == typeof(CampaignFollowUp)) return name is "delaySeconds" or "expirySeconds";
         if (type == typeof(CampaignVariableBinding)) return name is "source" or "fallback";
         if (type == typeof(CampaignVariantStrategy)) return name == "testSlicePercent";
-        if (type == typeof(Session)) return name is "externalId" or "statusReason" or "signalMode" or "configuration" or "newChatCapping";
+        if (type == typeof(Connection)) return name is "externalId" or "statusReason" or "signalMode" or "configuration" or "newChatCapping" or "phoneNumberId";
         if (type == typeof(HistorySyncPolicy)) return name == "delivery";
         if (type == typeof(ConfigurationSources)) return name == "historySync.delivery";
-        if (type == typeof(SessionConfigurationView)) return name is "historyConsent" or "application";
-        if (type == typeof(SessionConfigurationOverrides)) return true;
+        if (type == typeof(ConnectionConfigurationView)) return name is "historyConsent" or "application";
+        if (type == typeof(ConnectionConfigurationOverrides)) return true;
         if (type == typeof(HistorySyncOverride) || type == typeof(ObservationOverride) || type == typeof(HmsConfiguration)) return true;
         if (typeof(WhatsAppMetrics).IsAssignableFrom(type)) return name is "recipientActivity" or "responseQueue";
         if (type == typeof(WhatsAppConversationGroup)) return name is "recipientCountry" or "recipientDeviceCount";
         return false;
     }
-    private static bool OptionalNull(Type type, string name) => typeof(Campaign).IsAssignableFrom(type) || typeof(CampaignAnalytics).IsAssignableFrom(type) && name == "drip" || typeof(WhatsAppMetrics).IsAssignableFrom(type) && name == "responseQueue" || type == typeof(Session) && name is "externalId" or "statusReason" or "configuration" or "newChatCapping";
+    private static bool OptionalNull(Type type, string name) => typeof(Campaign).IsAssignableFrom(type) || typeof(CampaignAnalytics).IsAssignableFrom(type) && name == "drip" || typeof(WhatsAppMetrics).IsAssignableFrom(type) && name == "responseQueue" || type == typeof(Connection) && name is "externalId" or "statusReason" or "configuration" or "newChatCapping" or "phoneNumberId";
     private static void Validate(JsonElement value, Type type, bool nullable, bool nullableData = false)
     {
         if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof(PatchValue<>)) type = type.GetGenericArguments()[0];

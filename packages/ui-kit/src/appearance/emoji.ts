@@ -151,7 +151,7 @@ export function recordRecentEmoji(
   try {
     storage?.setItem(RECENT_KEY, JSON.stringify(next));
   } catch {
-    // Private mode or a full quota: keep the list for this session only.
+    // Private mode or a full quota: keep the list for this connection only.
   }
   return next;
 }

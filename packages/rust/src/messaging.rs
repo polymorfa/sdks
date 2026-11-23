@@ -58,8 +58,8 @@ impl MessagingClient {
     pub fn ban_safe(&self) -> crate::policies::MessagingBanSafe<'_> {
         crate::policies::MessagingBanSafe(&self.http)
     }
-    pub fn sessions(&self) -> Sessions<'_> {
-        Sessions(&self.http)
+    pub fn connections(&self) -> Connections<'_> {
+        Connections(&self.http)
     }
     pub fn channels(&self) -> crate::channels::Channels<'_> {
         crate::channels::Channels(&self.http)
@@ -155,20 +155,20 @@ impl MessagingClient {
         self.http.request(method, path, &pairs, body, options).await
     }
 }
-pub struct Sessions<'a>(pub(crate) &'a HttpTransport);
-impl Sessions<'_> {
+pub struct Connections<'a>(pub(crate) &'a HttpTransport);
+impl Connections<'_> {
     pub async fn update(
         &self,
-        session: &str,
-        body: &crate::configuration::UpdateSessionRequest,
+        connection: &str,
+        body: &crate::configuration::UpdateConnectionRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<Connection>>> {
         let options = body.configuration.options(options);
         self.0.server()?;
         self.0
             .request(
                 Method::PUT,
-                &session_path(session),
+                &connection_path(connection),
                 &[],
                 Some(body),
                 options,
@@ -178,38 +178,44 @@ impl Sessions<'_> {
     pub async fn list(
         &self,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Vec<PlatformSession>>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Vec<PlatformConnection>>>> {
         self.0.server()?;
-        self.0.get("/platform/sessions", options).await
+        self.0.get("/platform/connections", options).await
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<Session>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<Connection>>> {
         self.0.server()?;
-        self.0.get(&session_path(session), options).await
+        self.0.get(&connection_path(connection), options).await
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionRemoveResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionRemoveResult>>> {
         self.0.server()?;
         self.0
-            .request::<_, ()>(Method::DELETE, &session_path(session), &[], None, options)
+            .request::<_, ()>(
+                Method::DELETE,
+                &connection_path(connection),
+                &[],
+                None,
+                options,
+            )
             .await
     }
     pub async fn start(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionStartResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionStartResult>>> {
         self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/start", session_path(session)),
+                &format!("{}/start", connection_path(connection)),
                 &[],
                 None,
                 options,
@@ -218,14 +224,14 @@ impl Sessions<'_> {
     }
     pub async fn stop(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<SessionStopResult>>> {
+    ) -> Result<ApiResponse<DataEnvelope<ConnectionStopResult>>> {
         self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/stop", session_path(session)),
+                &format!("{}/stop", connection_path(connection)),
                 &[],
                 None,
                 options,
@@ -234,14 +240,14 @@ impl Sessions<'_> {
     }
     pub async fn restart(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<OperationAccepted>> {
         self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/restart", session_path(session)),
+                &format!("{}/restart", connection_path(connection)),
                 &[],
                 None,
                 options,
@@ -250,14 +256,14 @@ impl Sessions<'_> {
     }
     pub async fn logout(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<OperationAccepted>> {
         self.0.server()?;
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/logout", session_path(session)),
+                &format!("{}/logout", connection_path(connection)),
                 &[],
                 None,
                 options,
@@ -266,23 +272,23 @@ impl Sessions<'_> {
     }
     pub async fn account(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<WhatsAppAccount>>> {
         self.0.server()?;
         self.0
-            .get(&format!("{}/me", session_path(session)), options)
+            .get(&format!("{}/me", connection_path(connection)), options)
             .await
     }
     pub async fn qr(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<QrCode>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("/messaging/{}/pair/qr", encode(session)),
+                &format!("/messaging/{}/pair/qr", encode(connection)),
                 &[("format", "json".into())],
                 None,
                 options,
@@ -291,14 +297,14 @@ impl Sessions<'_> {
     }
     pub async fn request_pairing_code(
         &self,
-        session: &str,
+        connection: &str,
         body: &PairCodeRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PairCode>>> {
         self.0
             .request(
                 Method::POST,
-                &format!("/messaging/{}/pair/code", encode(session)),
+                &format!("/messaging/{}/pair/code", encode(connection)),
                 &[],
                 Some(body),
                 options,
@@ -306,15 +312,15 @@ impl Sessions<'_> {
             .await
     }
 }
-fn session_path(session: &str) -> String {
-    format!("/platform/sessions/{}", encode(session))
+fn connection_path(connection: &str) -> String {
+    format!("/platform/connections/{}", encode(connection))
 }
 
 pub struct Messages<'a>(&'a HttpTransport);
 impl Messages<'_> {
     pub async fn send(
         &self,
-        session: &str,
+        connection: &str,
         body: &SendMessageRequest,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MessageResponse>>> {
@@ -358,7 +364,7 @@ impl Messages<'_> {
         self.0
             .request(
                 Method::POST,
-                &message_path(session, "send"),
+                &message_path(connection, "send"),
                 &[],
                 Some(body),
                 options.idempotent(),
@@ -367,14 +373,14 @@ impl Messages<'_> {
     }
     pub async fn mark_seen(
         &self,
-        session: &str,
+        connection: &str,
         body: &SeenRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<StatusResult>>> {
         self.0
             .request(
                 Method::POST,
-                &message_path(session, "seen"),
+                &message_path(connection, "seen"),
                 &[],
                 Some(body),
                 options,
@@ -383,14 +389,14 @@ impl Messages<'_> {
     }
     pub async fn set_typing(
         &self,
-        session: &str,
+        connection: &str,
         body: &TypingRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<StatusResult>>> {
         self.0
             .request(
                 Method::POST,
-                &message_path(session, "typing"),
+                &message_path(connection, "typing"),
                 &[],
                 Some(body),
                 options,
@@ -399,14 +405,14 @@ impl Messages<'_> {
     }
     pub async fn react(
         &self,
-        session: &str,
+        connection: &str,
         body: &ReactRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MessageReceipt>>> {
         self.0
             .request(
                 Method::POST,
-                &message_path(session, "react"),
+                &message_path(connection, "react"),
                 &[],
                 Some(body),
                 options.idempotent(),
@@ -415,14 +421,14 @@ impl Messages<'_> {
     }
     pub async fn star(
         &self,
-        session: &str,
+        connection: &str,
         body: &StarRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<StatusResult>>> {
         self.0
             .request(
                 Method::POST,
-                &message_path(session, "star"),
+                &message_path(connection, "star"),
                 &[],
                 Some(body),
                 options,
@@ -431,7 +437,7 @@ impl Messages<'_> {
     }
     pub async fn operation_status(
         &self,
-        session: &str,
+        connection: &str,
         operation_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<MessageOperation>>> {
@@ -440,7 +446,7 @@ impl Messages<'_> {
             .get(
                 &format!(
                     "/messaging/{}/operations/{}",
-                    encode(session),
+                    encode(connection),
                     encode(operation_id)
                 ),
                 options,
@@ -448,8 +454,8 @@ impl Messages<'_> {
             .await
     }
 }
-fn message_path(session: &str, action: &str) -> String {
-    format!("/messaging/{}/messages/{action}", encode(session))
+fn message_path(connection: &str, action: &str) -> String {
+    format!("/messaging/{}/messages/{action}", encode(connection))
 }
 
 pub struct QuickLinks<'a>(&'a HttpTransport);
@@ -471,10 +477,10 @@ impl QuickLinks<'_> {
                 testing.primary_platform.as_ref(),
             )?;
         }
-        let supplementary = matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection));
+        let supplementary = matches!(body.purpose, Some(CreateQuickLinkPurpose::AddMethod));
         if supplementary {
-            if body.session.as_ref().is_none_or(|s| s.is_empty())
-                || body.add_connection.is_none()
+            if body.connection.as_ref().is_none_or(|s| s.is_empty())
+                || body.add_method.is_none()
                 || body.customer_id.is_some()
                 || body.external_id.is_some()
                 || body.billing_controls.is_some()
@@ -483,7 +489,7 @@ impl QuickLinks<'_> {
             {
                 return Err(crate::transport::configuration("supplementaryQuickLink"));
             }
-        } else if body.session.is_some() || body.add_connection.is_some() {
+        } else if body.connection.is_some() || body.add_method.is_some() {
             return Err(crate::transport::configuration("initialQuickLink"));
         }
         let new_intent = body.signal_mode.is_some()
@@ -503,7 +509,7 @@ impl QuickLinks<'_> {
                         || !(0.0..=1_000_000.0).contains(&v)
                         || (v * 1_000_000.0).fract() != 0.0
                 })
-                || matches!(body.purpose, Some(CreateQuickLinkPurpose::AddConnection))
+                || matches!(body.purpose, Some(CreateQuickLinkPurpose::AddMethod))
                 || body
                     .configuration
                     .as_ref()
@@ -551,7 +557,7 @@ impl QuickLinks<'_> {
     pub async fn availability(
         &self,
         project_id: &str,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<HybridQuickLinkAvailability>>> {
         self.0.server()?;
@@ -561,7 +567,7 @@ impl QuickLinks<'_> {
                 "/messaging/quicklinks/availability",
                 &[
                     ("projectId", project_id.into()),
-                    ("session", session.into()),
+                    ("connection", connection.into()),
                 ],
                 None,
                 options,

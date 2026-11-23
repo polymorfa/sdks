@@ -36,10 +36,10 @@ export interface FlowValidationIssue extends Omit<
   readonly message?: string;
   readonly pointers?: readonly FlowValidationPointer[];
 }
-export interface FlowNumberLink {
-  readonly session: string;
-  /** Number session UUID, when the API reports it. */
-  readonly sessionId?: string;
+export interface FlowConnectionLink {
+  readonly connection: string;
+  /** Connection connection UUID, when the API reports it. */
+  readonly connectionId?: string;
   readonly wabaId: string;
   readonly metaFlowId: string;
   readonly status: string;
@@ -59,7 +59,7 @@ export interface FlowSummary {
   readonly status: FlowDraftStatus;
   readonly version: string;
   readonly screenCount: number;
-  readonly metaLinks: readonly FlowNumberLink[];
+  readonly metaLinks: readonly FlowConnectionLink[];
   readonly createdAt: number;
   readonly updatedAt: number;
 }
@@ -78,7 +78,7 @@ export interface UpdateFlowRequest {
   readonly definition?: Readonly<Record<string, unknown>>;
 }
 export interface FlowProviderRequest {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly categories?: readonly FlowCategory[];
   /** Reuse for the exact same operation; an uncertain operation is reconciled by sync. */
   readonly requestId?: string;
@@ -88,8 +88,8 @@ export interface FlowProviderOperation {
   readonly requestId: string | null;
   readonly flowId: string;
   readonly flowName: string;
-  readonly sessionId: string;
-  readonly session: string;
+  readonly connectionId: string;
+  readonly connection: string;
   readonly action: "create" | "upload" | "publish" | "deprecate" | "delete";
   readonly state:
     "pending" | "succeeded" | "rejected" | "uncertain" | "superseded";
@@ -110,14 +110,14 @@ export interface FlowProviderResult {
   readonly flow: FlowDraft;
 }
 
-/** How WhatsApp reaches a dynamic Flow's data endpoint on one Number. */
+/** How WhatsApp reaches a dynamic Flow's data endpoint on one Connection. */
 export type FlowEndpointMode = "forward" | "function" | "direct";
 export interface FlowEndpoint {
   readonly id: string;
   readonly teamId: string;
   readonly projectId: string;
   readonly flowId: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly mode: FlowEndpointMode;
   readonly url: string | null;
   readonly functionId: string | null;
@@ -146,7 +146,7 @@ export interface ManagedFlowEncryptionKey {
   readonly retireAfter: number | null;
 }
 export interface FlowEncryptionCustody {
-  /** `managed`: Polymorfa holds the Number's active key. `customer`: it does not. */
+  /** `managed`: Polymorfa holds the Connection's active key. `customer`: it does not. */
   readonly custody: "managed" | "customer";
   readonly activeKeyId: string | null;
   readonly keys: readonly ManagedFlowEncryptionKey[];
@@ -165,8 +165,8 @@ export interface FlowEndpointSetResult {
   readonly encryption: FlowEncryptionCustody;
 }
 interface FlowEndpointCommon {
-  /** Number (session) name or id in the Flow's project. */
-  readonly sessionId: string;
+  /** Connection (connection) name or id in the Flow's project. */
+  readonly connectionId: string;
   readonly enabled?: boolean;
   /** Replace only when the stored revision matches. */
   readonly expectedRevision?: number;
@@ -193,12 +193,12 @@ export type SetFlowEndpointRequest =
   | ForwardFlowEndpointRequest
   | FunctionFlowEndpointRequest
   | DirectFlowEndpointRequest;
-export interface FlowNumberRequest {
-  /** Number (session) name or id in the Flow's project. */
-  readonly sessionId: string;
+export interface FlowConnectionRequest {
+  /** Connection (connection) name or id in the Flow's project. */
+  readonly connectionId: string;
 }
 export interface ListFlowEndpointReceiptsRequest {
-  readonly sessionId?: string;
+  readonly connectionId?: string;
   /** 1 to 100; defaults to 50. */
   readonly limit?: number;
 }
@@ -207,7 +207,7 @@ export interface FlowEndpointReceipt {
   readonly id: string;
   readonly flowId: string;
   readonly endpointId: string;
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly mode: "forward" | "function";
   readonly action:
     "ping" | "INIT" | "data_exchange" | "BACK" | "error_notification" | null;
@@ -223,7 +223,7 @@ export interface FlowEndpointReceipt {
   readonly completedAt: number | null;
 }
 
-/** Project Flow drafts and their Number-bound provider lifecycle. */
+/** Project Flow drafts and their Connection-bound provider lifecycle. */
 export class FlowsResource {
   constructor(
     private readonly transport: HttpTransport,
@@ -323,21 +323,21 @@ export class FlowsResource {
       options,
     );
   }
-  /** The Flow's data endpoint on one Number and the Number's encryption custody. */
+  /** The Flow's data endpoint on one Connection and the Connection's encryption custody. */
   endpoint(
     flowId: string,
-    params: FlowNumberRequest,
+    params: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEndpointState>> {
     return this.request(
       "GET",
       `${flowPath(flowId)}/endpoint`,
-      numberInput(params),
+      connectionInput(params),
       options,
     );
   }
   /**
-   * Create or replace the Flow's data endpoint on one Number. Sent once:
+   * Create or replace the Flow's data endpoint on one Connection. Sent once:
    * `signingSecret` is returned only in this response.
    */
   setEndpoint(
@@ -350,13 +350,13 @@ export class FlowsResource {
   }
   deleteEndpoint(
     flowId: string,
-    params: FlowNumberRequest,
+    params: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<{ readonly ok: true }>> {
     return this.request(
       "DELETE",
       `${flowPath(flowId)}/endpoint`,
-      numberInput(params),
+      connectionInput(params),
       options,
     );
   }
@@ -382,31 +382,31 @@ export class FlowsResource {
       options,
     );
   }
-  /** The Number's Flow encryption custody and recent managed keys. */
+  /** The Connection's Flow encryption custody and recent managed keys. */
   encryptionKey(
-    params: FlowNumberRequest,
+    params: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEncryptionCustody>> {
     return this.request(
       "GET",
       "",
-      numberInput(params),
+      connectionInput(params),
       options,
       "/platform/flow-encryption-keys",
     );
   }
   /**
-   * Generate and register a new managed key for the Number. Sent once; the
+   * Generate and register a new managed key for the Connection. Sent once; the
    * previous managed key keeps decrypting for 24 hours.
    */
   rotateEncryptionKey(
-    body: FlowNumberRequest,
+    body: FlowConnectionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<FlowEncryptionKeyRotation>> {
     return this.request(
       "POST",
       "",
-      numberInput(body),
+      connectionInput(body),
       options,
       "/platform/flow-encryption-keys/rotate",
     );
@@ -446,14 +446,14 @@ function flowPath(id: string): string {
   return `/${encodeURIComponent(id)}`;
 }
 
-function numberInput(params: FlowNumberRequest): FlowNumberRequest {
-  if (typeof params?.sessionId !== "string" || !params.sessionId.trim())
-    throw new PolymorfaValidationError("sessionId is required.");
-  return { sessionId: params.sessionId };
+function connectionInput(params: FlowConnectionRequest): FlowConnectionRequest {
+  if (typeof params?.connectionId !== "string" || !params.connectionId.trim())
+    throw new PolymorfaValidationError("connectionId is required.");
+  return { connectionId: params.connectionId };
 }
 function validateEndpointRequest(body: SetFlowEndpointRequest): void {
-  if (typeof body?.sessionId !== "string" || !body.sessionId.trim())
-    throw new PolymorfaValidationError("sessionId is required.");
+  if (typeof body?.connectionId !== "string" || !body.connectionId.trim())
+    throw new PolymorfaValidationError("connectionId is required.");
   if (body.mode === "forward" || body.mode === "direct") {
     if (!isHttpsUrl(body.url))
       throw new PolymorfaValidationError(

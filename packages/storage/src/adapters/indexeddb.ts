@@ -1,4 +1,9 @@
-import { ENTITY_NAMES, entityDefinition } from "../schema.js";
+import { upgradeSchema2Row } from "../schema3-upgrade.js";
+import {
+  ENTITY_NAMES,
+  STORAGE_SCHEMA_VERSION,
+  entityDefinition,
+} from "../schema.js";
 import type { StorageAdapter, StoredRow } from "../types.js";
 import { filterRows } from "./shared.js";
 import { namespace, validateCommit, validateQuery } from "./validation.js";
@@ -35,9 +40,15 @@ export function indexeddbAdapter(
       throw new TypeError("IndexedDB is unavailable in this runtime.");
     const request = factory.open(
       options.databaseName ?? `polymorfa_${owner}`,
-      2,
+      STORAGE_SCHEMA_VERSION,
     );
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
+      // Existing stores require the explicit upgrade helper; opening a new client
+      // must never silently abandon an older account partition.
+      if (event.oldVersion !== 0) {
+        request.transaction!.abort();
+        return;
+      }
       for (const entity of ENTITY_NAMES)
         if (!request.result.objectStoreNames.contains(entity))
           request.result.createObjectStore(entity, { keyPath: "_id" });
@@ -189,4 +200,97 @@ export function indexeddbAdapter(
       opening = undefined;
     },
   };
+}
+
+/** Upgrade a stopped schema-2 database in one native versionchange transaction. */
+export async function upgradeIndexedDbSchema2(
+  options: IndexedDbAdapterOptions,
+): Promise<void> {
+  const owner = namespace(options.namespace);
+  const factory = options.indexedDB ?? globalThis.indexedDB;
+  if (!factory)
+    throw new TypeError("IndexedDB is unavailable in this runtime.");
+  const request = factory.open(
+    options.databaseName ?? `polymorfa_${owner}`,
+    STORAGE_SCHEMA_VERSION,
+  );
+  let upgraded = false;
+  let blocked = false;
+  let failure: unknown;
+  const abort = (error: unknown) => {
+    failure = error;
+    request.transaction!.abort();
+  };
+  request.onupgradeneeded = (event) => {
+    const tx = request.transaction!;
+    if (blocked) {
+      tx.abort();
+      return;
+    }
+    const db = request.result;
+    const expected = ENTITY_NAMES.map((name) =>
+      name === "connections" ? "sessions" : name,
+    ).sort();
+    if (
+      event.oldVersion !== 2 ||
+      JSON.stringify([...db.objectStoreNames].sort()) !==
+        JSON.stringify(expected)
+    ) {
+      abort(new TypeError("Expected a complete schema-2 storage database."));
+      return;
+    }
+    const ownerRequest = tx.objectStore("leases").get("__storage_namespace__");
+    ownerRequest.onsuccess = () => {
+      if (ownerRequest.result?.owner !== owner) {
+        abort(
+          new TypeError(
+            "The IndexedDB database belongs to a different storage namespace.",
+          ),
+        );
+        return;
+      }
+      tx.objectStore("sessions").name = "connections";
+      for (const entity of ENTITY_NAMES) {
+        const cursorRequest = tx.objectStore(entity).openCursor();
+        cursorRequest.onsuccess = () => {
+          const cursor = cursorRequest.result;
+          if (!cursor) return;
+          if (entity === "leases" && cursor.key === "__storage_namespace__") {
+            cursor.continue();
+            return;
+          }
+          try {
+            const converted = upgradeSchema2Row(
+              entity,
+              cursor.value as Record<string, unknown>,
+            );
+            cursor.update(converted.row);
+            cursor.continue();
+          } catch (error) {
+            abort(error);
+          }
+        };
+      }
+      upgraded = true;
+    };
+  };
+  await new Promise<void>((resolve, reject) => {
+    request.onblocked = () => {
+      blocked = true;
+      reject(
+        new Error(
+          "The IndexedDB schema upgrade is blocked. Close other connections and retry.",
+        ),
+      );
+    };
+    request.onerror = () =>
+      reject(failure ?? new Error("IndexedDB schema-2 upgrade failed."));
+    request.onsuccess = () => {
+      request.result.close();
+      if (!blocked) {
+        if (upgraded) resolve();
+        else reject(new Error("Expected schema 2; no upgrade was performed."));
+      }
+    };
+  });
 }

@@ -3,7 +3,7 @@
 This directory is the source of the `@polymorfa/sdk/calls` subpath. It is built
 into the `@polymorfa/sdk` package and is not published on its own.
 
-Programmatic Polymorfa Calls: a client you run from code that follows a session,
+Programmatic Polymorfa Calls: a client you run from code that follows a connection,
 rings on inbound WhatsApp calls, places outbound ones, and hands you each call's
 audio and video to read and write. The browser call UI in `@polymorfa/ui-kit/react` and
 `@polymorfa/ui-kit/web-components` uses the same call model with WebRTC as its media path.
@@ -13,7 +13,7 @@ import { CallsClient } from "@polymorfa/sdk/calls";
 
 const client = new CallsClient({
   token: process.env.POLYMORFA_API_KEY!, // or a client-token provider
-  session: "support",
+  connection: "support",
   participant: "voice-agent", // server credentials only
 });
 
@@ -37,13 +37,13 @@ const call = await client.place("+15550100", { video: false });
 
 - Browser and other untrusted clients use a client token. Your server mints it
   with `POST /platform/client-tokens` and grants `voip_place`, `voip_answer`,
-  and `voip_signal`. The token decides the session and the participant.
+  and `voip_signal`. The token decides the connection and the participant.
 - Server applications use a team key or project token. They may
   set `participant` (`[A-Za-z0-9._:@-]{1,128}`, default `default`); the
   platform refers to them as `server:<participant>`.
 
 Never put a server credential in a browser. There is no calling ticket, token
-exchange, or session answer mode.
+exchange, or connection answer mode.
 
 ## Answering, joining, and claims
 
@@ -69,13 +69,13 @@ promise: it resolves once media connects and rejects if media fails.
 
 ## Model
 
-- **`CallsClient`** — one per session. `connect()` starts receiving the
-  session's calls and resolves once the first attempt settles.
+- **`CallsClient`** — one per connection. `connect()` starts receiving the
+  connection's calls and resolves once the first attempt settles.
   `participantReference` names this client once known. A replacement token
-  must belong to the same team, project, session and participant.
+  must belong to the same team, project, connection and participant.
   The client replaces the token before it expires, reconnects with backoff, and detects dead connections. When the token stops
   working it emits a `CallsAuthError` (`code: "unauthorized"`) and asks the
-  provider for a fresh token. An invalid session or participant stops
+  provider for a fresh token. An invalid connection or participant stops
   reconnection with `invalid_request`; `rate_limited` keeps retrying with
   backoff. Events: `incoming`, `call`, `ended`, `ready`,
   `disconnected`, `error`. `disconnect()` leaves joined calls and ends
@@ -85,8 +85,8 @@ promise: it resolves once media connects and rejects if media fails.
   `connectionId`, and `startedAt` / `connectedAt` / `duration`.
 - **`call.audio`** — merged call audio as signed 16-bit mono PCM at `sampleRate`
   (16 kHz unless the platform names another rate), both directions. It never
-  contains your own audio. With the session's `conferenceMode` call setting
-  on (the default) it also carries the session's other participants; with it
+  contains your own audio. With the connection's `conferenceMode` call setting
+  on (the default) it also carries the connection's other participants; with it
   off, only the WhatsApp party.
 - **`call.video`** — one outgoing H.264 stream and one received stream per
   remote participant. `sources` maps each `CallVideoSource.id` to its `label`
@@ -128,7 +128,7 @@ answer or an exclusive placement) and otherwise leaves with its
 reported; the call then ends with `connection_failed` and the media error.
 A call another participant claimed is not released.
 
-While calling is turned off for the session in its call settings, placing,
+While calling is turned off for the connection in its call settings, placing,
 answering, joining, inviting and connecting media reject with
 `CallsDisabledError` (`code: "calls_disabled"`). Calls in progress continue.
 
@@ -183,14 +183,14 @@ const groupCall = await client.placeGroup("9007199254740996");
 ```
 
 Pass 2 to 31 distinct phone numbers or public user IDs. The server checks each
-recipient's destination policy and the Number's calling restrictions before
-placing the group call. Cloud API Numbers refuse group origination and re-ring.
+recipient's destination policy and the Connection's calling restrictions before
+placing the group call. Cloud API Connections refuse group origination and re-ring.
 Re-ring applies to a non-connected participant already in the call roster;
 a successful request does not change the roster until WhatsApp reports it.
 The browser controller exposes the same `place` array input and
 `ringParticipant` method for custom React, web component and Next.js interfaces.
 
-`placeGroup(groupId)` uses the public group ID. The Number must be a member;
+`placeGroup(groupId)` uses the public group ID. The Connection must be a member;
 the server obtains the live roster and checks every remote member. Groups must
 contain 2 to 31 remote members. Changed membership during placement refuses
 the call. The browser controller exposes the same `placeGroup` method; it does
@@ -233,9 +233,9 @@ reaction and `call.sendReaction("")` clears it. Listen for `reaction`; the sende
 is either `{self: true}` or a public `participantId`. Reconnection does not
 replay reactions. The SDK does not retry an uncertain send.
 
-`call.setHandRaised(true)` raises the Number's hand and `false` lowers it.
+`call.setHandRaised(true)` raises the Connection's hand and `false` lowers it.
 `call.handRaised` and the `handState` event report the confirmed state. One
-Number shares its hand state across all application connections; remote hands
+Connection shares its hand state across all application connections; remote hands
 are reported in `participant.handRaised` and disappear with the participant.
 These controls require an attached connection and runtime support. Cloud API
 calls refuse them. This source addition still needs a published package and
@@ -266,7 +266,7 @@ Browsers use the matching methods on the UI Kit Calls controller. React's
 `ParticipantList` and the `<pmfa-call>` Web Component show guest labels and
 pending-participant controls when the current connection is an administrator.
 The browser receives snapshots on WebRTC and sends moderation through the
-Messaging API so every command rechecks its credential and Number/project
+Messaging API so every command rechecks its credential and Connection/project
 authority. The credential-less data channel refuses moderation effects.
 Programmatic processes keep the authenticated media WebSocket and its credential
 rechecks. Both paths use the same public identities and provider acknowledgements.

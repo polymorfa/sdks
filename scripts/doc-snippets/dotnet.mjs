@@ -2,8 +2,8 @@ import { key, p } from "./recipes.mjs";
 // Evidence: packages/dotnet/src/Polymorfa.Sdk/{MessagingClient,Business,
 // PlatformClients,Models,BusinessModels}.cs and native tests/Program.cs.
 export function render(id, { client, request }) {
-  const s = p("session"),
-    sid = p("sessionId");
+  const s = p("connection"),
+    sid = p("connectionId");
   const b = request.body,
     quote = JSON.stringify;
   const conv = `new ConversationReference(Id: ${quote(b?.conversation?.id)})`;
@@ -15,14 +15,14 @@ export function render(id, { client, request }) {
     setTyping: `sdk.Messages.SetTypingAsync(${s}, new TypingRequest(${conv}, ${quote(b?.state)}))`,
     sendReaction: `sdk.Messages.ReactAsync(${s}, new ReactRequest(${conv}, ${quote(b?.id)}, ${quote(b?.reaction)}))`,
     starMessage: `sdk.Messages.StarAsync(${s}, new StarRequest(${conv}, ${quote(b?.id)}, ${b?.star}))`,
-    listPlatformSessions: "sdk.Sessions.ListAsync()",
-    getSession: `sdk.Sessions.RetrieveAsync(${sid})`,
-    getSessionAccount: `sdk.Sessions.AccountAsync(${sid})`,
-    startPlatformSession: `sdk.Sessions.StartAsync(${sid})`,
-    stopPlatformSession: `sdk.Sessions.StopAsync(${sid})`,
-    restartSession: `sdk.Sessions.RestartAsync(${sid})`,
-    logoutSession: `sdk.Sessions.LogoutAsync(${sid})`,
-    deletePlatformSession: `sdk.Sessions.DeleteAsync(${sid})`,
+    listPlatformConnections: "sdk.Connections.ListAsync()",
+    getConnection: `sdk.Connections.RetrieveAsync(${sid})`,
+    getConnectionAccount: `sdk.Connections.AccountAsync(${sid})`,
+    startPlatformConnection: `sdk.Connections.StartAsync(${sid})`,
+    stopPlatformConnection: `sdk.Connections.StopAsync(${sid})`,
+    restartConnection: `sdk.Connections.RestartAsync(${sid})`,
+    logoutConnection: `sdk.Connections.LogoutAsync(${sid})`,
+    deletePlatformConnection: `sdk.Connections.DeleteAsync(${sid})`,
     getOwnBusinessProfile: `sdk.Business.GetProfileAsync(${s})`,
     getBusinessMerchantCompliance: `sdk.Business.GetMerchantComplianceAsync(${s})`,
     getBusinessLinkedAccounts: `sdk.Business.GetLinkedAccountsAsync(${s})`,

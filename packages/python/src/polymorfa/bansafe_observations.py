@@ -111,7 +111,7 @@ class HealthProjection(HealthCommon):
     healthEvaluatedAt: str | None
 
 
-class NumberEnforcement(TypedDict):
+class ConnectionEnforcement(TypedDict):
     rung: EnforcementRung
     previousRung: EnforcementRung
     teamFloor: EnforcementRung
@@ -129,12 +129,12 @@ class NumberEnforcement(TypedDict):
     state: Literal["applied", "applying"]
 
 
-class BanSafeNumber(HealthProjection):
-    sessionId: str
-    session: str
+class BanSafeConnection(HealthProjection):
+    connectionId: str
+    connection: str
     phoneNumber: str
     projectId: str
-    enforcement: NumberEnforcement | None
+    enforcement: ConnectionEnforcement | None
 
 
 class WarmupCurvePoint(TypedDict):
@@ -142,7 +142,7 @@ class WarmupCurvePoint(TypedDict):
     allowance: int
 
 
-class NumberWarmup(TypedDict):
+class ConnectionWarmup(TypedDict):
     enabled: bool
     tenureSource: Literal["history", "link", "plan"] | None
     tenureDay: int
@@ -163,8 +163,8 @@ class Finding(TypedDict):
     occurrences: int
     reopenedCount: int
     evidence: dict[str, float]
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     phoneNumber: str
     firstSeenAt: str | None
     lastSeenAt: str | None
@@ -173,11 +173,11 @@ class Finding(TypedDict):
     acknowledgementNote: str | None
     snoozedUntil: str | None
     resolvedAt: str | None
-    resolveReason: Literal["clean", "key_retired", "number_removed", "stale"] | None
+    resolveReason: Literal["clean", "key_retired", "connection_removed", "stale"] | None
 
 
-class NumberDetail(BanSafeNumber):
-    warmup: NumberWarmup
+class ConnectionDetail(BanSafeConnection):
+    warmup: ConnectionWarmup
     findings: list[Finding]
     liftRequires: str | None
     appealState: AppealState
@@ -189,14 +189,14 @@ class HealthPoint(HealthCommon):
 
 
 class HealthHistory(TypedDict):
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     points: list[HealthPoint]
 
 
 class EnforcementSummary(HealthProjection):
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     phoneNumber: str
     projectId: str
     rung: EnforcementRung
@@ -207,7 +207,7 @@ class EnforcementSummary(HealthProjection):
     throughputPerMinute: float | None
     blocksUnsolicited: bool
     suspended: bool
-    enforcement: NotRequired[NumberEnforcement | None]
+    enforcement: NotRequired[ConnectionEnforcement | None]
     blockingFindings: list[str]
     startedAt: str
     eligibleLiftAt: str | None
@@ -219,8 +219,8 @@ class EnforcementSummary(HealthProjection):
 
 class Incident(TypedDict):
     id: str
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     phoneNumber: str
     projectId: str
     kind: IncidentKind
@@ -238,7 +238,7 @@ class Incident(TypedDict):
 
 
 class ReportIncident(TypedDict):
-    session: str
+    connection: str
     occurredAt: NotRequired[str]
     note: NotRequired[str]
 
@@ -246,8 +246,8 @@ class ReportIncident(TypedDict):
 class IncidentReceipt(TypedDict):
     incidentId: str
     created: bool
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     occurredAt: str
 
 
@@ -267,8 +267,8 @@ class ClaimEvidence(TypedDict):
 class Claim(TypedDict):
     id: str
     incidentId: str
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     phoneNumber: str
     projectId: str
     status: ClaimStatus
@@ -327,21 +327,21 @@ class TelemetrySnapshot(TypedDict):
     signals: list[Signal]
 
 
-class CollectionSession(TypedDict):
-    sessionId: str
-    session: str
+class CollectionConnection(TypedDict):
+    connectionId: str
+    connection: str
     projectId: str
     collection: CollectionStatus
 
 
-class TelemetryDetail(CollectionSession):
+class TelemetryDetail(CollectionConnection):
     snapshot: TelemetrySnapshot | None
 
 
 class HealthAction(TypedDict):
     id: str
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     projectId: str
     mode: Literal["apply", "clear"]
     action: Literal["stop", "slow_down", "log_out", "email", "webhook"]
@@ -370,7 +370,7 @@ class ListHealthHistory(TypedDict, total=False):
 
 
 class ListFindings(ListHealth, total=False):
-    session: str
+    connection: str
     status: Literal["open", "acknowledged", "resolved"]
     severity: FindingSeverity
 
@@ -380,11 +380,11 @@ class ListEnforcement(ListHealth, total=False):
 
 
 class ListIncidents(ListHealth, total=False):
-    session: str
+    connection: str
 
 
 class ListClaims(ListHealth, total=False):
-    session: str
+    connection: str
     status: ClaimStatus
 
 
@@ -396,7 +396,7 @@ class ListTelemetryHistory(TypedDict, total=False):
 
 
 class ListHealthActions(ListHealth, total=False):
-    session: str
+    connection: str
     status: HealthActionStatus
 
 
@@ -424,24 +424,28 @@ class BanSafeObservations(Resource):
 
     async def list_health(
         self, params: ListHealth | None = None, *, options: RequestOptions = O
-    ) -> ApiResponse[CursorEnvelope[BanSafeNumber]]:
+    ) -> ApiResponse[CursorEnvelope[BanSafeConnection]]:
         return await self._request(
             "GET", "/platform/bansafe/health", query=_query(params or {}), options=options
         )
 
     async def get_health(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[NumberDetail]]:
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionDetail]]:
         return await self._request(
-            "GET", f"/platform/bansafe/health/{segment(session)}", options=options
+            "GET", f"/platform/bansafe/health/{segment(connection)}", options=options
         )
 
     async def list_health_history(
-        self, session: str, params: ListHealthHistory | None = None, *, options: RequestOptions = O
+        self,
+        connection: str,
+        params: ListHealthHistory | None = None,
+        *,
+        options: RequestOptions = O,
     ) -> ApiResponse[DataEnvelope[HealthHistory]]:
         return await self._request(
             "GET",
-            f"/platform/bansafe/health/{segment(session)}/history",
+            f"/platform/bansafe/health/{segment(connection)}/history",
             query=_query(params or {}),
             options=options,
         )
@@ -452,29 +456,29 @@ class BanSafeObservations(Resource):
         return await self._request("GET", "/platform/bansafe/signals", options=options)
 
     async def get_telemetry(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[TelemetryDetail]]:
         return await self._request(
-            "GET", f"/platform/bansafe/telemetry/{segment(session)}", options=options
+            "GET", f"/platform/bansafe/telemetry/{segment(connection)}", options=options
         )
 
     async def list_telemetry_history(
         self,
-        session: str,
+        connection: str,
         params: ListTelemetryHistory | None = None,
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[CursorEnvelope[TelemetrySnapshot]]:
         return await self._request(
             "GET",
-            f"/platform/bansafe/telemetry/{segment(session)}/history",
+            f"/platform/bansafe/telemetry/{segment(connection)}/history",
             query=_query(params or {}),
             options=options,
         )
 
     async def list_collection(
         self, params: ListHealth | None = None, *, options: RequestOptions = O
-    ) -> ApiResponse[CursorEnvelope[CollectionSession]]:
+    ) -> ApiResponse[CursorEnvelope[CollectionConnection]]:
         return await self._request(
             "GET", "/platform/bansafe/collection", query=_query(params or {}), options=options
         )

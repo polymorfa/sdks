@@ -12,58 +12,58 @@ export class PresenceResource {
   constructor(private readonly transport: HttpTransport) {}
 
   set(
-    session: string,
+    connection: string,
     body: SetPresenceRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SetPresenceResponse>> {
     return this.transport.request({
       method: "POST",
-      path: presencePath(session),
+      path: presencePath(connection),
       body,
       ...options,
     });
   }
 
   get(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetPresenceResponse>> {
     return this.transport.request({
       method: "GET",
-      path: presencePath(session),
+      path: presencePath(connection),
       ...options,
     });
   }
 
   getForChat(
-    session: string,
+    connection: string,
     chatId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetChatPresenceResponse>> {
     return this.transport.request({
       method: "GET",
-      path: chatPresencePath(session, chatId),
+      path: chatPresencePath(connection, chatId),
       ...options,
     });
   }
 
   subscribe(
-    session: string,
+    connection: string,
     chatId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SubscribePresenceResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `${chatPresencePath(session, chatId)}/subscribe`,
+      path: `${chatPresencePath(connection, chatId)}/subscribe`,
       ...options,
     });
   }
 }
 
-function presencePath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/presence`;
+function presencePath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/presence`;
 }
 
-function chatPresencePath(session: string, chatId: string): string {
-  return `${presencePath(session)}/${encodeURIComponent(chatId)}`;
+function chatPresencePath(connection: string, chatId: string): string {
+  return `${presencePath(connection)}/${encodeURIComponent(chatId)}`;
 }

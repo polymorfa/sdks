@@ -21,7 +21,7 @@ internal static class Checks
     private static EventStreamItem Item(WebhookEvent? value, string cursor = "cursor-1", long sequence = 1) => new(new(value?.Envelope.Id ?? "metadata", "team", "project", value?.Envelope.Event ?? "message.received", "runtime", "development", "2026-10-01T00:00:00Z", "available", null, null, "2026-10-15T00:00:00Z"), "stream", sequence, value, cursor);
     internal static async Task Run()
     {
-        using var oracle = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/reducer-batches-3bac.json"))); Equal(oracle.RootElement.GetProperty("source").GetString(), StorageSchema.SourceCommit, "source pin");
+        using var oracle = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/reducer-batches-connections-v3.json"))); Equal(oracle.RootElement.GetProperty("source").GetString(), StorageSchema.SourceCommit, "source pin");
         var types = new HashSet<string>(StringComparer.Ordinal); var events = 0; var histories = 0;
         foreach (var test in oracle.RootElement.GetProperty("events").EnumerateArray()) { var input = Envelope(test.GetProperty("input")); types.Add(input.Event); JsonEqual(StorageReducers.ReduceEvent(input), test.GetProperty("batch"), input.Id); events++; }
         Assert(StorageReducers.StoredEventTypes.All(types.Contains), "Every stored event type has an exact operation fixture.");
@@ -31,7 +31,7 @@ internal static class Checks
     }
     private static async Task FixedRows()
     {
-        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/storage-3bac.json"))); var memory = new MemoryStorageAdapter(); var storage = new CustomerStorage(memory);
+        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/storage-connections-v3.json"))); var memory = new MemoryStorageAdapter(); var storage = new CustomerStorage(memory);
         foreach (var input in fixture.RootElement.GetProperty("events").EnumerateArray()) await storage.ApplyAsync(StorageReducers.ReduceEvent(Envelope(input)));
         // Physical row enumeration is not ordered by the adapter contract. Compare sorted row objects, retaining each field's value.
         SnapshotEqual(memory, fixture.RootElement.GetProperty("eventRows")); foreach (var input in fixture.RootElement.GetProperty("events").EnumerateArray()) Assert(!(await storage.ApplyAsync(StorageReducers.ReduceEvent(Envelope(input)))).Applied, "Event replay"); SnapshotEqual(memory, fixture.RootElement.GetProperty("eventRows"));
@@ -48,7 +48,7 @@ internal static class Checks
     private static async Task LargeHistory()
     {
         var messages = Enumerable.Range(0, 2000).Select(i => new StorageHistoryMessageEntry(new() { Key = new(Id: "message-" + i, FromMe: true), MessageTimestamp = (long)(1790856000 + i), Status = "READ", Message = new() { Conversation = "history " + i } })).ToArray(); var chunk = new StorageHistoryChunk { SyncType = "RECENT", ChunkOrder = "1", Progress = 100L, Conversations = [new() { Id = "111@s.whatsapp.net", Messages = messages }] }; var memory = new MemoryStorageAdapter(); var storage = new CustomerStorage(memory); var batch = StorageReducers.ReduceHistoryChunk(new("large", chunk, ChunkId: "chunk")); await storage.ApplyAsync(batch); Equal(memory.Rows(StorageEntity.Messages).Count, 2000, "Large history"); Assert(!(await storage.ApplyAsync(batch)).Applied, "Chunk deduplication");
-        var page = await storage.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { ["sessionId"] = "large", ["chatId"] = "wa:111@s.whatsapp.net" }, 17, Order: "asc")); Equal(page.Rows.Count, 17, "History index page"); Equal(page.Rows[0]["text"].GetString(), "history 0", "History content");
+        var page = await storage.QueryAsync(StorageEntity.Messages, new("by_chat", new Dictionary<string, string> { ["connectionId"] = "large", ["chatId"] = "wa:111@s.whatsapp.net" }, 17, Order: "asc")); Equal(page.Rows.Count, 17, "History index page"); Equal(page.Rows[0]["text"].GetString(), "history 0", "History content");
         Console.WriteLine("PASS typed 2,000-message history, stable chunk ID, index paging and replay");
     }
     private static async Task Decoder()

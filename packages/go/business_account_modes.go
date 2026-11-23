@@ -31,7 +31,7 @@ type TestingAccountModeRequest struct {
 	PrimaryPlatform TestingPrimaryPlatform `json:"primaryPlatform,omitempty"`
 }
 type TestingAccountMode struct {
-	Session         string                  `json:"session"`
+	Connection      string                  `json:"connection"`
 	AccountType     WhatsAppAccountType     `json:"accountType"`
 	PrimaryPlatform *TestingPrimaryPlatform `json:"primaryPlatform"`
 	Changed         bool                    `json:"changed"`
@@ -56,18 +56,18 @@ func validateTestingMode(account WhatsAppAccountType, platform TestingPrimaryPla
 	return nil
 }
 
-// SetAccountMode changes a Test number's mode and unlinks its companions on a change.
-func (r *Testing) SetAccountMode(ctx context.Context, session string, input TestingAccountModeRequest, o ...RequestOptions) (Response[TestingAccountMode], error) {
+// SetAccountMode changes a Test Connection's mode and unlinks its companions on a change.
+func (r *Testing) SetAccountMode(ctx context.Context, connection string, input TestingAccountModeRequest, o ...RequestOptions) (Response[TestingAccountMode], error) {
 	if err := serverOnly(r.t); err != nil {
 		return Response[TestingAccountMode]{}, err
 	}
-	if err := contractText(session, "session", 1, 256); err != nil {
+	if err := contractText(connection, "connection", 1, 256); err != nil {
 		return Response[TestingAccountMode]{}, err
 	}
 	if err := validateTestingMode(input.AccountType, input.PrimaryPlatform, true); err != nil {
 		return Response[TestingAccountMode]{}, err
 	}
-	response, err := endpointBare[TestingAccountMode](ctx, r.t, "PUT", "/messaging/"+escaped(session)+"/phone/account-mode", nil, input, options(o), 200)
+	response, err := endpointBare[TestingAccountMode](ctx, r.t, "PUT", phonePath(connection)+"/account-mode", nil, input, options(o), 200)
 	if err != nil {
 		return response, err
 	}

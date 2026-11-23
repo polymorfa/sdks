@@ -15,7 +15,7 @@ $state = getenv('EXAMPLE_STATE_DIR');
 check(is_string($state) && str_starts_with($state, '/') && !str_starts_with($state, '/tmp/'), 'persistent test state directory');
 foreach (['laravel','symfony'] as $framework) {
     $env = getenv();
-    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k','POLYMORFA_SESSION' => 'authorized-support','POLYMORFA_RECIPIENT' => '+15550001234','POLYMORFA_WEBHOOK_SECRET' => 'local-test-signing-key']);
+    $env = array_replace($env, ['EXAMPLE_APP_USERNAME' => 'example-user','EXAMPLE_APP_PASSWORD' => 'test-only-password','POLYMORFA_PROJECT_TOKEN' => 'pmfa_pt_AAECAwQFBgcICQoLDA0ODxAREhM73f-k','POLYMORFA_CONNECTION' => 'authorized-support','POLYMORFA_RECIPIENT' => '+15550001234','POLYMORFA_WEBHOOK_SECRET' => 'local-test-signing-key']);
     $env['EXAMPLE_STATE_DIR'] = $state.'/'.$framework;
     $env['EXAMPLE_FRAMEWORK'] = $framework;
     $env['EXAMPLE_APP_ORIGIN'] = 'http://127.0.0.1:31306';
@@ -60,11 +60,11 @@ foreach (['laravel','symfony'] as $framework) {
         $response = $send('POST', '/api/login', $origin, ['username' => 'example-user','password' => 'test-only-password']);
         check($response->getStatusCode() === 200 && str_contains((string)$response->getBody(), 'pmfa-inbox'), 'authenticated template');
         check(str_contains($response->getHeaderLine('Set-Cookie'), 'httponly') && str_contains($response->getHeaderLine('Set-Cookie'), 'samesite=strict'), 'opaque private cookie');
-        $response = $send('POST', '/api/polymorfa/token', $origin, ['session' => 'attacker','ephemeralId' => 'attacker']);
+        $response = $send('POST', '/api/polymorfa/token', $origin, ['connection' => 'attacker','ephemeralId' => 'attacker']);
         $token = json_decode((string)$response->getBody(), true);
         check($response->getStatusCode() === 200 && ($token['value'] ?? null) === 'pmfa_ct_YnJvd3Nlcl9maXh0dXJl' && ($token['audience'] ?? null) === 'browser' && ($token['expiresAt'] ?? 0) > time() * 1000 && str_contains($response->getHeaderLine('Cache-Control'), 'no-store'), 'native SDK token mint');
         check((int)file_get_contents($counter) === 1, 'one real upstream request');
-        $response = $send('POST', '/api/polymorfa/connect', $origin, ['session' => 'attacker','purpose' => 'initial']);
+        $response = $send('POST', '/api/polymorfa/connect', $origin, ['connection' => 'attacker','purpose' => 'initial']);
         $raw = (string)$response->getBody(); $link = json_decode($raw, true);
         check($response->getStatusCode() === 200 && ($link['data']['url'] ?? null) === 'https://quick.example.test/link' && !str_contains($raw, 'pmfa_pt_'), 'assigned supplementary QuickLink');
         check((int)file_get_contents($linkCounter) === 1, 'one QuickLink upstream request');
@@ -78,7 +78,7 @@ foreach (['laravel','symfony'] as $framework) {
         check($message(['text'=>'Native send'])->getStatusCode() === 200, 'same key replay');
         check($message(['text'=>'Changed'])->getStatusCode() === 409, 'changed text rejected');
         check((int)file_get_contents($env['EXAMPLE_STATE_DIR'].'/native-sends') === 1, 'no duplicate upstream send');
-        $envelope = ['id'=>'event-1','timestamp'=>'2026-10-18T10:00:01Z','session'=>'authorized-support','event'=>'message.received','payload'=>[
+        $envelope = ['id'=>'event-1','timestamp'=>'2026-10-18T10:00:01Z','connection'=>'authorized-support','event'=>'message.received','payload'=>[
             'id'=>'message-in','conversation'=>['id'=>'canonical-peer'],'fromMe'=>false,'isGroup'=>false,'timestamp'=>1792317601,'text'=>'Independent reply','type'=>'text','pushName'=>'Test peer','whatsapp_ids'=>['linked_devices'=>'wire-in']
         ]];
         $body = json_encode($envelope,JSON_THROW_ON_ERROR);

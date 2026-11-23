@@ -14,22 +14,22 @@ macro_rules! settings_wire {
 }
 #[tokio::test]
 async fn team_and_immutable_project_configuration_defaults_native_wire() {
-    let configuration = json!({"effective":{"observation":{"presenceMode":"cache","typingMode":"events","labelMode":"project","quickReplyMode":"off"},"historySync":{"mode":"deliver","requestFull":true},"hms":{"enabled":false}},"overrides":{},"sources":{"historySync.mode":"consent","historySync.requestFull":"session","hms":"project","observation.presenceMode":"session","observation.typingMode":"team","observation.labelMode":"project","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":true},"historyConsent":"accepted","revisions":{"team":1,"project":2,"session":3},"application":{"desiredGeneration":4,"appliedGeneration":4,"status":"applied"}});
-    let update = UpdateSessionDefaults {
-        configuration: SessionConfigurationPatch {
-            set: Some(SessionConfigurationOverrides {
+    let configuration = json!({"effective":{"observation":{"presenceMode":"cache","typingMode":"events","labelMode":"project","quickReplyMode":"off"},"historySync":{"mode":"deliver","requestFull":true},"hms":{"enabled":false}},"overrides":{},"sources":{"historySync.mode":"consent","historySync.requestFull":"connection","hms":"project","observation.presenceMode":"connection","observation.typingMode":"team","observation.labelMode":"project","observation.quickReplyMode":"platform"},"requestedHistory":{"mode":"deliver","requestFull":true},"historyConsent":"accepted","revisions":{"team":1,"project":2,"connection":3},"application":{"desiredGeneration":4,"appliedGeneration":4,"status":"applied"}});
+    let update = UpdateConnectionDefaults {
+        configuration: ConnectionConfigurationPatch {
+            set: Some(ConnectionConfigurationOverrides {
                 hms: Some(HmsConfiguration::Disabled),
                 ..Default::default()
             }),
-            reset: Some(vec![SessionConfigurationReset::HistorySyncRequestFull]),
+            reset: Some(vec![ConnectionConfigurationReset::HistorySyncRequestFull]),
         },
         revision: 3,
     };
     for project in [false, true] {
         let path = if project {
-            "/platform/session-configuration?projectId=project"
+            "/platform/connection-configuration?projectId=project"
         } else {
-            "/platform/session-configuration"
+            "/platform/connection-configuration"
         };
         settings_wire!(
             project,
@@ -37,7 +37,7 @@ async fn team_and_immutable_project_configuration_defaults_native_wire() {
             path,
             None,
             configuration.clone(),
-            session_configuration,
+            connection_configuration,
             resource,
             resource.retrieve(RequestOptions::default())
         );
@@ -48,10 +48,10 @@ async fn team_and_immutable_project_configuration_defaults_native_wire() {
         settings_wire!(
             project,
             "PUT",
-            "/platform/session-configuration",
+            "/platform/connection-configuration",
             Some(body),
             configuration.clone(),
-            session_configuration,
+            connection_configuration,
             resource,
             resource.update(&update, RequestOptions::default())
         );

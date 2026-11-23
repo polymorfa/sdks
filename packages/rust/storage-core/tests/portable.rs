@@ -30,14 +30,14 @@ async fn independent_core_schema2_and_fenced_2000_message_engine() {
     }
     let storage = Storage::new(adapter, StorageOptions::default()).unwrap();
     let batch = OperationBatch {
-        session_id: "history".into(),
+        connection_id: "history".into(),
         event_id: Some("event".into()),
         event_type: None,
         operations: (0..2000)
             .map(|i| StorageOperation::Upsert {
                 entity: Entity::Messages,
                 key: RowKey::from([
-                    ("sessionId".into(), "history".into()),
+                    ("connectionId".into(), "history".into()),
                     ("messageId".into(), i.to_string()),
                 ]),
                 fields: BTreeMap::from([
@@ -65,7 +65,7 @@ async fn independent_core_schema2_and_fenced_2000_message_engine() {
     let query = IndexQuery {
         index: "by_chat".into(),
         equals: RowKey::from([
-            ("sessionId".into(), "history".into()),
+            ("connectionId".into(), "history".into()),
             ("chatId".into(), "chat".into()),
         ]),
         range: None,

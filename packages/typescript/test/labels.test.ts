@@ -99,7 +99,7 @@ describe("MessagingClient labels", () => {
     expectTypeOf<MessagingClient["labels"]>().toEqualTypeOf<LabelsResource>();
   });
 
-  it("lists session and chat labels with observation envelopes and encoded identifiers", async () => {
+  it("lists connection and chat labels with observation envelopes and encoded identifiers", async () => {
     const { client, requests } = await labelsServer();
 
     const listed = await client.labels.list(

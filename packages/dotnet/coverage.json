@@ -5,7 +5,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "path": "/messaging/{connection}/business/collections/{collectionId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.DeleteCollectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -13,7 +13,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/products/{productId}",
+      "path": "/messaging/{connection}/business/products/{productId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.DeleteProductAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -21,7 +21,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/profile/cover-photo/{coverPhotoId}",
+      "path": "/messaging/{connection}/business/profile/cover-photo/{coverPhotoId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.DeleteCoverPhotoAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -29,7 +29,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "path": "/messaging/{connection}/business/quick-replies/{quickReplyId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -37,7 +37,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/channels/{id}",
+      "path": "/messaging/{connection}/channels/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -45,7 +45,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.DeleteMessageAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -53,7 +53,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/groups/{id}",
+      "path": "/messaging/{connection}/groups/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -61,7 +61,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/labels/{labelId}",
+      "path": "/messaging/{connection}/labels/{labelId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -69,7 +69,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/official-groups/{group}",
+      "path": "/messaging/{connection}/official-groups/{group}",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -77,7 +77,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/profile/picture",
+      "path": "/messaging/{connection}/profile/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.DeletePictureAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -85,7 +85,7 @@
     {
       "family": "messaging",
       "method": "DELETE",
-      "path": "/messaging/{session}/templates/{name}",
+      "path": "/messaging/{connection}/templates/{name}",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.DeleteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
@@ -133,7 +133,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/catalog",
+      "path": "/messaging/{connection}/business/catalog",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetCatalogAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -141,7 +141,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/collections",
+      "path": "/messaging/{connection}/business/collections",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.ListCollectionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -149,7 +149,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "path": "/messaging/{connection}/business/collections/{collectionId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetCollectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -157,7 +157,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/compliance",
+      "path": "/messaging/{connection}/business/compliance",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetMerchantComplianceAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -165,7 +165,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/eligibility",
+      "path": "/messaging/{connection}/business/eligibility",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetEligibilityAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -173,7 +173,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/linked-accounts",
+      "path": "/messaging/{connection}/business/linked-accounts",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetLinkedAccountsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -181,7 +181,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/products/{productId}",
+      "path": "/messaging/{connection}/business/products/{productId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetProductAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -189,7 +189,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/profile",
+      "path": "/messaging/{connection}/business/profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetProfileAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -197,7 +197,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/business/quick-replies",
+      "path": "/messaging/{connection}/business/quick-replies",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -205,7 +205,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/call-permissions/{to}",
+      "path": "/messaging/{connection}/call-permissions/{to}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Calls.RetrieveCallPermissionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
@@ -213,7 +213,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels",
+      "path": "/messaging/{connection}/channels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -221,7 +221,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels/{id}",
+      "path": "/messaging/{connection}/channels/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -229,7 +229,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels/{id}/message-updates",
+      "path": "/messaging/{connection}/channels/{id}/message-updates",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ListMessageUpdatesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -237,7 +237,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/channels/{id}/messages",
+      "path": "/messaging/{connection}/channels/{id}/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ListMessagesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -245,7 +245,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats",
+      "path": "/messaging/{connection}/chats",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -253,7 +253,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}",
+      "path": "/messaging/{connection}/chats/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -261,7 +261,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/messages",
+      "path": "/messaging/{connection}/chats/{conversation}/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.ListMessagesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -269,7 +269,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.RetrieveMessageAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -277,7 +277,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}/media",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}/media",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.DownloadMessageMediaAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MediaApiTests.cs"
@@ -285,7 +285,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/chats/{conversation}/service-window",
+      "path": "/messaging/{connection}/chats/{conversation}/service-window",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.GetServiceWindowAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -293,15 +293,15 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/cloud-credentials",
+      "path": "/messaging/{connection}/cloud-credentials",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.GetCloudCredentialHealthAsync",
+      "sdkMethod": "MessagingClient.Connections.GetCloudCredentialHealthAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts",
+      "path": "/messaging/{connection}/contacts",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -309,7 +309,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}",
+      "path": "/messaging/{connection}/contacts/{contactId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -317,7 +317,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/business-profile",
+      "path": "/messaging/{connection}/contacts/{contactId}/business-profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.BusinessProfileAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -325,7 +325,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/devices",
+      "path": "/messaging/{connection}/contacts/{contactId}/devices",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.DevicesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -333,7 +333,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/info",
+      "path": "/messaging/{connection}/contacts/{contactId}/info",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.InfoAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -341,7 +341,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/{contactId}/picture",
+      "path": "/messaging/{connection}/contacts/{contactId}/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.PictureAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -349,7 +349,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/blocked",
+      "path": "/messaging/{connection}/contacts/blocked",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.BlocklistAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -357,7 +357,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/contacts/check",
+      "path": "/messaging/{connection}/contacts/check",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.CheckAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -365,7 +365,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups",
+      "path": "/messaging/{connection}/groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -373,7 +373,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}",
+      "path": "/messaging/{connection}/groups/{id}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -381,7 +381,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}/invite-code",
+      "path": "/messaging/{connection}/groups/{id}/invite-code",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.GetInviteCodeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -389,7 +389,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}/participants",
+      "path": "/messaging/{connection}/groups/{id}/participants",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.ListParticipantsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -397,7 +397,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/join-info",
+      "path": "/messaging/{connection}/groups/join-info",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.GetJoinInfoAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -405,7 +405,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/hybrid-link",
+      "path": "/messaging/{connection}/hybrid-link",
       "status": "covered",
       "sdkMethod": "MessagingClient.HybridLink.StateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -413,7 +413,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/identities/resolve",
+      "path": "/messaging/{connection}/identities/resolve",
       "status": "covered",
       "sdkMethod": "MessagingClient.Identities.ResolveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -421,7 +421,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/labels",
+      "path": "/messaging/{connection}/labels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -429,7 +429,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "path": "/messaging/{connection}/labels/chats/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.ListForChatAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -437,23 +437,23 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/meta-pricing",
+      "path": "/messaging/{connection}/meta-pricing",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.GetMetaPricingAsync",
+      "sdkMethod": "MessagingClient.Connections.GetMetaPricingAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/observation-policy",
+      "path": "/messaging/{connection}/observation-policy",
       "status": "covered",
-      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForSessionAsync",
+      "sdkMethod": "MessagingClient.ObservationPolicies.RetrieveForConnectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups",
+      "path": "/messaging/{connection}/official-groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -461,7 +461,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups/{group}",
+      "path": "/messaging/{connection}/official-groups/{group}",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -469,7 +469,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups/{group}/invite-link",
+      "path": "/messaging/{connection}/official-groups/{group}/invite-link",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.GetInviteLinkAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -477,7 +477,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/official-groups/{group}/join-requests",
+      "path": "/messaging/{connection}/official-groups/{group}/join-requests",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ListJoinRequestsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -485,7 +485,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/operations/{operationId}",
+      "path": "/messaging/{connection}/operations/{operationId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.OperationStatusAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -493,15 +493,15 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/pair/qr",
+      "path": "/messaging/{connection}/pair/qr",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.QrAsync",
+      "sdkMethod": "MessagingClient.Connections.QrAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/presence",
+      "path": "/messaging/{connection}/presence",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.GetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -509,7 +509,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/presence/{conversation}",
+      "path": "/messaging/{connection}/presence/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.GetForChatAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -517,7 +517,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/privacy",
+      "path": "/messaging/{connection}/privacy",
       "status": "covered",
       "sdkMethod": "MessagingClient.Privacy.GetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -525,7 +525,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/profile",
+      "path": "/messaging/{connection}/profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.GetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -533,15 +533,15 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/safe-mode",
+      "path": "/messaging/{connection}/safe-mode",
       "status": "covered",
-      "sdkMethod": "MessagingClient.BanSafe.GetSessionSafeModeAsync",
+      "sdkMethod": "MessagingClient.BanSafe.GetConnectionSafeModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/templates",
+      "path": "/messaging/{connection}/templates",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
@@ -549,7 +549,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/templates/{name}",
+      "path": "/messaging/{connection}/templates/{name}",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
@@ -557,7 +557,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/users/{id}/security-code",
+      "path": "/messaging/{connection}/users/{id}/security-code",
       "status": "covered",
       "sdkMethod": "MessagingClient.Users.GetSecurityCodeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -762,7 +762,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/catalog/cart",
+      "path": "/messaging/{connection}/business/catalog/cart",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetCartEnabledAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -770,7 +770,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/collections/{collectionId}",
+      "path": "/messaging/{connection}/business/collections/{collectionId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.UpdateCollectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -778,7 +778,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/products/{productId}/visibility",
+      "path": "/messaging/{connection}/business/products/{productId}/visibility",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetProductVisibilityAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -786,7 +786,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/business/profile",
+      "path": "/messaging/{connection}/business/profile",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.UpdateProfileAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -794,7 +794,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/official-groups/{group}",
+      "path": "/messaging/{connection}/official-groups/{group}",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -802,7 +802,7 @@
     {
       "family": "messaging",
       "method": "PATCH",
-      "path": "/messaging/{session}/templates/{name}",
+      "path": "/messaging/{connection}/templates/{name}",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
@@ -833,7 +833,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/catalog",
+      "path": "/messaging/{connection}/business/catalog",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.CreateCatalogAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -841,7 +841,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/collections",
+      "path": "/messaging/{connection}/business/collections",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.CreateCollectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -849,7 +849,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/collections/{collectionId}/appeal",
+      "path": "/messaging/{connection}/business/collections/{collectionId}/appeal",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.AppealCollectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -857,7 +857,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/collections/reorder",
+      "path": "/messaging/{connection}/business/collections/reorder",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.ReorderCollectionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -865,7 +865,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/orders/{orderId}/lookup",
+      "path": "/messaging/{connection}/business/orders/{orderId}/lookup",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.GetOrderAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -873,7 +873,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/products",
+      "path": "/messaging/{connection}/business/products",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.CreateProductAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -881,7 +881,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/products/{productId}/appeal",
+      "path": "/messaging/{connection}/business/products/{productId}/appeal",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.AppealProductAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -889,7 +889,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/business/quick-replies",
+      "path": "/messaging/{connection}/business/quick-replies",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -897,7 +897,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/calls/{callId}/reject",
+      "path": "/messaging/{connection}/calls/{callId}/reject",
       "status": "covered",
       "sdkMethod": "MessagingClient.Calls.RejectIncomingAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
@@ -905,7 +905,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels",
+      "path": "/messaging/{connection}/channels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -913,7 +913,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/follow",
+      "path": "/messaging/{connection}/channels/{id}/follow",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.FollowAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -921,7 +921,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/live-updates",
+      "path": "/messaging/{connection}/channels/{id}/live-updates",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.SubscribeToLiveUpdatesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -929,7 +929,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/reaction",
+      "path": "/messaging/{connection}/channels/{id}/messages/{messageId}/reaction",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.ReactToMessageAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -937,7 +937,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/messages/{messageId}/viewed",
+      "path": "/messaging/{connection}/channels/{id}/messages/{messageId}/viewed",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.MarkMessageViewedAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -945,7 +945,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/mute",
+      "path": "/messaging/{connection}/channels/{id}/mute",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.MuteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -953,7 +953,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/unfollow",
+      "path": "/messaging/{connection}/channels/{id}/unfollow",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.UnfollowAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -961,7 +961,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/channels/{id}/unmute",
+      "path": "/messaging/{connection}/channels/{id}/unmute",
       "status": "covered",
       "sdkMethod": "MessagingClient.Channels.UnmuteAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -969,7 +969,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/chats/{conversation}/archive",
+      "path": "/messaging/{connection}/chats/{conversation}/archive",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.ArchiveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -977,7 +977,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/chats/{conversation}/unarchive",
+      "path": "/messaging/{connection}/chats/{conversation}/unarchive",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.UnarchiveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -985,15 +985,15 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/cloud-credentials/reauthorize",
+      "path": "/messaging/{connection}/cloud-credentials/reauthorize",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.ReauthorizeCloudCredentialsAsync",
+      "sdkMethod": "MessagingClient.Connections.ReauthorizeCloudCredentialsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/contacts/{contactId}/block",
+      "path": "/messaging/{connection}/contacts/{contactId}/block",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.BlockAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1001,7 +1001,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/contacts/{contactId}/unblock",
+      "path": "/messaging/{connection}/contacts/{contactId}/unblock",
       "status": "covered",
       "sdkMethod": "MessagingClient.Contacts.UnblockAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1009,7 +1009,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups",
+      "path": "/messaging/{connection}/groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1017,7 +1017,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/admin/demote",
+      "path": "/messaging/{connection}/groups/{id}/admin/demote",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.DemoteParticipantsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1025,7 +1025,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/admin/promote",
+      "path": "/messaging/{connection}/groups/{id}/admin/promote",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.PromoteParticipantsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1033,7 +1033,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/invite-code/revoke",
+      "path": "/messaging/{connection}/groups/{id}/invite-code/revoke",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.RevokeInviteCodeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1041,7 +1041,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/leave",
+      "path": "/messaging/{connection}/groups/{id}/leave",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.LeaveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1049,7 +1049,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/participants/add",
+      "path": "/messaging/{connection}/groups/{id}/participants/add",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.AddParticipantsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1057,7 +1057,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/{id}/participants/remove",
+      "path": "/messaging/{connection}/groups/{id}/participants/remove",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.RemoveParticipantsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1065,7 +1065,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/groups/join",
+      "path": "/messaging/{connection}/groups/join",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.JoinAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1073,7 +1073,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/labels",
+      "path": "/messaging/{connection}/labels",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1081,7 +1081,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/react",
+      "path": "/messaging/{connection}/messages/react",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.ReactAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -1089,7 +1089,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/seen",
+      "path": "/messaging/{connection}/messages/seen",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.MarkSeenAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -1097,7 +1097,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/send",
+      "path": "/messaging/{connection}/messages/send",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.SendAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessageContentTests.cs"
@@ -1105,7 +1105,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/star",
+      "path": "/messaging/{connection}/messages/star",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.StarAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -1113,7 +1113,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/messages/typing",
+      "path": "/messaging/{connection}/messages/typing",
       "status": "covered",
       "sdkMethod": "MessagingClient.Messages.SetTypingAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -1121,7 +1121,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups",
+      "path": "/messaging/{connection}/official-groups",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -1129,7 +1129,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/invite-link/reset",
+      "path": "/messaging/{connection}/official-groups/{group}/invite-link/reset",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ResetInviteLinkAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -1137,7 +1137,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/join-requests/approve",
+      "path": "/messaging/{connection}/official-groups/{group}/join-requests/approve",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.ApproveJoinRequestsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -1145,7 +1145,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/join-requests/reject",
+      "path": "/messaging/{connection}/official-groups/{group}/join-requests/reject",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.RejectJoinRequestsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -1153,7 +1153,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/participants/remove",
+      "path": "/messaging/{connection}/official-groups/{group}/participants/remove",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.RemoveParticipantsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -1161,7 +1161,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/official-groups/{group}/pins",
+      "path": "/messaging/{connection}/official-groups/{group}/pins",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.PinAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialGroupTests.cs"
@@ -1169,15 +1169,15 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/pair/code",
+      "path": "/messaging/{connection}/pair/code",
       "status": "covered",
-      "sdkMethod": "MessagingClient.Sessions.RequestPairingCodeAsync",
+      "sdkMethod": "MessagingClient.Connections.RequestPairingCodeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/presence",
+      "path": "/messaging/{connection}/presence",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.SetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1185,7 +1185,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/presence/{conversation}/subscribe",
+      "path": "/messaging/{connection}/presence/{conversation}/subscribe",
       "status": "covered",
       "sdkMethod": "MessagingClient.Presence.SubscribeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1193,7 +1193,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/templates",
+      "path": "/messaging/{connection}/templates",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudTemplates.CreateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/TemplateTests.cs"
@@ -1313,9 +1313,9 @@
       "family": "messaging",
       "method": "POST",
       "path": "/messaging/quicklinks",
-      "status": "partial",
-      "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (primaryPlatform) that this SDK does not yet type.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "status": "covered",
+      "sdkMethod": "MessagingClient.QuickLinks.CreateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionContractsTests.cs"
     },
     {
       "family": "messaging",
@@ -1473,7 +1473,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/quicklink/{token}/connection",
+      "path": "/quicklink/{token}/method",
       "status": "excluded",
       "reason": "Public onboarding capability route is owned by the hosted QuickLink flow, not a machine credential resource."
     },
@@ -1508,7 +1508,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/compliance",
+      "path": "/messaging/{connection}/business/compliance",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetMerchantComplianceAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -1516,7 +1516,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/products/{productId}",
+      "path": "/messaging/{connection}/business/products/{productId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.UpdateProductAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -1524,7 +1524,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/profile/cover-photo",
+      "path": "/messaging/{connection}/business/profile/cover-photo",
       "status": "covered",
       "sdkMethod": "MessagingClient.Business.SetCoverPhotoAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BusinessTests.cs"
@@ -1532,7 +1532,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/business/quick-replies/{quickReplyId}",
+      "path": "/messaging/{connection}/business/quick-replies/{quickReplyId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.QuickReplies.ReplaceAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ChannelCloudTests.cs"
@@ -1540,7 +1540,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/chats/{conversation}/disappearing",
+      "path": "/messaging/{connection}/chats/{conversation}/disappearing",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.SetDisappearingTimerAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1548,7 +1548,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/chats/{conversation}/messages/{messageId}",
+      "path": "/messaging/{connection}/chats/{conversation}/messages/{messageId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Chats.EditMessageAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1556,7 +1556,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/description",
+      "path": "/messaging/{connection}/groups/{id}/description",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetDescriptionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1564,7 +1564,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/picture",
+      "path": "/messaging/{connection}/groups/{id}/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetPictureAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1572,7 +1572,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/info-edit",
+      "path": "/messaging/{connection}/groups/{id}/settings/info-edit",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetInfoEditingAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1580,7 +1580,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/join-approval",
+      "path": "/messaging/{connection}/groups/{id}/settings/join-approval",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetJoinApprovalAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1588,7 +1588,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/member-add",
+      "path": "/messaging/{connection}/groups/{id}/settings/member-add",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetMemberAddModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1596,7 +1596,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/settings/messages",
+      "path": "/messaging/{connection}/groups/{id}/settings/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetMessagingAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1604,7 +1604,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/groups/{id}/subject",
+      "path": "/messaging/{connection}/groups/{id}/subject",
       "status": "covered",
       "sdkMethod": "MessagingClient.Groups.SetSubjectAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1612,7 +1612,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/hybrid-link",
+      "path": "/messaging/{connection}/hybrid-link",
       "status": "covered",
       "sdkMethod": "MessagingClient.HybridLink.SetPausedAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -1620,7 +1620,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/labels/{labelId}",
+      "path": "/messaging/{connection}/labels/{labelId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.UpdateAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1628,7 +1628,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/labels/chats/{conversation}",
+      "path": "/messaging/{connection}/labels/chats/{conversation}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Labels.ReplaceForChatAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/MessagingUtilityTests.cs"
@@ -1636,7 +1636,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/privacy/{setting}",
+      "path": "/messaging/{connection}/privacy/{setting}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Privacy.SetAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1644,7 +1644,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/privacy/disappearing/default",
+      "path": "/messaging/{connection}/privacy/disappearing/default",
       "status": "covered",
       "sdkMethod": "MessagingClient.Privacy.SetDefaultDisappearingTimerAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1652,7 +1652,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/profile/name",
+      "path": "/messaging/{connection}/profile/name",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.SetNameAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1660,7 +1660,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/profile/picture",
+      "path": "/messaging/{connection}/profile/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.SetPictureAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1668,7 +1668,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/profile/status",
+      "path": "/messaging/{connection}/profile/status",
       "status": "covered",
       "sdkMethod": "MessagingClient.Profile.SetStatusAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ResourceTests.cs"
@@ -1676,9 +1676,9 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/safe-mode",
+      "path": "/messaging/{connection}/safe-mode",
       "status": "covered",
-      "sdkMethod": "MessagingClient.BanSafe.UpdateSessionSafeModeAsync",
+      "sdkMethod": "MessagingClient.BanSafe.UpdateConnectionSafeModeAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectSettingsTests.cs"
     },
     {
@@ -1919,7 +1919,7 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/platform/sessions/{session}/client-rules",
+      "path": "/platform/connections/{connection}/client-rules",
       "status": "covered",
       "sdkMethod": "TeamClient.ClientTokens.DeleteRulesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -1927,10 +1927,10 @@
     {
       "family": "platform",
       "method": "DELETE",
-      "path": "/platform/sessions/{sessionId}",
+      "path": "/platform/connections/{connectionId}",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.DeleteAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.DeleteAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
@@ -2037,7 +2037,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/call-settings/{sessionId}",
+      "path": "/console/call-settings/{connectionId}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -2086,7 +2086,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/insights/number-options",
+      "path": "/console/insights/connection-options",
       "status": "excluded",
       "reason": "Private Console selector requires dashboard identity; team API keys and project tokens are not accepted."
     },
@@ -2170,7 +2170,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/session-configuration/{sessionId}",
+      "path": "/console/connection-configuration/{connectionId}",
       "status": "excluded",
       "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
     },
@@ -2281,7 +2281,7 @@
       "method": "GET",
       "path": "/platform/bans",
       "status": "covered",
-      "sdkMethod": "TeamClient.SessionBans.ListAsync",
+      "sdkMethod": "TeamClient.ConnectionBans.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2289,7 +2289,7 @@
       "method": "GET",
       "path": "/platform/bans/active",
       "status": "covered",
-      "sdkMethod": "TeamClient.SessionBans.ListActiveAsync",
+      "sdkMethod": "TeamClient.ConnectionBans.ListActiveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
     },
     {
@@ -2351,7 +2351,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/health/{session}",
+      "path": "/platform/bansafe/health/{connection}",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.GetHealthAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
@@ -2359,7 +2359,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/health/{session}/history",
+      "path": "/platform/bansafe/health/{connection}/history",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.ListHealthHistoryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
@@ -2383,7 +2383,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/telemetry/{session}",
+      "path": "/platform/bansafe/telemetry/{connection}",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.GetTelemetryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
@@ -2391,7 +2391,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/bansafe/telemetry/{session}/history",
+      "path": "/platform/bansafe/telemetry/{connection}/history",
       "status": "covered",
       "sdkMethod": "TeamClient.BanSafe.ListTelemetryHistoryAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/BanSafeTests.cs"
@@ -2583,9 +2583,9 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/customers/{customerId}/numbers",
+      "path": "/platform/customers/{customerId}/connections",
       "status": "covered",
-      "sdkMethod": "TeamClient.Customers.ListNumbersAsync",
+      "sdkMethod": "TeamClient.Customers.ListConnectionsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -2951,23 +2951,23 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/session-configuration",
+      "path": "/platform/connection-configuration",
       "status": "covered",
       "sdkMethod": "TeamClient.Configuration.RetrieveAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions",
+      "path": "/platform/connections",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.ListAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{session}/call-settings",
+      "path": "/platform/connections/{connection}/call-settings",
       "status": "covered",
       "sdkMethod": "TeamClient.Calls.RetrieveCallSettingsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
@@ -2975,7 +2975,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{session}/client-rules",
+      "path": "/platform/connections/{connection}/client-rules",
       "status": "covered",
       "sdkMethod": "TeamClient.ClientTokens.RetrieveRulesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -2983,42 +2983,42 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{sessionId}",
+      "path": "/platform/connections/{connectionId}",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.RetrieveAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.RetrieveAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{sessionId}/capabilities",
+      "path": "/platform/connections/{connectionId}/capabilities",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.GetCapabilitiesAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.GetCapabilitiesAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{sessionId}/me",
+      "path": "/platform/connections/{connectionId}/me",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.AccountAsync",
+      "sdkMethod": "TeamClient.Connections.AccountAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "path": "/platform/connections/{connectionId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.GetSafeModeAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.GetSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "GET",
-      "path": "/platform/sessions/{sessionId}/tier-quotes/{quoteId}",
+      "path": "/platform/connections/{connectionId}/tier-quotes/{quoteId}",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.RetrieveTierChangeAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.RetrieveTierChangeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
@@ -3262,10 +3262,10 @@
     {
       "family": "platform",
       "method": "PATCH",
-      "path": "/platform/sessions/{sessionId}",
+      "path": "/platform/connections/{connectionId}",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.SetTierOverrideAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.SetTierOverrideAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
@@ -3336,7 +3336,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/bansafe/enforcement/{session}/appeal",
+      "path": "/console/bansafe/enforcement/{connection}/appeal",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -3735,9 +3735,9 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/customers/{customerId}/numbers/{sessionId}/transfer",
+      "path": "/platform/customers/{customerId}/connections/{connectionId}/transfer",
       "status": "covered",
-      "sdkMethod": "TeamClient.Customers.TransferNumberAsync",
+      "sdkMethod": "TeamClient.Customers.TransferConnectionAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/CustomerTests.cs"
     },
     {
@@ -3991,86 +3991,86 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/handoff-ack",
+      "path": "/platform/connections/{connectionId}/handoff-ack",
       "status": "excluded",
       "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/handoff-import",
+      "path": "/platform/connections/{connectionId}/handoff-import",
       "status": "excluded",
       "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/handoff-keys",
+      "path": "/platform/connections/{connectionId}/handoff-keys",
       "status": "excluded",
       "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/logout",
+      "path": "/platform/connections/{connectionId}/logout",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.LogoutAsync",
+      "sdkMethod": "TeamClient.Connections.LogoutAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/restart",
+      "path": "/platform/connections/{connectionId}/restart",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.RestartAsync",
+      "sdkMethod": "TeamClient.Connections.RestartAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/start",
+      "path": "/platform/connections/{connectionId}/start",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.StartAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.StartAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/stop",
+      "path": "/platform/connections/{connectionId}/stop",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.StopAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.StopAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/tier-quotes",
+      "path": "/platform/connections/{connectionId}/tier-quotes",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.QuoteTierChangeAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.QuoteTierChangeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/upload-appstate-keys",
+      "path": "/platform/connections/{connectionId}/upload-appstate-keys",
       "status": "excluded",
       "reason": "Encrypted session handoff remains outside the public SDK until its dedicated security and atomicity contract is complete."
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/delete",
+      "path": "/platform/connections/delete",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.DeleteManyAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.DeleteManyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/stop",
+      "path": "/platform/connections/stop",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.StopManyAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.StopManyAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
@@ -4191,7 +4191,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/call-settings/{sessionId}",
+      "path": "/console/call-settings/{connectionId}",
       "status": "excluded",
       "reason": "Console-only operation requires dashboard identity; not available to SDK credentials."
     },
@@ -4254,7 +4254,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/console/session-configuration/{sessionId}",
+      "path": "/console/connection-configuration/{connectionId}",
       "status": "excluded",
       "reason": "Hosted QuickLink recipient and authenticated Console-only operations are outside the trusted-server SDK surface."
     },
@@ -4373,15 +4373,15 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/platform/session-configuration",
+      "path": "/platform/connection-configuration",
       "status": "covered",
       "sdkMethod": "TeamClient.Configuration.UpdateAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/platform/sessions/{session}/call-settings",
+      "path": "/platform/connections/{connection}/call-settings",
       "status": "partial",
       "reason": "Contract revision f180dc1ee2 of polymorfa/polymorfa#887 adds request or enum fields (acceptTerms, termsLocale) that this SDK does not yet type.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4389,7 +4389,7 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/platform/sessions/{session}/client-rules",
+      "path": "/platform/connections/{connection}/client-rules",
       "status": "covered",
       "sdkMethod": "TeamClient.ClientTokens.UpdateRulesAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/AccountTests.cs"
@@ -4397,18 +4397,18 @@
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/platform/sessions/{sessionId}",
+      "path": "/platform/connections/{connectionId}",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.UpdateAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.UpdateAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
       "method": "PUT",
-      "path": "/platform/sessions/{sessionId}/safe-mode",
+      "path": "/platform/connections/{connectionId}/safe-mode",
       "status": "covered",
-      "sdkMethod": "TeamClient.Sessions.UpdateSafeModeAsync",
-      "testFile": "tests/Polymorfa.Sdk.Tests/SessionTests.cs"
+      "sdkMethod": "TeamClient.Connections.UpdateSafeModeAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ConnectionTests.cs"
     },
     {
       "family": "platform",
@@ -4452,15 +4452,15 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/calls",
-      "status": "missing",
-      "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
-      "milestone": "contract-f180dc1ee2-sync"
+      "path": "/messaging/{connection}/calls",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.ListAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/ProjectPairingTests.cs"
     },
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/catalogs",
+      "path": "/messaging/{connection}/catalogs",
       "status": "covered",
       "sdkMethod": "MessagingClient.Catalogs.ListAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
@@ -4468,7 +4468,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/catalogs/{catalogId}",
+      "path": "/messaging/{connection}/catalogs/{catalogId}",
       "status": "covered",
       "sdkMethod": "MessagingClient.Catalogs.RetrieveAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
@@ -4476,7 +4476,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/catalogs/{catalogId}/products",
+      "path": "/messaging/{connection}/catalogs/{catalogId}/products",
       "status": "covered",
       "sdkMethod": "MessagingClient.Catalogs.ListProductsAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
@@ -4484,7 +4484,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/groups/{id}/capabilities",
+      "path": "/messaging/{connection}/groups/{id}/capabilities",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4492,7 +4492,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/marketing-messages/status",
+      "path": "/messaging/{connection}/marketing-messages/status",
       "status": "covered",
       "sdkMethod": "MessagingClient.CloudGraph.GetMarketingMessagesStatusAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
@@ -4500,7 +4500,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/passkey/challenge/{ticketId}",
+      "path": "/messaging/{connection}/passkey/challenge/{ticketId}",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4508,7 +4508,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/passkey/confirmation",
+      "path": "/messaging/{connection}/passkey/confirmation",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4516,7 +4516,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/phone",
+      "path": "/messaging/{connection}/phone",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.GetPhoneAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -4524,7 +4524,7 @@
     {
       "family": "messaging",
       "method": "GET",
-      "path": "/messaging/{session}/stickers",
+      "path": "/messaging/{connection}/stickers",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4564,7 +4564,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/catalogs/{catalogId}/sync",
+      "path": "/messaging/{connection}/catalogs/{catalogId}/sync",
       "status": "covered",
       "sdkMethod": "MessagingClient.Catalogs.SyncAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
@@ -4572,7 +4572,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/history/chunks/retry",
+      "path": "/messaging/{connection}/history/chunks/retry",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4580,7 +4580,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/history/media/delete",
+      "path": "/messaging/{connection}/history/media/delete",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4588,7 +4588,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/media/upload-grants",
+      "path": "/messaging/{connection}/media/upload-grants",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4596,7 +4596,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/media/uploads",
+      "path": "/messaging/{connection}/media/uploads",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4604,7 +4604,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/passkey/assertion",
+      "path": "/messaging/{connection}/passkey/assertion",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4612,7 +4612,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/passkey/challenge",
+      "path": "/messaging/{connection}/passkey/challenge",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4620,7 +4620,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/passkey/confirmation",
+      "path": "/messaging/{connection}/passkey/confirmation",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4628,7 +4628,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/phone/devices/{deviceId}/unlink",
+      "path": "/messaging/{connection}/phone/devices/{deviceId}/unlink",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.UnlinkPhoneDeviceAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -4636,7 +4636,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/phone/messages",
+      "path": "/messaging/{connection}/phone/messages",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.SendPhoneMessageAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -4644,7 +4644,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/stickers/recents/bootstrap",
+      "path": "/messaging/{connection}/stickers/recents/bootstrap",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4652,7 +4652,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/stickers/recents/remove",
+      "path": "/messaging/{connection}/stickers/recents/remove",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4660,7 +4660,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/stickers/reuploads",
+      "path": "/messaging/{connection}/stickers/reuploads",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4668,7 +4668,7 @@
     {
       "family": "messaging",
       "method": "POST",
-      "path": "/messaging/{session}/test-events",
+      "path": "/messaging/{connection}/test-events",
       "status": "covered",
       "sdkMethod": "MessagingClient.Testing.TriggerEventAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OnboardingTests.cs"
@@ -4740,7 +4740,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/official-groups/{group}/picture",
+      "path": "/messaging/{connection}/official-groups/{group}/picture",
       "status": "covered",
       "sdkMethod": "MessagingClient.OfficialGroups.SetPictureAsync",
       "testFile": "tests/Polymorfa.Sdk.Tests/OfficialRound2Tests.cs"
@@ -4748,7 +4748,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/phone/account-mode",
+      "path": "/messaging/{connection}/phone/account-mode",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4756,7 +4756,7 @@
     {
       "family": "messaging",
       "method": "PUT",
-      "path": "/messaging/{session}/stickers/favorite",
+      "path": "/messaging/{connection}/stickers/favorite",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -4836,7 +4836,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs",
       "status": "excluded",
       "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
       "milestone": "not-server-sdk"
@@ -4844,7 +4844,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs/{catalogId}",
       "status": "excluded",
       "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
       "milestone": "not-server-sdk"
@@ -4852,7 +4852,7 @@
     {
       "family": "platform",
       "method": "GET",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}/products",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs/{catalogId}/products",
       "status": "excluded",
       "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
       "milestone": "not-server-sdk"
@@ -5068,7 +5068,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/console/projects/{projectId}/numbers/{session}/catalogs/{catalogId}/sync",
+      "path": "/console/projects/{projectId}/connections/{connection}/catalogs/{catalogId}/sync",
       "status": "excluded",
       "reason": "Dashboard-identity Console or account route; it grants no server SDK authority.",
       "milestone": "not-server-sdk"
@@ -5164,7 +5164,7 @@
     {
       "family": "platform",
       "method": "POST",
-      "path": "/platform/sessions/{sessionId}/inspector/claim/release",
+      "path": "/platform/connections/{connectionId}/inspector/claim/release",
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
@@ -5232,6 +5232,14 @@
       "status": "missing",
       "reason": "Added by contract revision f180dc1ee2 of polymorfa/polymorfa#887 and not yet attributed to a native SDK method in this ledger.",
       "milestone": "contract-f180dc1ee2-sync"
+    },
+    {
+      "family": "messaging",
+      "method": "POST",
+      "path": "/messaging/voip/calls/{id}/waiting-room",
+      "status": "covered",
+      "sdkMethod": "MessagingClient.Calls.ModerateWaitingRoomAsync",
+      "testFile": "tests/Polymorfa.Sdk.Tests/CallsTests.cs"
     }
   ],
   "supplements": {

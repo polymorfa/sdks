@@ -58,7 +58,7 @@ const calls = [
     method: "place",
     args: [
       {
-        session: "support",
+        connection: "support",
         to: "+15550100",
         video: false,
         exclusive: true,
@@ -67,7 +67,7 @@ const calls = [
       { idempotencyKey: "place-555" },
     ],
     body: {
-      session: "support",
+      connection: "support",
       to: "+15550100",
       video: false,
       exclusive: true,
@@ -76,7 +76,7 @@ const calls = [
     status: 201,
     response: {
       success: true,
-      data: { callId, session: "support", video: false },
+      data: { callId, connection: "support", video: false },
     },
   },
   {
@@ -156,8 +156,8 @@ const calls = [
   {
     operationId: "checkCall",
     method: "check",
-    args: [{ session: "support/eu", to: "+14155550123" }],
-    body: { session: "support/eu", to: "+14155550123" },
+    args: [{ connection: "support/eu", to: "+14155550123" }],
+    body: { connection: "support/eu", to: "+14155550123" },
     status: 200,
     response: {
       success: true,
@@ -197,7 +197,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.repository).toBe("polymorfa/polymorfa");
     // Repinning the reviewed source requires updating this regression gate too.
-    expect(source.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
+    expect(source.commit).toBe("15db8b1c9d88e2ceccb58c851e731feabb659a39");
     expect(ledger.sourceCommit).toBe(source.commit);
     expect(Object.keys(source.contracts).sort()).toEqual([
       "messaging",
@@ -250,7 +250,7 @@ describe("reconciled coverage evidence", () => {
     };
     expect(source.supplements).toBeUndefined();
     expect(source.contracts.platform.sha256).toBe(
-      "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485",
+      "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559",
     );
     for (const id of [
       "getWhatsAppAnalytics",
@@ -333,7 +333,7 @@ describe("reconciled coverage evidence", () => {
       expect(new URL(url).pathname).toBe(
         mapping.path
           .replace("{id}", encodeURIComponent(callId))
-          .replace("{session}", encodeURIComponent("support/eu"))
+          .replace("{connection}", encodeURIComponent("support/eu"))
           .replace("{to}", encodeURIComponent("+14155550123")),
       );
       expect(init.method).toBe(mapping.method);
@@ -354,7 +354,7 @@ describe("reconciled coverage evidence", () => {
     },
   );
 
-  it("retires session answer modes and calling tickets", () => {
+  it("retires connection answer modes and calling tickets", () => {
     for (const operationId of [
       "voipSetMode",
       "voipToken",
@@ -421,11 +421,11 @@ describe("reconciled coverage evidence", () => {
   });
 
   it("excludes the bounded number selector based on its dashboard identity contract", () => {
-    const operation = entry("listConsoleNumberOptions");
+    const operation = entry("listConsoleConnectionOptions");
     expect(operation).toMatchObject({
       family: "platform",
       method: "GET",
-      path: "/console/insights/number-options",
+      path: "/console/insights/connection-options",
       typescript: { status: "excluded" },
     });
     expect(operation.typescript.reason).toContain("dashboard identity");

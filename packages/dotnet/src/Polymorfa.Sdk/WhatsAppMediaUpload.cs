@@ -106,18 +106,18 @@ public static partial class WhatsAppMedia
 }
 public sealed partial class WhatsAppMediaResource
 {
-    public async Task<WhatsAppMediaUploadResult> UploadRelayAsync(string session, PreparedWhatsAppUpload prepared, RequestOptions? options = null)
+    public async Task<WhatsAppMediaUploadResult> UploadRelayAsync(string connection, PreparedWhatsAppUpload prepared, RequestOptions? options = null)
     {
         await using var body = await prepared.OpenAsync(cancellationToken: options?.CancellationToken ?? default).ConfigureAwait(false);
-        var location = await RelayUploadAsync(session, prepared.Info.MediaType, prepared.Info.FileEncSha256, body, prepared.Info.EncryptedLength, options).ConfigureAwait(false); return new(prepared.Info, location, "relay");
+        var location = await RelayUploadAsync(connection, prepared.Info.MediaType, prepared.Info.FileEncSha256, body, prepared.Info.EncryptedLength, options).ConfigureAwait(false); return new(prepared.Info, location, "relay");
     }
-    public async Task<WhatsAppMediaUploadResult> UploadDirectAsync(string session, PreparedWhatsAppUpload prepared, WhatsAppDirectUploadOptions? direct = null, RequestOptions? requestOptions = null)
+    public async Task<WhatsAppMediaUploadResult> UploadDirectAsync(string connection, PreparedWhatsAppUpload prepared, WhatsAppDirectUploadOptions? direct = null, RequestOptions? requestOptions = null)
     {
         http.Credential.RequireServer();
-        Session(session);
+        Connection(connection);
         direct ??= new(); if (direct.MaxAttempts < 1 || direct.DocumentPartSize < 1 || direct.Timeout <= TimeSpan.Zero) throw new PolymorfaConfigurationException("Invalid direct upload options.");
         var handler = new SocketsHttpHandler(); direct.ConfigureHttpHandler?.Invoke(handler); handler.AllowAutoRedirect = false; handler.UseCookies = false; handler.Credentials = null; using var client = new HttpClient(handler) { Timeout = Timeout.InfiniteTimeSpan };
-        var request = (requestOptions ?? new()) with { CancellationToken = direct.CancellationToken }; var grant = await CreateUploadGrantAsync(session, prepared.Info.MediaType, prepared.Info.FileEncSha256, request).ConfigureAwait(false);
+        var request = (requestOptions ?? new()) with { CancellationToken = direct.CancellationToken }; var grant = await CreateUploadGrantAsync(connection, prepared.Info.MediaType, prepared.Info.FileEncSha256, request).ConfigureAwait(false);
         Uri Url(params (string Key, string Value)[] query)
         {
             var approved = grant.UploadUrl; var token = Convert.ToBase64String(prepared.Info.FileEncSha256).TrimEnd('=').Replace('+', '-').Replace('/', '_');
@@ -140,7 +140,7 @@ public sealed partial class WhatsAppMediaResource
         }
         async Task<T> Retry<T>(Func<int, Task<T>> action)
         {
-            UploadAttempt? last = null; for (var attempt = 0; attempt < direct.MaxAttempts; attempt++) { if (attempt > 0 && last?.Status == 401) grant = await CreateUploadGrantAsync(session, prepared.Info.MediaType, prepared.Info.FileEncSha256, request).ConfigureAwait(false); try { return await action(attempt).ConfigureAwait(false); } catch (UploadAttempt error) { if (!error.Retryable) throw error.Final; last = error; } }
+            UploadAttempt? last = null; for (var attempt = 0; attempt < direct.MaxAttempts; attempt++) { if (attempt > 0 && last?.Status == 401) grant = await CreateUploadGrantAsync(connection, prepared.Info.MediaType, prepared.Info.FileEncSha256, request).ConfigureAwait(false); try { return await action(attempt).ConfigureAwait(false); } catch (UploadAttempt error) { if (!error.Retryable) throw error.Final; last = error; } }
             throw last!.Final;
         }
         var total = prepared.Info.EncryptedLength; WhatsAppUploadLocation location;

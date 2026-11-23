@@ -94,9 +94,9 @@
     "README.md",
     "LICENSE",
     "prisma",
-    "conformance-fixtures.json",
+    "conformance-fixtures.v3.json",
     "D1-BRIDGE.md",
-    "d1-bridge-fixtures.json"
+    "d1-bridge-fixtures.v3.json"
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",

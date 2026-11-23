@@ -21,14 +21,14 @@ func NewMessagingClient(c Config) (*MessagingClient, error) {
 	}
 	return &MessagingClient{t}, nil
 }
-func (c *MessagingClient) Sessions() *MessagingSessions { return &MessagingSessions{c.t} }
-func (c *MessagingClient) QuickLinks() *QuickLinks      { return &QuickLinks{c.t} }
-func (c *MessagingClient) Messages() *Messages          { return &Messages{c.t} }
-func (c *MessagingClient) ClientTokens() *ClientTokens  { return &ClientTokens{c.t} }
-func (c *MessagingClient) VoIP() *VoIP                  { return &VoIP{c.t} }
-func (c *MessagingClient) Media() *MessagingMedia       { return &MessagingMedia{c.t} }
-func (c *MessagingClient) Chats() *Chats                { return &Chats{c.t} }
-func (c *MessagingClient) SessionCalls() *SessionCalls  { return &SessionCalls{c.t} }
+func (c *MessagingClient) Connections() *MessagingConnections { return &MessagingConnections{c.t} }
+func (c *MessagingClient) QuickLinks() *QuickLinks            { return &QuickLinks{c.t} }
+func (c *MessagingClient) Messages() *Messages                { return &Messages{c.t} }
+func (c *MessagingClient) ClientTokens() *ClientTokens        { return &ClientTokens{c.t} }
+func (c *MessagingClient) VoIP() *VoIP                        { return &VoIP{c.t} }
+func (c *MessagingClient) Media() *MessagingMedia             { return &MessagingMedia{c.t} }
+func (c *MessagingClient) Chats() *Chats                      { return &Chats{c.t} }
+func (c *MessagingClient) ConnectionCalls() *ConnectionCalls  { return &ConnectionCalls{c.t} }
 func serverOnly(t *transport) error {
 	if t.config.Credential.Kind == ClientToken {
 		return configuration("credential", "This operation requires a team key or project token.")

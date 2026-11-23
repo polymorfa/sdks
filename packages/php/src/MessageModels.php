@@ -6,7 +6,7 @@ namespace Polymorfa;
 
 /**
  * @phpstan-type MessageIds array{linked_devices:string,official_api?:string}|array{linked_devices?:string,official_api:string}
- * @phpstan-type RoutingReason 'explicit_transport'|'template'|'target_reference'|'only_eligible_transport'|'session_rule'|'project_rule'|'team_rule'|'default_linked_devices'
+ * @phpstan-type RoutingReason 'explicit_transport'|'template'|'target_reference'|'only_eligible_transport'|'connection_rule'|'project_rule'|'team_rule'|'default_linked_devices'
  * @phpstan-type Transport 'auto'|'linked_devices'|'official_api'
  * @phpstan-type Conversation array{id:string,phoneNumber?:string,bsuid?:string,parentBsuid?:string,username?:string}|array{id?:string,phoneNumber:string,bsuid?:string,parentBsuid?:string,username?:string}|array{id?:string,phoneNumber?:string,bsuid:string,username?:string}
  * @phpstan-type DescriptorMedia array{descriptor:WhatsAppMediaSendDescriptor,url?:never,base64?:never,mimeType?:never,caption?:string}

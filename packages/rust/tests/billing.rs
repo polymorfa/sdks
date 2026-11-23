@@ -7,7 +7,7 @@ fn budget() -> serde_json::Value {
     json!({"scope":"project","resourceId":ID,"projectId":ID,"name":"Project","limitCredits":null,"spentCredits":1.25,"reservedCredits":0.5,"revision":2})
 }
 fn priorities() -> serde_json::Value {
-    json!({"revision":2,"projects":[{"id":ID,"name":"Project","priority":5}],"customers":[{"id":ID,"name":"Customer","priority":6,"projectId":ID}],"numbers":[{"id":ID,"name":"Number","priority":7,"projectId":ID}]})
+    json!({"revision":2,"projects":[{"id":ID,"name":"Project","priority":5}],"customers":[{"id":ID,"name":"Customer","priority":6,"projectId":ID}],"connections":[{"id":ID,"name":"Connection","priority":7,"projectId":ID}]})
 }
 #[tokio::test]
 async fn balances_transactions_and_tier_pricing_native_wire() {
@@ -24,7 +24,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing/usage",
         None,
-        json!({"data":{"activeNumbers":2,"totalChargedCents":50.123456}}),
+        json!({"data":{"activeConnections":2,"totalChargedCents":50.123456}}),
         client.billing().usage(RequestOptions::default())
     );
     wire_team!(
@@ -32,7 +32,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing/transactions",
         None,
-        json!({"data":[{"id":"transaction","amountCents":-50.123456,"balanceAfterCents":250.123456,"type":"charge","description":"Number","sessionId":"number","projectId":ID,"tier":"standard","currency":"USD","paymentStatus":"paid","createdAt":1000}]}),
+        json!({"data":[{"id":"transaction","amountCents":-50.123456,"balanceAfterCents":250.123456,"type":"charge","description":"Connection","connectionId":"connection","projectId":ID,"tier":"standard","currency":"USD","paymentStatus":"paid","createdAt":1000}]}),
         client
             .billing()
             .list_transactions(RequestOptions::default())
@@ -42,7 +42,7 @@ async fn balances_transactions_and_tier_pricing_native_wire() {
         "GET",
         "/platform/billing/pricing",
         None,
-        json!({"data":[{"id":"price","tier":"standard","dailyRateCents":50.123456,"label":"Standard","description":"Number","features":["calls"]}]}),
+        json!({"data":[{"id":"price","tier":"standard","dailyRateCents":50.123456,"label":"Standard","description":"Connection","features":["calls"]}]}),
         client.billing().list_pricing(RequestOptions::default())
     );
 }
@@ -97,11 +97,11 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
     wire_team!(
         client,
         "PUT",
-        "/platform/billing/limits/number/abcdefab-1234-5678-9012-123456789abc",
+        "/platform/billing/limits/connection/abcdefab-1234-5678-9012-123456789abc",
         Some(json!({"limitCredits":null,"expectedRevision":2})),
         json!({"data":{"saved":true}}),
         client.billing().set_limit(
-            BillingScope::Number,
+            BillingScope::Connection,
             ID,
             &SetBillingLimitRequest {
                 limit_credits: None,
@@ -141,14 +141,14 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
         "PUT",
         "/platform/billing/priorities",
         Some(
-            json!({"scope":"resource","projectId":ID,"resources":[{"scope":"number","resourceId":ID}],"expectedRevision":2})
+            json!({"scope":"resource","projectId":ID,"resources":[{"scope":"connection","resourceId":ID}],"expectedRevision":2})
         ),
         json!({"data":priorities()}),
         client.billing().reorder_priorities(
             &ReorderBillingPrioritiesRequest::Resource {
                 project_id: ID.to_uppercase(),
                 resources: vec![BillingResourceReference {
-                    scope: BillingResourceScope::Number,
+                    scope: BillingResourceScope::Connection,
                     resource_id: ID.to_uppercase()
                 }],
                 expected_revision: 2
@@ -189,10 +189,10 @@ async fn revision_guarded_billing_controls_limits_and_priorities_native_wire() {
         client,
         "PUT",
         "/platform/billing/priorities",
-        Some(json!({"scope":"number","projectId":ID,"resourceIds":[ID],"expectedRevision":2})),
+        Some(json!({"scope":"connection","projectId":ID,"resourceIds":[ID],"expectedRevision":2})),
         json!({"data":priorities()}),
         client.billing().reorder_priorities(
-            &ReorderBillingPrioritiesRequest::Number {
+            &ReorderBillingPrioritiesRequest::Connection {
                 project_id: ID.to_uppercase(),
                 resource_ids: vec![ID.into()],
                 expected_revision: 2
@@ -278,11 +278,11 @@ async fn invalid_billing_controls_fail_before_network() {
                     project_id: ID.into(),
                     resources: vec![
                         BillingResourceReference {
-                            scope: BillingResourceScope::Number,
+                            scope: BillingResourceScope::Connection,
                             resource_id: ID.into()
                         },
                         BillingResourceReference {
-                            scope: BillingResourceScope::Number,
+                            scope: BillingResourceScope::Connection,
                             resource_id: ID.to_uppercase()
                         }
                     ],

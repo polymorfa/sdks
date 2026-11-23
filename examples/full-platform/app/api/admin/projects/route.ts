@@ -54,7 +54,7 @@ export const POST = route("admin", async ({ body, request }) => {
         version: current.version,
         enabled: false,
         threshold: current.threshold,
-        sessionAction: current.sessionAction,
+        connectionAction: current.connectionAction,
         slowDownMps: current.slowDownMps,
         emailNotification: current.emailNotification,
         webhookNotification: current.webhookNotification,

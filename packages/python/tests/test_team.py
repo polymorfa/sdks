@@ -78,7 +78,7 @@ AUDIT = {
 }
 BAN = {
     "id": "ban_1",
-    "sessionName": "support",
+    "connectionName": "support",
     "banCode": None,
     "banReason": None,
     "banExpiresAt": None,
@@ -123,8 +123,8 @@ CASES = [
         [AUDIT],
         lambda c: c.audit_logs.list(action="update", resource="project", limit=10),
     ),
-    ("GET", "/platform/bans", {}, [BAN], lambda c: c.session_bans.list()),
-    ("GET", "/platform/bans/active", {}, [BAN], lambda c: c.session_bans.list_active()),
+    ("GET", "/platform/bans", {}, [BAN], lambda c: c.connection_bans.list()),
+    ("GET", "/platform/bans/active", {}, [BAN], lambda c: c.connection_bans.list_active()),
     ("GET", "/platform/incidents", {}, [INCIDENT], lambda c: c.security_incidents.list()),
     (
         "POST",

@@ -1,10 +1,10 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+  "commit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "6d5b5477a86a85504f921933bf7b26f2c47506e21380fe73c8a5ff1002163b28",
+      "sourceSha256": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
       "schemas": {
         "CampaignDrip": {
           "type": "object",
@@ -17,7 +17,7 @@
             },
             "exitOnReply": {
               "type": "boolean",
-              "description": "When true, a contact who replies to the sending number gets no further steps."
+              "description": "When true, a contact who replies to the sending connection gets no further steps."
             },
             "exitOnLinkClick": {
               "type": "boolean",
@@ -40,7 +40,7 @@
             "exitOnReply": {
               "type": "boolean",
               "default": true,
-              "description": "When true, a contact who replies to the sending number gets no further steps."
+              "description": "When true, a contact who replies to the sending connection gets no further steps."
             },
             "exitOnLinkClick": {
               "type": "boolean",
@@ -62,7 +62,7 @@
             },
             "exitOnReply": {
               "type": "boolean",
-              "description": "When true, a contact who replies to the sending number gets no further steps."
+              "description": "When true, a contact who replies to the sending connection gets no further steps."
             },
             "exitOnLinkClick": {
               "type": "boolean",
@@ -558,9 +558,6 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
             }
           }
         },
@@ -569,7 +566,7 @@
             "operationId": "launchCampaign",
             "tags": ["Campaigns"],
             "summary": "Launch a campaign",
-            "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. Segment campaigns require a team API key; project tokens answer `403 permission_denied`, and unavailable audience betas answer `403 feature_unavailable`. An audience change during launch answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API numbers, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. The template must be complete and approved on every Cloud API number; every recipient needs a value or fallback for each variable unless `skipMissingVariables` is true. When the team requires approval above a recipient threshold and the launch would send to more recipients, it answers `409 campaign_approval_required`, sends nothing, and records a pending approval request for a team owner or admin. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold. The response returns the campaign as it was when the launch was accepted.",
+            "description": "**Required scope:** `campaigns:manage`\n\nStarts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the saved sender selection against live plans: `402 campaigns_not_entitled` when a selected connection is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.connectionIds` when a selected connection is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. Segment campaigns require a team API key; project tokens answer `403 permission_denied`, and unavailable audience betas answer `403 feature_unavailable`. An audience change during launch answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API connections, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. The template must be complete and approved on every Cloud API connection; every recipient needs a value or fallback for each variable unless `skipMissingVariables` is true. When the team requires approval above a recipient threshold and the launch would send to more recipients, it answers `409 campaign_approval_required`, sends nothing, and records a pending approval request for a team owner or admin. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold. The response returns the campaign as it was when the launch was accepted.",
             "security": [
               {
                 "BearerAuth": []
@@ -597,7 +594,7 @@
                 "name": "Idempotency-Key",
                 "in": "header",
                 "required": false,
-                "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again: it returns `409 idempotency_completed` when the original succeeded, or the original server error, with `Idempotent-Replayed: true`. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+                "description": "Unique key, 1 to 255 bytes of UTF-8, that makes this write safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version`, and request never runs the write again while its receipt is retained. Keep the first response. Exact response replay requires authorized replay data; opaque message or campaign bodies are not retained by default. An available exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After` and the write still does not run again.",
                 "schema": {
                   "type": "string",
                   "minLength": 1,
@@ -625,6 +622,13 @@
                   }
                 },
                 "headers": {
+                  "Idempotent-Replayed": {
+                    "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
+                    "schema": {
+                      "type": "string",
+                      "enum": ["true"]
+                    }
+                  },
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
                   },
@@ -637,7 +641,7 @@
                 }
               },
               "400": {
-                "description": "`invalid_parameter` naming the field: an unconnected or mixed sender selection (`senderConfig.sessionIds`), an incomplete or authentication template (`templateId`), a composed attachment without a public URL, or a `{{link:<key>}}` the campaign does not define or tracked links on Official API numbers (`trackedLinks`). `campaign_throughput_capped` when a requested throughput is above its ceiling; `template_not_approved` when a Cloud API number has not approved the template.",
+                "description": "`invalid_parameter` naming the field: an unconnected or mixed sender selection (`senderConfig.connectionIds`), an incomplete or authentication template (`templateId`), a composed attachment without a public URL, or a `{{link:<key>}}` the campaign does not define or tracked links on Official API connections (`trackedLinks`). `campaign_throughput_capped` when a requested throughput is above its ceiling; `template_not_approved` when a Cloud API connection has not approved the template.",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -701,7 +705,7 @@
                 }
               },
               "402": {
-                "description": "`campaigns_not_entitled`: a selected number is missing or its plan does not include Campaigns, or the project has no number on such a plan. Drafts are saved on every plan.",
+                "description": "`campaigns_not_entitled`: a selected connection is missing or its plan does not include Campaigns, or the project has no connection on such a plan. Drafts are saved on every plan.",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -709,9 +713,9 @@
                     },
                     "example": {
                       "error": {
-                        "type": "permission_error",
+                        "type": "billing_error",
                         "code": "campaigns_not_entitled",
-                        "message": "This number\u2019s plan does not include Campaigns.",
+                        "message": "This connection\u2019s plan does not include Campaigns.",
                         "param": null,
                         "request_id": "5f0c2a8e-3b1d-4c6f-9e2a-7d4b1c8f6a30"
                       },
@@ -797,7 +801,7 @@
                 }
               },
               "409": {
-                "description": "`campaign_approval_required`: the launch is held for a team owner or admin and nothing was sent; the message names the approval request. `state_conflict`: the campaign is not a draft, is already launched and waiting for its start time, its sending numbers or audience changed during launch, or segment evaluation exceeded its time limit (simplify the rules and retry). A launched campaign whose segment was deleted cannot be launched again.. The Idempotency-Key already succeeded (`idempotency_completed`), was used for a different request (`idempotency_conflict`), belongs to a request that is still running (`idempotency_in_progress`, with Retry-After), or belongs to a request whose outcome was not recorded (`idempotency_outcome_unknown`)",
+                "description": "`campaign_approval_required`: the launch is held for a team owner or admin and nothing was sent; the message names the approval request. `state_conflict`: the campaign is not a draft, is already launched and waiting for its start time, its sending connections or audience changed during launch, or segment evaluation exceeded its time limit (simplify the rules and retry). A launched campaign whose segment was deleted cannot be launched again. The Idempotency-Key belongs to a request that is still running (`idempotency_in_progress`, with Retry-After) or whose outcome was not recorded (`idempotency_outcome_unknown`)",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -818,17 +822,16 @@
                 },
                 "headers": {
                   "Retry-After": {
-                    "description": "Seconds to wait before retrying `idempotency_in_progress`.",
+                    "description": "Seconds to wait before checking again with the same key. Waiting does not release the execution fence or guarantee that replay data becomes available. Same-key retries are protected only within the one-hour receipt window.",
                     "schema": {
                       "type": "integer",
                       "minimum": 0
                     }
                   },
-                  "Idempotent-Replayed": {
-                    "description": "`true` when this response reports the recorded outcome of an earlier request with the same Idempotency-Key.",
+                  "Link": {
+                    "description": "Link to the documentation for this Idempotency-Key error (`rel=\"describedby\"`).",
                     "schema": {
-                      "type": "string",
-                      "enum": ["true"]
+                      "type": "string"
                     }
                   },
                   "X-RateLimit-Limit": {
@@ -843,7 +846,7 @@
                 }
               },
               "422": {
-                "description": "`campaign_variables_missing`: some recipients have no value and no fallback for a variable. The message names the variables and counts the recipients.",
+                "description": "`campaign_variables_missing`: some recipients have no value and no fallback for a variable. The message names the variables and counts the recipients. The Idempotency-Key was already used for a different request (`idempotency_conflict`)",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -863,6 +866,12 @@
                   }
                 },
                 "headers": {
+                  "Link": {
+                    "description": "Link to the documentation for this Idempotency-Key error (`rel=\"describedby\"`).",
+                    "schema": {
+                      "type": "string"
+                    }
+                  },
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
                   },
@@ -907,7 +916,7 @@
                 }
               },
               "503": {
-                "description": "`service_unavailable`: the selected numbers' plans could not be checked; retry",
+                "description": "`service_unavailable`: the selected connections' plans could not be checked; retry. For `idempotency_replay_unavailable` only: the exact response for this Idempotency-Key is unavailable (with Retry-After). Opaque responses are not retained by default. The write did not run again. Keep the first response and reconcile events or the resource; waiting does not guarantee that replay data becomes available. Do not switch keys to resend",
                 "content": {
                   "application/json": {
                     "schema": {
@@ -927,6 +936,13 @@
                   }
                 },
                 "headers": {
+                  "Retry-After": {
+                    "description": "Seconds to wait before checking again with the same key. Waiting does not release the execution fence or guarantee that replay data becomes available. Same-key retries are protected only within the one-hour receipt window.",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 0
+                    }
+                  },
                   "X-RateLimit-Limit": {
                     "$ref": "#/components/headers/X-RateLimit-Limit"
                   },
@@ -938,9 +954,6 @@
                   }
                 }
               }
-            },
-            "x-mint": {
-              "content": "<Badge color=\"yellow\" icon=\"key\">campaigns:manage</Badge>"
             }
           }
         }
@@ -948,7 +961,7 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "bf4c6056b75e2fb0293b48edc5d8c12c36cdcbd194b9d11159f59522d30badc3",
+      "sourceSha256": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559",
       "schemas": {
         "AudienceSegment": {
           "type": "object",
@@ -1378,7 +1391,7 @@
           "type": "object",
           "additionalProperties": false,
           "required": ["enrollment", "exitOnReply", "exitOnLinkClick"],
-          "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test numbers only.",
+          "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test connections only.",
           "properties": {
             "enrollment": {
               "type": "string",
@@ -1389,7 +1402,7 @@
             "exitOnReply": {
               "type": "boolean",
               "default": true,
-              "description": "When true, a contact who replies to the sending number gets no further steps."
+              "description": "When true, a contact who replies to the sending connection gets no further steps."
             },
             "exitOnLinkClick": {
               "type": "boolean",
@@ -1401,7 +1414,7 @@
         "CampaignDripInput": {
           "type": "object",
           "additionalProperties": false,
-          "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test numbers only.",
+          "description": "Beta drip settings. Defaults: audience enrollment, exit on reply true, exit on link open false. Opt-outs always stop remaining steps. Cannot combine with a template, A/B variants, weighted alternatives or receipt-timed followUp. Linked-device and test connections only.",
           "properties": {
             "enrollment": {
               "type": "string",
@@ -1412,7 +1425,7 @@
             "exitOnReply": {
               "type": "boolean",
               "default": true,
-              "description": "When true, a contact who replies to the sending number gets no further steps."
+              "description": "When true, a contact who replies to the sending connection gets no further steps."
             },
             "exitOnLinkClick": {
               "type": "boolean",
@@ -1433,7 +1446,7 @@
             },
             "exitOnReply": {
               "type": "boolean",
-              "description": "When true, a contact who replies to the sending number gets no further steps."
+              "description": "When true, a contact who replies to the sending connection gets no further steps."
             },
             "exitOnLinkClick": {
               "type": "boolean",
@@ -1750,7 +1763,7 @@
             "operationId": "launchPlatformCampaign",
             "tags": ["campaigns"],
             "summary": "Launch campaign",
-            "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected number is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.sessionIds` when a selected number is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. A segment campaign requires a team API key or signed-in dashboard session; project tokens answer `403 permission_denied`. Both audience betas must be available, otherwise launch answers `403 feature_unavailable`. An audience change while launch is being authorized answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. A composed attachment requires a public `media.url` (`400 invalid_parameter`). The template must be complete (`400 invalid_parameter`) and approved on every Cloud API number (`400 template_not_approved`). Every recipient needs a value or fallback for each variable (`422 campaign_variables_missing`); `skipMissingVariables: true` skips those recipients before the first send. A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API numbers, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending numbers changed during the launch. When the team requires approval above a recipient threshold and the launch would send to more recipients, a launch by anyone other than a team owner or admin signed in to the console answers `409 campaign_approval_required`, sends nothing, and records a pending approval request that `GET /platform/campaigns/{campaignId}/approvals` lists. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
+            "description": "Starts a draft campaign. It begins sending at `scheduledAt`, or right away when no start time is set. Launch checks the stored sender selection against live plans: `402 campaigns_not_entitled` when a selected connection is missing or its plan does not include Campaigns, or when an unselected campaign's project has no such number; `400 invalid_parameter` on `senderConfig.connectionIds` when a selected connection is not connected or the selection mixes sending types; `400 campaign_throughput_capped` when a requested throughput is above its ceiling. A segment campaign requires a team API key or signed-in dashboard session; project tokens answer `403 permission_denied`. Both audience betas must be available, otherwise launch answers `403 feature_unavailable`. An audience change while launch is being authorized answers `409 state_conflict`. Segment evaluation that exceeds its time limit also answers `409 state_conflict`; simplify the rules and retry. A launched campaign whose segment was deleted remains launched and cannot be launched again (`409 state_conflict`). A drip without a sendable composed message answers `400 invalid_parameter` on `messagesArray`. Saving a draft does not apply this check. A composed attachment requires a public `media.url` (`400 invalid_parameter`). The template must be complete (`400 invalid_parameter`) and approved on every Cloud API connection (`400 template_not_approved`). Every recipient needs a value or fallback for each variable (`422 campaign_variables_missing`); `skipMissingVariables: true` skips those recipients before the first send. A message that references a `{{link:<key>}}` the campaign does not define, or tracked links on a campaign that would send from Official API connections, answers `400 invalid_parameter` on `trackedLinks`; tracked links without the campaign link tracking beta answer `403 feature_unavailable`. `409` means the campaign is not a draft, is already launched and waiting for its start time, or its sending connections changed during the launch. When the team requires approval above a recipient threshold and the launch would send to more recipients, a launch by anyone other than a team owner or admin signed in to the console answers `409 campaign_approval_required`, sends nothing, and records a pending approval request that `GET /platform/campaigns/{campaignId}/approvals` lists. Launching again with the campaign unchanged returns the same request. A launch requested by an AI agent through the hosted MCP server is held the same way, whatever the threshold.\n\nRequires `campaigns:manage`. Project tokens only access resources in their own project.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "project",
             "x-excluded-from-public": false,
@@ -1776,7 +1789,7 @@
                 "name": "Idempotency-Key",
                 "in": "header",
                 "required": false,
-                "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 24 hours. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again: it returns `409 idempotency_completed` when the original succeeded, or the original server error. Reusing the key for a different request returns `409 idempotency_conflict`; a retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`.",
+                "description": "Optional unique key, 1 to 255 bytes, that makes this request safe to retry for 1 hour. A retry with the same key, credential, `Polymorfa-Version` and request never runs it again while its receipt is retained. Keep the first response. Opaque campaign bodies are not retained by default; an available authorized exact replay carries `Idempotent-Replayed: true`. Authorization, rate-limit and state refusals (401, 403, 408, 409, 423, 425, 429) are not recorded, so the same key can retry them. Reusing the key for a different request returns `422 idempotency_conflict`. A retry while the original is still running returns `409 idempotency_in_progress`, and a retry after an unrecorded outcome returns `409 idempotency_outcome_unknown`. If the recorded response cannot be read, the retry returns `503 idempotency_replay_unavailable` with `Retry-After`; the request does not run again. Missing replay data never releases the execution fence.",
                 "schema": {
                   "type": "string",
                   "minLength": 1,
@@ -1816,6 +1829,13 @@
                       "type": "string"
                     },
                     "description": "API version applied to this response."
+                  },
+                  "Idempotent-Replayed": {
+                    "description": "`true` when this response is the recorded response of an earlier request with the same Idempotency-Key.",
+                    "schema": {
+                      "type": "string",
+                      "enum": ["true"]
+                    }
                   }
                 },
                 "content": {
@@ -1866,7 +1886,7 @@
                 "$ref": "#/components/responses/Unauthorized"
               },
               "402": {
-                "$ref": "#/components/responses/PaymentRequired"
+                "$ref": "#/components/responses/CampaignsNotEntitled"
               },
               "403": {
                 "$ref": "#/components/responses/CampaignLaunchForbidden"
@@ -1878,10 +1898,79 @@
                 "$ref": "#/components/responses/CampaignLaunchConflict"
               },
               "422": {
-                "$ref": "#/components/responses/CampaignVariablesMissing"
+                "description": "`campaign_variables_missing`: a recipient or test sample has no value or fallback for a campaign variable; nothing was sent by that request. `idempotency_conflict`: this key belongs to a different request; the earlier request is not run again and this refusal does not establish its outcome.",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  },
+                  "Link": {
+                    "description": "Documentation for an Idempotency-Key error (`rel=\"describedby\"`).",
+                    "schema": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorEnvelope"
+                    }
+                  }
+                }
               },
               "503": {
-                "$ref": "#/components/responses/CampaignEligibilityUnavailable"
+                "description": "`idempotency_replay_unavailable`: the recorded response cannot be read. The original request is not run again, and its execution fence remains in place. Keep the first response; do not switch keys to resend. The selected connections' plans can also fail to be checked (`service_unavailable`), before anything is launched or saved.",
+                "headers": {
+                  "X-Request-Id": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "Stable request correlation identifier."
+                  },
+                  "X-Trace-Id": {
+                    "schema": {
+                      "type": "string",
+                      "pattern": "^[0-9a-f]{32}$"
+                    },
+                    "description": "W3C trace ID of this request. Your `traceparent` trace ID when you sent a valid one."
+                  },
+                  "Polymorfa-Version": {
+                    "schema": {
+                      "type": "string"
+                    },
+                    "description": "API version applied to this response."
+                  },
+                  "Retry-After": {
+                    "description": "Seconds to wait before checking again with the same key. Waiting does not release the execution fence or guarantee that replay data becomes available.",
+                    "schema": {
+                      "type": "integer",
+                      "minimum": 1
+                    }
+                  }
+                },
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "$ref": "#/components/schemas/ErrorEnvelope"
+                    }
+                  }
+                }
               }
             }
           }
@@ -1986,7 +2075,7 @@
             "operationId": "listAudienceSegments",
             "tags": ["audience-segments"],
             "summary": "List audience segments",
-            "description": "Lists the team's saved segments with cursor pagination. Reads stay available after beta withdrawal.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
+            "description": "Lists the team's saved segments with cursor pagination. Reads stay available after beta withdrawal.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2080,7 +2169,7 @@
             "operationId": "createAudienceSegment",
             "tags": ["audience-segments"],
             "summary": "Create an audience segment",
-            "description": "Saves a named rule set over the team's audience profiles. A team holds at most 100 segments. Every campaign a rule names must belong to the team. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Saves a named rule set over the team's audience profiles. A team holds at most 100 segments. Every campaign a rule names must belong to the team. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2174,7 +2263,7 @@
             "operationId": "previewAudienceSegmentRules",
             "tags": ["audience-segments"],
             "summary": "Preview audience segment rules",
-            "description": "Evaluates unsaved rules now and returns counts and up to five masked matching profiles. Nothing is saved. A campaign evaluates its segment again when it launches, so counts can change. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Evaluates unsaved rules now and returns counts and up to five masked matching profiles. Nothing is saved. A campaign evaluates its segment again when it launches, so counts can change. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2263,7 +2352,7 @@
             "operationId": "getAudienceSegment",
             "tags": ["audience-segments"],
             "summary": "Get an audience segment",
-            "description": "Returns one saved segment.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
+            "description": "Returns one saved segment.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2343,7 +2432,7 @@
             "operationId": "updateAudienceSegment",
             "tags": ["audience-segments"],
             "summary": "Update an audience segment",
-            "description": "Replaces the name, the rules or both at the observed revision; a stale revision answers `409`. A draft campaign that uses the segment evaluates the new rules when it launches. Campaigns already launched keep their recipients. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Replaces the name, the rules or both at the observed revision; a stale revision answers `409`. A draft campaign that uses the segment evaluates the new rules when it launches. Campaigns already launched keep their recipients. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2452,7 +2541,7 @@
             "operationId": "deleteAudienceSegment",
             "tags": ["audience-segments"],
             "summary": "Delete an audience segment",
-            "description": "Deletes the segment at the observed revision. Answers `409` while an unlaunched draft campaign uses it as its audience. Launched campaigns keep their recipients and `segmentSnapshot`; their `segmentId` becomes null. Deletion stays available after beta withdrawal.\n\nAPI keys require `campaigns:manage`. Project tokens are not accepted.",
+            "description": "Deletes the segment at the observed revision. Answers `409` while an unlaunched draft campaign uses it as its audience. Launched campaigns keep their recipients and `segmentSnapshot`; their `segmentId` becomes null. Deletion stays available after beta withdrawal.\n\nTeam keys require `campaigns:manage`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2559,7 +2648,7 @@
             "operationId": "previewAudienceSegment",
             "tags": ["audience-segments"],
             "summary": "Preview an audience segment",
-            "description": "Evaluates the saved segment now and returns counts, up to five masked matching profiles and the evaluated `revision`. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nAPI keys require `campaigns:read`. Project tokens are not accepted.",
+            "description": "Evaluates the saved segment now and returns counts, up to five masked matching profiles and the evaluated `revision`. Both audience betas, `campaigns.audience-profiles` and `campaigns.segments`, must be available; otherwise the request answers `403 feature_unavailable`.\n\nTeam keys require `campaigns:read`. Project tokens are not accepted.",
             "x-audience": "public",
             "x-polymorfa-resource-boundary": "team",
             "x-excluded-from-public": false,
@@ -2704,5 +2793,10 @@
         }
       }
     }
+  },
+  "published": false,
+  "previousExport": {
+    "path": "contracts/history/pre-connections/campaign-segments-drip.json",
+    "sha256": "59d77789ba1dc035d8a9673a673ba4cf9fa1d553cf6042453951f914bae05377"
   }
 }

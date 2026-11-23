@@ -31,7 +31,7 @@ export class ChatsResource {
 
   /** Official API beta. Requires chats:read and team enrollment; no HMS requirement. */
   getServiceWindow(
-    session: string,
+    connection: string,
     conversation: string,
     options: RequestOptions = {},
   ): Promise<
@@ -47,21 +47,21 @@ export class ChatsResource {
     }
     return this.transport.request({
       method: "GET",
-      path: `${chatPath(session, conversation)}/service-window`,
+      path: `${chatPath(connection, conversation)}/service-window`,
       ...options,
     });
   }
 
   /** Lists one page of stored conversations. Requires `chats:read` and enrolled HMS history access. */
   list(
-    session: string,
+    connection: string,
     params: ListHistoryChatsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<HistoryPage<HistoryChat>>> {
     this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
-      path: `/messaging/${encodeURIComponent(session)}/chats`,
+      path: `/messaging/${encodeURIComponent(connection)}/chats`,
       query: { ...params },
       ...options,
     });
@@ -69,7 +69,7 @@ export class ChatsResource {
 
   /** Reads a stored conversation by public ID or E.164 phone number. */
   retrieve(
-    session: string,
+    connection: string,
     conversation: string,
     options: RequestOptions = {},
   ): Promise<
@@ -78,14 +78,14 @@ export class ChatsResource {
     this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
-      path: chatPath(session, conversation),
+      path: chatPath(connection, conversation),
       ...options,
     });
   }
 
   /** Lists stored messages, newest first unless `order: "asc"` is supplied. */
   listMessages(
-    session: string,
+    connection: string,
     conversation: string,
     params: ListHistoryMessagesParams = {},
     options: RequestOptions = {},
@@ -93,7 +93,7 @@ export class ChatsResource {
     this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
-      path: `${chatPath(session, conversation)}/messages`,
+      path: `${chatPath(connection, conversation)}/messages`,
       query: { ...params },
       ...options,
     });
@@ -101,7 +101,7 @@ export class ChatsResource {
 
   /** Reads one stored message by its opaque Polymorfa ID. */
   retrieveMessage(
-    session: string,
+    connection: string,
     conversation: string,
     messageId: string,
     options: RequestOptions = {},
@@ -111,14 +111,14 @@ export class ChatsResource {
     this.assertHistoryCredential();
     return this.transport.request({
       method: "GET",
-      path: chatMessagePath(session, conversation, messageId),
+      path: chatMessagePath(connection, conversation, messageId),
       ...options,
     });
   }
 
   /** Downloads a stored Official API message copy. Requires `messages:read`, `media:read`, and enrolled HMS history access. */
   downloadMessageMedia(
-    session: string,
+    connection: string,
     conversation: string,
     messageId: string,
     options: RequestOptions = {},
@@ -126,14 +126,14 @@ export class ChatsResource {
     this.assertHistoryCredential();
     return this.transport.requestBinary({
       method: "GET",
-      path: `${chatMessagePath(session, conversation, messageId)}/media`,
+      path: `${chatMessagePath(connection, conversation, messageId)}/media`,
       ...options,
     });
   }
 
   /** Streams a stored Official API message copy without buffering the file. */
   async downloadMessageMediaStream(
-    session: string,
+    connection: string,
     conversation: string,
     messageId: string,
     options: RequestOptions = {},
@@ -141,7 +141,7 @@ export class ChatsResource {
     this.assertHistoryCredential();
     const response = await this.transport.requestStream({
       method: "GET",
-      path: `${chatMessagePath(session, conversation, messageId)}/media`,
+      path: `${chatMessagePath(connection, conversation, messageId)}/media`,
       ...options,
     });
     return Object.freeze({
@@ -164,7 +164,7 @@ export class ChatsResource {
   }
 
   editMessage(
-    session: string,
+    connection: string,
     chatId: string,
     messageId: string,
     body: EditMessageRequest,
@@ -172,65 +172,65 @@ export class ChatsResource {
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: chatMessagePath(session, chatId, messageId),
+      path: chatMessagePath(connection, chatId, messageId),
       body,
       ...withIdempotencyKey(options),
     });
   }
 
   deleteMessage(
-    session: string,
+    connection: string,
     chatId: string,
     messageId: string,
     options: DeleteMessageOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "DELETE",
-      path: chatMessagePath(session, chatId, messageId),
+      path: chatMessagePath(connection, chatId, messageId),
       query: { transport: options.transport },
       ...withIdempotencyKey(options),
     });
   }
 
   archive(
-    session: string,
+    connection: string,
     chatId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.updateArchiveState(session, chatId, "archive", options);
+    return this.updateArchiveState(connection, chatId, "archive", options);
   }
 
   unarchive(
-    session: string,
+    connection: string,
     chatId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
-    return this.updateArchiveState(session, chatId, "unarchive", options);
+    return this.updateArchiveState(connection, chatId, "unarchive", options);
   }
 
   setDisappearingTimer(
-    session: string,
+    connection: string,
     chatId: string,
     body: DisappearingTimerRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: `${chatPath(session, chatId)}/disappearing`,
+      path: `${chatPath(connection, chatId)}/disappearing`,
       body,
       ...options,
     });
   }
 
   private updateArchiveState(
-    session: string,
+    connection: string,
     chatId: string,
     action: "archive" | "unarchive",
     options: RequestOptions,
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "POST",
-      path: `${chatPath(session, chatId)}/${action}`,
+      path: `${chatPath(connection, chatId)}/${action}`,
       ...options,
     });
   }
@@ -245,14 +245,14 @@ export class ChatsResource {
   }
 }
 
-function chatPath(session: string, chatId: string): string {
-  return `/messaging/${encodeURIComponent(session)}/chats/${encodeURIComponent(chatId)}`;
+function chatPath(connection: string, chatId: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/chats/${encodeURIComponent(chatId)}`;
 }
 
 function chatMessagePath(
-  session: string,
+  connection: string,
   chatId: string,
   messageId: string,
 ): string {
-  return `${chatPath(session, chatId)}/messages/${encodeURIComponent(messageId)}`;
+  return `${chatPath(connection, chatId)}/messages/${encodeURIComponent(messageId)}`;
 }

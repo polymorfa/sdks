@@ -1,11 +1,11 @@
-//! Schema 2 from storage producer 3bacf46f9c4213426314001586f5bae43aaa77de.
+//! Schema 3 from storage producer d80b581c9df122411e9149a7e39a33700a51571c.
 use super::{StorageError, StorageResult};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeMap;
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum Entity {
-    Sessions,
+    Connections,
     Chats,
     Messages,
     Reactions,
@@ -42,10 +42,10 @@ pub struct EntityDefinition {
     pub fields: &'static [(&'static str, FieldType)],
     pub indexes: &'static [IndexDefinition],
 }
-pub const SCHEMA_VERSION: u32 = 2;
-pub const SOURCE_STORAGE_COMMIT: &str = "3bacf46f9c4213426314001586f5bae43aaa77de";
+pub const SCHEMA_VERSION: u32 = 3;
+pub const SOURCE_STORAGE_COMMIT: &str = "d80b581c9df122411e9149a7e39a33700a51571c";
 pub const ALL_ENTITIES: [Entity; 17] = [
-    Entity::Sessions,
+    Entity::Connections,
     Entity::Chats,
     Entity::Messages,
     Entity::Reactions,
@@ -73,9 +73,9 @@ impl Entity {
             &'static [IndexDefinition],
         );
         let (name, key, fields, indexes): DefinitionParts = match self {
-            Self::Sessions => (
-                "sessions",
-                &["sessionId"],
+            Self::Connections => (
+                "connections",
+                &["connectionId"],
                 &[
                     ("phoneNumber", S),
                     ("waId", S),
@@ -93,7 +93,7 @@ impl Entity {
             ),
             Self::Chats => (
                 "chats",
-                &["sessionId", "chatId"],
+                &["connectionId", "chatId"],
                 &[
                     ("jid", S),
                     ("kind", S),
@@ -115,13 +115,13 @@ impl Entity {
                 ],
                 &[IndexDefinition {
                     name: "by_activity",
-                    equals: &["sessionId"],
+                    equals: &["connectionId"],
                     sort: "lastMessageAt",
                 }],
             ),
             Self::Messages => (
                 "messages",
-                &["sessionId", "messageId"],
+                &["connectionId", "messageId"],
                 &[
                     ("chatId", S),
                     ("waMessageId", S),
@@ -152,43 +152,43 @@ impl Entity {
                 ],
                 &[IndexDefinition {
                     name: "by_chat",
-                    equals: &["sessionId", "chatId"],
+                    equals: &["connectionId", "chatId"],
                     sort: "timestamp",
                 }],
             ),
             Self::Reactions => (
                 "reactions",
-                &["sessionId", "messageId", "senderId"],
+                &["connectionId", "messageId", "senderId"],
                 &[("chatId", S), ("emoji", S), ("timestamp", N)],
                 &[IndexDefinition {
                     name: "by_message",
-                    equals: &["sessionId", "messageId"],
+                    equals: &["connectionId", "messageId"],
                     sort: "timestamp",
                 }],
             ),
             Self::Receipts => (
                 "receipts",
-                &["sessionId", "messageId", "recipientId"],
+                &["connectionId", "messageId", "recipientId"],
                 &[("chatId", S), ("status", S), ("timestamp", N)],
                 &[IndexDefinition {
                     name: "by_message",
-                    equals: &["sessionId", "messageId"],
+                    equals: &["connectionId", "messageId"],
                     sort: "timestamp",
                 }],
             ),
             Self::PollVotes => (
                 "poll_votes",
-                &["sessionId", "messageId", "voterId"],
+                &["connectionId", "messageId", "voterId"],
                 &[("chatId", S), ("selectedHashes", J), ("timestamp", N)],
                 &[IndexDefinition {
                     name: "by_message",
-                    equals: &["sessionId", "messageId"],
+                    equals: &["connectionId", "messageId"],
                     sort: "timestamp",
                 }],
             ),
             Self::Contacts => (
                 "contacts",
-                &["sessionId", "contactId"],
+                &["connectionId", "contactId"],
                 &[
                     ("jid", S),
                     ("lidJid", S),
@@ -206,7 +206,7 @@ impl Entity {
             ),
             Self::Groups => (
                 "groups",
-                &["sessionId", "groupId"],
+                &["connectionId", "groupId"],
                 &[
                     ("jid", S),
                     ("subject", S),
@@ -221,7 +221,7 @@ impl Entity {
             ),
             Self::GroupParticipants => (
                 "group_participants",
-                &["sessionId", "groupId", "participantId"],
+                &["connectionId", "groupId", "participantId"],
                 &[
                     ("jid", S),
                     ("phoneNumber", S),
@@ -232,13 +232,13 @@ impl Entity {
                 ],
                 &[IndexDefinition {
                     name: "by_group",
-                    equals: &["sessionId", "groupId"],
+                    equals: &["connectionId", "groupId"],
                     sort: "changedAt",
                 }],
             ),
             Self::Media => (
                 "media",
-                &["sessionId", "messageId"],
+                &["connectionId", "messageId"],
                 &[
                     ("chatId", S),
                     ("kind", S),
@@ -262,19 +262,19 @@ impl Entity {
             ),
             Self::Labels => (
                 "labels",
-                &["sessionId", "labelId"],
+                &["connectionId", "labelId"],
                 &[("name", S), ("color", N), ("orderIndex", N), ("deleted", B)],
                 &[],
             ),
             Self::LabelAssociations => (
                 "label_associations",
-                &["sessionId", "labelId", "targetKind", "targetId"],
+                &["connectionId", "labelId", "targetKind", "targetId"],
                 &[("labeled", B), ("changedAt", N)],
                 &[],
             ),
             Self::HistoryChunks => (
                 "history_chunks",
-                &["sessionId", "syncType", "chunkOrder"],
+                &["connectionId", "syncType", "chunkOrder"],
                 &[
                     ("progress", N),
                     ("conversationCount", N),
@@ -285,20 +285,20 @@ impl Entity {
             ),
             Self::HistoryProgress => (
                 "history_progress",
-                &["sessionId", "syncType"],
+                &["connectionId", "syncType"],
                 &[("progress", N), ("lastChunkOrder", N)],
                 &[],
             ),
             Self::Checkpoints => (
                 "checkpoints",
-                &["sessionId", "stream"],
+                &["connectionId", "stream"],
                 &[("cursor", S), ("position", J), ("updatedAt", N)],
                 &[],
             ),
-            Self::Events => ("events", &["sessionId", "eventId"], &[("type", S)], &[]),
+            Self::Events => ("events", &["connectionId", "eventId"], &[("type", S)], &[]),
             Self::Leases => (
                 "leases",
-                &["sessionId"],
+                &["connectionId"],
                 &[("owner", S), ("expiresAt", N)],
                 &[],
             ),

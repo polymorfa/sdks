@@ -25,7 +25,7 @@ STATUSES = [
 ]
 SUMMARY = {
     "id": "follow_up_1",
-    "numberId": "number_1",
+    "connectionId": "number_1",
     "status": "scheduled",
     "anchorKind": "read",
     "firstDeliveredAt": 1728000010000,

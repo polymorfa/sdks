@@ -15,10 +15,10 @@ use Polymorfa\{ApiResponse, RequestOptions, PasskeyModels, ValidationException};
  */
 final class Passkeys extends Resource
 {
-    private function path(string $session): string
+    private function path(string $connection): string
     {
         $this->server();
-        return '/messaging/'.$this->segment($session).'/passkey';
+        return '/messaging/'.$this->segment($connection).'/passkey';
     }
     private static function text(mixed $value, ?int $limit = null): bool
     {
@@ -59,45 +59,45 @@ final class Passkeys extends Resource
      * @param Issue $body
      * @return ApiResponse<array{success:true,data:Ticket}>
      */
-    public function issueChallenge(string $session, array $body = [], ?RequestOptions $options = null): ApiResponse
+    public function issueChallenge(string $connection, array $body = [], ?RequestOptions $options = null): ApiResponse
     {
-        $path = $this->path($session);
+        $path = $this->path($connection);
         self::checkIssue($body);
         self::budget($body);
         /** @var ApiResponse<array{success:true,data:Ticket}> */
         return $this->request('POST', $path.'/challenge', (object)$body, options:($options ?? new RequestOptions())->withoutRetries());
     }
     /** @return ApiResponse<array{success:true,data:Ticket}> */
-    public function getChallenge(string $session, string $ticketId, ?RequestOptions $options = null): ApiResponse
+    public function getChallenge(string $connection, string $ticketId, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:true,data:Ticket}> */
-        return $this->request('GET', $this->path($session).'/challenge/'.$this->segment($ticketId), options:$options);
+        return $this->request('GET', $this->path($connection).'/challenge/'.$this->segment($ticketId), options:$options);
     }
     /**
      * @param Submit $body
      * @return ApiResponse<array{success:true,data:AssertionResult}>
      */
-    public function submitAssertion(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function submitAssertion(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
-        $path = $this->path($session);
+        $path = $this->path($connection);
         self::checkSubmit($body);
         self::budget($body);
         /** @var ApiResponse<array{success:true,data:AssertionResult}> */
         return $this->request('POST', $path.'/assertion', $body, options:($options ?? new RequestOptions())->withoutRetries());
     }
     /** @return ApiResponse<array{success:true,data:Confirmation}> */
-    public function getConfirmation(string $session, ?RequestOptions $options = null): ApiResponse
+    public function getConfirmation(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:true,data:Confirmation}> */
-        return $this->request('GET', $this->path($session).'/confirmation', options:$options);
+        return $this->request('GET', $this->path($connection).'/confirmation', options:$options);
     }
     /**
      * @param Confirm $body
      * @return ApiResponse<array{success:true,data:Confirmation}>
      */
-    public function confirm(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function confirm(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
-        $path = $this->path($session);
+        $path = $this->path($connection);
         self::checkConfirm($body);
         self::budget($body);
         /** @var ApiResponse<array{success:true,data:Confirmation}> */

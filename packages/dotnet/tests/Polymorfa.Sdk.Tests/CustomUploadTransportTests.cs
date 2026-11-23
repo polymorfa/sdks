@@ -6,7 +6,7 @@ internal static class CustomUploadTransportTests
     private sealed class DelegateTransport(string name, Func<string, WhatsAppEncryptedUploadBody, CancellationToken, Task<WhatsAppUploadLocation>> send) : IWhatsAppMediaUploadTransport
     {
         public string Name => name;
-        public Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default) => send(session, body, cancellation);
+        public Task<WhatsAppUploadLocation> UploadAsync(string connection, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default) => send(connection, body, cancellation);
     }
     internal static async Task RunAsync()
     {
@@ -16,10 +16,10 @@ internal static class CustomUploadTransportTests
         var originalKey = prepared.Info.MediaKey.ToArray();
         var calls = 0;
         var name = "customer-" + Guid.NewGuid().ToString("N");
-        var transport = new DelegateTransport(name, async (session, body, cancellation) =>
+        var transport = new DelegateTransport(name, async (connection, body, cancellation) =>
         {
             calls++;
-            ResourceTests.Equal(session, "session");
+            ResourceTests.Equal(connection, "connection");
             ResourceTests.Equal(body.MediaType, WhatsAppUploadMediaType.Document);
             var publicProperties = typeof(WhatsAppEncryptedUploadBody).GetProperties().Select(p => p.Name).ToHashSet();
             ResourceTests.True(publicProperties.SetEquals(new[] { "MediaType", "FileEncSha256", "EncryptedLength" }));
@@ -40,20 +40,20 @@ internal static class CustomUploadTransportTests
             prepared.Info.MediaKey[0] ^= 255;
             return new("/custom.enc", "https://mmg.whatsapp.net/custom.enc");
         });
-        var result = await client.WhatsAppMedia.UploadAsync("session", prepared, transport);
+        var result = await client.WhatsAppMedia.UploadAsync("connection", prepared, transport);
         ResourceTests.Equal(result.Egress, name);
         ResourceTests.True(result.Info.MediaKey.SequenceEqual(originalKey));
         ResourceTests.Equal(calls, 1);
         var failure = new InvalidOperationException("Caller transport refused the upload.");
         var refused = new DelegateTransport("failure", (_, _, _) => Task.FromException<WhatsAppUploadLocation>(failure));
-        try { await client.WhatsAppMedia.UploadAsync("session", prepared, refused); throw new Exception("Custom error was lost."); }
+        try { await client.WhatsAppMedia.UploadAsync("connection", prepared, refused); throw new Exception("Custom error was lost."); }
         catch (InvalidOperationException error) { ResourceTests.True(ReferenceEquals(error, failure)); }
         using var cancelled = new CancellationTokenSource();
         cancelled.Cancel();
-        try { await client.WhatsAppMedia.UploadAsync("session", prepared, transport, cancelled.Token); throw new Exception("Precancelled transport was invoked."); }
+        try { await client.WhatsAppMedia.UploadAsync("connection", prepared, transport, cancelled.Token); throw new Exception("Precancelled transport was invoked."); }
         catch (PolymorfaCancelledException) { }
         ResourceTests.Equal(calls, 1);
-        try { await client.WhatsAppMedia.UploadAsync("", prepared, transport); throw new Exception("Empty session accepted."); }
+        try { await client.WhatsAppMedia.UploadAsync("", prepared, transport); throw new Exception("Empty connection accepted."); }
         catch (PolymorfaConfigurationException) { }
         ResourceTests.Equal(calls, 1);
 
@@ -70,14 +70,14 @@ internal static class CustomUploadTransportTests
             committed = true;
             return new("/must-not-finalize", "https://mmg.whatsapp.net/must-not-finalize");
         });
-        try { await client.WhatsAppMedia.UploadAsync("session", changed, changedTransport); throw new Exception("Changed source finalized."); }
+        try { await client.WhatsAppMedia.UploadAsync("connection", changed, changedTransport); throw new Exception("Changed source finalized."); }
         catch (PolymorfaMediaIntegrityException error) { ResourceTests.Equal(error.Code, "media_enc_hash_mismatch"); }
         ResourceTests.True(!committed && emitted < changed.Info.EncryptedLength);
 
         using var stop = new CancellationTokenSource();
         var started = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         var pending = new DelegateTransport("pending", async (_, _, cancellation) => { started.TrySetResult(); await Task.Delay(Timeout.Infinite, cancellation); throw new Exception("Pending upload resumed without cancellation."); });
-        var work = client.WhatsAppMedia.UploadAsync("session", prepared, pending, stop.Token);
+        var work = client.WhatsAppMedia.UploadAsync("connection", prepared, pending, stop.Token);
         await started.Task.WaitAsync(TimeSpan.FromSeconds(2));
         stop.Cancel();
         try { await work; throw new Exception("Inflight custom upload ignored cancellation."); }

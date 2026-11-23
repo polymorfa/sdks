@@ -40,7 +40,7 @@ it.each([
   "sends the exact %s mode to the pinned operation",
   async (accountType) => {
     const body = {
-      session: "test /a",
+      connection: "test /a",
       accountType,
       primaryPlatform: accountType === "meta_cloud" ? null : "android",
       changed: true,
@@ -68,7 +68,7 @@ it.each([
     );
     expect(
       contract.sources.messaging.paths[
-        "/messaging/{session}/phone/account-mode"
+        "/messaging/{connection}/phone/account-mode"
       ].put.operationId,
     ).toBe("setTestingAccountMode");
   },
@@ -76,7 +76,7 @@ it.each([
 
 it("preserves an explicit phone platform and a completed no-op", async () => {
   const body = {
-    session: "demo",
+    connection: "demo",
     accountType: "business_app",
     primaryPlatform: "ios",
     changed: false,
@@ -124,7 +124,7 @@ it("refuses a client token without sending a request", () => {
 
 it("rejects malformed result types", async () => {
   const f = fixture({
-    session: "demo",
+    connection: "demo",
     accountType: "business_app",
     primaryPlatform: "android",
     changed: "false",
@@ -161,7 +161,7 @@ it("sends QuickLink testing mode and platform without dropping simulation fields
     data: {
       id: "ql",
       url: "https://example.test/ql",
-      session: "demo",
+      connection: "demo",
       expiresAt: null,
     },
   });
@@ -195,11 +195,13 @@ it("rejects legacy QuickLink modes and cloud phone platforms before I/O", async 
 });
 
 it.each(["", "x".repeat(257)])(
-  "refuses an invalid session length before transport",
-  (session) => {
+  "refuses an invalid connection length before transport",
+  (connection) => {
     const f = fixture({});
     expect(() =>
-      f.client.testing.setAccountMode(session, { accountType: "business_app" }),
+      f.client.testing.setAccountMode(connection, {
+        accountType: "business_app",
+      }),
     ).toThrow();
     expect(f.fetch).not.toHaveBeenCalled();
   },

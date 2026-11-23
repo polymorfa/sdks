@@ -215,14 +215,14 @@ pub struct PreviewProjectTemplateRequest {
 }
 #[derive(Clone, Debug, Serialize)]
 pub struct SubmitProjectTemplateRequest {
-    pub session: String,
+    pub connection: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CloudTemplate {
     pub id: String,
     pub tenant_id: String,
-    pub session: String,
+    pub connection: String,
     pub waba_id: String,
     pub name: String,
     pub language: String,
@@ -263,11 +263,11 @@ fn project_templates(project: &str) -> String {
 fn project_template(project: &str, id: &str) -> String {
     format!("{}/{}", project_templates(project), encode(id))
 }
-fn cloud_templates(session: &str) -> String {
-    format!("/messaging/{}/templates", encode(session))
+fn cloud_templates(connection: &str) -> String {
+    format!("/messaging/{}/templates", encode(connection))
 }
-fn cloud_template(session: &str, name: &str) -> String {
-    format!("{}/{}", cloud_templates(session), encode(name))
+fn cloud_template(connection: &str, name: &str) -> String {
+    format!("{}/{}", cloud_templates(connection), encode(name))
 }
 fn language_query(language: Option<&str>) -> Vec<(&'static str, String)> {
     language
@@ -378,15 +378,15 @@ impl Templates<'_> {
 impl CloudTemplates<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<CloudTemplate>>>> {
         self.0.server()?;
-        self.0.get(&cloud_templates(session), options).await
+        self.0.get(&cloud_templates(connection), options).await
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         name: &str,
         language: Option<&str>,
         options: RequestOptions,
@@ -395,7 +395,7 @@ impl CloudTemplates<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &cloud_template(session, name),
+                &cloud_template(connection, name),
                 &language_query(language),
                 None,
                 options,
@@ -404,7 +404,7 @@ impl CloudTemplates<'_> {
     }
     pub async fn create(
         &self,
-        session: &str,
+        connection: &str,
         body: &CreateCloudTemplateRequest,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CloudTemplate>>> {
@@ -413,7 +413,7 @@ impl CloudTemplates<'_> {
         self.0
             .request(
                 Method::POST,
-                &cloud_templates(session),
+                &cloud_templates(connection),
                 &[],
                 Some(body),
                 options,
@@ -422,7 +422,7 @@ impl CloudTemplates<'_> {
     }
     pub async fn update(
         &self,
-        session: &str,
+        connection: &str,
         name: &str,
         body: &EditCloudTemplateRequest,
         language: Option<&str>,
@@ -433,7 +433,7 @@ impl CloudTemplates<'_> {
         self.0
             .request(
                 Method::PATCH,
-                &cloud_template(session, name),
+                &cloud_template(connection, name),
                 &language_query(language),
                 Some(body),
                 options,
@@ -442,7 +442,7 @@ impl CloudTemplates<'_> {
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         name: &str,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
@@ -451,7 +451,7 @@ impl CloudTemplates<'_> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &cloud_template(session, name),
+                &cloud_template(connection, name),
                 &[],
                 None,
                 options,

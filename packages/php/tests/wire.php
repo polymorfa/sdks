@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 $root = dirname(__DIR__, 3);
-$fixtures = json_decode(file_get_contents($root . '/contracts/fixtures/behavior.json'), true, flags: JSON_THROW_ON_ERROR);
+$fixtures = json_decode(file_get_contents($root . '/contracts/fixtures/connections/behavior.json'), true, flags: JSON_THROW_ON_ERROR);
 $server = proc_open(['node', $root . '/scripts/sdk-fixture-server.mjs', '--port', '0'], [0 => ['pipe', 'r'], 1 => ['pipe', 'w'], 2 => ['pipe', 'w']], $pipes);
 if (!is_resource($server)) {
     throw new RuntimeException('Could not start shared fixture server.');
@@ -26,9 +26,9 @@ try {
         );
         $client = new Polymorfa\MessagingClient(Polymorfa\Credential::teamApiKey($fixtures['teamCredential']), baseUrl: $url);
         $run = static function () use ($client, $scenario, $request, $options) {
-            if ($scenario['id'] === 'sessions-list') {
-                $result = $client->sessions->list($options);
-                check($result->data['data'][0]['sessionId'] === 'session_fixture', 'Typed sessions wire response');
+            if ($scenario['id'] === 'connections-list') {
+                $result = $client->connections->list($options);
+                check($result->data['data'][0]['connectionId'] === 'session_fixture', 'Typed connections wire response');
                 return $result;
             }
             if ($scenario['id'] === 'message-send') {

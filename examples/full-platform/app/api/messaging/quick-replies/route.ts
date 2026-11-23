@@ -7,24 +7,24 @@ import {
   type Body,
 } from "../../../../lib/route.js";
 
-export const GET = route("agent", ({ body, sessionOf }) =>
-  messaging().quickReplies.list(sessionOf(body)),
+export const GET = route("agent", ({ body, connectionOf }) =>
+  messaging().quickReplies.list(connectionOf(body)),
 );
 
-export const POST = route("agent", async ({ body, sessionOf }) => {
+export const POST = route("agent", async ({ body, connectionOf }) => {
   const quickReplies = messaging().quickReplies;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   switch (action(body)) {
     case "create":
-      return quickReplies.create(session, reply(body));
+      return quickReplies.create(connection, reply(body));
     case "replace":
       return quickReplies.replace(
-        session,
+        connection,
         text(body, "quickReplyId"),
         reply(body),
       );
     case "delete":
-      return quickReplies.delete(session, text(body, "quickReplyId"));
+      return quickReplies.delete(connection, text(body, "quickReplyId"));
     default:
       return unknownAction(action(body));
   }

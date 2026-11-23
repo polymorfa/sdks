@@ -1,4 +1,4 @@
-"""Observation policies, Hybrid Link controls and saved session defaults."""
+"""Observation policies, Hybrid Link controls and saved connection defaults."""
 
 from typing import Literal
 from urllib.parse import unquote
@@ -6,10 +6,10 @@ from urllib.parse import unquote
 from typing_extensions import NotRequired, TypedDict
 
 from . import campaign_contract_validation as V
-from . import session_delivery_validation as D
+from . import connection_delivery_validation as D
 from .configuration import ConfigurationView
 from .messaging import O, Resource, segment
-from .models import Envelope, SessionUpdate
+from .models import ConnectionUpdate, Envelope
 from .platform import PlatformResource
 from .transport import ApiResponse, QueryValue, RequestOptions
 
@@ -39,8 +39,8 @@ class ObservationOverrides(TypedDict):
     quickReplyMode: NotRequired[ObservationMode | Literal["inherit"]]
 
 
-class SessionObservationPolicy(TypedDict):
-    sessionName: str
+class ConnectionObservationPolicy(TypedDict):
+    connectionName: str
     projectId: str
     project: ObservationValues
     override: ObservationOverrides
@@ -55,11 +55,11 @@ class ObservationPolicies(Resource):
             "GET", f"/messaging/projects/{segment(project_id)}/observation-policy", options=options
         )
 
-    async def retrieve_for_session(
-        self, session: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[SessionObservationPolicy]]:
+    async def retrieve_for_connection(
+        self, connection: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[ConnectionObservationPolicy]]:
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/observation-policy", options=options
+            "GET", f"/messaging/{segment(connection)}/observation-policy", options=options
         )
 
 
@@ -72,18 +72,18 @@ class ProjectScope(TypedDict):
     projectId: str
 
 
-class SessionScope(TypedDict):
-    scope: Literal["session"]
+class ConnectionScope(TypedDict):
+    scope: Literal["connection"]
     projectId: str
-    session: str
+    connection: str
 
 
-RoutingScope = TeamScope | ProjectScope | SessionScope
+RoutingScope = TeamScope | ProjectScope | ConnectionScope
 Connection = Literal["linked_devices", "official_api"]
 
 
 class RoutingPolicy(TypedDict):
-    scope: Literal["team", "project", "session"]
+    scope: Literal["team", "project", "connection"]
     revision: str
     prefer: Connection | None
     allowedTransports: list[Connection]
@@ -119,8 +119,8 @@ def _query(scope: RoutingScope) -> dict[str, QueryValue]:
     query: dict[str, QueryValue] = {"scope": scope["scope"]}
     if scope["scope"] != "team":
         query["projectId"] = scope["projectId"]
-    if scope["scope"] == "session":
-        query["session"] = scope["session"]
+    if scope["scope"] == "connection":
+        query["connection"] = scope["connection"]
     return query
 
 
@@ -142,23 +142,23 @@ class HybridLink(Resource):
         )
 
     async def state(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[LinkState]]:
         self._server()
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/hybrid-link", options=options
+            "GET", f"/messaging/{segment(connection)}/hybrid-link", options=options
         )
 
     async def set_paused(
-        self, session: str, body: SetLinkPause, *, options: RequestOptions = O
+        self, connection: str, body: SetLinkPause, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[LinkPause]]:
         self._server()
         return await self._request(
-            "PUT", f"/messaging/{segment(session)}/hybrid-link", body=body, options=options
+            "PUT", f"/messaging/{segment(connection)}/hybrid-link", body=body, options=options
         )
 
 
-class SessionConfigurations(PlatformResource):
+class ConnectionConfigurations(PlatformResource):
     @property
     def _project_id(self) -> str | None:
         return (
@@ -170,13 +170,13 @@ class SessionConfigurations(PlatformResource):
     async def retrieve(self, *, options: RequestOptions = O) -> ApiResponse[ConfigurationView]:
         return await self._unwrapped(
             "GET",
-            "/platform/session-configuration",
+            "/platform/connection-configuration",
             query={"projectId": self._project_id},
             options=options,
         )
 
     async def update(
-        self, body: SessionUpdate, *, options: RequestOptions = O
+        self, body: ConnectionUpdate, *, options: RequestOptions = O
     ) -> ApiResponse[ConfigurationView]:
         options = D.options(options, D.configuration_intent(body))
         wire: dict[str, object] = {
@@ -186,7 +186,7 @@ class SessionConfigurations(PlatformResource):
         if self._project_id is not None:
             wire["projectId"] = self._project_id
         return await self._unwrapped(
-            "PUT", "/platform/session-configuration", body=V.capture(wire), options=options
+            "PUT", "/platform/connection-configuration", body=V.capture(wire), options=options
         )
 
 

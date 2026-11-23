@@ -1,4 +1,4 @@
-//! Test-number account modes. This operation is restricted to trusted servers.
+//! Test Connection account modes. This operation is restricted to trusted servers.
 pub use crate::webhook_payloads::WhatsAppAccountType;
 use crate::{
     transport::{encode, HttpTransport},
@@ -29,7 +29,7 @@ pub struct TestingAccountModeRequest {
 #[derive(Clone, Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestingAccountMode {
-    pub session: String,
+    pub connection: String,
     pub account_type: WhatsAppAccountType,
     #[serde(deserialize_with = "crate::campaign_contracts::required_nullable")]
     pub primary_platform: Option<TestingPrimaryPlatform>,
@@ -48,18 +48,18 @@ pub(crate) fn validate(
 impl crate::onboarding::Testing<'_> {
     pub async fn set_account_mode(
         &self,
-        session: &str,
+        connection: &str,
         input: &TestingAccountModeRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<TestingAccountMode>> {
         let http: &HttpTransport = self.0;
         http.server()?;
-        crate::campaign_contract_validation::text(session, 1, 256, "session")?;
+        crate::campaign_contract_validation::text(connection, 1, 256, "connection")?;
         validate(Some(&input.account_type), input.primary_platform.as_ref())?;
         let response: ApiResponse<TestingAccountMode> = http
             .request(
                 reqwest::Method::PUT,
-                &format!("/messaging/{}/phone/account-mode", encode(session)),
+                &format!("/messaging/{}/phone/account-mode", encode(connection)),
                 &[],
                 Some(input),
                 options,

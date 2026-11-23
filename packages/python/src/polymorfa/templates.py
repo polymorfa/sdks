@@ -144,7 +144,7 @@ class PreviewTemplate(TypedDict, total=False):
 
 
 class SubmitTemplate(TypedDict):
-    session: str
+    connection: str
 
 
 class Templates(Resource):
@@ -232,7 +232,7 @@ class Templates(Resource):
 class CloudTemplate(TypedDict):
     id: str
     tenantId: str
-    session: str
+    connection: str
     wabaId: str
     name: str
     language: str
@@ -276,38 +276,43 @@ class AcceptedCloudTemplate(TypedDict):
 
 class CloudTemplates(Resource):
     async def list(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[builtins.list[CloudTemplate]]]:
         self._server()
         return await self._request(
-            "GET", f"/messaging/{segment(session)}/templates", options=options
+            "GET", f"/messaging/{segment(connection)}/templates", options=options
         )
 
     async def retrieve(
-        self, session: str, name: str, *, language: str | None = None, options: RequestOptions = O
+        self,
+        connection: str,
+        name: str,
+        *,
+        language: str | None = None,
+        options: RequestOptions = O,
     ) -> ApiResponse[Envelope[CloudTemplate]]:
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/templates/{segment(name)}",
+            f"/messaging/{segment(connection)}/templates/{segment(name)}",
             query={"language": language},
             options=options,
         )
 
     async def create(
-        self, session: str, body: CreateCloudTemplate, *, options: RequestOptions = O
+        self, connection: str, body: CreateCloudTemplate, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CloudTemplate]]:
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/templates",
+            f"/messaging/{segment(connection)}/templates",
             body=body,
             options=replace(options, max_network_retries=0),
         )
 
     async def update(
         self,
-        session: str,
+        connection: str,
         name: str,
         body: EditCloudTemplate,
         *,
@@ -317,18 +322,18 @@ class CloudTemplates(Resource):
         self._server()
         return await self._request(
             "PATCH",
-            f"/messaging/{segment(session)}/templates/{segment(name)}",
+            f"/messaging/{segment(connection)}/templates/{segment(name)}",
             query={"language": language},
             body=body,
             options=replace(options, max_network_retries=0),
         )
 
     async def delete(
-        self, session: str, name: str, *, options: RequestOptions = O
+        self, connection: str, name: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         self._server()
         return await self._request(
             "DELETE",
-            f"/messaging/{segment(session)}/templates/{segment(name)}",
+            f"/messaging/{segment(connection)}/templates/{segment(name)}",
             options=replace(options, max_network_retries=0),
         )

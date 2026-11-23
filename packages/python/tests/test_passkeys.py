@@ -8,7 +8,9 @@ import pytest
 from polymorfa import AsyncMessagingClient, Credential, RequestOptions, errors
 
 F = json.loads(
-    (Path(__file__).parents[3] / "contracts/fixtures/passkeys.candidate.json").read_text()
+    (
+        Path(__file__).parents[3] / "contracts/fixtures/connections/passkeys.candidate.json"
+    ).read_text()
 )
 
 
@@ -40,15 +42,15 @@ async def _wire():
         ) as c:
             p = c.passkeys
             if i == 0:
-                r = await p.issue_challenge(F["session"], F["issue"])
+                r = await p.issue_challenge(F["connection"], F["issue"])
             elif i == 1:
-                r = await p.get_challenge(F["session"], F["ticketId"])
+                r = await p.get_challenge(F["connection"], F["ticketId"])
             elif i == 2:
-                r = await p.submit_assertion(F["session"], F["assertion"])
+                r = await p.submit_assertion(F["connection"], F["assertion"])
             elif i == 3:
-                r = await p.get_confirmation(F["session"])
+                r = await p.get_confirmation(F["connection"])
             else:
-                r = await p.confirm(F["session"], F["confirm"])
+                r = await p.confirm(F["connection"], F["confirm"])
             assert r.data == {"success": True, "data": reply}
 
 

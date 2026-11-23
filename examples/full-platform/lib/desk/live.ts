@@ -1,6 +1,6 @@
 import type { MessageAttachment } from "@polymorfa/ui-kit";
 import type {
-  PlatformSession,
+  PlatformConnection,
   ProjectTemplate,
   SendMessageRequest,
 } from "@polymorfa/sdk";
@@ -44,7 +44,7 @@ import {
 const COLORS = ["#10b981", "#6366f1", "#f59e0b", "#ec4899", "#0ea5e9"];
 
 /**
- * Data layer backed by the Polymorfa SDK. WhatsApp resources (sessions,
+ * Data layer backed by the Polymorfa SDK. WhatsApp resources (connections,
  * labels, quick replies, contacts, templates, campaigns, presence, sends) go
  * to the Messaging API. Tickets are this app's own records: they live in a
  * process-local store fed by webhooks and sends, standing in for your database.
@@ -64,8 +64,8 @@ export class PolymorfaDesk implements DeskData {
     }
   }
 
-  get #session(): string {
-    return env.session();
+  get #connection(): string {
+    return env.connection();
   }
 
   async bootstrap(operator: Operator): Promise<Bootstrap> {
@@ -89,7 +89,7 @@ export class PolymorfaDesk implements DeskData {
   /** Records an inbound WhatsApp message (called from the webhook handler). */
   ingestInbound(input: InboundMessage): void {
     const contact = this.#store.ensureContact(input.phone, input.name);
-    const ticket = this.#store.openTicket(contact, input.session);
+    const ticket = this.#store.openTicket(contact, input.connection);
     this.#store.upsert({
       id: input.id,
       ticketId: ticket.id,
@@ -121,15 +121,17 @@ export class PolymorfaDesk implements DeskData {
         "Enter the number in E.164 format, like +14155550123.",
       );
     }
-    const session = input.connectionId ?? this.#session;
+    const connection = input.connectionId ?? this.#connection;
     // Confirm the number is on WhatsApp before opening a ticket.
-    const checked = await messaging().contacts.check(session, input.phone);
+    const checked = await messaging().contacts.check(connection, input.phone);
     if (!checked.data.data.some((result) => result.exists)) {
       throw new InputError("This number is not on WhatsApp.");
     }
     const contact = this.#store.ensureContact(input.phone);
     const agent = this.#store.agentFor(operator);
-    return this.#store.openTicket(contact, session, { assigneeId: agent.id });
+    return this.#store.openTicket(contact, connection, {
+      assigneeId: agent.id,
+    });
   }
 
   async updateTicket(
@@ -263,7 +265,7 @@ export class PolymorfaDesk implements DeskData {
   }
 
   async listContacts(search?: string): Promise<readonly DeskContact[]> {
-    const response = await messaging().contacts.list(this.#session);
+    const response = await messaging().contacts.list(this.#connection);
     for (const contact of response.data.data) {
       if (contact.phoneNumber === undefined) continue;
       const known = this.#store.ensureContact(
@@ -288,13 +290,13 @@ export class PolymorfaDesk implements DeskData {
     if (patch.blocked !== undefined && patch.blocked !== contact.blocked) {
       await (patch.blocked ? contacts.block : contacts.unblock).call(
         contacts,
-        this.#session,
+        this.#connection,
         contact.phone,
       );
     }
     if (patch.tags !== undefined) {
       // Labels are WhatsApp Business chat labels; replace the chat's full set.
-      await messaging().labels.replaceForChat(this.#session, contact.phone, {
+      await messaging().labels.replaceForChat(this.#connection, contact.phone, {
         labels: patch.tags,
       });
     }
@@ -305,7 +307,7 @@ export class PolymorfaDesk implements DeskData {
     const valid = rows.filter((row) => isE164(row.phone));
     if (valid.length === 0) return { imported: 0, skipped: rows.length };
     const checked = await messaging().contacts.check(
-      this.#session,
+      this.#connection,
       valid.map((row) => row.phone),
     );
     const onWhatsApp = new Set(
@@ -330,7 +332,7 @@ export class PolymorfaDesk implements DeskData {
   }
 
   async listQuickReplies(): Promise<readonly QuickReply[]> {
-    const response = await messaging().quickReplies.list(this.#session);
+    const response = await messaging().quickReplies.list(this.#connection);
     return response.data.data.quickReplies.map(({ id, shortcut, message }) => ({
       id,
       shortcut,
@@ -347,18 +349,18 @@ export class PolymorfaDesk implements DeskData {
     const quickReplies = messaging().quickReplies;
     const response =
       input.id === undefined
-        ? await quickReplies.create(this.#session, body)
-        : await quickReplies.replace(this.#session, input.id, body);
+        ? await quickReplies.create(this.#connection, body)
+        : await quickReplies.replace(this.#connection, input.id, body);
     const { id, shortcut, message } = response.data.data;
     return { id, shortcut, message };
   }
 
   async deleteQuickReply(id: string) {
-    await messaging().quickReplies.delete(this.#session, id);
+    await messaging().quickReplies.delete(this.#connection, id);
   }
 
   async listTags(): Promise<readonly Tag[]> {
-    const response = await messaging().labels.list(this.#session);
+    const response = await messaging().labels.list(this.#connection);
     const data = response.data.data;
     const labels = "labels" in data ? data.labels : data;
     return labels.map((label) => ({
@@ -372,13 +374,13 @@ export class PolymorfaDesk implements DeskData {
   async saveTag(input: { id?: string; name: string; color: number }) {
     const labels = messaging().labels;
     if (input.id === undefined) {
-      const created = await labels.create(this.#session, {
+      const created = await labels.create(this.#connection, {
         name: input.name,
         color: input.color,
       });
       return { ...created.data.data, chatCount: 0 };
     }
-    await labels.update(this.#session, input.id, {
+    await labels.update(this.#connection, input.id, {
       name: input.name,
       color: input.color,
     });
@@ -386,15 +388,15 @@ export class PolymorfaDesk implements DeskData {
   }
 
   async deleteTag(id: string) {
-    await messaging().labels.delete(this.#session, id);
+    await messaging().labels.delete(this.#connection, id);
   }
 
   async listConnections(): Promise<readonly Connection[]> {
-    const response = await messaging().sessions.list();
-    const sessions = response.data.data;
+    const response = await messaging().connections.list();
+    const connections = response.data.data;
     const health = await this.#health();
-    return sessions.map((session, index) =>
-      toConnection(session, index, health.get(session.name)),
+    return connections.map((connection, index) =>
+      toConnection(connection, index, health.get(connection.name)),
     );
   }
 
@@ -408,7 +410,7 @@ export class PolymorfaDesk implements DeskData {
         limit: 100,
       });
       for (const number of page.data.data)
-        scores.set(number.session, number.health);
+        scores.set(number.connection, number.health);
     } catch (error) {
       console.warn("BanSafe health unavailable", error);
     }
@@ -420,27 +422,27 @@ export class PolymorfaDesk implements DeskData {
     action: ConnectionAction,
     phone?: string,
   ): Promise<Readonly<Record<string, unknown>>> {
-    const sessions = messaging().sessions;
+    const connections = messaging().connections;
     switch (action) {
       case "restart":
-        return { ...(await sessions.restart(connectionId)).data };
+        return { ...(await connections.restart(connectionId)).data };
       case "logout":
-        return { ...(await sessions.logout(connectionId)).data };
+        return { ...(await connections.logout(connectionId)).data };
       case "delete":
-        return { ...(await sessions.delete(connectionId)).data };
+        return { ...(await connections.delete(connectionId)).data };
       case "start":
-        return { ...(await sessions.start(connectionId)).data };
+        return { ...(await connections.start(connectionId)).data };
       case "stop":
-        return { ...(await sessions.stop(connectionId)).data };
+        return { ...(await connections.stop(connectionId)).data };
       case "qr":
-        return { ...(await sessions.qr(connectionId)).data.data };
+        return { ...(await connections.qr(connectionId)).data.data };
       case "pairingCode":
         if (phone === undefined || !isE164(phone)) {
           throw new InputError("Enter the phone number in E.164 format.");
         }
         return {
-          ...(await sessions.requestPairingCode(connectionId, { phone })).data
-            .data,
+          ...(await connections.requestPairingCode(connectionId, { phone }))
+            .data.data,
         };
     }
   }
@@ -691,23 +693,23 @@ function toSendRequest(
 }
 
 function toConnection(
-  session: PlatformSession,
+  connection: PlatformConnection,
   index: number,
   health: number | null | undefined,
 ): Connection {
-  const score = health ?? (session.status === "connected" ? 90 : 50);
+  const score = health ?? (connection.status === "connected" ? 90 : 50);
   const level: HealthLevel =
     score >= 80 ? "healthy" : score >= 60 ? "watch" : "at_risk";
   return {
-    id: session.name,
-    name: session.name,
-    phone: session.phone,
-    platform: session.platform,
-    isBusiness: session.isBusiness,
-    status: session.status,
+    id: connection.name,
+    name: connection.name,
+    phone: connection.phone,
+    platform: connection.platform,
+    isBusiness: connection.isBusiness,
+    status: connection.status,
     color: COLORS[index % COLORS.length] ?? "#10b981",
-    messageCount: session.messageCount,
-    lastActiveAt: session.lastActiveAt,
+    messageCount: connection.messageCount,
+    lastActiveAt: connection.lastActiveAt,
     health: { score, level },
   };
 }

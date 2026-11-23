@@ -38,7 +38,7 @@ func (e *Engine) ApplyEvent(ctx context.Context, event polymorfa.WebhookEvent, o
 		if err := validateHistoryDescriptor(payload); err != nil {
 			return ApplyResult{}, err
 		}
-		if exists, err := e.HasEvent(ctx, event.Session, event.ID); err != nil || exists {
+		if exists, err := e.HasEvent(ctx, event.Connection, event.ID); err != nil || exists {
 			return ApplyResult{}, err
 		}
 		batch, err := ReduceEvent(event)
@@ -55,7 +55,7 @@ func (e *Engine) ApplyEvent(ctx context.Context, event polymorfa.WebhookEvent, o
 		if err != nil || !validDescriptorChunk(chunk) {
 			return ApplyResult{}, storageError("storage_history_descriptor_decode_failed")
 		}
-		history, err := ReduceHistoryChunk(HistoryInput{SessionID: event.Session, Chunk: chunk, Identities: &HistoryIdentityIndex{}})
+		history, err := ReduceHistoryChunk(HistoryInput{ConnectionID: event.Connection, Chunk: chunk, Identities: &HistoryIdentityIndex{}})
 		if err != nil {
 			return ApplyResult{}, storageError("storage_history_descriptor_decode_failed")
 		}
@@ -69,7 +69,7 @@ func (e *Engine) ApplyEvent(ctx context.Context, event polymorfa.WebhookEvent, o
 	if event.Event == "history.sync" && options.DecodeHistory != nil {
 		payload := object(jsonPayload(event.Payload))
 		if payload["kind"] != "history" {
-			exists, err := e.HasEvent(ctx, event.Session, event.ID)
+			exists, err := e.HasEvent(ctx, event.Connection, event.ID)
 			if err != nil {
 				return ApplyResult{}, err
 			}
@@ -81,7 +81,7 @@ func (e *Engine) ApplyEvent(ctx context.Context, event polymorfa.WebhookEvent, o
 				return ApplyResult{}, err
 			}
 			if chunk != nil {
-				history, err := ReduceHistoryChunk(HistoryInput{SessionID: event.Session, Chunk: chunk, Identities: HistoryIndexFromPayload(payload)})
+				history, err := ReduceHistoryChunk(HistoryInput{ConnectionID: event.Connection, Chunk: chunk, Identities: HistoryIndexFromPayload(payload)})
 				if err != nil {
 					return ApplyResult{}, err
 				}
@@ -119,13 +119,13 @@ func (s APIEventSource) Acknowledge(ctx context.Context, item polymorfa.EventStr
 }
 
 type SyncOptions struct {
-	CheckpointSession string
-	CheckpointStream  string
-	Params            polymorfa.EventStreamParams
-	RequirePayload    *bool
-	Apply             ApplyEventOptions
-	OnApplied         func(polymorfa.EventStreamItem, ApplyResult) error
-	Now               func() time.Time
+	CheckpointConnection string
+	CheckpointStream     string
+	Params               polymorfa.EventStreamParams
+	RequirePayload       *bool
+	Apply                ApplyEventOptions
+	OnApplied            func(polymorfa.EventStreamItem, ApplyResult) error
+	Now                  func() time.Time
 }
 
 // SyncToStorage blocks until the source ends, fails, or ctx is cancelled. It
@@ -138,14 +138,14 @@ func SyncToStorage(ctx context.Context, source EventSource, target *Engine, opti
 	if source == nil || target == nil {
 		return invalid()
 	}
-	session, stream := options.CheckpointSession, options.CheckpointStream
-	if session == "" {
-		session = "*"
+	connection, stream := options.CheckpointConnection, options.CheckpointStream
+	if connection == "" {
+		connection = "*"
 	}
 	if stream == "" {
 		stream = "events"
 	}
-	saved, err := target.GetCheckpoint(ctx, session, stream)
+	saved, err := target.GetCheckpoint(ctx, connection, stream)
 	if err != nil {
 		return err
 	}
@@ -209,7 +209,7 @@ func SyncToStorage(ctx context.Context, source EventSource, target *Engine, opti
 			}
 		}
 		updated := float64(now().UnixMilli())
-		_, err = target.Apply(owned, Batch{SessionID: session, Operations: []Operation{{Kind: "checkpoint", SessionID: session, Stream: stream, Cursor: item.Cursor, ExpectedCursor: expected, Position: nil, UpdatedAt: &updated}}})
+		_, err = target.Apply(owned, Batch{ConnectionID: connection, Operations: []Operation{{Kind: "checkpoint", ConnectionID: connection, Stream: stream, Cursor: item.Cursor, ExpectedCursor: expected, Position: nil, UpdatedAt: &updated}}})
 		if err != nil {
 			return err
 		}

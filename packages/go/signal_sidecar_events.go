@@ -13,22 +13,22 @@ import (
 // SignalEventStream reads one connection. There is no resume cursor, automatic
 // reconnect or automatic ACK in the pinned sidecar service contract.
 type SignalEventStream struct {
-	body    io.ReadCloser
-	cancel  context.CancelFunc
-	ctx     context.Context
-	session string
-	mu      sync.Mutex
-	started bool
+	body       io.ReadCloser
+	cancel     context.CancelFunc
+	ctx        context.Context
+	connection string
+	mu         sync.Mutex
+	started    bool
 }
 
 func (*SignalEventStream) String() string               { return "SignalEventStream[redacted]" }
 func (s *SignalEventStream) GoString() string           { return s.String() }
 func (*SignalEventStream) MarshalJSON() ([]byte, error) { return []byte(`{"redacted":true}`), nil }
 func (s *SignalEventStream) Close() error               { s.cancel(); return s.body.Close() }
-func (c *SignalSidecarClient) OpenEvents(ctx context.Context, sessionID string) (*SignalEventStream, error) {
+func (c *SignalSidecarClient) OpenEvents(ctx context.Context, connectionID string) (*SignalEventStream, error) {
 	path := "/v1/events"
-	if sessionID != "" {
-		path += "?session_id=" + url.QueryEscape(sessionID)
+	if connectionID != "" {
+		path += "?connection_id=" + url.QueryEscape(connectionID)
 	}
 	response, cancel, err := c.open(ctx, "GET", path, nil, true, true)
 	if err != nil {
@@ -44,7 +44,7 @@ func (c *SignalSidecarClient) OpenEvents(ctx context.Context, sessionID string) 
 		cancel()
 		return nil, signalInvalid()
 	}
-	return &SignalEventStream{body: response.Body, cancel: cancel, ctx: response.Request.Context(), session: sessionID}, nil
+	return &SignalEventStream{body: response.Body, cancel: cancel, ctx: response.Request.Context(), connection: connectionID}, nil
 }
 func (s *SignalEventStream) Items() iter.Seq2[SignalEvent, error] {
 	return func(yield func(SignalEvent, error) bool) {
@@ -72,7 +72,7 @@ func (s *SignalEventStream) Items() iter.Seq2[SignalEvent, error] {
 			if line == "" {
 				if len(lines) > 0 {
 					event, err := parseSignalEvent([]byte(strings.Join(lines, "\n")))
-					if err != nil || event.ID != id || event.Type != eventType || (s.session != "" && event.SessionID != s.session) {
+					if err != nil || event.ID != id || event.Type != eventType || (s.connection != "" && event.ConnectionID != s.connection) {
 						yield(SignalEvent{}, signalInvalid())
 						return
 					}

@@ -46,10 +46,10 @@ async function messagingServer(): Promise<{
   };
 }
 
-describe("MessagingClient sessions", () => {
-  it("lists sessions and creates new ones through QuickLink", async () => {
+describe("MessagingClient connections", () => {
+  it("lists connections and creates new ones through QuickLink", async () => {
     const { client, requests } = await messagingServer();
-    await client.sessions.list();
+    await client.connections.list();
     await client.quickLinks.create({
       projectId: "project_1",
       configuration: {
@@ -58,36 +58,36 @@ describe("MessagingClient sessions", () => {
       },
     });
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/sessions",
+      "GET /platform/connections",
       "POST /messaging/quicklinks",
     ]);
-    expect(client.sessions).not.toHaveProperty("create");
+    expect(client.connections).not.toHaveProperty("create");
   });
 
-  it("encodes session identifiers for lifecycle and account operations", async () => {
+  it("encodes connection identifiers for lifecycle and account operations", async () => {
     const { client, requests } = await messagingServer();
     const id = "support/eu";
-    await client.sessions.retrieve(id);
-    await client.sessions.update(id, {
+    await client.connections.retrieve(id);
+    await client.connections.update(id, {
       revision: 0,
       configuration: { set: { historySync: { mode: "deliver" } } },
     });
-    await client.sessions.start(id);
-    await client.sessions.stop(id);
-    await client.sessions.restart(id);
-    await client.sessions.logout(id);
-    await client.sessions.delete(id);
-    await client.sessions.account(id);
+    await client.connections.start(id);
+    await client.connections.stop(id);
+    await client.connections.restart(id);
+    await client.connections.logout(id);
+    await client.connections.delete(id);
+    await client.connections.account(id);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/sessions/support%2Feu",
-      "PUT /platform/sessions/support%2Feu",
-      "POST /platform/sessions/support%2Feu/start",
-      "POST /platform/sessions/support%2Feu/stop",
-      "POST /platform/sessions/support%2Feu/restart",
-      "POST /platform/sessions/support%2Feu/logout",
-      "DELETE /platform/sessions/support%2Feu",
-      "GET /platform/sessions/support%2Feu/me",
+      "GET /platform/connections/support%2Feu",
+      "PUT /platform/connections/support%2Feu",
+      "POST /platform/connections/support%2Feu/start",
+      "POST /platform/connections/support%2Feu/stop",
+      "POST /platform/connections/support%2Feu/restart",
+      "POST /platform/connections/support%2Feu/logout",
+      "DELETE /platform/connections/support%2Feu",
+      "GET /platform/connections/support%2Feu/me",
     ]);
     expect(requests[1]?.body).toBe(
       '{"revision":0,"configuration":{"set":{"historySync":{"mode":"deliver"}}}}',
@@ -97,8 +97,8 @@ describe("MessagingClient sessions", () => {
   it("retrieves JSON pairing data and requests a phone pairing code", async () => {
     const { client, requests } = await messagingServer();
 
-    const qr = await client.sessions.qr("support/eu", { timeoutMs: 5_000 });
-    await client.sessions.requestPairingCode(
+    const qr = await client.connections.qr("support/eu", { timeoutMs: 5_000 });
+    await client.connections.requestPairingCode(
       "support/eu",
       { phone: "+15551234567" },
       { idempotencyKey: "pair-support-phone" },
@@ -177,12 +177,12 @@ describe("MessagingClient messages", () => {
 });
 
 describe("MessagingClient client tokens", () => {
-  it("mints tokens and manages session-bound rules", async () => {
+  it("mints tokens and manages connection-bound rules", async () => {
     const { client, requests } = await messagingServer();
 
     await client.clientTokens.mint(
       {
-        session: "support/eu",
+        connection: "support/eu",
         ephemeralId: "user-1-tab-2",
         ttlSeconds: 600,
       },
@@ -201,12 +201,12 @@ describe("MessagingClient client tokens", () => {
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/client-tokens",
-      "GET /platform/sessions/support%2Feu/client-rules",
-      "PUT /platform/sessions/support%2Feu/client-rules",
-      "DELETE /platform/sessions/support%2Feu/client-rules",
+      "GET /platform/connections/support%2Feu/client-rules",
+      "PUT /platform/connections/support%2Feu/client-rules",
+      "DELETE /platform/connections/support%2Feu/client-rules",
     ]);
     expect(requests[0]?.body).toBe(
-      '{"session":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',
+      '{"connection":"support/eu","ephemeralId":"user-1-tab-2","ttlSeconds":600}',
     );
     expect(requests[0]?.headers["idempotency-key"]).toBe(
       "browser-user-1-tab-2",
@@ -293,8 +293,8 @@ describe("MessagingClient client rules contract", () => {
   });
 });
 
-describe("MessagingClient session call history", () => {
-  it("lists a number's calls with filters on the session calls route", async () => {
+describe("MessagingClient connection call history", () => {
+  it("lists a Connection's calls with filters on the connection calls route", async () => {
     const { client, requests } = await messagingServer();
     await client.calls.list("support line", {
       limit: 10,
@@ -317,10 +317,10 @@ describe("MessagingClient session call history", () => {
 });
 
 describe("MessagingClient Customer-scoped client tokens", () => {
-  it("serializes a session ceiling including reserved regional beta actions", async () => {
+  it("serializes a connection ceiling including reserved regional beta actions", async () => {
     const { client, requests } = await messagingServer();
     await client.clientTokens.mint({
-      session: "support",
+      connection: "support",
       ephemeralId: "u",
       allow: [
         "chats_read",
@@ -335,7 +335,7 @@ describe("MessagingClient Customer-scoped client tokens", () => {
       ],
     });
     expect(JSON.parse(requests[0]!.body!)).toEqual({
-      session: "support",
+      connection: "support",
       ephemeralId: "u",
       allow: [
         "chats_read",
@@ -351,7 +351,7 @@ describe("MessagingClient Customer-scoped client tokens", () => {
     });
   });
 
-  it("sends customer and allow instead of session", async () => {
+  it("sends customer and allow instead of connection", async () => {
     const { client, requests } = await messagingServer();
 
     await client.clientTokens.mint({
@@ -371,14 +371,14 @@ describe("MessagingClient Customer-scoped client tokens", () => {
 
   it.each([
     [
-      "both session and customer",
+      "both connection and customer",
       {
-        session: "support",
+        connection: "support",
         customer: "0190f0b6-7c1e-7a55-9d1a-2f0c6b1e4a10",
         ephemeralId: "u",
       },
     ],
-    ["neither session nor customer", { ephemeralId: "u" }],
+    ["neither connection nor customer", { ephemeralId: "u" }],
   ])("rejects %s before transport", async (_label, body) => {
     const { client, requests } = await messagingServer();
     expect(() =>
@@ -391,17 +391,17 @@ describe("MessagingClient Customer-scoped client tokens", () => {
 describe("MessagingClient contacts", () => {
   it("maps the complete contact directory and metadata read surface", async () => {
     const { client, requests } = await messagingServer();
-    const session = "support/eu";
+    const connection = "support/eu";
     const contactId = "15551234567/1@lid";
 
-    await client.contacts.list(session);
-    await client.contacts.check(session, ["+15551234567", "+15557654321"]);
-    await client.contacts.blocklist(session);
-    await client.contacts.retrieve(session, contactId);
-    await client.contacts.picture(session, contactId);
-    await client.contacts.info(session, contactId);
-    await client.contacts.devices(session, contactId);
-    await client.contacts.businessProfile(session, contactId);
+    await client.contacts.list(connection);
+    await client.contacts.check(connection, ["+15551234567", "+15557654321"]);
+    await client.contacts.blocklist(connection);
+    await client.contacts.retrieve(connection, contactId);
+    await client.contacts.picture(connection, contactId);
+    await client.contacts.info(connection, contactId);
+    await client.contacts.devices(connection, contactId);
+    await client.contacts.businessProfile(connection, contactId);
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /messaging/support%2Feu/contacts",
@@ -448,18 +448,18 @@ describe("MessagingClient contacts", () => {
 describe("MessagingClient chats", () => {
   it("maps message editing and deletion with fully encoded identifiers", async () => {
     const { client, requests } = await messagingServer();
-    const session = "support/eu";
+    const connection = "support/eu";
     const chatId = "15551234567@g.us/team";
     const messageId = "message/1";
 
     await client.chats.editMessage(
-      session,
+      connection,
       chatId,
       messageId,
       { text: "Corrected copy" },
       { idempotencyKey: "edit-message-1" },
     );
-    await client.chats.deleteMessage(session, chatId, messageId, {
+    await client.chats.deleteMessage(connection, chatId, messageId, {
       idempotencyKey: "delete-message-1",
     });
 
@@ -474,17 +474,17 @@ describe("MessagingClient chats", () => {
 
   it("maps archive state and the exact disappearing-message durations", async () => {
     const { client, requests } = await messagingServer();
-    const session = "support";
+    const connection = "support";
     const chatId = "15551234567@s.whatsapp.net";
 
-    await client.chats.archive(session, chatId, {
+    await client.chats.archive(connection, chatId, {
       idempotencyKey: "archive-chat-1",
     });
-    await client.chats.unarchive(session, chatId, {
+    await client.chats.unarchive(connection, chatId, {
       idempotencyKey: "unarchive-chat-1",
     });
     await client.chats.setDisappearingTimer(
-      session,
+      connection,
       chatId,
       { durationSeconds: 604800 },
       { idempotencyKey: "chat-timer-1" },
@@ -548,7 +548,7 @@ describe("MessagingClient templates", () => {
       surface: "sandbox",
     });
     await client.templates.submit("support/eu", "template/1", {
-      session: "cloud/support",
+      connection: "cloud/support",
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
@@ -573,7 +573,7 @@ describe("MessagingClient templates", () => {
     expect(requests[5]?.body).toBe(
       '{"values":{"name":"Grace","order_id":"A-200"},"surface":"sandbox"}',
     );
-    expect(requests[6]?.body).toBe('{"session":"cloud/support"}');
+    expect(requests[6]?.body).toBe('{"connection":"cloud/support"}');
   });
 });
 
@@ -582,7 +582,7 @@ describe("MessagingClient webhooks", () => {
     const { client, requests } = await messagingServer();
     await client.webhooks.list();
     await client.webhooks.create({
-      session: "support",
+      connection: "support",
       url: "https://example.test/hooks",
       events: ["message.received"],
       hmacKey: "fixture-secret",
@@ -613,7 +613,7 @@ describe("MessagingClient webhooks", () => {
       credential: { type: "clientToken", value: "pmfa_ct_d2lkZ2V0" },
       baseUrl: server.url,
     });
-    expect(() => client.sessions.list()).toThrow(/server API key/);
+    expect(() => client.connections.list()).toThrow(/server API key/);
     expect(server.requests).toHaveLength(0);
   });
 });

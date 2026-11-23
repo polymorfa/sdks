@@ -32,7 +32,7 @@ function trunk(projectId = "project-a"): SipTrunk {
     inbound: {
       username: "pmfa_abc",
       realm: "sip.example.test",
-      session: "support",
+      connection: "support",
       allowedAddresses: ["203.0.113.10/32"],
       allowedDestinations: [],
     },
@@ -210,7 +210,7 @@ describe("SIP trunks", () => {
           success: false,
           error: {
             code: "sip_trunk_in_use",
-            message: "A session routes calls to this trunk.",
+            message: "A connection routes calls to this trunk.",
           },
         },
         { status: 409 },

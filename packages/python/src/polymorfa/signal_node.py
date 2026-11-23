@@ -1,4 +1,4 @@
-"""Server-only local application client; service source8aa191e, no Signal cryptography."""
+"""Server-only local application client; service source6120905, no Signal cryptography."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ from .errors import (
 from .media import MediaDescriptor
 from .transport import Json
 
-SIGNAL_NODE_SOURCE_COMMIT = "8aa191ef0d4c318229c91bcdf474bf2d79dac47c"
+SIGNAL_NODE_SOURCE_COMMIT = "61209057729b002a2122b898d744a8813a702fc7"
 SignalMediaKind = Literal["image", "video", "audio", "document", "sticker"]
 _MAX_JSON = 8 * 1024 * 1024
 
@@ -280,7 +280,7 @@ class SignalHistoryDescriptor:
 class SignalNodeEvent:
     id: str
     type: Literal["message", "history.sync"]
-    session_id: str
+    connection_id: str
     chat: str
     sender: str
     message_id: str
@@ -307,7 +307,7 @@ class SignalNodeEvent:
         return cls(
             _string(data.get("id")),
             cast(Literal["message", "history.sync"], kind),
-            _string(data.get("session_id")),
+            _string(data.get("connection_id")),
             _string(data.get("chat")),
             _string(data.get("sender")),
             _string(data.get("message_id")),
@@ -339,7 +339,7 @@ class SignalSendOutcome:
 
 
 @dataclass(frozen=True, repr=False)
-class SignalSession:
+class SignalConnection:
     id: str
     lease_generation: int
     claimed: bool
@@ -349,16 +349,16 @@ class SignalSession:
     lid: str | None
 
     def __repr__(self) -> str:
-        return "SignalSession(<redacted>)"
+        return "SignalConnection(<redacted>)"
 
 
 @dataclass(frozen=True, repr=False)
-class SignalSessions:
+class SignalConnections:
     node_id: str
-    sessions: tuple[SignalSession, ...]
+    connections: tuple[SignalConnection, ...]
 
     def __repr__(self) -> str:
-        return "SignalSessions(<redacted>)"
+        return "SignalConnections(<redacted>)"
 
 
 def _unique(pairs: list[tuple[str, Json]]) -> dict[str, Json]:
@@ -398,12 +398,12 @@ def _safe_error(status: int, raw: bytes) -> PolymorfaError:
         "unauthorized",
         "origin_forbidden",
         "invalid_request",
-        "unknown_session",
+        "unknown_connection",
         "not_lease_holder",
-        "session_not_paired",
+        "connection_not_paired",
         "disconnected",
         "rate_limited",
-        "session_unavailable",
+        "connection_unavailable",
         "refused",
         "unavailable",
         "send_failed",
@@ -616,18 +616,18 @@ class SignalNodeClient:
             raise _invalid()
         return "ok"
 
-    async def list_sessions(self) -> SignalSessions:
-        data = _record(await self._json("GET", "/v1/sessions"))
-        values = data.get("sessions")
+    async def list_connections(self) -> SignalConnections:
+        data = _record(await self._json("GET", "/v1/connections"))
+        values = data.get("connections")
         if not isinstance(values, list):
             raise _invalid()
-        sessions = []
+        connections = []
         for item in values:
             row = _record(item)
             if "pn" not in row or "lid" not in row:
                 raise _invalid()
-            sessions.append(
-                SignalSession(
+            connections.append(
+                SignalConnection(
                     _string(row.get("id")),
                     _integer(row.get("lease_generation"), 0, 2**64 - 1),
                     _boolean(row.get("claimed")),
@@ -637,9 +637,11 @@ class SignalNodeClient:
                     _optional_string(row, "lid"),
                 )
             )
-        return SignalSessions(_string(data.get("node_id")), tuple(sessions))
+        return SignalConnections(_string(data.get("node_id")), tuple(connections))
 
-    async def send_message(self, session_id: str, request: SignalSendRequest) -> SignalSendOutcome:
+    async def send_message(
+        self, connection_id: str, request: SignalSendRequest
+    ) -> SignalSendOutcome:
         if (
             not isinstance(request, (SignalTextMessage, SignalMediaMessage))
             or not isinstance(request.to, str)
@@ -663,7 +665,9 @@ class SignalNodeClient:
             request.media.validate_send()
             body["media"] = request.media.to_wire()
         data = _record(
-            await self._json("POST", "/v1/sessions/" + _segment(session_id) + "/messages", body)
+            await self._json(
+                "POST", "/v1/connections/" + _segment(connection_id) + "/messages", body
+            )
         )
         return SignalSendOutcome(
             _string(data.get("message_id")),
@@ -671,13 +675,13 @@ class SignalNodeClient:
             _boolean(data.get("resent")),
         )
 
-    async def send_text(self, session_id: str, to: str, text: str) -> SignalSendOutcome:
-        return await self.send_message(session_id, SignalTextMessage(to, text))
+    async def send_text(self, connection_id: str, to: str, text: str) -> SignalSendOutcome:
+        return await self.send_message(connection_id, SignalTextMessage(to, text))
 
     async def send_media(
-        self, session_id: str, to: str, media: SignalMediaDescriptor
+        self, connection_id: str, to: str, media: SignalMediaDescriptor
     ) -> SignalSendOutcome:
-        return await self.send_message(session_id, SignalMediaMessage(to, media))
+        return await self.send_message(connection_id, SignalMediaMessage(to, media))
 
     async def acknowledge_event(self, event_id: str) -> None:
         value = await self._json(
@@ -687,15 +691,19 @@ class SignalNodeClient:
             raise _invalid()
 
     def events(
-        self, *, session_id: str | None = None, reconnect: bool = True, reconnect_delay: float = 0.5
+        self,
+        *,
+        connection_id: str | None = None,
+        reconnect: bool = True,
+        reconnect_delay: float = 0.5,
     ) -> SignalEventStream:
         if self._closed.is_set():
             raise ConfigurationError("closed_signal_client")
-        if session_id is not None:
-            _segment(session_id)
+        if connection_id is not None:
+            _segment(connection_id)
         if not math.isfinite(reconnect_delay) or not 0 <= reconnect_delay <= 60:
             raise ConfigurationError("reconnect_delay")
-        stream = SignalEventStream(self, session_id, reconnect, reconnect_delay)
+        stream = SignalEventStream(self, connection_id, reconnect, reconnect_delay)
         self._streams.add(stream)
         return stream
 
@@ -711,11 +719,11 @@ class SignalNodeClient:
 
 class SignalEventStream:
     def __init__(
-        self, client: SignalNodeClient, session: str | None, reconnect: bool, delay: float
+        self, client: SignalNodeClient, connection: str | None, reconnect: bool, delay: float
     ) -> None:
-        self._client, self._session, self._reconnect, self._delay = (
+        self._client, self._connection, self._reconnect, self._delay = (
             client,
-            session,
+            connection,
             reconnect,
             delay,
         )
@@ -742,7 +750,9 @@ class SignalEventStream:
                     request = self._client._request(
                         "GET",
                         "/v1/events",
-                        query={"session_id": self._session} if self._session is not None else None,
+                        query={"connection_id": self._connection}
+                        if self._connection is not None
+                        else None,
                         streaming=True,
                     )
                     response = await self._until_close(self._client._open(request))
@@ -856,8 +866,8 @@ class SignalEventStream:
                         if (
                             identity != event.id
                             or kind != event.type
-                            or self._session is not None
-                            and event.session_id != self._session
+                            or self._connection is not None
+                            and event.connection_id != self._connection
                         ):
                             raise _invalid()
                         yield event

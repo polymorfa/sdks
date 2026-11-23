@@ -11,7 +11,7 @@ async fn all_four_account_modes_use_native_put_and_preserve_bare_response() {
         (WhatsAppAccountType::MetaCloud, "meta_cloud"),
         (WhatsAppAccountType::MetaCoexistence, "meta_coexistence"),
     ] {
-        let reply = json!({"session":"demo /a","accountType":wire,"primaryPlatform":null,"changed":true,"unlinkedDevices":[2,7]});
+        let reply = json!({"connection":"demo /a","accountType":wire,"primaryPlatform":null,"changed":true,"unlinkedDevices":[2,7]});
         let (base, server) = support::wire(
             "PUT",
             "/messaging/demo%20%2Fa/phone/account-mode",
@@ -39,7 +39,7 @@ async fn all_four_account_modes_use_native_put_and_preserve_bare_response() {
 }
 #[tokio::test]
 async fn ios_mode_and_completed_noop_survive_native_wire() {
-    let (base, server) = support::wire("PUT", "/messaging/demo/phone/account-mode", Some(json!({"accountType":"business_app","primaryPlatform":"ios"})), json!({"session":"demo","accountType":"business_app","primaryPlatform":"ios","changed":false,"unlinkedDevices":[]})).await;
+    let (base, server) = support::wire("PUT", "/messaging/demo/phone/account-mode", Some(json!({"accountType":"business_app","primaryPlatform":"ios"})), json!({"connection":"demo","accountType":"business_app","primaryPlatform":"ios","changed":false,"unlinkedDevices":[]})).await;
     let result = support::messaging(base)
         .testing()
         .set_account_mode(
@@ -78,9 +78,9 @@ async fn cloud_platform_is_refused_before_io() {
 #[tokio::test]
 async fn required_mode_response_fields_are_checked() {
     for malformed in [
-        json!({"session":"demo"}),
-        json!({"session":"demo","accountType":"personal","primaryPlatform":null,"changed":false,"unlinkedDevices":[]}),
-        json!({"session":"demo","accountType":"business_app","changed":false,"unlinkedDevices":[]}),
+        json!({"connection":"demo"}),
+        json!({"connection":"demo","accountType":"personal","primaryPlatform":null,"changed":false,"unlinkedDevices":[]}),
+        json!({"connection":"demo","accountType":"business_app","changed":false,"unlinkedDevices":[]}),
     ] {
         let (base, server) = support::wire(
             "PUT",

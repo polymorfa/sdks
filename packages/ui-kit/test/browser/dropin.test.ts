@@ -12,7 +12,7 @@ import {
 } from "../../src/browser/index.js";
 
 const grant: PolymorfaGrant = {
-  session: "support",
+  connection: "support",
   conversations: "all",
   allow: ["read_messages", "send_message", "subscribe_events"],
 };
@@ -326,7 +326,7 @@ describe("createHandlerInboxSource", () => {
     expect(FakeEventSource.instances[0]!.url).toBe("/api/polymorfa/events");
     FakeEventSource.instances[0]!.emit({
       id: "e1",
-      session: "support",
+      connection: "support",
       event: "message.received",
       timestamp: "2026-09-19T10:00:00.000Z",
       payload: {
@@ -418,7 +418,7 @@ describe("createHandlerInboxSource", () => {
       .subscribe!((change) => threadChanges.push(change));
     FakeEventSource.instances[0]!.emit({
       id: "e1",
-      session: "support",
+      connection: "support",
       event: "message.received",
       timestamp: "2026-09-19T10:00:00.000Z",
       payload: {

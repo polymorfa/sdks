@@ -53,7 +53,7 @@ describe("createStoreInboxSource", () => {
     expect(remote.listConversations).not.toHaveBeenCalled();
     expect(inbox.getSnapshot().conversations[0]).toMatchObject({
       id: "chat_1",
-      session: "support",
+      connection: "support",
       lastMessage: { text: "first", direction: "inbound" },
       unreadCount: 1,
     });

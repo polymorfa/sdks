@@ -9,11 +9,11 @@ var securityOptOutFixtures = []operationFixture{
 	{"TeamClient.AuditLogs.List", "GET", "/platform/audit", "action=update&limit=2&resource=project", "", `{"data":[{"id":"audit","actorEmail":"staff@example.com","actorUserId":null,"actorRole":"owner","action":"update","resource":"project","projectId":"p","projectName":"Project","ip":null,"userAgent":null,"duration":12,"source":"api","description":null,"result":"success","metadata":{"fields":["name"]},"createdAt":123}]}`, "data.0.duration", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.AuditLogs().List(ctx, ListAuditLogsParams{Action: "update", Resource: "project", Limit: 2}))
 	}},
-	{"TeamClient.SessionBans.List", "GET", "/platform/bans", "", "", `{"data":[{"id":"ban","sessionName":"s","banCode":42,"banReason":"temporary","banExpiresAt":null,"occurredAt":123,"status":"active"}]}`, "data.0.banCode", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(o.SessionBans().List(ctx))
+	{"TeamClient.ConnectionBans.List", "GET", "/platform/bans", "", "", `{"data":[{"id":"ban","connectionName":"s","banCode":42,"banReason":"temporary","banExpiresAt":null,"occurredAt":123,"status":"active"}]}`, "data.0.banCode", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(o.ConnectionBans().List(ctx))
 	}},
-	{"TeamClient.SessionBans.ListActive", "GET", "/platform/bans/active", "", "", `{"data":[{"id":"ban","sessionName":"s","banCode":42,"banReason":"temporary","banExpiresAt":null,"occurredAt":123,"status":"active"}]}`, "data.0.status", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(o.SessionBans().ListActive(ctx))
+	{"TeamClient.ConnectionBans.ListActive", "GET", "/platform/bans/active", "", "", `{"data":[{"id":"ban","connectionName":"s","banCode":42,"banReason":"temporary","banExpiresAt":null,"occurredAt":123,"status":"active"}]}`, "data.0.status", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(o.ConnectionBans().ListActive(ctx))
 	}},
 	{"TeamClient.SecurityIncidents.List", "GET", "/platform/incidents", "", "", `{"data":[{"id":"incident","keyId":"key","tokenType":"project","source":"leak","url":null,"ref":null,"resolution":"revoked","detectedAt":123,"acknowledgedAt":null,"acknowledgedBy":null,"createdAt":123}]}`, "data.0.resolution", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.SecurityIncidents().List(ctx))

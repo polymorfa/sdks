@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "sourceCommit": "14153ad9d69ddd3bae972594e6b3dc3ddae8e8e4",
+  "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
   "pin": "contracts/business-account-modes.json",
   "baselineUnchanged": true,
   "published": false,
@@ -9,7 +9,7 @@
     {
       "operationId": "setTestingAccountMode",
       "method": "PUT",
-      "path": "/messaging/{session}/phone/account-mode",
+      "path": "/messaging/{connection}/phone/account-mode",
       "languages": {
         "typescript": {
           "method": "MessagingClient.testing.setAccountMode",

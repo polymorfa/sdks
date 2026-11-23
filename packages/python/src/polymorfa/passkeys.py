@@ -38,7 +38,7 @@ class IssuePasskeyChallenge(TypedDict):
 class PasskeyTicket(TypedDict):
     version: Literal[2]
     ticket: str
-    session: str
+    connection: str
     rpId: str
     challengeB64Url: str
     userVerification: UserVerification
@@ -67,7 +67,7 @@ class SubmitPasskeyAssertion(TypedDict):
 class PasskeyAssertionResult(TypedDict):
     ok: Literal[True]
     ticket: str
-    session: str
+    connection: str
 
 
 class ConfirmPasskey(TypedDict):
@@ -99,18 +99,18 @@ def _capture(body: object) -> object:
 
 
 class Passkeys(Resource):
-    def _path(self, session: str) -> str:
+    def _path(self, connection: str) -> str:
         self._server()
-        return f"/messaging/{segment(session)}/passkey"
+        return f"/messaging/{segment(connection)}/passkey"
 
     async def issue_challenge(
         self,
-        session: str,
+        connection: str,
         body: IssuePasskeyChallenge | None = None,
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Envelope[PasskeyTicket]]:
-        path = self._path(session)
+        path = self._path(connection)
         body = {} if body is None else body
         if "challengeB64Url" in body and not _text(body["challengeB64Url"]):
             raise ValidationError("Provide the expected challenge.")
@@ -132,16 +132,16 @@ class Passkeys(Resource):
         )
 
     async def get_challenge(
-        self, session: str, ticket_id: str, *, options: RequestOptions = O
+        self, connection: str, ticket_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PasskeyTicket]]:
         return await self._request(
-            "GET", self._path(session) + "/challenge/" + segment(ticket_id), options=options
+            "GET", self._path(connection) + "/challenge/" + segment(ticket_id), options=options
         )
 
     async def submit_assertion(
-        self, session: str, body: SubmitPasskeyAssertion, *, options: RequestOptions = O
+        self, connection: str, body: SubmitPasskeyAssertion, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PasskeyAssertionResult]]:
-        path = self._path(session)
+        path = self._path(connection)
         a = body.get("assertion")
         if (
             not _text(body.get("ticketId"))
@@ -169,14 +169,14 @@ class Passkeys(Resource):
         )
 
     async def get_confirmation(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PasskeyConfirmation]]:
-        return await self._request("GET", self._path(session) + "/confirmation", options=options)
+        return await self._request("GET", self._path(connection) + "/confirmation", options=options)
 
     async def confirm(
-        self, session: str, body: ConfirmPasskey, *, options: RequestOptions = O
+        self, connection: str, body: ConfirmPasskey, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[PasskeyConfirmation]]:
-        path = self._path(session)
+        path = self._path(connection)
         if not _text(body.get("ticketId")) or (
             "code" in body
             and (

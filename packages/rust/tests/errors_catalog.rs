@@ -4,7 +4,7 @@ use polymorfa_sdk::errors::{is_known_error_code, POLYMORFA_ERROR_CODES};
 #[test]
 fn known_catalog_matches_pinned_typescript_without_closing_future_codes() {
     let fixture: serde_json::Value =
-        serde_json::from_str(include_str!("fixtures/known-error-codes.json")).unwrap();
+        serde_json::from_str(include_str!("fixtures/known-error-codes.connections.json")).unwrap();
     let expected: Vec<_> = fixture["codes"]
         .as_array()
         .unwrap()
@@ -29,7 +29,7 @@ async fn future_error_code_survives_native_http_response_and_request_metadata() 
         socket.write_all(format!("HTTP/1.1 422 Unprocessable Entity\r\nx-request-id: future-request\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
     });
     let error = support::messaging(base)
-        .sessions()
+        .connections()
         .list(Default::default())
         .await
         .unwrap_err();

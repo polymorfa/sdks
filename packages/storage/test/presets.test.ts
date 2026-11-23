@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { Pool } from "pg";
+import { Client, Pool } from "pg";
 import mysql from "mysql2/promise";
 import { drizzle as pgDrizzle } from "drizzle-orm/node-postgres";
 import { drizzle as mysqlDrizzle } from "drizzle-orm/mysql2";
@@ -24,13 +24,48 @@ const pgOptions = {
   password: "synthetic_fixture_only",
   database: "storage_fixture",
 };
+function validateRoleProofFixture(connectionString: string): void {
+  const target = new URL(connectionString);
+  const resolved = new Client({ connectionString });
+  if (
+    !["127.0.0.1", "localhost", "[::1]"].includes(target.hostname) ||
+    target.pathname !== "/sdk_customer_rls_tests" ||
+    !["127.0.0.1", "localhost", "::1"].includes(resolved.host) ||
+    resolved.database !== "sdk_customer_rls_tests"
+  ) {
+    throw new Error(
+      "Supabase role proof requires its dedicated loopback fixture database",
+    );
+  }
+}
+it.each([
+  "postgres://127.0.0.1/sdk_customer_rls_tests?host=remote.example.test",
+  "postgres://localhost/sdk_customer_rls_tests?host=127.0.0.1&host=remote.example.test",
+  "postgres://127.0.0.1/sdk_customer_rls_tests?host=%2Fprivate%2Fpostgres",
+  "postgres://remote.example.test/sdk_customer_rls_tests",
+  "postgres://127.0.0.1/another_database",
+])(
+  "refuses a non-fixture PostgreSQL target %s before opening a pool",
+  (target) => {
+    expect(() => validateRoleProofFixture(target)).toThrow(
+      "Supabase role proof requires its dedicated loopback fixture database",
+    );
+  },
+);
+it.each([
+  "postgres://127.0.0.1/sdk_customer_rls_tests",
+  "postgres://localhost/sdk_customer_rls_tests?host=127.0.0.1",
+  "postgres://[::1]/sdk_customer_rls_tests",
+])("accepts a resolved loopback fixture target %s", (target) => {
+  expect(() => validateRoleProofFixture(target)).not.toThrow();
+});
 const batch = {
-  sessionId: "orm",
+  connectionId: "orm",
   operations: [
     {
       kind: "upsert",
       entity: "contacts",
-      key: { sessionId: "orm", contactId: "reader" },
+      key: { connectionId: "orm", contactId: "reader" },
       fields: { fullName: { value: "stored by engine", version: 1 } },
     },
   ],
@@ -82,14 +117,37 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       await pool.end();
     }
   });
-  it("FORCE RLS denies foreign sessions, content writes and membership writes; live revocation takes effect", async () => {
-    const pool = new Pool(pgOptions);
+  it("FORCE RLS denies foreign connections, content writes and membership writes; live revocation takes effect", async () => {
+    const options = process.env.POLYMORFA_STORAGE_RLS_POSTGRES_URL
+      ? { connectionString: process.env.POLYMORFA_STORAGE_RLS_POSTGRES_URL }
+      : pgOptions;
+    if ("connectionString" in options) {
+      validateRoleProofFixture(options.connectionString!);
+    }
+    const pool = new Pool(options);
+    const writerOptions =
+      "connectionString" in options
+        ? (() => {
+            const target = new URL(options.connectionString!);
+            target.username = "zk_storage_writer";
+            target.password = "synthetic_fixture_only";
+            return { connectionString: target.toString() };
+          })()
+        : {
+            ...options,
+            user: "zk_storage_writer",
+            password: "synthetic_fixture_only",
+          };
+    const writerPool = new Pool(writerOptions);
     const client = await pool.connect();
     const schema = `zkrls_${Date.now()}`;
     const subject = "00000000-0000-0000-0000-000000000001";
     try {
       await client.query(
         "DO $$ BEGIN IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='zk_storage_reader') THEN CREATE ROLE zk_storage_reader NOLOGIN; END IF; IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname='zk_storage_writer') THEN CREATE ROLE zk_storage_writer NOLOGIN; END IF; END $$;",
+      );
+      await client.query(
+        "ALTER ROLE zk_storage_writer LOGIN NOINHERIT NOSUPERUSER NOBYPASSRLS PASSWORD 'synthetic_fixture_only'",
       );
       await client.query(
         "CREATE SCHEMA IF NOT EXISTS auth; CREATE OR REPLACE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql STABLE AS $$ SELECT nullif(current_setting('request.jwt.claim.sub',true),'')::uuid $$; GRANT USAGE ON SCHEMA auth TO zk_storage_reader;",
@@ -102,7 +160,7 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
           serverRole: "zk_storage_writer",
         }),
       );
-      const adapter = postgresAdapter(pool, {
+      const adapter = postgresAdapter(writerPool, {
         schema,
         tablePrefix: "s_",
         createTables: false,
@@ -111,11 +169,11 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       await storage.apply(batch);
       await storage.apply({
         ...batch,
-        sessionId: "foreign",
+        connectionId: "foreign",
         operations: [
           {
             ...batch.operations[0],
-            key: { sessionId: "foreign", contactId: "secret" },
+            key: { connectionId: "foreign", contactId: "secret" },
           },
         ],
       });
@@ -131,9 +189,9 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
       );
       await client.query("SET ROLE zk_storage_reader");
       expect(
-        (await client.query(`SELECT session_id FROM "${schema}".s_contacts`))
+        (await client.query(`SELECT connection_id FROM "${schema}".s_contacts`))
           .rows,
-      ).toEqual([{ session_id: "orm" }]);
+      ).toEqual([{ connection_id: "orm" }]);
       await expect(
         client.query(`DELETE FROM "${schema}".s_contacts`),
       ).rejects.toThrow();
@@ -162,6 +220,7 @@ describe.skipIf(!native)("real SQL preset boundaries", () => {
     } finally {
       await client.query("RESET ROLE");
       client.release();
+      await writerPool.end();
       await pool.end();
     }
   }, 30000);

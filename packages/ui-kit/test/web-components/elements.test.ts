@@ -156,7 +156,7 @@ describe("portable elements", () => {
     document.body.append(node);
     const root = node.shadowRoot;
     try {
-      // The upgrade needs a media session, so it is not offered before the
+      // The upgrade needs a media connection, so it is not offered before the
       // call connects — the button would have done nothing there.
       fixture.update({
         ...base,
@@ -166,7 +166,7 @@ describe("portable elements", () => {
       });
       expect(root?.querySelector('[part="camera"]')).toBeNull();
 
-      // Nor when the session cannot renegotiate: the element takes any
+      // Nor when the connection cannot renegotiate: the element takes any
       // controller, and one that reports no upgrade must not show the button.
       ctl.canEnableVideo = false;
       fixture.update({ ...base, revision: 2, video: false });

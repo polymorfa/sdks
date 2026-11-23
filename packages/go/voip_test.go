@@ -8,8 +8,8 @@ var voipFixtures = []operationFixture{
 	{"MessagingClient.VoIP.ModerateWaitingRoom", "POST", "/messaging/voip/calls/x/waiting-room", "", `{"connectionId":"connection","control":{"type":"waiting_room_control","requestId":"request_123","operation":"deny","participantId":"123"}}`, `{"success":true,"data":{"type":"waiting_room_result","requestId":"request_123","ok":true}}`, "data.ok", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.VoIP().ModerateWaitingRoom(ctx, "x", WaitingRoomControlRequest{ConnectionID: "connection", Control: WaitingRoomControl{Type: "waiting_room_control", RequestID: "request_123", Operation: "deny", ParticipantID: "123"}}))
 	}},
-	{"MessagingClient.VoIP.Place", "POST", "/messaging/voip/calls", "", `{"to":"+15551234567","session":"s"}`, `{"success":true,"data":{"callId":"call","session":"s","video":false}}`, "data.callId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.VoIP().Place(ctx, PlaceCallRequest{To: "+15551234567", Session: "s"}))
+	{"MessagingClient.VoIP.Place", "POST", "/messaging/voip/calls", "", `{"to":"+15551234567","connection":"s"}`, `{"success":true,"data":{"callId":"call","connection":"s","video":false}}`, "data.callId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.VoIP().Place(ctx, PlaceCallRequest{To: "+15551234567", Connection: "s"}))
 	}},
 	{"MessagingClient.VoIP.Accept", "POST", "/messaging/voip/calls/x/accept", "", `{}`, `{"success":true,"data":{"answered":true,"answeredBy":"server:default","exclusive":false}}`, "data.answeredBy", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.VoIP().Accept(ctx, "x", AcceptCallRequest{}))
@@ -35,28 +35,28 @@ var voipFixtures = []operationFixture{
 	{"MessagingClient.VoIP.SetHandRaised", "POST", "/messaging/voip/calls/x/hand", "", `{"connectionId":"connection","raised":false}`, `{"success":true,"message":"Hand lowered"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.VoIP().SetHandRaised(ctx, "x", HandRaisedRequest{ConnectionID: "connection"}))
 	}},
-	{"MessagingClient.VoIP.RetrieveCallSettings", "GET", "/platform/sessions/s/call-settings", "", "", `{"success":true,"data":{"callsEnabled":false,"conferenceMode":true,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"revision":3,"updatedAt":null}}`, "data.revision", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.VoIP.RetrieveCallSettings", "GET", "/platform/connections/s/call-settings", "", "", `{"success":true,"data":{"callsEnabled":false,"conferenceMode":true,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"revision":3,"updatedAt":null}}`, "data.revision", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.VoIP().RetrieveCallSettings(ctx, "s"))
 	}},
-	{"MessagingClient.VoIP.UpdateCallSettings", "PUT", "/platform/sessions/s/call-settings", "", `{"callsEnabled":false,"sipTrunkId":null}`, `{"success":true,"data":{"callsEnabled":false,"conferenceMode":true,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"revision":4,"updatedAt":null}}`, "data.revision", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.VoIP.UpdateCallSettings", "PUT", "/platform/connections/s/call-settings", "", `{"callsEnabled":false,"sipTrunkId":null}`, `{"success":true,"data":{"callsEnabled":false,"conferenceMode":true,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":true,"hostCloudApiCalls":false,"revision":4,"updatedAt":null}}`, "data.revision", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := false
 		return wireData(m.VoIP().UpdateCallSettings(ctx, "s", UpdateCallSettingsRequest{CallsEnabled: &v, SIPTrunkID: &NullableString{}}))
 	}},
 	{"MessagingClient.VoIP.RetrieveCallPermission", "GET", "/messaging/s/call-permissions/42", "", "", `{"success":true,"data":{"status":"permanent","fresh":true,"conversation":{"id":"42"},"expiresAt":null,"source":"sync","updatedAt":null,"checkedAt":null,"actions":{"requestPermission":null,"startCall":{"allowed":true,"limits":[]}}}}`, "data.actions.startCall.allowed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.VoIP().RetrieveCallPermission(ctx, "s", "42"))
 	}},
-	{"MessagingClient.VoIP.Check", "POST", "/messaging/voip/calls/check", "", `{"session":"s","to":"42"}`, `{"success":true,"data":{"allowed":false,"refusal":"calls_disabled","permission":null}}`, "data.refusal", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.VoIP().Check(ctx, CheckCallRequest{Session: "s", To: "42"}))
+	{"MessagingClient.VoIP.Check", "POST", "/messaging/voip/calls/check", "", `{"connection":"s","to":"42"}`, `{"success":true,"data":{"allowed":false,"refusal":"calls_disabled","permission":null}}`, "data.refusal", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.VoIP().Check(ctx, CheckCallRequest{Connection: "s", To: "42"}))
 	}},
 	{"MessagingClient.VoIP.Report", "POST", "/messaging/voip/calls/x/reports", "", `{"kind":"quality","connectionId":"connection","quality":{"reconnects":0}}`, `{"success":true,"message":"Recorded"}`, "message", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := 0
 		return wireData(m.VoIP().Report(ctx, "x", CallReportRequest{Kind: "quality", ConnectionID: "connection", Quality: &CallQuality{Reconnects: &v}}))
 	}},
-	{"MessagingClient.VoIP.CreateCallLink", "POST", "/messaging/voip/call-links", "", `{"session":"s"}`, `{"success":true,"data":{"session":"s","token":"link","url":"https://call.whatsapp.com/video/link","video":false}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.VoIP().CreateCallLink(ctx, CreateCallLinkRequest{Session: "s"}))
+	{"MessagingClient.VoIP.CreateCallLink", "POST", "/messaging/voip/call-links", "", `{"connection":"s"}`, `{"success":true,"data":{"connection":"s","token":"link","url":"https://call.whatsapp.com/video/link","video":false}}`, "data.token", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.VoIP().CreateCallLink(ctx, CreateCallLinkRequest{Connection: "s"}))
 	}},
-	{"MessagingClient.VoIP.PreviewCallLink", "POST", "/messaging/voip/call-links/preview", "", `{"session":"s","token":"link"}`, `{"success":true,"data":{"session":"s","video":false,"creator":{"id":"42"},"approvalRequired":true,"isAdmin":false}}`, "data.approvalRequired", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.VoIP().PreviewCallLink(ctx, PreviewCallLinkRequest{CreateCallLinkRequest: CreateCallLinkRequest{Session: "s"}, Token: "link"}))
+	{"MessagingClient.VoIP.PreviewCallLink", "POST", "/messaging/voip/call-links/preview", "", `{"connection":"s","token":"link"}`, `{"success":true,"data":{"connection":"s","video":false,"creator":{"id":"42"},"approvalRequired":true,"isAdmin":false}}`, "data.approvalRequired", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.VoIP().PreviewCallLink(ctx, PreviewCallLinkRequest{CreateCallLinkRequest: CreateCallLinkRequest{Connection: "s"}, Token: "link"}))
 	}},
 }
 
@@ -72,7 +72,7 @@ func init() {
 	} {
 		b := fixture.body
 		expected := fixture.expected
-		voipFixtures = append(voipFixtures, operationFixture{"MessagingClient.VoIP.UpdateCallSettings.simultaneous", "PUT", "/platform/sessions/s/call-settings", "", string(expected), `{"success":true,"data":{"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":false,"hostCloudApiCalls":false,"simultaneousCalls":true,"revision":2,"updatedAt":null}}`, "data.simultaneousCalls", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		voipFixtures = append(voipFixtures, operationFixture{"MessagingClient.VoIP.UpdateCallSettings.simultaneous", "PUT", "/platform/connections/s/call-settings", "", string(expected), `{"success":true,"data":{"callsEnabled":true,"conferenceMode":false,"inboundRoute":"clients","sipTrunkId":null,"sipClaim":false,"hostCloudApiCalls":false,"simultaneousCalls":true,"revision":2,"updatedAt":null}}`, "data.simultaneousCalls", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 			return wireData(m.VoIP().UpdateCallSettings(ctx, "s", b))
 		}})
 	}

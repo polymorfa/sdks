@@ -29,19 +29,19 @@ export interface CallsClientOptions {
   readonly token?: string | CallsTokenProvider;
   /** Server API key or project token; same as passing it as `token`. */
   readonly apiKey?: string;
-  /** The session whose calls this client follows and places from. */
-  readonly session: string;
+  /** The connection whose calls this client follows and places from. */
+  readonly connection: string;
   /**
    * Participant name for server credentials (`[A-Za-z0-9._:@-]{1,128}`,
    * default `default`). Client tokens always act as their own participant.
    */
   readonly participant?: string;
   /**
-   * The number a Customer-scoped client token acts for, sent as `?session=`
-   * on Calls requests and the lifecycle socket. Leave unset for session
+   * The Connection a Customer-scoped client token acts for, sent as `?connection=`
+   * on Calls requests and the lifecycle socket. Leave unset for Connection
    * tokens and server credentials.
    */
-  readonly clientTokenSession?: string;
+  readonly clientTokenConnection?: string;
   /** Defaults to `https://api.polymorfa.com`. */
   readonly baseUrl?: string;
   /** Media reattach attempts after an unexpected drop. Default 3. */
@@ -91,7 +91,7 @@ export interface PlaceOptions {
 
 type ClientEvents = {
   /**
-   * A call is ringing this session. Answer, join, reject, or ignore it; the
+   * A call is ringing this connection. Answer, join, reject, or ignore it; the
    * client never declines on its own.
    */
   incoming: [Call];
@@ -106,12 +106,12 @@ type ClientEvents = {
 };
 
 /**
- * The programmatic Calls client: follows one session, rings on inbound calls,
+ * The programmatic Calls client: follows one connection, rings on inbound calls,
  * places outbound ones, and hands each call back as a {@link Call} with media
  * you read and write from code.
  *
  * ```ts
- * const client = new CallsClient({ token: getToken, session: "support" });
+ * const client = new CallsClient({ token: getToken, connection: "support" });
  * client.on("incoming", async (call) => {
  *   await call.answer({ exclusive: true });
  *   call.audio.on("data", (pcm) => transcribe(pcm));
@@ -121,7 +121,7 @@ type ClientEvents = {
  * ```
  */
 export class CallsClient extends Emitter<ClientEvents> {
-  readonly session: string;
+  readonly connection: string;
   /** Bumped by disconnect(); a placement that resolves later is ended. */
   #connectGeneration = 0;
   readonly #api: CallsApi;
@@ -144,7 +144,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     super();
     const options = publicOptions as InternalCallsClientOptions;
     this.#o = options;
-    this.session = options.session;
+    this.connection = options.connection;
     if (
       options.participant !== undefined &&
       !isParticipantName(options.participant)
@@ -158,9 +158,9 @@ export class CallsClient extends Emitter<ClientEvents> {
     this.#api =
       options.api ??
       new HttpCallsApi({
-        ...(options.clientTokenSession === undefined
+        ...(options.clientTokenConnection === undefined
           ? {}
-          : { clientTokenSession: options.clientTokenSession }),
+          : { clientTokenConnection: options.clientTokenConnection }),
         token: credential!,
         ...(options.baseUrl === undefined ? {} : { baseUrl: options.baseUrl }),
         ...(options.fetch === undefined ? {} : { fetch: options.fetch }),
@@ -170,13 +170,13 @@ export class CallsClient extends Emitter<ClientEvents> {
       options.createIdempotencyKey ?? (() => crypto.randomUUID());
     this.#socket = new LifecycleSocket({
       api: this.#api,
-      session: options.session,
+      connection: options.connection,
       ...(options.participant === undefined
         ? {}
         : { participant: options.participant }),
-      ...(options.clientTokenSession === undefined
+      ...(options.clientTokenConnection === undefined
         ? {}
-        : { clientTokenSession: options.clientTokenSession }),
+        : { clientTokenConnection: options.clientTokenConnection }),
       ...timerOptions(options),
       ...(options.now === undefined ? {} : { now: options.now }),
     });
@@ -242,7 +242,7 @@ export class CallsClient extends Emitter<ClientEvents> {
   }
 
   /**
-   * Stop following the session. Calls this client joined are left, not
+   * Stop following the connection. Calls this client joined are left, not
    * ended; outbound calls still ringing are ended; ringing inbound calls
    * are only forgotten locally.
    */
@@ -294,7 +294,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     options.signal?.throwIfAborted();
     const video = options.video ?? false;
     const input = {
-      session: this.session,
+      connection: this.connection,
       to: primary,
       ...(participants ? { participants: [...participants] } : {}),
       ...(groupId ? { groupId } : {}),
@@ -337,7 +337,7 @@ export class CallsClient extends Emitter<ClientEvents> {
     return new Call({
       exclusive,
       id,
-      session: this.session,
+      connection: this.connection,
       direction,
       peer,
       video,

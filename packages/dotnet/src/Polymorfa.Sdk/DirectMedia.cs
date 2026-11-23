@@ -34,12 +34,12 @@ public sealed partial class WhatsAppMediaResource
     internal static string UploadPath(WhatsAppUploadMediaType kind) => "/mms/" + WhatsAppMedia.UploadKind(kind);
     internal static JsonElement Data(JsonElement value) => value.ValueKind == JsonValueKind.Object && value.TryGetProperty("data", out var data) && data.ValueKind == JsonValueKind.Object ? data : value;
     private static object GrantBody(WhatsAppUploadMediaType kind, string hash) => kind is WhatsAppUploadMediaType.Audio or WhatsAppUploadMediaType.Ptt ? (object)new { type = "voice", fileEncSha256 = hash, ptt = kind == WhatsAppUploadMediaType.Ptt } : new { type = ApiKind(kind), fileEncSha256 = hash };
-    public async Task<WhatsAppUploadGrant> CreateUploadGrantAsync(string session, WhatsAppUploadMediaType kind, byte[] fileEncSha256, RequestOptions? options = null)
+    public async Task<WhatsAppUploadGrant> CreateUploadGrantAsync(string connection, WhatsAppUploadMediaType kind, byte[] fileEncSha256, RequestOptions? options = null)
     {
         http.Credential.RequireServer();
-        Session(session);
+        Connection(connection);
         var hash = EncodedHash(fileEncSha256);
-        var response = await http.RequestAsync<JsonElement>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(session)}/media/upload-grants", GrantBody(kind, hash), SubmissionOptions(options)).ConfigureAwait(false);
+        var response = await http.RequestAsync<JsonElement>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(connection)}/media/upload-grants", GrantBody(kind, hash), SubmissionOptions(options)).ConfigureAwait(false);
         try
         {
             var body = CanonicalData(response); var url = new Uri(body.GetProperty("uploadUrl").GetString()!); var host = body.GetProperty("host").GetString();
@@ -51,19 +51,19 @@ public sealed partial class WhatsAppMediaResource
         catch (Exception error) when (error is JsonException or InvalidOperationException or KeyNotFoundException or ArgumentException or FormatException) { throw InvalidResponse(response.Metadata); }
     }
     /// <summary>Transfers only prepared ciphertext. Keeps the caller's input open and never retries the API upload.</summary>
-    public async Task<WhatsAppUploadLocation> RelayUploadAsync(string session, WhatsAppUploadMediaType kind, byte[] fileEncSha256, Stream encrypted, long encryptedLength, RequestOptions? options = null)
+    public async Task<WhatsAppUploadLocation> RelayUploadAsync(string connection, WhatsAppUploadMediaType kind, byte[] fileEncSha256, Stream encrypted, long encryptedLength, RequestOptions? options = null)
     {
-        Session(session);
+        Connection(connection);
         if (encryptedLength < 1 || !encrypted.CanRead) throw new PolymorfaValidationException("Invalid encrypted body or length.", "invalid_parameter");
         var query = new List<KeyValuePair<string, string>> { new("type", ApiKind(kind)), new("fileEncSha256", EncodedHash(fileEncSha256)) };
         if (kind is WhatsAppUploadMediaType.Audio or WhatsAppUploadMediaType.Ptt) query.Add(new("ptt", (kind == WhatsAppUploadMediaType.Ptt).ToString().ToLowerInvariant()));
         using var body = new StreamContent(new BorrowedCiphertext(encrypted)); body.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream"); body.Headers.ContentLength = encryptedLength;
-        var response = await http.RequestBinaryAsync<JsonElement>($"/messaging/{Uri.EscapeDataString(session)}/media/uploads", body, SubmissionOptions(options), query).ConfigureAwait(false);
+        var response = await http.RequestBinaryAsync<JsonElement>($"/messaging/{Uri.EscapeDataString(connection)}/media/uploads", body, SubmissionOptions(options), query).ConfigureAwait(false);
         try { var data = CanonicalData(response); if (data.TryGetProperty("handle", out var handle) && handle.ValueKind != JsonValueKind.String) throw new JsonException(); var result = data.Deserialize<WhatsAppUploadLocation>(HttpTransport.Json) ?? throw InvalidResponse(response.Metadata); if (string.IsNullOrEmpty(result.DirectPath) || string.IsNullOrEmpty(result.Url)) throw InvalidResponse(response.Metadata); return result; }
         catch (JsonException) { throw InvalidResponse(response.Metadata); }
     }
     internal static PolymorfaException InvalidResponse(ResponseMetadata? metadata = null) => new PolymorfaServerException("The API returned an invalid media/history response.", "invalid_response", metadata);
-    internal static void Session(string session) { if (string.IsNullOrEmpty(session)) throw new PolymorfaConfigurationException("A session is required."); CampaignContractValidation.Unicode(session); }
+    internal static void Connection(string connection) { if (string.IsNullOrEmpty(connection)) throw new PolymorfaConfigurationException("A connection is required."); CampaignContractValidation.Unicode(connection); }
     internal static JsonElement CanonicalData(ApiResponse<JsonElement> response)
     {
         ExistingContractCodec.CheckMetadata(response.Metadata);
@@ -84,12 +84,12 @@ public sealed class HistorySyncResource
 {
     private readonly HttpTransport http;
     internal HistorySyncResource(HttpTransport http) => this.http = http;
-    public async Task<HistoryChunkRetryResult> RequestChunkRetryAsync(string session, HistoryChunkRetryRequest body, RequestOptions? options = null)
+    public async Task<HistoryChunkRetryResult> RequestChunkRetryAsync(string connection, HistoryChunkRetryRequest body, RequestOptions? options = null)
     {
-        http.Credential.RequireServer(); WhatsAppMediaResource.Session(session);
+        http.Credential.RequireServer(); WhatsAppMediaResource.Connection(connection);
         if (body is null || !Enum.IsDefined(body.SyncType) || body.ChunkMessageId is { } id && !Regex.IsMatch(id, "\\A[A-Za-z0-9._:-]{1,128}\\z", RegexOptions.CultureInvariant)) throw new PolymorfaConfigurationException("Invalid history retry request.");
         var captured = ExistingContractCodec.Capture(body);
-        var response = await http.RequestAsync<JsonElement>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(session)}/history/chunks/retry", captured, WhatsAppMediaResource.SubmissionOptions(options)).ConfigureAwait(false);
+        var response = await http.RequestAsync<JsonElement>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(connection)}/history/chunks/retry", captured, WhatsAppMediaResource.SubmissionOptions(options)).ConfigureAwait(false);
         try
         {
             var data = WhatsAppMediaResource.CanonicalData(response);
@@ -99,13 +99,13 @@ public sealed class HistorySyncResource
         }
         catch (Exception error) when (error is JsonException or InvalidOperationException or KeyNotFoundException) { throw WhatsAppMediaResource.InvalidResponse(response.Metadata); }
     }
-    public async Task DeleteChunkAsync(string session, HistoryChunkDeleteRequest body, RequestOptions? options = null)
+    public async Task DeleteChunkAsync(string connection, HistoryChunkDeleteRequest body, RequestOptions? options = null)
     {
-        http.Credential.RequireServer(); WhatsAppMediaResource.Session(session);
+        http.Credential.RequireServer(); WhatsAppMediaResource.Connection(connection);
         if (body is null || body.DirectPath is null || body.DirectPath.Length > 1024 || !Regex.IsMatch(body.DirectPath, "\\A/[A-Za-z0-9._~%/=&?+\\-]+\\z", RegexOptions.CultureInvariant) || body.FileEncSha256 is null || !Regex.IsMatch(body.FileEncSha256, "\\A[A-Za-z0-9+/]{43}=\\z", RegexOptions.CultureInvariant)) throw new PolymorfaConfigurationException("Invalid history deletion request.");
         if (Convert.FromBase64String(body.FileEncSha256).Length != 32) throw new PolymorfaConfigurationException("Invalid history encrypted hash.");
         foreach (var token in new[] { body.EncHandle, body.CompanionMetaNonce }) if (token is not null && !Regex.IsMatch(token, "\\A[A-Za-z0-9._~%/=+\\-]{1,512}\\z", RegexOptions.CultureInvariant)) throw new PolymorfaConfigurationException("Invalid history deletion token.");
-        var response = await http.RequestAsync<JsonElement>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(session)}/history/media/delete", ExistingContractCodec.Capture(body), WhatsAppMediaResource.SubmissionOptions(options)).ConfigureAwait(false);
+        var response = await http.RequestAsync<JsonElement>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(connection)}/history/media/delete", ExistingContractCodec.Capture(body), WhatsAppMediaResource.SubmissionOptions(options)).ConfigureAwait(false);
         try
         {
             var data = WhatsAppMediaResource.CanonicalData(response);

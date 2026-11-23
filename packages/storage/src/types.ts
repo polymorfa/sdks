@@ -26,7 +26,7 @@ export type RowKey = Readonly<Record<string, string>>;
  * `timestamp`, so a late copy of a cleared message does not reappear.
  */
 export interface ChatWatermarkGuard {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly chatId: string;
   /** Unix milliseconds of the message the write belongs to. */
   readonly timestamp: number;
@@ -66,7 +66,7 @@ export interface DeleteOperation {
  */
 export interface ClearChatOperation {
   readonly kind: "clearChat";
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly chatId: string;
   readonly upTo: number;
 }
@@ -74,7 +74,7 @@ export interface ClearChatOperation {
 /** Saves a resume position. Checkpoints overwrite; they are not merged. */
 export interface CheckpointOperation {
   readonly kind: "checkpoint";
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly stream: string;
   readonly cursor: string;
   /** Required by sync: checkpoint must still equal this prior cursor. */
@@ -93,10 +93,10 @@ export type StorageOperation =
 
 /** Operations produced from one event or history chunk. */
 export interface OperationBatch {
-  readonly sessionId: string;
+  readonly connectionId: string;
   /**
    * Deduplication key. A batch whose event ID was already applied for the
-   * session is skipped. Omit for batches without a stable source ID.
+   * connection is skipped. Omit for batches without a stable source ID.
    */
   readonly eventId?: string;
   /** Recorded with the event marker. */

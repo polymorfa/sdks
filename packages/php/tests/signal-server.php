@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 $mode = $argv[1] ?? 'valid';
-$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/signal-sidecar.json'), true, flags:JSON_THROW_ON_ERROR);
+$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/signal-sidecar.connections.json'), true, flags:JSON_THROW_ON_ERROR);
 $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
 echo json_encode(['url' => 'http://'.stream_socket_get_name($server, false)])."\n";
 flush();
@@ -47,8 +47,8 @@ for (;;) {
         $reply = '{"status":"ok"}';
     } else {
         $valid = $valid && ($headers['authorization'] ?? '') === 'Bearer '.$fixture['secret'];
-        if ($path === '/v1/sessions') {
-            $reply = '{"node_id":"fixture-node","sessions":[{"id":"session-fixture","lease_generation":7,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}';
+        if ($path === '/v1/connections') {
+            $reply = '{"node_id":"fixture-node","connections":[{"id":"session-fixture","lease_generation":7,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}';
         } elseif (str_ends_with($path, '/messages')) {
             $sends++;
             $data = json_decode($body, true, flags:JSON_THROW_ON_ERROR);
@@ -69,7 +69,7 @@ for (;;) {
                 fclose($peer);
                 continue;
             }
-            $valid = $valid && $path === '/v1/events?session_id=session-fixture';
+            $valid = $valid && $path === '/v1/events?connection_id=session-fixture';
             if ($mode === 'cancel') {
                 fwrite($peer, "HTTP/1.1 200 Fixture\r\nContent-Type: text/event-stream\r\nConnection: close\r\n\r\n: keepalive\n\n");
                 $streams[] = $peer;

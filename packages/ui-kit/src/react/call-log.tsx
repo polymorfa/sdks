@@ -95,7 +95,7 @@ export function conversationForCall(
   return {
     id: entry.conversationId,
     kind: "direct",
-    ...(entry.session === undefined ? {} : { session: entry.session }),
+    ...(entry.connection === undefined ? {} : { connection: entry.connection }),
     ...(entry.peer.name === undefined ? {} : { name: entry.peer.name }),
     ...(entry.peer.phoneNumber === undefined
       ? {}
@@ -108,7 +108,7 @@ export function conversationForCall(
 export interface CallLogProps {
   /** Supply a controller to drive the log from outside. */
   readonly controller?: CallLogController;
-  /** Defaults to the API (`GET /messaging/{session}/calls`, `read_calls`). */
+  /** Defaults to the API (`GET /messaging/{connection}/calls`, `read_calls`). */
   readonly source?: CallLogSource;
   /** Opens the call's conversation. Rows without a conversation do nothing. */
   readonly onOpen?: (conversation: InboxConversation) => void;

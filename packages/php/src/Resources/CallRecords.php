@@ -37,7 +37,7 @@ final class CallRecords extends PlatformResource
     {
         $query = $this->filters($params);
         if (isset($params['groupBy'])) {
-            $query['groupBy'] = $this->choice($params['groupBy'], ['day','hour','session','outcome']);
+            $query['groupBy'] = $this->choice($params['groupBy'], ['day','hour','connection','outcome']);
         } if (isset($params['timezone'])) {
             $query['timezone'] = $this->text($params['timezone'], 64);
         }
@@ -109,8 +109,8 @@ final class CallRecords extends PlatformResource
         if ($project !== null) {
             $query['projectId'] = $this->text($project, 64);
         }
-        if (isset($params['sessionId'])) {
-            $query['sessionId'] = $this->text($params['sessionId'], 128);
+        if (isset($params['connectionId'])) {
+            $query['connectionId'] = $this->text($params['connectionId'], 128);
         }
         foreach (['direction' => ['inbound','outbound'],'upstream' => ['linked_device','cloud_api'],'outcome' => ['answered','missed','declined','failed','in_progress']] as $key => $values) {
             if (isset($params[$key])) {

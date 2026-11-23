@@ -103,7 +103,7 @@ class UnpinMessage(TypedDict):
 
 class OfficialGroups(Resource):
     async def set_picture(
-        self, session: str, group: str, jpeg: bytes, *, options: RequestOptions = O
+        self, connection: str, group: str, jpeg: bytes, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[AcceptedChange]]:
         """Send JPEG bytes once. The API validates square dimensions >=192px."""
         self._server()
@@ -119,7 +119,7 @@ class OfficialGroups(Resource):
             ApiResponse[Envelope[AcceptedChange]],
             await self._transport.request_binary_json(
                 "PUT",
-                f"/messaging/{segment(session)}/official-groups/{segment(group)}/picture",
+                f"/messaging/{segment(connection)}/official-groups/{segment(group)}/picture",
                 body,
                 len(body),
                 options=options,
@@ -129,7 +129,7 @@ class OfficialGroups(Resource):
 
     async def list(
         self,
-        session: str,
+        connection: str,
         *,
         limit: int | None = None,
         before: str | None = None,
@@ -139,76 +139,76 @@ class OfficialGroups(Resource):
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/official-groups",
+            f"/messaging/{segment(connection)}/official-groups",
             query={"limit": limit, "before": before, "after": after},
             options=options,
         )
 
     async def create(
-        self, session: str, body: CreateGroup, *, options: RequestOptions = O
+        self, connection: str, body: CreateGroup, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[CreatedGroup]]:
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/official-groups",
+            f"/messaging/{segment(connection)}/official-groups",
             body=body,
             options=replace(options, max_network_retries=0),
         )
 
     async def retrieve(
-        self, session: str, group: str, *, options: RequestOptions = O
+        self, connection: str, group: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[OfficialGroup]]:
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}",
             options=options,
         )
 
     async def update(
-        self, session: str, group: str, body: UpdateGroup, *, options: RequestOptions = O
+        self, connection: str, group: str, body: UpdateGroup, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[AcceptedChange]]:
         self._server()
         return await self._request(
             "PATCH",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}",
             body=body,
             options=replace(options, max_network_retries=0),
         )
 
     async def delete(
-        self, session: str, group: str, *, options: RequestOptions = O
+        self, connection: str, group: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[AcceptedChange]]:
         self._server()
         return await self._request(
             "DELETE",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}",
             options=replace(options, max_network_retries=0),
         )
 
     async def get_invite_link(
-        self, session: str, group: str, *, options: RequestOptions = O
+        self, connection: str, group: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[InviteLink]]:
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/invite-link",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/invite-link",
             options=options,
         )
 
     async def reset_invite_link(
-        self, session: str, group: str, *, options: RequestOptions = O
+        self, connection: str, group: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[InviteLink]]:
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/invite-link/reset",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/invite-link/reset",
             options=replace(options, max_network_retries=0),
         )
 
     async def remove_participants(
         self,
-        session: str,
+        connection: str,
         group: str,
         participants: builtins.list[str],
         *,
@@ -217,14 +217,14 @@ class OfficialGroups(Resource):
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/participants/remove",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/participants/remove",
             body={"participants": participants},
             options=replace(options, max_network_retries=0),
         )
 
     async def list_join_requests(
         self,
-        session: str,
+        connection: str,
         group: str,
         *,
         before: str | None = None,
@@ -234,14 +234,14 @@ class OfficialGroups(Resource):
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/join-requests",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/join-requests",
             query={"before": before, "after": after},
             options=options,
         )
 
     async def approve_join_requests(
         self,
-        session: str,
+        connection: str,
         group: str,
         join_request_ids: builtins.list[str],
         *,
@@ -250,14 +250,14 @@ class OfficialGroups(Resource):
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/join-requests/approve",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/join-requests/approve",
             body={"joinRequestIds": join_request_ids},
             options=replace(options, max_network_retries=0),
         )
 
     async def reject_join_requests(
         self,
-        session: str,
+        connection: str,
         group: str,
         join_request_ids: builtins.list[str],
         *,
@@ -266,14 +266,14 @@ class OfficialGroups(Resource):
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/join-requests/reject",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/join-requests/reject",
             body={"joinRequestIds": join_request_ids},
             options=replace(options, max_network_retries=0),
         )
 
     async def pin(
         self,
-        session: str,
+        connection: str,
         group: str,
         body: PinMessage | UnpinMessage,
         *,
@@ -282,7 +282,7 @@ class OfficialGroups(Resource):
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/{segment(session)}/official-groups/{segment(group)}/pins",
+            f"/messaging/{segment(connection)}/official-groups/{segment(group)}/pins",
             body=body,
             options=replace(options, max_network_retries=0),
         )
