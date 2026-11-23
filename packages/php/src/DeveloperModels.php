@@ -23,14 +23,14 @@ namespace Polymorfa;
  * @phpstan-type WebhookMutation array{webhook:Webhook,operationId:null,idempotency:IdempotencyReceipt}
  * @phpstan-type WebhookDeletion array{webhookId:string,deleted:true,operationId:null,idempotency:IdempotencyReceipt}
  * @phpstan-type WebhookRotation array{webhookId:string,operationId:null,secret:?string,secretAvailable:bool,secretMetadata:SecretMetadata,idempotency:IdempotencyReceipt}
- * @phpstan-type WebhookTest array{eventType?:string,body?:never,sessionId?:never}|array{eventType?:string,body:EncodedPayload,sessionId:string}
+ * @phpstan-type WebhookTest array{eventType?:string,body?:never,connectionId?:never}|array{eventType?:string,body:EncodedPayload,connectionId:string}
  * @phpstan-type DeliveryStatus 'pending'|'delivering'|'retrying'|'succeeded'|'failed'
  * @phpstan-type Delivery array{id:string,teamId:string,projectId:?string,eventId:string,webhookId:string,status:DeliveryStatus,attemptCount:int,capabilities:array{retryable:bool},payloadAvailability:Availability,replayableUntil:?string,metadataExpiresAt:string,nextAttemptAt:?string,lastAttemptAt:?string,completedAt:?string,createdAt:string,updatedAt:string,lastOutcome:array{statusCode:?int,errorCode:?string}|null}
  * @phpstan-type Attempt array{id:string,teamId:string,projectId:?string,deliveryId:string,number:int,status:'pending'|'delivering'|'succeeded'|'failed',startedAt:?string,completedAt:?string,nextRetryAt:?string,durationMs:int|float|null,statusCode:?int,errorCode:?string,response:array{contentType:string,excerpt:string,truncated:bool}|null,metadataExpiresAt:string}
  * @phpstan-type DeliveryParams array{webhookId?:string,eventId?:string,status?:DeliveryStatus,since?:string,until?:string,limit?:int,cursor?:string}
  * @phpstan-type DeliveryRetry array{deliveryId:string,attemptId:string,operationId:string,idempotency:IdempotencyReceipt}
  * @phpstan-type OperationStatus 'pending'|'running'|'action_required'|'cancelling'|'succeeded'|'failed'|'cancelled'
- * @phpstan-type OperationKind 'auth_projection_repair'|'session_lifecycle'|'auth_session_purge'|'label_projection_purge'|'billing_reconciliation'|'auto_top_up'|'campaign'|'production_enrollment'|'retention_sweep'|'webhook_redrive'
+ * @phpstan-type OperationKind 'auth_projection_repair'|'connection_lifecycle'|'auth_session_purge'|'label_projection_purge'|'billing_reconciliation'|'auto_top_up'|'campaign'|'production_enrollment'|'retention_sweep'|'webhook_redrive'
  * @phpstan-type Progress array{code:string,current:int|float|null,total:int|float|null}
  * @phpstan-type OperationError array{code:string,retryable:bool,details:array<string,mixed>|null}
  * @phpstan-type RequiredAction array{code:string,details:array<string,mixed>|null}

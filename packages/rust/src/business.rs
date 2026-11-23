@@ -278,11 +278,11 @@ pub enum BusinessCommandResponse<T> {
     Completed(SuccessEnvelope<T>),
 }
 pub struct Business<'a>(pub(crate) &'a HttpTransport);
-fn business(session: &str) -> String {
-    format!("/messaging/{}/business", encode(session))
+fn business(connection: &str) -> String {
+    format!("/messaging/{}/business", encode(connection))
 }
-fn resource(session: &str, kind: &str, id: &str) -> String {
-    format!("{}/{}/{}", business(session), kind, encode(id))
+fn resource(connection: &str, kind: &str, id: &str) -> String {
+    format!("{}/{}/{}", business(connection), kind, encode(id))
 }
 impl BusinessCatalogParameters {
     fn query(&self) -> Vec<(&'static str, String)> {
@@ -324,23 +324,23 @@ impl BusinessCollectionsParameters {
 impl Business<'_> {
     pub async fn get_profile(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessProfile>>> {
         self.0
-            .get(&format!("{}/profile", business(session)), options)
+            .get(&format!("{}/profile", business(connection)), options)
             .await
     }
     pub async fn update_profile(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessProfileUpdateRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessProfileStatus>>> {
         self.0
             .request(
                 Method::PATCH,
-                &format!("{}/profile", business(session)),
+                &format!("{}/profile", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -349,14 +349,14 @@ impl Business<'_> {
     }
     pub async fn set_cover_photo(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessCoverPhotoRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessCoverPhotoResult>>> {
         self.0
             .request(
                 Method::PUT,
-                &format!("{}/profile/cover-photo", business(session)),
+                &format!("{}/profile/cover-photo", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -365,14 +365,18 @@ impl Business<'_> {
     }
     pub async fn delete_cover_photo(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessProfileStatus>>> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &format!("{}/profile/cover-photo/{}", business(session), encode(id)),
+                &format!(
+                    "{}/profile/cover-photo/{}",
+                    business(connection),
+                    encode(id)
+                ),
                 &[],
                 None,
                 options,
@@ -381,14 +385,14 @@ impl Business<'_> {
     }
     pub async fn get_catalog(
         &self,
-        session: &str,
+        connection: &str,
         params: &BusinessCatalogParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessCatalogPage>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/catalog", business(session)),
+                &format!("{}/catalog", business(connection)),
                 &params.query(),
                 None,
                 options,
@@ -397,13 +401,13 @@ impl Business<'_> {
     }
     pub async fn create_catalog(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessActionSuccess>>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/catalog", business(session)),
+                &format!("{}/catalog", business(connection)),
                 &[],
                 None,
                 options,
@@ -412,14 +416,14 @@ impl Business<'_> {
     }
     pub async fn set_cart_enabled(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessCartSettingRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessActionSuccess>>> {
         self.0
             .request(
                 Method::PATCH,
-                &format!("{}/catalog/cart", business(session)),
+                &format!("{}/catalog/cart", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -428,7 +432,7 @@ impl Business<'_> {
     }
     pub async fn get_product(
         &self,
-        session: &str,
+        connection: &str,
         product_id: &str,
         business_id: &str,
         options: RequestOptions,
@@ -436,7 +440,7 @@ impl Business<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &resource(session, "products", product_id),
+                &resource(connection, "products", product_id),
                 &[("id", business_id.into())],
                 None,
                 options,
@@ -445,14 +449,14 @@ impl Business<'_> {
     }
     pub async fn create_product(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessProductMutationRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessProduct>>> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/products", business(session)),
+                &format!("{}/products", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -461,7 +465,7 @@ impl Business<'_> {
     }
     pub async fn update_product(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessProductMutationRequest,
         options: RequestOptions,
@@ -469,7 +473,7 @@ impl Business<'_> {
         self.0
             .request(
                 Method::PUT,
-                &resource(session, "products", id),
+                &resource(connection, "products", id),
                 &[],
                 Some(body),
                 options,
@@ -478,14 +482,14 @@ impl Business<'_> {
     }
     pub async fn delete_product(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessProductDeleteResult>>> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &resource(session, "products", id),
+                &resource(connection, "products", id),
                 &[],
                 None,
                 options,
@@ -494,7 +498,7 @@ impl Business<'_> {
     }
     pub async fn set_product_visibility(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessProductVisibilityRequest,
         options: RequestOptions,
@@ -502,7 +506,7 @@ impl Business<'_> {
         self.0
             .request(
                 Method::PATCH,
-                &format!("{}/visibility", resource(session, "products", id)),
+                &format!("{}/visibility", resource(connection, "products", id)),
                 &[],
                 Some(body),
                 options,
@@ -511,7 +515,7 @@ impl Business<'_> {
     }
     pub async fn appeal_product(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessCatalogAppealRequest,
         options: RequestOptions,
@@ -519,7 +523,7 @@ impl Business<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/appeal", resource(session, "products", id)),
+                &format!("{}/appeal", resource(connection, "products", id)),
                 &[],
                 Some(body),
                 options,
@@ -528,14 +532,14 @@ impl Business<'_> {
     }
     pub async fn list_collections(
         &self,
-        session: &str,
+        connection: &str,
         params: &BusinessCollectionsParameters,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessCollectionPage>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("{}/collections", business(session)),
+                &format!("{}/collections", business(connection)),
                 &params.query(),
                 None,
                 options,
@@ -544,7 +548,7 @@ impl Business<'_> {
     }
     pub async fn get_collection(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         params: &BusinessCollectionParameters,
         options: RequestOptions,
@@ -552,7 +556,7 @@ impl Business<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &resource(session, "collections", id),
+                &resource(connection, "collections", id),
                 &params.query(),
                 None,
                 options,
@@ -561,14 +565,14 @@ impl Business<'_> {
     }
     pub async fn create_collection(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessCollectionCreateRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessCollectionMutationResult>>> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/collections", business(session)),
+                &format!("{}/collections", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -577,7 +581,7 @@ impl Business<'_> {
     }
     pub async fn update_collection(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessCollectionUpdateRequest,
         options: RequestOptions,
@@ -585,7 +589,7 @@ impl Business<'_> {
         self.0
             .request(
                 Method::PATCH,
-                &resource(session, "collections", id),
+                &resource(connection, "collections", id),
                 &[],
                 Some(body),
                 options,
@@ -594,14 +598,14 @@ impl Business<'_> {
     }
     pub async fn delete_collection(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessActionSuccess>>> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &resource(session, "collections", id),
+                &resource(connection, "collections", id),
                 &[],
                 None,
                 options,
@@ -610,14 +614,14 @@ impl Business<'_> {
     }
     pub async fn reorder_collections(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessCollectionReorderRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessActionSuccess>>> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/collections/reorder", business(session)),
+                &format!("{}/collections/reorder", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -626,7 +630,7 @@ impl Business<'_> {
     }
     pub async fn appeal_collection(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessCatalogAppealRequest,
         options: RequestOptions,
@@ -634,7 +638,7 @@ impl Business<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/appeal", resource(session, "collections", id)),
+                &format!("{}/appeal", resource(connection, "collections", id)),
                 &[],
                 Some(body),
                 options,
@@ -643,7 +647,7 @@ impl Business<'_> {
     }
     pub async fn get_order(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessOrderLookupRequest,
         options: RequestOptions,
@@ -651,7 +655,7 @@ impl Business<'_> {
         self.0
             .request(
                 Method::POST,
-                &format!("{}/lookup", resource(session, "orders", id)),
+                &format!("{}/lookup", resource(connection, "orders", id)),
                 &[],
                 Some(body),
                 options,
@@ -660,23 +664,23 @@ impl Business<'_> {
     }
     pub async fn get_merchant_compliance(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessMerchantCompliance>>> {
         self.0
-            .get(&format!("{}/compliance", business(session)), options)
+            .get(&format!("{}/compliance", business(connection)), options)
             .await
     }
     pub async fn set_merchant_compliance(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessMerchantCompliance,
         options: RequestOptions,
     ) -> Result<ApiResponse<BusinessCommandResponse<BusinessMerchantCompliance>>> {
         self.0
             .request(
                 Method::PUT,
-                &format!("{}/compliance", business(session)),
+                &format!("{}/compliance", business(connection)),
                 &[],
                 Some(body),
                 options,
@@ -685,20 +689,23 @@ impl Business<'_> {
     }
     pub async fn get_linked_accounts(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessLinkedAccounts>>> {
         self.0
-            .get(&format!("{}/linked-accounts", business(session)), options)
+            .get(
+                &format!("{}/linked-accounts", business(connection)),
+                options,
+            )
             .await
     }
     pub async fn get_eligibility(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessEligibility>>> {
         self.0
-            .get(&format!("{}/eligibility", business(session)), options)
+            .get(&format!("{}/eligibility", business(connection)), options)
             .await
     }
 }

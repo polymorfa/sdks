@@ -14,7 +14,7 @@ import {
   validateCustodyUpdate,
 } from "../campaign-contract-validation.js";
 
-/** Future reservation defaults; these methods never convert existing Numbers. */
+/** Future reservation defaults; these methods never convert existing Connections. */
 export class SignalCustodyResource {
   readonly #transport: HttpTransport;
   readonly #projectId: string;

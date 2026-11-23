@@ -34,11 +34,11 @@ listener, reports terminal errors, and closes its reader before `Done` completes
 
 Media downloads expose bytes or an `io.ReadCloser`, filenames and API metadata. The configured timeout covers response headers, storage redirects and the complete media body; closing the body cancels its request. Cancellation and timeout remain errors even when the transport ends its body with EOF. Reads after a successful EOF continue to return EOF. API base paths are preserved for HTTP requests and Calls sockets. Signed download URLs redact routine Go formatting. Storage redirects receive no bearer credential, caller headers or cookie jar. WhatsApp media helpers parse supported descriptors, enforce HTTPS CDN hosts and size limits, derive HKDF keys, verify the ten-byte MAC and hashes, then decrypt AES-CBC before releasing bytes. `VerifyBeforeRelease` buffers plaintext until integrity checks pass. `VerifyStreaming` releases plaintext incrementally and reports final integrity failures through the reader; discard the output if the final read fails. File helpers write private sibling files and install them only after successful verification. API file helpers also enforce byte limits and preserve existing destinations on failure.
 
-Calls use the native `github.com/coder/websocket` implementation. Lifecycle and media sockets send authentication as the first WebSocket message, never in the URL. `Follow` maintains the lifecycle connection, tracks incoming and outgoing calls, buffers events that precede REST admission, and reconnects with bounded backoff. `Call` exposes answering, joining, leaving, ending, PCM audio, H.264 video, confirmed media preferences, participants, reactions and hand state. Media reconnect keeps the same connection identity and restores confirmed preferences. An optional token provider shares refresh work and refreshes socket authentication before expiry. Quality/error reporters bound diagnostic traffic and stop on permanent refusal. Consume session and call events with a select on `Done()`; event channels remain open during concurrent cleanup.
+Calls use the native `github.com/coder/websocket` implementation. Lifecycle and media sockets send authentication as the first WebSocket message, never in the URL. `Follow` maintains the lifecycle connection, tracks incoming and outgoing calls, buffers events that precede REST admission, and reconnects with bounded backoff. `Call` exposes answering, joining, leaving, ending, PCM audio, H.264 video, confirmed media preferences, participants, reactions and hand state. Media reconnect keeps the same connection identity and restores confirmed preferences. An optional token provider shares refresh work and refreshes socket authentication before expiry. Quality/error reporters bound diagnostic traffic and stop on permanent refusal. Consume lifecycle and call events with a select on `Done()`; event channels remain open during concurrent cleanup.
 
 ## Verification and protocol evidence
 
-Run `go test ./...` and `go vet ./...` from this directory. The tests execute native HTTP fixtures and a shared Node wire server. Run `go test ./...` in each `examples/go/*` directory to compile the consumer examples without network effects. `send-message` requires `POLYMORFA_API_KEY`, `POLYMORFA_SESSION` and `POLYMORFA_PHONE` and sends a message when run. `calls-agent` requires the API key and session and answers incoming calls when run. `webhook-server` requires `POLYMORFA_WEBHOOK_SECRET` and listens on loopback port 8080.
+Run `go test ./...` and `go vet ./...` from this directory. The tests execute native HTTP fixtures and a shared Node wire server. Run `go test ./...` in each `examples/go/*` directory to compile the consumer examples without network effects. `send-message` requires `POLYMORFA_API_KEY`, `POLYMORFA_CONNECTION` and `POLYMORFA_PHONE` and sends a message when run. `calls-agent` requires the API key and connection and answers incoming calls when run. `webhook-server` requires `POLYMORFA_WEBHOOK_SECRET` and listens on loopback port 8080.
 
 [`web-host`](../../examples/go/web-host/README.md) runs a Gin or `net/http` application with templ, HTMX and the existing Web Components. Its app-owned POST token endpoint derives the number and user from authenticated server state. The example has native HTTP tests for both hosts and a browser-tested sign-in, inbox mount and sign-out flow.
 
@@ -196,7 +196,7 @@ pass; changed sources fail before a complete encrypted body or document
 finalization is released.
 
 `UploadWhatsAppMediaOptions.Egress` defaults to `relay`: the API receives
-ciphertext plus its MAC and forwards it through the session's connection.
+ciphertext plus its MAC and forwards it through the connection's connection.
 `direct` requests a short-lived grant and uploads from your process. Neither
 upload mode sends plaintext or the media key to an upload endpoint. Keep the
 returned `MediaKey` and location private.
@@ -260,7 +260,7 @@ No decode helper stores data, acknowledges events or deletes chunks.
 `MessagingClient.HistorySync().RequestChunkRetry()` requests another chunk from
 the phone; `DeleteChunk()` explicitly deletes a processed CDN blob. Store the
 chunk durably before deletion. Both commands require a server credential and
-select API revision `2026-10-14` by default. The API enforces session authority,
+select API revision `2026-10-14` by default. The API enforces connection authority,
 consent and availability. Delete requests accept binary SHA-256 and encode it as
 standard padded base64. Neither command retries automatically; timeouts and
 cancellation do not undo an accepted request.
@@ -268,7 +268,7 @@ cancellation do not undo an accepted request.
 ### Customer-hosted D1 binding
 
 Import `github.com/polymorfa/sdks/packages/go/storage` for the storage-only
-`Adapter` interface, schema-2 definitions/key encoding and `NewD1Adapter()`.
+`Adapter` interface, schema-3 definitions/key encoding and `NewD1Adapter()`.
 Provide your Worker URL, immutable authority and table prefix, and a separate
 application secret. HTTPS is required except on loopback. The constructor
 verifies a fresh signed handshake before exposing atomic commit capability;
@@ -280,11 +280,11 @@ response must authenticate that nonce, status and exact body and match the
 configured authority/prefix/schema. Foreign rows, scope/order violations and
 unrelated conflict IDs fail closed. Redirects and automatic retries are refused;
 operation deadlines cover response bodies. Unconditional deletes require a
-same-session CAS lease write in the same atomic batch. Secrets and endpoint URLs
+same-connection CAS lease write in the same atomic batch. Secrets and endpoint URLs
 are omitted from errors and ordinary formatting/JSON.
 
 This uses the customer Worker bridge pinned at
-`9ae35e671f7f4868a67c1562422c5af9284b95c1`, backed by the D1 Worker binding.
+`d80b581c9df122411e9149a7e39a33700a51571c`, backed by the D1 Worker binding.
 Administrative D1 REST is not an atomic adapter. Native tests exercised the
 actual bundled Worker/Miniflare binding with all-entity fixtures, 2,000-row
 pagination, rollback, fenced deletion and checkpoint CAS. Set
@@ -294,7 +294,7 @@ pagination, rollback, fenced deletion and checkpoint CAS. Set
 ## Customer-owned Signal service client
 
 The server-side sidecar client consumes the application HTTP contract pinned to
-`8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. The separate application bearer secret
+`61209057729b002a2122b898d744a8813a702fc7`. The separate application bearer secret
 is not a Polymorfa API credential: it needs at least 16 visible ASCII characters,
 and values starting with the reserved `pmfa_` prefix are rejected before any
 request or webhook HMAC check. Device keys remain with the customer-operated
@@ -303,13 +303,13 @@ except on loopback. Redirects, credential cookies and automatic retries are
 refused. Request deadlines and caller cancellation do not undo a send or ACK.
 
 Create `NewSignalSidecarClient(SignalSidecarOptions{URL: serviceURL,
-Secret: applicationSecret})`. Use `Health`, `Sessions`, `Send` with
-`SignalSendRequest`, and `OpenEvents(ctx, sessionID)`. Iterate `stream.Items()`
+Secret: applicationSecret})`. Use `Health`, `Connections`, `Send` with
+`SignalSendRequest`, and `OpenEvents(ctx, connectionID)`. Iterate `stream.Items()`
 and close the stream. `ToSignalMediaDescriptor(upload)` converts a completed
 local media upload into a secret-bearing send descriptor, including PTT audio.
 
 An SSE connection delivers each record immediately and validates its ID, event
-type and requested session. The SDK retains exact JSON and protobuf bytes,
+type and requested connection. The SDK retains exact JSON and protobuf bytes,
 including unknown fields; history notification enums remain nullable integers.
 There is no cursor, automatic reconnection or automatic ACK. Durably persist
 an event and its effects before calling `Acknowledge`.
@@ -342,7 +342,7 @@ hosted database or log row contents.
 Each field uses its version and a deterministic value tie-breaker, including
 UTF-16 ordering and ECMAScript canonical number spellings. Revoked content and
 media references use a final version so older history cannot restore them.
-Every payload chunk reserves one slot for the durable session lease CAS. Lease
+Every payload chunk reserves one slot for the durable connection lease CAS. Lease
 release advances its revision rather than deleting it. Between bounded planning
 reads and clear-query pages, the engine conditionally renews a lease at half its
 TTL. An expired or replaced lease still fails before data or the event marker
@@ -383,17 +383,17 @@ D1 REST is never treated as atomic.
 or `storage.SQLite` with modernc SQLite. Connections remain borrowed unless
 `OwnsClient` is selected. Use a trusted `TablePrefix` and optional PostgreSQL
 `Schema` for independent application namespaces. The exported
-`SQLSchemaStatements` and `SQLMigration` use the shared schema2 column names and
+`SQLSchemaStatements` and `SQLMigration` use the shared schema3 column names and
 indexes. PostgreSQL clients include customer-operated Supabase and Neon SQL
 connections; MySQL clients include compatible customer PlanetScale connections.
 Their actual cloud hosting and credentials were not exercised by local tests.
 
-Setup creates schema2 tables unless `CreateTables` is explicitly false. It never
+Setup creates schema3 tables unless `CreateTables` is explicitly false. It never
 rewrites a different saved version. Reads and writes verify that version and
 fail closed on mismatch. MySQL also requires InnoDB for every storage table and
 strict SQL mode before atomic commits are exposed. Conditional writes execute
 in one native transaction; stale revisions roll the entire batch back. An
-unconditional delete requires a matching session lease CAS in that same batch.
+unconditional delete requires a matching connection lease CAS in that same batch.
 Errors omit database URLs, credentials and upstream exception text.
 
 Native tests use pgx with PostgreSQL 16, go-sql-driver/mysql with MySQL 8.4 and
@@ -405,7 +405,7 @@ Set `POLYMORFA_SQL_FIXTURE_METADATA` to a task-owned metadata file containing
 
 
 `storage.NewLibSQLAdapter(ctx, db, options)` accepts an application-configured
-`github.com/tursodatabase/libsql-client-go/libsql` pool and uses the same schema2
+`github.com/tursodatabase/libsql-client-go/libsql` pool and uses the same schema3
 SQL contract. The official HTTP client pinned at
 `v0.0.0-20260528064733-9d5d30a29a60` passed the complete native SQL conformance
 suite against an actual libSQL server, including conditional rollback and
@@ -423,7 +423,7 @@ from the durable checkpoint and deduplication marker rather than assuming undo.
 
 All adapters borrow caller-configured official clients and use a trusted
 `storage.ProviderOptions.Namespace`. Set `Create` only when this application may
-initialize its schema2 version marker; setup refuses a different saved version.
+initialize its schema3 version marker; setup refuses a different saved version.
 `MaxQueryRows` bounds indexed reads before local ordering and pagination. The
 engine supplies conditional revisions and reserves one commit slot for its
 same-transaction lease. Adapters never evaluate webhook policy or store device keys.
@@ -442,7 +442,7 @@ transaction. Cosmos requires exactly the `/namespace` partition key and retains
 ETag-guarded tombstones so a logical delete cannot race with recreation. Its
 physical document IDs must fit the provider's 1,023-byte limit.
 
-MongoDB and Firestore keep raw schema2 rows, with exact encoded keys as document
+MongoDB and Firestore keep raw schema3 rows, with exact encoded keys as document
 IDs. DynamoDB uses `{pk: namespace+":"+entity, sk: encodedKey, row}`. Cosmos uses
 `{id: entity+":"+encodedKey, namespace, entity, row, deleted}` in one customer
 partition. These layouts match the shared TypeScript storage contract. Provider
@@ -457,7 +457,7 @@ with checkpoint and event replay.
 
 `SupabaseSchema(SupabaseOptions{...})` exports customer-installed PostgreSQL schema
 and FORCE RLS policies. A distinct server role writes; browser readers see only
-sessions with live `auth.uid()` membership and receive no write grant. The preset
+connections with live `auth.uid()` membership and receive no write grant. The preset
 never installs itself or grants a browser server credentials. Actual restricted
 PostgreSQL roles verified live revocation and browser write refusal; hosted
 Supabase and Neon services were not exercised.
@@ -485,7 +485,7 @@ IndexedDB are outside the accepted Go adapter matrix.
 `NewS3MediaStore(S3MediaStoreOptions{Client: client, Bucket: bucket, Prefix: prefix})`
 borrows an official AWS SDK v2 S3 client configured for the customer's bucket,
 including compatible R2 or MinIO endpoints. `UploadToWhatsApp` takes a Messaging
-media resource, session, relative key and the existing encrypted upload options.
+media resource, connection, relative key and the existing encrypted upload options.
 It requires an object ETag, pins both reads with `If-Match`, and preserves the
 source-length and final encrypted-hash barriers before provider finalization.
 An object changed between reads fails instead of finalizing mismatched media.
@@ -509,7 +509,7 @@ and live WhatsApp delivery were not exercised by these native tests.
 
 `UploadWhatsAppMediaOptions.UploadTransport` accepts a customer
 `WhatsAppMediaUploadTransport` instead of an `Egress` string. Its `Name()` identifies
-the result; `Upload(ctx, session, body)` receives encrypted-body metadata and
+the result; `Upload(ctx, connection, body)` receives encrypted-body metadata and
 `body.Open(ctx, offset)`, without plaintext, the media key or API credentials.
 Each opening revalidates the immutable plaintext source before releasing final
 encrypted bytes. The SDK rejects success if no complete verified encrypted body
@@ -528,7 +528,7 @@ only after its encrypted-body read succeeds.
 ## Additional campaign and custody contracts (development source)
 
 This checkout adds 30 handwritten operations from API source
-`f97ad78b172e80788c33bdc0fcf28f75db9283ec`, using TypeScript reference
+`15db8b1c9d88e2ceccb58c851e731feabb659a39`, using TypeScript reference
 `44d5426f90bf376940a5198edac5da4cd893cbe9`. The additive contract remains
 unpublished. The primary coverage snapshots and global API default stay at their
 existing revisions. These methods select `2026-10-14` per request when
@@ -582,8 +582,8 @@ locale remain explicit. Enabling requires a supported non-null locale.
 
 `project.SignalCustody()` adds `Retrieve`, `Update`, `RetrieveCustomer` and
 `UpdateCustomer`. Team aliases live on `Projects()` and `Customers()`.
-These defaults apply to future Number reservations and never convert existing
-Numbers. Project mode cannot be null. Customer null restores inheritance:
+These defaults apply to future Connection reservations and never convert existing
+Connections. Project mode cannot be null. Customer null restores inheritance:
 
 ```go
 project, err := team.Project(projectID)
@@ -654,11 +654,11 @@ CSV export keeps its separate filtering rules.
 
 `HistorySyncPolicy` reads archive or descriptor delivery. Writes use
 `HistorySyncPolicyPatch` and `HistoryDeliverySetDescriptor`. Setting delivery or
-resetting `SessionResetHistoryDelivery` selects `2026-10-14` only when the request
+resetting `ConnectionResetHistoryDelivery` selects `2026-10-14` only when the request
 version is absent. A whole-history reset and ordinary GET keep `2026-09-22`.
 Explicit versions are preserved. Go treats an empty `RequestOptions.APIVersion`
 as absent. Initial QuickLinks also accept `SignalMode`; supplementary links
-cannot change custody. `Session.SignalMode` is an optional immutable read fact.
+cannot change custody. `Connection.SignalMode` is an optional immutable read fact.
 Configuration cannot change custody or grant browser tunnel access.
 
 `WebhookEvent.TypedPayload` distinguishes `DirectHistorySyncMediaPayload` and
@@ -767,7 +767,7 @@ ACK keep that order. These changes are unreleased source behavior.
 
 ## Official API round-2 betas
 
-Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+Native Connection catalog-cache reads/sync, marketing status, Official group JPEG
 upload, identity changes, incoming carts and signed webhook batches have source
 counterparts. These additions remain unreleased betas and may return
 `feature_unavailable`. They grant no enrollment or provider authority. See
@@ -799,7 +799,7 @@ off-to-on transition. Project tokens may disable it. The SDK forwards values
 without guessing the stored state. Existing `invalid_parameter`,
 `permission_denied` and `state_conflict` errors remain authoritative.
 
-The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+The setting affects linked-device Connections. Cloud API Connections ignore it.
 Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
 when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
@@ -885,8 +885,8 @@ Prefer keyed response struct literals when constructing synthetic settings.
 
 ## Direct passkey relay (unreleased)
 
-Use server credentials with `sessions:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+Use server credentials with `connections:manage` for every operation, including reads.
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -911,31 +911,31 @@ The matching API source is accepted. Package qualification and publication are
 still required before using a released package.
 
 ```go
-ticket, err := client.Passkeys().IssueChallenge(ctx, session, polymorfa.IssuePasskeyChallengeRequest{})
+ticket, err := client.Passkeys().IssueChallenge(ctx, connection, polymorfa.IssuePasskeyChallengeRequest{})
 if err != nil { return err }
-_, err = client.Passkeys().GetChallenge(ctx, session, ticket.Data.Data.Ticket)
+_, err = client.Passkeys().GetChallenge(ctx, connection, ticket.Data.Data.Ticket)
 if err != nil { return err }
-_, err = client.Passkeys().SubmitAssertion(ctx, session, suppliedAssertion)
+_, err = client.Passkeys().SubmitAssertion(ctx, connection, suppliedAssertion)
 if err != nil { return err }
-_, err = client.Passkeys().GetConfirmation(ctx, session)
+_, err = client.Passkeys().GetConfirmation(ctx, connection)
 if err != nil { return err }
 // Call only after an explicit caller decision based on the current state.
 confirmExplicitly := func() error {
-    _, err := client.Passkeys().Confirm(ctx, session, suppliedConfirmation)
+    _, err := client.Passkeys().Confirm(ctx, connection, suppliedConfirmation)
     return err
 }
 _ = confirmExplicitly
 ```
 
-## Number call history (unreleased source)
+## Connection call history (unreleased source)
 
-Read one number's calls with the other party's identity through
-`GET /messaging/{session}/calls`. Client tokens need `read_calls`.
+Read one Connection's calls with the other party's identity through
+`GET /messaging/{connection}/calls`. Client tokens need `read_calls`.
 The route requires the regional call-history API deployment; this source
 change does not make it available on a deployed API or package registry.
 
 ```go
-page, err := messaging.SessionCalls().List(ctx, "support", polymorfa.ListSessionCallsParams{
+page, err := messaging.ConnectionCalls().List(ctx, "support", polymorfa.ListConnectionCallsParams{
     ListParams: polymorfa.ListParams{Limit: 25}, Outcome: "missed",
 })
 ```
@@ -946,18 +946,18 @@ next request. Filters include direction, outcome and ISO 8601 start-time
 bounds `since`/`until`. `peer` may be null; its user ID, phone number and
 username may each be absent. Platform call records keep `peerRef`.
 
-## Number-scoped Test operations
+## Connection-scoped Test operations
 
-The Test phone methods take a Number ID, without a project argument:
+The Test phone methods take a Connection ID, without a project argument:
 ~~~go
 phone, err := client.Testing().GetPhone(ctx, "support")
 event, err := client.Testing().TriggerEvent(ctx, "support", polymorfa.TriggerTestEventRequest{
-    Event: "call.missed", FromNumber: "sales",
+    Event: "call.missed", FromConnection: "sales",
 })
 fixtures, err := client.Testing().ListEventFixtures(ctx)
 ~~~
 
-Send-phone-message and unlink-device helpers use the same Number scope. The trigger body contains event, optional overrides and optional fromNumber; it does not contain session or fromSession. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-number access checks; a helper does not grant access or make a real Number a Test number.
+Send-phone-message and unlink-device helpers use the same Connection scope. The trigger body contains event, optional overrides and optional fromConnection; the target Connection is a separate method argument. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-Connection access checks; a helper does not grant access or make a real Connection a Test Connection.
 
 ## Guest participants and waiting rooms (unreleased)
 
@@ -992,10 +992,16 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.

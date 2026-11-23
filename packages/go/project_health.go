@@ -55,7 +55,7 @@ type ProjectHealthPolicy struct {
 	Version             int64                           `json:"version"`
 	Enabled             bool                            `json:"enabled"`
 	Threshold           float64                         `json:"threshold"`
-	SessionAction       string                          `json:"sessionAction"`
+	ConnectionAction    string                          `json:"connectionAction"`
 	SlowDownMPS         *float64                        `json:"slowDownMps"`
 	EmailNotification   bool                            `json:"emailNotification"`
 	WebhookNotification bool                            `json:"webhookNotification"`
@@ -65,22 +65,22 @@ type UpdateProjectHealthPolicyRequest struct {
 	Version             int64    `json:"version"`
 	Enabled             bool     `json:"enabled"`
 	Threshold           float64  `json:"threshold"`
-	SessionAction       string   `json:"sessionAction"`
+	ConnectionAction    string   `json:"connectionAction"`
 	SlowDownMPS         *float64 `json:"slowDownMps"`
 	EmailNotification   bool     `json:"emailNotification"`
 	WebhookNotification bool     `json:"webhookNotification"`
 }
-type HybridMergeCandidateNumber struct {
-	ID            string `json:"id"`
-	Name          string `json:"name"`
-	Transport     string `json:"transport"`
-	Status        string `json:"status"`
-	CanBeAbsorbed bool   `json:"canBeAbsorbed"`
+type HybridMergeCandidateConnection struct {
+	ID            string           `json:"id"`
+	Name          string           `json:"name"`
+	Method        ConnectionMethod `json:"method"`
+	Status        string           `json:"status"`
+	CanBeAbsorbed bool             `json:"canBeAbsorbed"`
 }
 type HybridMergeCandidate struct {
-	Numbers          [2]HybridMergeCandidateNumber `json:"numbers"`
-	Eligible         bool                          `json:"eligible"`
-	IneligibleReason string                        `json:"ineligibleReason,omitempty"`
+	Connections      [2]HybridMergeCandidateConnection `json:"connections"`
+	Eligible         bool                              `json:"eligible"`
+	IneligibleReason string                            `json:"ineligibleReason,omitempty"`
 }
 
 func projectPath(id string) string { return "/platform/projects/" + escaped(id) }
@@ -146,9 +146,9 @@ func (r *MessagingBanSafe) GetProjectHealthPolicy(ctx context.Context, id string
 func (r *MessagingBanSafe) UpdateProjectHealthPolicy(ctx context.Context, id string, b UpdateProjectHealthPolicyRequest, o ...RequestOptions) (Response[Envelope[ProjectHealthPolicy]], error) {
 	return messagingSettingRequest[ProjectHealthPolicy](ctx, r.t, "PUT", messagingProjectPath(id)+"/health-policy", b, o)
 }
-func (r *MessagingBanSafe) GetSessionSafeMode(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[SessionSafeMode]], error) {
-	return messagingSettingRequest[SessionSafeMode](ctx, r.t, "GET", messagingPath(id)+"/safe-mode", nil, o)
+func (r *MessagingBanSafe) GetConnectionSafeMode(ctx context.Context, id string, o ...RequestOptions) (Response[Envelope[ConnectionSafeMode]], error) {
+	return messagingSettingRequest[ConnectionSafeMode](ctx, r.t, "GET", messagingPath(id)+"/safe-mode", nil, o)
 }
-func (r *MessagingBanSafe) UpdateSessionSafeMode(ctx context.Context, id string, b UpdateSessionSafeModeRequest, o ...RequestOptions) (Response[Envelope[SessionSafeMode]], error) {
-	return messagingSettingRequest[SessionSafeMode](ctx, r.t, "PUT", messagingPath(id)+"/safe-mode", b, o)
+func (r *MessagingBanSafe) UpdateConnectionSafeMode(ctx context.Context, id string, b UpdateConnectionSafeModeRequest, o ...RequestOptions) (Response[Envelope[ConnectionSafeMode]], error) {
+	return messagingSettingRequest[ConnectionSafeMode](ctx, r.t, "PUT", messagingPath(id)+"/safe-mode", b, o)
 }

@@ -68,7 +68,7 @@ pub enum HistorySyncDeliverySource {
     Platform,
     Team,
     Project,
-    Session,
+    Connection,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -186,7 +186,7 @@ impl<'de> Deserialize<'de> for HmsConfiguration {
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase", deny_unknown_fields)]
-pub struct SessionConfigurationOverrides {
+pub struct ConnectionConfigurationOverrides {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub observation: Option<ObservationConfigurationPatch>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -196,7 +196,7 @@ pub struct SessionConfigurationOverrides {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct EffectiveSessionConfiguration {
+pub struct EffectiveConnectionConfiguration {
     pub observation: ObservationConfiguration,
     pub history_sync: HistorySyncPolicy,
     pub hms: HmsConfiguration,
@@ -207,7 +207,7 @@ pub enum ConfigurationSource {
     Platform,
     Team,
     Project,
-    Session,
+    Connection,
     Consent,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -237,7 +237,7 @@ pub struct ConfigurationSources {
 pub struct ConfigurationRevisions {
     pub team: u64,
     pub project: u64,
-    pub session: u64,
+    pub connection: u64,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -248,9 +248,9 @@ pub struct ConfigurationApplication {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionConfigurationView {
-    pub effective: EffectiveSessionConfiguration,
-    pub overrides: SessionConfigurationOverrides,
+pub struct ConnectionConfigurationView {
+    pub effective: EffectiveConnectionConfiguration,
+    pub overrides: ConnectionConfigurationOverrides,
     pub sources: ConfigurationSources,
     pub requested_history: HistorySyncPolicy,
     pub history_consent: Option<String>,
@@ -258,7 +258,7 @@ pub struct SessionConfigurationView {
     pub application: Option<ConfigurationApplication>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub enum SessionConfigurationReset {
+pub enum ConnectionConfigurationReset {
     #[serde(rename = "historySync.delivery")]
     HistorySyncDelivery,
     #[serde(rename = "historySync")]
@@ -281,15 +281,15 @@ pub enum SessionConfigurationReset {
     QuickReplyMode,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct SessionConfigurationPatch {
+pub struct ConnectionConfigurationPatch {
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub set: Option<SessionConfigurationOverrides>,
+    pub set: Option<ConnectionConfigurationOverrides>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reset: Option<Vec<SessionConfigurationReset>>,
+    pub reset: Option<Vec<ConnectionConfigurationReset>>,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct UpdateSessionRequest {
-    pub configuration: SessionConfigurationPatch,
+pub struct UpdateConnectionRequest {
+    pub configuration: ConnectionConfigurationPatch,
     pub revision: u64,
 }
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -299,13 +299,29 @@ pub struct TestingProfile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
 }
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TestingAccountType {
+    WhatsappApp,
+    BusinessApp,
+    MetaCloud,
+    MetaCoexistence,
+}
+#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TestingPrimaryPlatform {
+    Android,
+    Ios,
+}
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestingConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile: Option<TestingProfile>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub account_type: Option<String>,
+    pub account_type: Option<TestingAccountType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary_platform: Option<TestingPrimaryPlatform>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_behavior: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -353,7 +369,7 @@ pub struct QuickLinkOnboarding {
     pub error_code: Option<String>,
 }
 
-impl SessionConfigurationPatch {
+impl ConnectionConfigurationPatch {
     pub(crate) fn options(&self, mut options: crate::RequestOptions) -> crate::RequestOptions {
         let intent = self
             .set
@@ -362,7 +378,7 @@ impl SessionConfigurationPatch {
             .is_some_and(|s| s.delivery.is_some())
             || self.reset.as_ref().is_some_and(|s| {
                 s.iter()
-                    .any(|r| matches!(r, SessionConfigurationReset::HistorySyncDelivery))
+                    .any(|r| matches!(r, ConnectionConfigurationReset::HistorySyncDelivery))
             });
         if intent && options.api_version.is_none() {
             options.api_version = Some(crate::direct_media::CUSTOMER_OWNED_API_VERSION.into());

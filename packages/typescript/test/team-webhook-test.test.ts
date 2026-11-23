@@ -34,8 +34,8 @@ it("keeps project webhook test body authority separate", () => {
     client.webhooks.test("hook-1", {
       // @ts-expect-error team webhook tests reject supplied bodies
       body: { event: "x" },
-      // @ts-expect-error team webhook tests reject session IDs
-      sessionId: "session-1",
+      // @ts-expect-error team webhook tests reject connection IDs
+      connectionId: "session-1",
     });
   };
   expect(invalidTeamBody).toBeTypeOf("function");

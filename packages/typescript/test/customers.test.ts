@@ -65,7 +65,7 @@ describe("Client customers", () => {
       search: "Ada Lovelace",
       status: "active",
       isDefault: false,
-      hasNumbers: true,
+      hasConnections: true,
       needsAttention: false,
     });
     await client.customers.create(
@@ -85,7 +85,7 @@ describe("Client customers", () => {
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/projects/project%2Fa/customers/status",
       "POST /platform/projects/project%2Fa/customers/enable",
-      "GET /platform/customers?projectId=project%2Fa&cursor=cursor%2Fa&limit=20&search=Ada+Lovelace&status=active&isDefault=false&hasNumbers=true&needsAttention=false",
+      "GET /platform/customers?projectId=project%2Fa&cursor=cursor%2Fa&limit=20&search=Ada+Lovelace&status=active&isDefault=false&hasConnections=true&needsAttention=false",
       "POST /platform/customers",
       "GET /platform/customers/customer%2Fa?projectId=project%2Fa",
       "PATCH /platform/customers/customer%2Fa",
@@ -115,7 +115,7 @@ describe("Client customers", () => {
       { projectId: "project/a" },
       { idempotencyKey: "restore-1" },
     );
-    await client.customers.listNumbers("customer/a", "project/a");
+    await client.customers.listConnections("customer/a", "project/a");
     await client.customers.listEvents("customer/a", {
       projectId: "project/a",
       limit: 25,
@@ -136,9 +136,9 @@ describe("Client customers", () => {
       "link/a",
       "project/a",
     );
-    await client.customers.transferNumber(
+    await client.customers.transferConnection(
       "customer/a",
-      "session/a",
+      "connection/a",
       {
         projectId: "project/a",
         sourceCustomerId: "customer/source",
@@ -150,12 +150,12 @@ describe("Client customers", () => {
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "POST /platform/customers/customer%2Fa/archive",
       "POST /platform/customers/customer%2Fa/restore",
-      "GET /platform/customers/customer%2Fa/numbers?projectId=project%2Fa",
+      "GET /platform/customers/customer%2Fa/connections?projectId=project%2Fa",
       "GET /platform/customers/customer%2Fa/events?projectId=project%2Fa&limit=25",
       "POST /platform/customers/customer%2Fa/pairing-links",
       "GET /platform/customers/customer%2Fa/pairing-links?projectId=project%2Fa",
       "DELETE /platform/customers/customer%2Fa/pairing-links/link%2Fa?projectId=project%2Fa",
-      "POST /platform/customers/customer%2Fa/numbers/session%2Fa/transfer",
+      "POST /platform/customers/customer%2Fa/connections/connection%2Fa/transfer",
     ]);
     expect(requests[0]?.headers["idempotency-key"]).toBe("archive-1");
     expect(requests[1]?.headers["idempotency-key"]).toBe("restore-1");

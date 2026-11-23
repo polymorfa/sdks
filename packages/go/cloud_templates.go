@@ -9,7 +9,7 @@ import (
 type CloudTemplate struct {
 	ID              string            `json:"id"`
 	TenantID        string            `json:"tenantId"`
-	Session         string            `json:"session"`
+	Connection      string            `json:"connection"`
 	WABAID          string            `json:"wabaId"`
 	Name            string            `json:"name"`
 	Language        string            `json:"language"`

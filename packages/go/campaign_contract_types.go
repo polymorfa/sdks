@@ -132,7 +132,7 @@ type CampaignReplyFlow struct {
 }
 type CampaignProjectParams struct{ ProjectID string }
 type CampaignTestSendRequest struct {
-	SessionID         string                       `json:"sessionId"`
+	ConnectionID      string                       `json:"connectionId"`
 	To                string                       `json:"to"`
 	SampleRecipientID *string                      `json:"sampleRecipientId,omitempty"`
 	Variables         *map[string]CampaignVariable `json:"variables,omitempty"`
@@ -142,8 +142,8 @@ type PlatformCampaignTestSendRequest struct {
 	ProjectID string `json:"projectId"`
 }
 type CampaignTestSender struct {
-	SessionID string `json:"sessionId"`
-	Phone     string `json:"phone"`
+	ConnectionID string `json:"connectionId"`
+	Phone        string `json:"phone"`
 }
 type CampaignTestSend struct {
 	ID         string             `json:"id"`

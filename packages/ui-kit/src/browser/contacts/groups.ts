@@ -287,13 +287,13 @@ function message(cause: unknown): string {
 /**
  * Group reads and changes through the API with the client token. Reads need
  * `groups_read`, changes `groups_manage`. Creating a group and adding
- * participants also need the session's recipient mode `any`.
+ * participants also need the connection's recipient mode `any`.
  */
 export function createApiGroupSource(
   client: PolymorfaClient,
-  options: { readonly session?: string } = {},
+  options: { readonly connection?: string } = {},
 ): GroupSource {
-  const groups = () => client.messaging(options.session).groups;
+  const groups = () => client.messaging(options.connection).groups;
   const signalOf = (signal: AbortSignal | undefined) =>
     signal === undefined ? {} : { signal };
   const read = <T>(request: () => Promise<T>) => {

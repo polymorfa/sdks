@@ -163,7 +163,7 @@ describe.skipIf(endpoint === undefined || scratch === undefined)(
       );
       let reads = 0;
       const upload = async (
-        _session: string,
+        _connection: string,
         source: { open: () => Promise<ReadableStream<Uint8Array>> },
         options: { mimetype?: string },
       ) => {
@@ -180,7 +180,7 @@ describe.skipIf(endpoint === undefined || scratch === undefined)(
       // This fixture tests the real S3 source seam; encrypted provider upload has independent native TCP tests.
       const result = await store.uploadToWhatsApp({
         messaging: { whatsappMedia: { upload } as never },
-        session: "fixture",
+        connection: "fixture",
         key: "source",
         mediaType: "document",
       });

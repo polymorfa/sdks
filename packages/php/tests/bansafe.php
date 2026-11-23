@@ -7,7 +7,7 @@ $safe = $vectors['safe'];
 $warmup = $vectors['warmup'];
 $insurance = $vectors['insurance'];
 $healthBody = $vectors['healthBody'];
-$sessionSafe = $vectors['session'];
+$connectionSafe = $vectors['connection'];
 $health = $healthBody + ['projectId' => 'project_1','integrations' => ['emailConfigured' => true,'webhookConfigured' => false]];
 $cases = [
  ['GET','safe-mode',null,$safe,fn ($r) => $r->getProjectSafeMode('project_1'),fn ($r) => $r->getSafeMode('project_1')],
@@ -39,10 +39,10 @@ foreach ($cases as [$method,$setting,$body,$data,$messaging,$platform]) {
 foreach (['GET','PUT'] as $method) {
     $body = $method === 'PUT' ? ['pacing' => 'inherit'] : null;
     $history = [];
-    $client = new Polymorfa\MessagingClient($credential, http:mocked([jsonResponse(['success' => true,'data' => $sessionSafe])], $history));
-    $result = $method === 'GET' ? $client->banSafe->getSessionSafeMode('support') : $client->banSafe->updateSessionSafeMode('support', $body);
-    check($history[0]['request']->getMethod() === $method && $history[0]['request']->getUri()->getPath() === '/messaging/support/safe-mode', 'Session Safe Mode route');
-    check(json_decode((string)$history[0]['request']->getBody(), true) === $body && $result->data['data'] === $sessionSafe && $result->metadata->requestId === 'req_test', 'Session Safe Mode typed body/result/metadata');
+    $client = new Polymorfa\MessagingClient($credential, http:mocked([jsonResponse(['success' => true,'data' => $connectionSafe])], $history));
+    $result = $method === 'GET' ? $client->banSafe->getConnectionSafeMode('support') : $client->banSafe->updateConnectionSafeMode('support', $body);
+    check($history[0]['request']->getMethod() === $method && $history[0]['request']->getUri()->getPath() === '/messaging/support/safe-mode', 'Connection Safe Mode route');
+    check(json_decode((string)$history[0]['request']->getBody(), true) === $body && $result->data['data'] === $connectionSafe && $result->metadata->requestId === 'req_test', 'Connection Safe Mode typed body/result/metadata');
 }
 $history = [];
 $client = new Polymorfa\MessagingClient($credential, http:mocked([jsonResponse(['error' => ['code' => 'state_conflict','message' => 'Read the latest version.']], 409)], $history));
@@ -52,11 +52,11 @@ echo "18 typed Messaging/Platform BanSafe methods and stale version boundaries p
 
 foreach (['GET','PUT'] as $method) {
     $body = $method === 'PUT' ? ['pacing' => 'inherit'] : null;
-    $fixture = ['data' => $sessionSafe];
+    $fixture = ['data' => $connectionSafe];
     $history = [];
     $client = new Polymorfa\Client($credential, http:mocked([jsonResponse($fixture)], $history));
-    $result = $method === 'GET' ? $client->sessions->getSafeMode('support') : $client->sessions->updateSafeMode('support', $body);
-    check($history[0]['request']->getMethod() === $method && $history[0]['request']->getUri()->getPath() === '/platform/sessions/support/safe-mode', 'Platform session Safe Mode route');
-    check(json_decode((string)$history[0]['request']->getBody(), true) === $body && $result->data === $fixture && $result->metadata->requestId === 'req_test', 'Platform session Safe Mode body/result/metadata');
+    $result = $method === 'GET' ? $client->connections->getSafeMode('support') : $client->connections->updateSafeMode('support', $body);
+    check($history[0]['request']->getMethod() === $method && $history[0]['request']->getUri()->getPath() === '/platform/connections/support/safe-mode', 'Platform connection Safe Mode route');
+    check(json_decode((string)$history[0]['request']->getBody(), true) === $body && $result->data === $fixture && $result->metadata->requestId === 'req_test', 'Platform connection Safe Mode body/result/metadata');
 }
-echo "2 Platform session Safe Mode methods passed.\n";
+echo "2 Platform connection Safe Mode methods passed.\n";

@@ -1,7 +1,7 @@
 import { AnalyticsResource } from "./platform/analytics.js";
 import { FlowsResource } from "./platform/flows.js";
 import { FunctionsResource } from "./platform/functions.js";
-import { SessionConfigurationResource } from "./platform/session-configuration.js";
+import { ConnectionConfigurationResource } from "./platform/connection-configuration.js";
 import {
   assertServerRuntime,
   validateClientCredential,
@@ -48,8 +48,8 @@ import { ProjectTokensResource } from "./platform/project-tokens.js";
 import { ProjectsResource } from "./platform/projects.js";
 import { QuickLinkSettingsResource } from "./platform/quicklink-settings.js";
 import { SecurityIncidentsResource } from "./platform/security-incidents.js";
-import { SessionBansResource } from "./platform/session-bans.js";
-import { PlatformSessionsResource } from "./platform/sessions.js";
+import { ConnectionBansResource } from "./platform/connection-bans.js";
+import { PlatformConnectionsResource } from "./platform/connections.js";
 import { SipTrunksResource } from "./platform/sip-trunks.js";
 import { VoiceResource } from "./platform/voice.js";
 import { UsageResource } from "./platform/usage.js";
@@ -70,7 +70,7 @@ export interface ClientBase<O extends ClientOwner> {
   readonly webhooks: WebhooksResourceFor<O>;
   readonly webhookDeliveries: WebhookDeliveriesResourceFor<O>;
   readonly operations: OperationsResource<O>;
-  readonly sessionConfiguration: SessionConfigurationResource;
+  readonly connectionConfiguration: ConnectionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<O>;
   readonly sipTrunks: SipTrunksResource<O>;
   /** Voice Automation (beta): audio library and provider credentials. */
@@ -107,8 +107,8 @@ export interface TeamControlPlaneResources {
   readonly projects: ProjectsResource;
   readonly projectTokens: ProjectTokensResource;
   readonly securityIncidents: SecurityIncidentsResource;
-  readonly sessionBans: SessionBansResource;
-  readonly sessions: PlatformSessionsResource;
+  readonly connectionBans: ConnectionBansResource;
+  readonly connections: PlatformConnectionsResource;
 }
 
 export interface ProjectControlPlaneResources {
@@ -138,7 +138,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
   readonly webhooks: WebhooksResource<ClientOwner>;
   readonly webhookDeliveries: WebhookDeliveriesResource<ClientOwner>;
   readonly operations: OperationsResource<ClientOwner>;
-  readonly sessionConfiguration: SessionConfigurationResource;
+  readonly connectionConfiguration: ConnectionConfigurationResource;
   readonly quickLinkSettings: QuickLinkSettingsResource<ClientOwner>;
   readonly sipTrunks: SipTrunksResource<ClientOwner>;
   readonly voice: VoiceResource<ClientOwner>;
@@ -190,7 +190,7 @@ class ClientImplementation implements ClientBase<ClientOwner> {
       prefix,
     );
     this.operations = new OperationsResource(this.#transport, prefix);
-    this.sessionConfiguration = new SessionConfigurationResource(
+    this.connectionConfiguration = new ConnectionConfigurationResource(
       this.#transport,
       projectId,
     );
@@ -246,8 +246,8 @@ class ClientImplementation implements ClientBase<ClientOwner> {
         projects: new ProjectsResource(this.#transport),
         projectTokens: new ProjectTokensResource(this.#transport),
         securityIncidents: new SecurityIncidentsResource(this.#transport),
-        sessionBans: new SessionBansResource(this.#transport),
-        sessions: new PlatformSessionsResource(this.#transport),
+        connectionBans: new ConnectionBansResource(this.#transport),
+        connections: new PlatformConnectionsResource(this.#transport),
       });
     }
     Object.freeze(this);

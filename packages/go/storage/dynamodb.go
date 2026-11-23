@@ -57,7 +57,7 @@ func (a *DynamoAdapter) verify(ctx context.Context) error {
 		return providerFailure(ctx)
 	}
 	version, ok := result.Item["version"].(*types.AttributeValueMemberN)
-	if !ok || version.Value != "2" {
+	if !ok || version.Value != "3" {
 		return storageError("storage_schema_mismatch")
 	}
 	a.verified.Store(true)
@@ -106,7 +106,7 @@ func (a *DynamoAdapter) Setup(ctx context.Context) error {
 	}
 	if a.options.Create {
 		item := a.key("storage_schema", "storage")
-		item["version"] = &types.AttributeValueMemberN{Value: "2"}
+		item["version"] = &types.AttributeValueMemberN{Value: "3"}
 		_, err = a.client.PutItem(ctx, &dynamodb.PutItemInput{TableName: aws.String(a.options.TableName), Item: item, ConditionExpression: aws.String("attribute_not_exists(pk)")})
 		if err != nil {
 			var conflict *types.ConditionalCheckFailedException

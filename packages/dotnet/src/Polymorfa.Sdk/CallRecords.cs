@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace Polymorfa.Sdk;
 
-public sealed record CallRecord(string CallId, string? ProjectId, string SessionId, string Direction, string Upstream, string Outcome, string State, bool HasVideo, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, string? EndReason);
+public sealed record CallRecord(string CallId, string? ProjectId, string ConnectionId, string Direction, string Upstream, string Outcome, string State, bool HasVideo, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, string? EndReason);
 public sealed record CallRecordEndReason(string Code, string Label);
 public sealed record CallRecordParticipant(string Id, string State, string FirstSeenAt, string UpdatedAt, string? LeftReason);
 public sealed record CallRecordConnection(string Id, string Participant, string Transport, string? JoinedAt, string? LeftAt, string? Reason);
@@ -13,19 +13,19 @@ public sealed record CallRecordAppQuality(string ReportedAt, decimal? RttMs, dec
 public sealed record CallRecordAppError(string Code, string ReportedAt);
 public sealed record CallRecordAppConnection(string ConnectionId, string Participant, CallReportClient? Client, CallRecordAppQuality? Quality, IReadOnlyList<CallRecordAppError> Errors);
 public sealed record CallRecordAppReports(string Status, IReadOnlyList<CallRecordAppConnection> Connections, bool Truncated);
-public sealed record CallRecordSummary(string CallId, string SessionId, string? ProjectId, string Direction, string State, bool Live, string Backend, bool HasVideo, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, CallRecordEndReason? EndReason, string? AnsweredBy, bool? Exclusive);
+public sealed record CallRecordSummary(string CallId, string ConnectionId, string? ProjectId, string Direction, string State, bool Live, string Backend, bool HasVideo, string? PeerRef, string StartedAt, string? ConnectedAt, string? EndedAt, decimal? DurationSeconds, CallRecordEndReason? EndReason, string? AnsweredBy, bool? Exclusive);
 public sealed record CallRecordHistoryEvent(string EventId, string Type, string OccurredAt);
 public sealed record CallRecordHistory(IReadOnlyList<CallRecordHistoryEvent> Events, bool Truncated);
-public sealed record CallRecordCorrelation(string CallId, string SessionId);
+public sealed record CallRecordCorrelation(string CallId, string ConnectionId);
 public sealed record CallRecordDetail(CallRecordSummary Call, IReadOnlyList<CallRecordParticipant> Participants, IReadOnlyList<CallRecordConnection> Connections, CallRecordTelemetry Telemetry, CallRecordAppReports AppReports, CallRecordHistory History, CallRecordCorrelation Correlation);
 public record CallStatsMetrics(long Calls, long Answered, long Missed, long Declined, long Failed, long InProgress, decimal? AnswerRate, decimal TotalDurationSeconds, decimal? AverageDurationSeconds);
 public sealed record CallStatsGroup(long Calls, long Answered, long Missed, long Declined, long Failed, long InProgress, decimal? AnswerRate, decimal TotalDurationSeconds, decimal? AverageDurationSeconds, string Key, string? Start) : CallStatsMetrics(Calls, Answered, Missed, Declined, Failed, InProgress, AnswerRate, TotalDurationSeconds, AverageDurationSeconds);
 public sealed record CallStatsHeatmapCell(int DayOfWeek, int Hour, long Calls, long Answered);
 public sealed record CallStats(string Since, string Until, string Timezone, string GroupBy, CallStatsMetrics Totals, IReadOnlyList<CallStatsGroup> Groups, bool GroupsTruncated, IReadOnlyList<CallStatsHeatmapCell> Heatmap);
-public record CallFilters(string? ProjectId = null, string? SessionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null);
-public sealed record CallStatsParameters(string? ProjectId = null, string? SessionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null, string? GroupBy = null, string? Timezone = null) : CallFilters(ProjectId, SessionId, Direction, Upstream, Outcome, Since, Until);
-public sealed record ListCallRecordsParameters(string? ProjectId = null, string? SessionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null, int? Limit = null, string? Cursor = null) : CallFilters(ProjectId, SessionId, Direction, Upstream, Outcome, Since, Until);
-public sealed record ExportCallRecordsParameters(string? ProjectId = null, string? SessionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null, string? Format = null, int? Limit = null, string? Cursor = null) : CallFilters(ProjectId, SessionId, Direction, Upstream, Outcome, Since, Until);
+public record CallFilters(string? ProjectId = null, string? ConnectionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null);
+public sealed record CallStatsParameters(string? ProjectId = null, string? ConnectionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null, string? GroupBy = null, string? Timezone = null) : CallFilters(ProjectId, ConnectionId, Direction, Upstream, Outcome, Since, Until);
+public sealed record ListCallRecordsParameters(string? ProjectId = null, string? ConnectionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null, int? Limit = null, string? Cursor = null) : CallFilters(ProjectId, ConnectionId, Direction, Upstream, Outcome, Since, Until);
+public sealed record ExportCallRecordsParameters(string? ProjectId = null, string? ConnectionId = null, string? Direction = null, string? Upstream = null, string? Outcome = null, string? Since = null, string? Until = null, string? Format = null, int? Limit = null, string? Cursor = null) : CallFilters(ProjectId, ConnectionId, Direction, Upstream, Outcome, Since, Until);
 public sealed record CallRecordExportPage(string Format, string Body, string? NextCursor);
 public sealed class CallRecords : Resource
 {
@@ -36,7 +36,7 @@ public sealed class CallRecords : Resource
         var result = new Dictionary<string, string>();
         if (projectId is not null && parameters.ProjectId is not null && projectId != parameters.ProjectId) throw new PolymorfaConfigurationException("A project client reads only its own project's calls.");
         if ((projectId ?? parameters.ProjectId) is { } project) result["projectId"] = Text(project, 64);
-        if (parameters.SessionId is { } session) result["sessionId"] = Text(session, 128);
+        if (parameters.ConnectionId is { } connection) result["connectionId"] = Text(connection, 128);
         if (parameters.Direction is { } direction) result["direction"] = OneOf(direction, "inbound", "outbound");
         if (parameters.Upstream is { } upstream) result["upstream"] = OneOf(upstream, "linked_device", "cloud_api");
         if (parameters.Outcome is { } outcome) result["outcome"] = OneOf(outcome, "answered", "missed", "declined", "failed", "in_progress");
@@ -52,7 +52,7 @@ public sealed class CallRecords : Resource
     }
     public async Task<ApiResponse<CallStats>> StatsAsync(CallStatsParameters? parameters = null, RequestOptions? options = null)
     {
-        parameters ??= new(); var query = Filters(parameters); if (parameters.GroupBy is { } group) query["groupBy"] = OneOf(group, "day", "hour", "session", "outcome"); if (parameters.Timezone is { } zone) query["timezone"] = Text(zone, 64); var r = await Get<DataEnvelope<CallStats>>("/platform/calls/stats", options, query).ConfigureAwait(false); return new(r.Data.Data, r.Metadata);
+        parameters ??= new(); var query = Filters(parameters); if (parameters.GroupBy is { } group) query["groupBy"] = OneOf(group, "day", "hour", "connection", "outcome"); if (parameters.Timezone is { } zone) query["timezone"] = Text(zone, 64); var r = await Get<DataEnvelope<CallStats>>("/platform/calls/stats", options, query).ConfigureAwait(false); return new(r.Data.Data, r.Metadata);
     }
     public Task<CursorPage<CallRecord>> ListAsync(ListCallRecordsParameters? parameters = null, RequestOptions? options = null) { parameters ??= new(); var query = Filters(parameters); Limit(query, parameters.Limit, parameters.Cursor, 100); return CursorPage<CallRecord>.LoadAsync(Http, "/platform/calls", Query(query), options ?? new()); }
     public async Task<ApiResponse<CallRecordExportPage>> ExportAsync(ExportCallRecordsParameters? parameters = null, RequestOptions? options = null)

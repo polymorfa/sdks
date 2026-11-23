@@ -8,7 +8,7 @@ final readonly class Batch
 {
     /**
      * @param list<Upsert|Delete|ClearChat|Checkpoint> $operations */
-    public function __construct(public string $sessionId, public array $operations, public ?string $eventId = null, public ?string $eventType = null)
+    public function __construct(public string $connectionId, public array $operations, public ?string $eventId = null, public ?string $eventType = null)
     {
     }
 }

@@ -24,7 +24,7 @@ def fixture(event="message.received"):
     return create_webhook_fixture(
         {
             "id": "event_example",
-            "session": "support",
+            "connection": "support",
             "timestamp": "2026-10-11T00:00:00Z",
             "event": event,
             "payload": {

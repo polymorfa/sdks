@@ -33,7 +33,7 @@ from .official_round2 import Catalogs
 from .onboarding import CloudOnboarding, Testing
 from .passkeys import Passkeys
 from .platform_media import Media as PlatformMedia
-from .policies import HybridLink, ObservationPolicies, SessionConfigurations
+from .policies import ConnectionConfigurations, HybridLink, ObservationPolicies
 from .quick_replies import QuickReplies, Users
 from .request_logs import RequestLogs
 from .settings import OptOuts, QuickLinkConfiguration
@@ -41,10 +41,10 @@ from .sip import SipTrunks
 from .team import (
     ApiKeys,
     AuditLogs,
+    ConnectionBans,
     Members,
     ProjectTokens,
     SecurityIncidents,
-    SessionBans,
     Teams,
 )
 from .templates import CloudTemplates, Templates
@@ -82,7 +82,7 @@ class AsyncMessagingClient:
     privacy: Privacy
     groups: Groups
     messages: messaging.Messages
-    sessions: messaging.Sessions
+    connections: messaging.Connections
     quick_links: messaging.QuickLinks
     webhooks: messaging.Webhooks
     chats: messaging.Chats
@@ -90,7 +90,7 @@ class AsyncMessagingClient:
     contacts: messaging.Contacts
     profile: messaging.Profiles
     presence: messaging.Presence
-    calls: messaging.SessionCalls
+    calls: messaging.ConnectionCalls
     voip: messaging.Voip
     raw: platform.Raw
 
@@ -124,7 +124,7 @@ class AsyncMessagingClient:
             ("privacy", Privacy),
             ("groups", Groups),
             ("messages", messaging.Messages),
-            ("sessions", messaging.Sessions),
+            ("connections", messaging.Connections),
             ("quick_links", messaging.QuickLinks),
             ("webhooks", messaging.Webhooks),
             ("chats", messaging.Chats),
@@ -132,7 +132,7 @@ class AsyncMessagingClient:
             ("contacts", messaging.Contacts),
             ("profile", messaging.Profiles),
             ("presence", messaging.Presence),
-            ("calls", messaging.SessionCalls),
+            ("calls", messaging.ConnectionCalls),
             ("voip", messaging.Voip),
         ):
             object.__setattr__(self, name, resource(transport, credential.kind))
@@ -163,7 +163,7 @@ class AsyncProjectClient:
     flows: Flows
     sip_trunks: SipTrunks
     quick_link_settings: QuickLinkConfiguration
-    session_configuration: SessionConfigurations
+    connection_configuration: ConnectionConfigurations
     call_retention: CallRetentions
     events: platform.Events
     webhooks: platform.PlatformWebhooks
@@ -207,7 +207,9 @@ class AsyncProjectClient:
             object.__setattr__(self, name, resource(transport, prefix))
         object.__setattr__(self, "sip_trunks", SipTrunks(transport, prefix))
         object.__setattr__(self, "quick_link_settings", QuickLinkConfiguration(transport, prefix))
-        object.__setattr__(self, "session_configuration", SessionConfigurations(transport, prefix))
+        object.__setattr__(
+            self, "connection_configuration", ConnectionConfigurations(transport, prefix)
+        )
         object.__setattr__(self, "call_retention", CallRetentions(transport, prefix))
         object.__setattr__(self, "raw", platform.Raw(transport, project_id))
 
@@ -234,7 +236,7 @@ class AsyncClient:
     request_logs: RequestLogs
     sip_trunks: SipTrunks
     quick_link_settings: QuickLinkConfiguration
-    session_configuration: SessionConfigurations
+    connection_configuration: ConnectionConfigurations
     call_retention: CallRetentions
     call_policy: CallPolicies
     call_opt_outs: CallOptOuts
@@ -245,7 +247,7 @@ class AsyncClient:
     api_keys: ApiKeys
     project_tokens: ProjectTokens
     audit_logs: AuditLogs
-    session_bans: SessionBans
+    connection_bans: ConnectionBans
     security_incidents: SecurityIncidents
     ban_safe: BanSafeObservations
     media: PlatformMedia
@@ -259,7 +261,7 @@ class AsyncClient:
     audiences: Audiences
     billing: Billing
     projects: platform.Projects
-    sessions: platform.PlatformSessions
+    connections: platform.PlatformConnections
     events: platform.Events
     webhooks: platform.PlatformWebhooks
     webhook_deliveries: platform.WebhookDeliveries
@@ -285,7 +287,7 @@ class AsyncClient:
             ("api_keys", ApiKeys),
             ("project_tokens", ProjectTokens),
             ("audit_logs", AuditLogs),
-            ("session_bans", SessionBans),
+            ("connection_bans", ConnectionBans),
             ("security_incidents", SecurityIncidents),
             ("media", PlatformMedia),
             ("campaigns", Campaigns),
@@ -293,13 +295,13 @@ class AsyncClient:
             ("audience_segments", AudienceSegments),
             ("billing", Billing),
             ("projects", platform.Projects),
-            ("sessions", platform.PlatformSessions),
+            ("connections", platform.PlatformConnections),
         ):
             object.__setattr__(self, name, resource(transport, credential.kind))
         for name, scoped in (
             ("sip_trunks", SipTrunks),
             ("quick_link_settings", QuickLinkConfiguration),
-            ("session_configuration", SessionConfigurations),
+            ("connection_configuration", ConnectionConfigurations),
             ("audiences", Audiences),
             ("customers", Customers),
             ("call_retention", CallRetentions),

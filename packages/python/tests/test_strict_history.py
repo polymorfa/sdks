@@ -274,7 +274,7 @@ async def test_strict_history_signed_archive_refusal_prevents_all_storage_and_ac
         raw = json.dumps(
             {
                 "id": "signed-archive",
-                "session": "fixture-session",
+                "connection": "fixture-session",
                 "timestamp": "2026-10-17T00:00:00Z",
                 "event": "history.sync",
                 "payload": {
@@ -330,12 +330,12 @@ async def test_strict_history_signed_archive_refusal_prevents_all_storage_and_ac
             with pytest.raises(MediaIntegrityError) as error:
                 await job.done
             assert error.value.code == "media_invalid_ciphertext"
-            assert not acks and not await storage.has_event(event.session, event.id)
+            assert not acks and not await storage.has_event(event.connection, event.id)
             assert await storage.get_checkpoint("*", "events") is None
             assert all([not await adapter.rows(entity) for entity in ENTITY_NAMES])
         else:
             await job.done
-            assert len(acks) == 1 and await storage.has_event(event.session, event.id)
+            assert len(acks) == 1 and await storage.has_event(event.connection, event.id)
             assert (await storage.get_checkpoint("*", "events")).cursor == "after-archive"
             assert len(await adapter.rows("chats")) == 1
     print(

@@ -14,7 +14,7 @@ import (
 	"unicode/utf8"
 )
 
-// Catalogs reads the Number's saved Official catalog cache, separately from Graph.
+// Catalogs reads the Connection's saved Official catalog cache, separately from Graph.
 type Catalogs struct{ t *transport }
 
 func (c *MessagingClient) Catalogs() *Catalogs { return &Catalogs{c.t} }
@@ -63,7 +63,7 @@ var catalogCursorPattern = regexp.MustCompile(`^[A-Za-z0-9_-]{1,256}$`)
 
 func catalogPath(s string, id *string) (string, error) {
 	if strings.TrimSpace(s) == "" {
-		return "", validation("Provide a Number ID.")
+		return "", validation("Provide a Connection ID.")
 	}
 	p := messagingPath(s) + "/catalogs"
 	if id != nil {
@@ -138,7 +138,7 @@ type MarketingMessagesStatus struct {
 
 func (r *CloudMarketing) GetStatus(ctx context.Context, s string, o ...RequestOptions) (Response[Envelope[MarketingMessagesStatus]], error) {
 	if strings.TrimSpace(s) == "" || len(s) > 128 {
-		return Response[Envelope[MarketingMessagesStatus]]{}, validation("Provide a Number ID of 1 to 128 characters.")
+		return Response[Envelope[MarketingMessagesStatus]]{}, validation("Provide a Connection ID of 1 to 128 characters.")
 	}
 	return serverRead[MarketingMessagesStatus](ctx, r.t, messagingPath(s)+"/marketing-messages/status", nil, options(o))
 }

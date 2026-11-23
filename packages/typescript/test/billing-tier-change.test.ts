@@ -5,7 +5,7 @@ import {
   PolymorfaPaymentRequiredError,
   PolymorfaValidationError,
 } from "../src/errors.js";
-import type { SessionTierOverrideRequest } from "../src/platform/types.js";
+import type { ConnectionTierOverrideRequest } from "../src/platform/types.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
 import { startTestServer, type TestServer } from "./support/http-server.js";
 
@@ -47,23 +47,26 @@ it("reviews, explicitly confirms, and reads the durable tier result without roun
     }),
   }));
   const sdk = client(server);
-  const reviewed = await sdk.sessions.quoteTierChange("number/a", {
+  const reviewed = await sdk.connections.quoteTierChange("number/a", {
     tierOverride: "pro",
   });
   expect(reviewed.data.data.quote.amountCents).toBe(25.2);
   expect(server.requests).toHaveLength(1);
-  const queued = await sdk.sessions.setTierOverride(
+  const queued = await sdk.connections.setTierOverride(
     "number/a",
     { quoteId: reviewed.data.data.id },
     { idempotencyKey: "confirm-1" },
   );
   expect(queued.data.data.status).toBe("queued");
-  const applied = await sdk.sessions.retrieveTierChange("number/a", quote.id);
+  const applied = await sdk.connections.retrieveTierChange(
+    "number/a",
+    quote.id,
+  );
   expect(applied.data.data.status).toBe("applied");
   expect(server.requests.map((r) => `${r.method} ${r.path}`)).toEqual([
-    "POST /platform/sessions/number%2Fa/tier-quotes",
-    "PATCH /platform/sessions/number%2Fa",
-    `GET /platform/sessions/number%2Fa/tier-quotes/${quote.id}`,
+    "POST /platform/connections/number%2Fa/tier-quotes",
+    "PATCH /platform/connections/number%2Fa",
+    `GET /platform/connections/number%2Fa/tier-quotes/${quote.id}`,
   ]);
   expect(server.requests[1]?.body).toBe(JSON.stringify({ quoteId: quote.id }));
   expect(server.requests[1]?.headers["idempotency-key"]).toBe("confirm-1");
@@ -73,9 +76,9 @@ it("rejects the old unquoted JavaScript call before making a request", async () 
   const server = await startTestServer(() => ({ body: "{}" }));
   const sdk = client(server);
   expect(() =>
-    sdk.sessions.setTierOverride("number", {
+    sdk.connections.setTierOverride("number", {
       tierOverride: "pro",
-    } as unknown as SessionTierOverrideRequest),
+    } as unknown as ConnectionTierOverrideRequest),
   ).toThrow(PolymorfaValidationError);
   expect(server.requests).toHaveLength(0);
 });
@@ -89,7 +92,7 @@ it("preserves quote expiry conflicts without creating or confirming a replacemen
   }));
   const sdk = client(server);
   await expect(
-    sdk.sessions.setTierOverride("number", { quoteId: quote.id }),
+    sdk.connections.setTierOverride("number", { quoteId: quote.id }),
   ).rejects.toBeInstanceOf(PolymorfaConflictError);
   expect(server.requests).toHaveLength(1);
 });
@@ -112,7 +115,9 @@ it("exposes insufficient funding as a payment-required error without retrying a 
     },
     body: '{"error":{"type":"permission_error","code":"entitlement_required","message":"The account needs the required entitlement for this action.","param":null},"data":null,"docs":"https://docs.polymorfa.com/api/errors#entitlement-required"}',
   }));
-  await expect(client(server).sessions.start("number")).rejects.toMatchObject({
+  await expect(
+    client(server).connections.start("number"),
+  ).rejects.toMatchObject({
     name: PolymorfaPaymentRequiredError.name,
     status: 402,
     code: "entitlement_required",

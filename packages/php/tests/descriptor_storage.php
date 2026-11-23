@@ -14,9 +14,9 @@ function descriptorCheck(bool $ok, string $message): void
 }
 function descriptorEvent(array $payload, bool $signed = true): WebhookEvent
 {
-    $event = ['id' => 'descriptor-event','session' => 'descriptor-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'history.sync','payload' => $payload];
+    $event = ['id' => 'descriptor-event','connection' => 'descriptor-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'history.sync','payload' => $payload];
     $raw = json_encode($event, JSON_THROW_ON_ERROR);
-    return $signed ? Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'synthetic-secret'), 'synthetic-secret') : new WebhookEvent($event['id'], $event['session'], $event['timestamp'], $event['event'], $payload, $event, true);
+    return $signed ? Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'synthetic-secret'), 'synthetic-secret') : new WebhookEvent($event['id'], $event['connection'], $event['timestamp'], $event['event'], $payload, $event, true);
 }
 $descriptorFixture = json_decode(file_get_contents(__DIR__.'/fixtures/descriptor-storage/fixture.json'), true, flags:JSON_THROW_ON_ERROR);
 $descriptorAdapter = new StorageEngineMemory();
@@ -68,7 +68,7 @@ foreach (['inline','media'] as $branch) {
             $error = $x;
         }
         descriptorCheck(($error !== null) === $failed, 'dispatch outcome '.$mode);
-        descriptorCheck($s->hasEvent($e->session, $e->id) === !$failed, 'marker');
+        descriptorCheck($s->hasEvent($e->connection, $e->id) === !$failed, 'marker');
         descriptorCheck(count($a->rows['messages'] ?? []) === ($mode === 'full' ? 1 : 0), 'content');
         descriptorCheck((count($a->rows['history_progress'] ?? []) > 0) === !$failed, 'progress');
         if ($failed) {
@@ -250,6 +250,6 @@ echo 'PHP producer schema controls: '.count($schemaCases).' outcomes, mismatches
 descriptorCheck($schemaFailures === [], 'descriptor schema disagrees with producer');
 $archivePayload['futureField'] = ['safe' => true];
 descriptorCheck(descriptorEvent($archivePayload)->payload === $archivePayload, 'archive extension changed');
-$unknown = ['id' => 'future-event','session' => 'descriptor-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'future.event','payload' => ['delivery' => 'future','futureField' => true]];
+$unknown = ['id' => 'future-event','connection' => 'descriptor-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'future.event','payload' => ['delivery' => 'future','futureField' => true]];
 $raw = json_encode($unknown, JSON_THROW_ON_ERROR);
 descriptorCheck(Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'synthetic-secret'), 'synthetic-secret')->payload === $unknown['payload'], 'unknown event changed');

@@ -246,7 +246,7 @@ describe("durable developer resources", () => {
     await expect(
       client.webhooks.test("team-hook", {
         body,
-        sessionId: "session-id",
+        connectionId: "session-id",
       } as unknown as TestTeamWebhookInput),
     ).rejects.toBeInstanceOf(PolymorfaValidationError);
     expect(requests).toEqual([]);
@@ -258,7 +258,7 @@ describe("durable developer resources", () => {
     );
     await project.webhooks.test(
       "project-hook",
-      { eventType: "message.received", body, sessionId: "session-id" },
+      { eventType: "message.received", body, connectionId: "session-id" },
       { idempotencyKey: "project-test-1" },
     );
 
@@ -268,7 +268,7 @@ describe("durable developer resources", () => {
     ]);
     expect(requests.map(({ body }) => JSON.parse(body))).toEqual([
       { eventType: "customer.created" },
-      { eventType: "message.received", body, sessionId: "session-id" },
+      { eventType: "message.received", body, connectionId: "session-id" },
     ]);
     expect(requests.map(({ headers }) => headers["idempotency-key"])).toEqual([
       "team-test-1",

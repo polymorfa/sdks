@@ -24,8 +24,8 @@ def supabase_preset(
     statements.extend(
         [
             f"INSERT INTO {meta} (id,version) VALUES ('storage',{STORAGE_SCHEMA_VERSION}) ON CONFLICT (id) DO NOTHING",
-            f"DO $$ BEGIN IF (SELECT version FROM {meta} WHERE id='storage') <> {STORAGE_SCHEMA_VERSION} THEN RAISE EXCEPTION 'Storage schema2 migration required'; END IF; END $$",
-            f"CREATE TABLE IF NOT EXISTS {members} (session_id text NOT NULL,subject uuid NOT NULL,PRIMARY KEY(session_id,subject))",
+            f"DO $$ BEGIN IF (SELECT version FROM {meta} WHERE id='storage') <> {STORAGE_SCHEMA_VERSION} THEN RAISE EXCEPTION 'Storage schema3 migration required'; END IF; END $$",
+            f"CREATE TABLE IF NOT EXISTS {members} (connection_id text NOT NULL,subject uuid NOT NULL,PRIMARY KEY(connection_id,subject))",
             f"ALTER TABLE {members} ENABLE ROW LEVEL SECURITY",
             f"ALTER TABLE {members} FORCE ROW LEVEL SECURITY",
             f"REVOKE ALL ON {members} FROM PUBLIC",
@@ -47,7 +47,7 @@ def supabase_preset(
                 f"REVOKE ALL ON {table} FROM PUBLIC",
                 f"GRANT SELECT ON {table} TO {q(reader_role)}",
                 f"GRANT SELECT,INSERT,UPDATE,DELETE ON {table} TO {q(server_role)}",
-                f"CREATE POLICY {q(table_prefix + entity + '_reader')} ON {table} FOR SELECT TO {q(reader_role)} USING(EXISTS(SELECT 1 FROM {members} m WHERE m.session_id={table}.session_id AND m.subject=auth.uid()))",
+                f"CREATE POLICY {q(table_prefix + entity + '_reader')} ON {table} FOR SELECT TO {q(reader_role)} USING(EXISTS(SELECT 1 FROM {members} m WHERE m.connection_id={table}.connection_id AND m.subject=auth.uid()))",
                 f"CREATE POLICY {q(table_prefix + entity + '_writer')} ON {table} TO {q(server_role)} USING(true) WITH CHECK(true)",
             ]
         )

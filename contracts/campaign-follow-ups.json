@@ -1,11 +1,11 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "87b25fd9e2494d90f01f7511fb47be6a28845fa1",
-  "note": "Receipt-timed campaign follow-up beta (PR #503). Adds followUp to Messaging and Platform campaigns and recipients, and followUps to campaign analytics; the full snapshots stay pinned to contracts/source.json until the next repin.",
+  "commit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+  "note": "Connection source projection at the exact candidate revision in contracts/source.json. This is not deployment or package acceptance.",
   "sources": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
-      "sourceSha256": "c30cd7523f3fbec9c83214f899781f6f43c7e3d5fd05dd828158d3dfb32df6cb",
+      "sourceSha256": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7",
       "schemas": {
         "CampaignFollowUpReport": {
           "type": "object",
@@ -137,7 +137,7 @@
           },
           "required": ["message"],
           "additionalProperties": false,
-          "description": "One optional follow-up, sent from the Number that sent the first message. Null when the campaign has none. Content and timing freeze at launch."
+          "description": "One optional follow-up, sent from the Connection that sent the first message. Null when the campaign has none. Content and timing freeze at launch."
         },
         "CreateCampaignRequest.followUp": {
           "type": "object",
@@ -259,7 +259,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "numberId": {
+            "connectionId": {
               "type": "string",
               "format": "uuid"
             },
@@ -324,7 +324,7 @@
           },
           "required": [
             "id",
-            "numberId",
+            "connectionId",
             "status",
             "anchorKind",
             "firstDeliveredAt",
@@ -347,13 +347,13 @@
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
-      "sourceSha256": "583b9d99426de8a13462eafa3a0095e3c7386282e73f23c14238f41a15ccab0d",
+      "sourceSha256": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559",
       "schemas": {
         "CampaignFollowUp": {
           "type": "object",
           "additionalProperties": false,
           "required": ["message"],
-          "description": "One optional receipt-timed follow-up, sent from the Number that sent the first message. A beta; a team that is not enrolled gets `403 feature_unavailable`. Expiry must exceed delay and is counted from the first send. Configuration freezes at launch. The first read takes precedence over the first delivery; additional reads do not move it. Replies and opt-outs cancel it. Without a delivery or read receipt it never arms, and an expired wait never sends. Requires a single first message, and the text cannot contain tracked links.",
+          "description": "One optional receipt-timed follow-up, sent from the Connection that sent the first message. A beta; a team that is not enrolled gets `403 feature_unavailable`. Expiry must exceed delay and is counted from the first send. Configuration freezes at launch. The first read takes precedence over the first delivery; additional reads do not move it. Replies and opt-outs cancel it. Without a delivery or read receipt it never arms, and an expired wait never sends. Requires a single first message, and the text cannot contain tracked links.",
           "properties": {
             "delaySeconds": {
               "type": "integer",
@@ -409,7 +409,7 @@
           "additionalProperties": false,
           "required": [
             "id",
-            "numberId",
+            "connectionId",
             "status",
             "anchorKind",
             "firstDeliveredAt",
@@ -428,7 +428,7 @@
               "type": "string",
               "format": "uuid"
             },
-            "numberId": {
+            "connectionId": {
               "type": "string",
               "format": "uuid"
             },
@@ -616,5 +616,10 @@
         }
       }
     }
+  },
+  "published": false,
+  "previousExport": {
+    "path": "contracts/history/pre-connections/campaign-follow-ups.json",
+    "sha256": "b9f2d52244a7bc1d3da90cf881e50cc56703364a80a068499f7861f66a85e724"
   }
 }

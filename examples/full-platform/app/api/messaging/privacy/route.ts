@@ -16,18 +16,21 @@ import {
 
 const TIMERS = { off: 0, "24h": 86400, "7d": 604800, "90d": 7776000 } as const;
 
-export const GET = route("admin", ({ body, sessionOf }) =>
-  messaging().privacy.get(sessionOf(body)),
+export const GET = route("admin", ({ body, connectionOf }) =>
+  messaging().privacy.get(connectionOf(body)),
 );
 
-export const POST = route("admin", async ({ body, sessionOf }) => {
+export const POST = route("admin", async ({ body, connectionOf }) => {
   const privacy = messaging().privacy;
-  const session = sessionOf(body);
+  const connection = connectionOf(body);
   switch (action(body)) {
     case "set":
-      return privacy.set(session, mutation(body.setting, text(body, "value")));
+      return privacy.set(
+        connection,
+        mutation(body.setting, text(body, "value")),
+      );
     case "defaultTimer":
-      return privacy.setDefaultDisappearingTimer(session, {
+      return privacy.setDefaultDisappearingTimer(connection, {
         durationSeconds:
           TIMERS[oneOf(body, "timer", ["off", "24h", "7d", "90d"])],
       });

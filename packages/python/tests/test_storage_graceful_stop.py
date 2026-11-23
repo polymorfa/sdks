@@ -28,7 +28,7 @@ def event():
         json.dumps(
             {
                 "id": "graceful-event",
-                "session": "graceful",
+                "connection": "graceful",
                 "event": "history.sync",
                 "timestamp": "2026-10-17T00:00:00Z",
                 "payload": FIXTURE["inline"],

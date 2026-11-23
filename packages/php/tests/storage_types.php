@@ -11,14 +11,14 @@ final class StorageTypes
     public static function consumer(D1Bridge $bridge): void
     {
         self::adapter($bridge);
-        $row = ['sessionId' => 'session','_id' => Schema::encodeKey('sessions', ['sessionId' => 'session']),'_rev' => 1,'_v' => []];
-        $result = $bridge->commit([['kind' => 'put','entity' => 'sessions','row' => $row,'expectedRev' => null]]);
+        $row = ['connectionId' => 'connection','_id' => Schema::encodeKey('connections', ['connectionId' => 'connection']),'_rev' => 1,'_v' => []];
+        $result = $bridge->commit([['kind' => 'put','entity' => 'connections','row' => $row,'expectedRev' => null]]);
         if (!$result['ok']) {
             foreach ($result['conflicts'] as $id) {
                 self::text($id);
             }
         }
-        foreach ($bridge->get('sessions', [$row['_id']]) as $id => $stored) {
+        foreach ($bridge->get('connections', [$row['_id']]) as $id => $stored) {
             self::text($id);
         }
     }

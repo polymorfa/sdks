@@ -15,71 +15,71 @@ export class LabelsResource {
   constructor(private readonly transport: HttpTransport) {}
 
   list(
-    session: string,
+    connection: string,
     params: ListLabelsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<ListLabelsResponse>> {
-    return this.read(labelsPath(session), params, options);
+    return this.read(labelsPath(connection), params, options);
   }
 
   create(
-    session: string,
+    connection: string,
     body: CreateLabelRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<CreateLabelResponse>> {
     return this.transport.request({
       method: "POST",
-      path: labelsPath(session),
+      path: labelsPath(connection),
       body,
       ...options,
     });
   }
 
   update(
-    session: string,
+    connection: string,
     labelId: string,
     body: UpdateLabelRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: labelPath(session, labelId),
+      path: labelPath(connection, labelId),
       body,
       ...options,
     });
   }
 
   delete(
-    session: string,
+    connection: string,
     labelId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "DELETE",
-      path: labelPath(session, labelId),
+      path: labelPath(connection, labelId),
       ...options,
     });
   }
 
   listForChat(
-    session: string,
+    connection: string,
     chatId: string,
     params: ListLabelsParams = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<GetChatLabelsResponse>> {
-    return this.read(chatLabelsPath(session, chatId), params, options);
+    return this.read(chatLabelsPath(connection, chatId), params, options);
   }
 
   /** Replaces the chat's complete label set. Pass an empty array to detach all labels. */
   replaceForChat(
-    session: string,
+    connection: string,
     chatId: string,
     body: ReplaceChatLabelsRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<SuccessResponse>> {
     return this.transport.request({
       method: "PUT",
-      path: chatLabelsPath(session, chatId),
+      path: chatLabelsPath(connection, chatId),
       body,
       ...options,
     });
@@ -101,14 +101,14 @@ export class LabelsResource {
   }
 }
 
-function labelsPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/labels`;
+function labelsPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/labels`;
 }
 
-function labelPath(session: string, labelId: string): string {
-  return `${labelsPath(session)}/${encodeURIComponent(labelId)}`;
+function labelPath(connection: string, labelId: string): string {
+  return `${labelsPath(connection)}/${encodeURIComponent(labelId)}`;
 }
 
-function chatLabelsPath(session: string, chatId: string): string {
-  return `${labelsPath(session)}/chats/${encodeURIComponent(chatId)}`;
+function chatLabelsPath(connection: string, chatId: string): string {
+  return `${labelsPath(connection)}/chats/${encodeURIComponent(chatId)}`;
 }

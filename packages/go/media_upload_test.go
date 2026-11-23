@@ -130,7 +130,7 @@ func TestNativeEncryptedRelayAndDirectWire(t *testing.T) {
 						io.WriteString(w, `{}`)
 					}
 				})
-				result, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "session", plain, UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: kind, MimeType: "fixture/binary", MediaKey: key}, Egress: mode, RequestOptions: RequestOptions{Headers: func() http.Header {
+				result, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "connection", plain, UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: kind, MimeType: "fixture/binary", MediaKey: key}, Egress: mode, RequestOptions: RequestOptions{Headers: func() http.Header {
 					h := http.Header{"X-Caller-Private": {"never-cdn"}}
 					if mode == "relay" {
 						h["authorization"] = []string{"must-not-override"}
@@ -190,7 +190,7 @@ func TestNativeDirectRefreshResumeAndStatusRules(t *testing.T) {
 				}
 				locationFixture(w, true)
 			})
-			_, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "session", plain, UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage, MediaKey: key}, Egress: "direct"})
+			_, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "connection", plain, UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage, MediaKey: key}, Egress: "direct"})
 			retried := status == 401 || status == 408 || status == 500
 			if retried {
 				if err != nil || posts.Load() != 2 || probes.Load() != 1 {
@@ -253,7 +253,7 @@ func TestNativeDocumentPartsAndChangedSourceNeverFinalize(t *testing.T) {
 				}
 				return io.NopCloser(bytes.NewReader(current)), nil
 			}
-			_, err := sdk.WhatsAppMedia().Upload(context.Background(), "session", source, UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadDocument}, Egress: "direct", DocumentPartSize: 37})
+			_, err := sdk.WhatsAppMedia().Upload(context.Background(), "connection", source, UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadDocument}, Egress: "direct", DocumentPartSize: 37})
 			if opens.Load() != 2 {
 				t.Fatal("document did not reuse one upload pass")
 			}
@@ -337,11 +337,11 @@ func TestNativeDirectBodyDeadlineRedirectAndSourceCancellation(t *testing.T) {
 		<-req.Context().Done()
 	})
 	opts := UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, Egress: "direct", RequestOptions: RequestOptions{Timeout: 70 * time.Millisecond}}
-	_, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "session", []byte("first"), opts)
+	_, err := sdk.WhatsAppMedia().UploadBytes(context.Background(), "connection", []byte("first"), opts)
 	if err == nil || hops.Load() != 0 {
 		t.Fatal("redirect followed", err)
 	}
-	_, err = sdk.WhatsAppMedia().UploadBytes(context.Background(), "session", []byte("second"), opts)
+	_, err = sdk.WhatsAppMedia().UploadBytes(context.Background(), "connection", []byte("second"), opts)
 	var typed *Error
 	if !errors.As(err, &typed) || typed.Kind != TimeoutError || typed.Cause != nil || strings.Contains(fmt.Sprintf("%#v", err), "synthetic_grant") {
 		t.Fatal("stalled response did not expire safely", err)
@@ -352,7 +352,7 @@ func TestNativeDirectBodyDeadlineRedirectAndSourceCancellation(t *testing.T) {
 	started := make(chan struct{})
 	done := make(chan error, 1)
 	go func() {
-		_, err := sdk.WhatsAppMedia().Upload(active, "session", func(context.Context) (io.ReadCloser, error) { close(started); return reader, nil }, opts)
+		_, err := sdk.WhatsAppMedia().Upload(active, "connection", func(context.Context) (io.ReadCloser, error) { close(started); return reader, nil }, opts)
 		done <- err
 	}()
 	<-started

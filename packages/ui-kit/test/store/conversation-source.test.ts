@@ -166,7 +166,7 @@ describe("createStoreConversationSource with ConversationController", () => {
       createStoreConversationSource(store, {
         conversationId: "chat_1",
         send,
-        session: "support",
+        connection: "support",
       }),
       { createClientId: () => "client_1" },
     );
@@ -183,7 +183,7 @@ describe("createStoreConversationSource with ConversationController", () => {
       fromMe: true,
       text: "hello",
       clientId: "client_1",
-      session: "support",
+      connection: "support",
     });
     // A later delivery receipt keeps the stored message current.
     await store.ingest(

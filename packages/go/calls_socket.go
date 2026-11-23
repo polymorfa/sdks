@@ -20,14 +20,14 @@ const CallsDefaultSampleRate = 16000
 
 type CallsClientConfig struct {
 	Config        Config
-	Session       string
+	Connection    string
 	Participant   string
 	ReadyTimeout  time.Duration
 	TokenProvider CallsTokenProvider
 }
 type CallsClient struct {
 	messaging    *MessagingClient
-	session      string
+	connection   string
 	participant  string
 	readyTimeout time.Duration
 	tokens       *CallsTokenSource
@@ -41,8 +41,8 @@ func NewCallsClient(c CallsClientConfig) (*CallsClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	if strings.TrimSpace(c.Session) == "" {
-		return nil, configuration("session", "Calls requires a session.")
+	if strings.TrimSpace(c.Connection) == "" {
+		return nil, configuration("connection", "Calls requires a connection.")
 	}
 	if c.Participant != "" {
 		if err = m.VoIP().participant(c.Participant); err != nil {
@@ -55,7 +55,7 @@ func NewCallsClient(c CallsClientConfig) (*CallsClient, error) {
 	if c.ReadyTimeout < 0 {
 		return nil, configuration("readyTimeout", "Ready timeout must be positive.")
 	}
-	client := &CallsClient{messaging: m, session: c.Session, participant: c.Participant, readyTimeout: c.ReadyTimeout}
+	client := &CallsClient{messaging: m, connection: c.Connection, participant: c.Participant, readyTimeout: c.ReadyTimeout}
 	if c.TokenProvider != nil {
 		client.tokens, _ = NewCallsTokenSource(c.TokenProvider)
 	}
@@ -71,9 +71,9 @@ func (c *CallsClient) Place(ctx context.Context, b PlaceCallRequest, o ...Reques
 		return Response[Envelope[PlacedCall]]{}, err
 	}
 	if m.t.config.Credential.Kind == ClientToken {
-		b.Session, b.Participant = "", ""
+		b.Connection, b.Participant = "", ""
 	} else {
-		b.Session, b.Participant = c.session, c.participant
+		b.Connection, b.Participant = c.connection, c.participant
 	}
 	return m.VoIP().Place(ctx, b, opts)
 }
@@ -115,7 +115,7 @@ func (c *CallsClient) socketURL(path string) string {
 
 type LifecycleFrame struct {
 	Type         string            `json:"type"`
-	Session      string            `json:"session,omitempty"`
+	Connection   string            `json:"connection,omitempty"`
 	Participant  string            `json:"participant,omitempty"`
 	Event        string            `json:"event,omitempty"`
 	CallID       string            `json:"callId,omitempty"`
@@ -144,7 +144,7 @@ func (c *CallsClient) Connect(ctx context.Context) (*CallsLifecycle, error) {
 	}
 	u := c.socketURL("/voip/ws")
 	if m.t.config.Credential.Kind != ClientToken {
-		u += "?session=" + url.QueryEscape(c.session)
+		u += "?connection=" + url.QueryEscape(c.connection)
 		if c.participant != "" {
 			u += "&participant=" + url.QueryEscape(c.participant)
 		}

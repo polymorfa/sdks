@@ -156,7 +156,7 @@ describe("Call diagnostics (socket media)", () => {
     const api = fakeApi();
     const t = timers();
     const c = createInternalCallsClient({
-      session: "support",
+      connection: "support",
       api,
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setInterval: t.setInterval,

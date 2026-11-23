@@ -153,11 +153,11 @@ func (b *WhatsAppEncryptedUploadBody) finish() bool {
 
 var uploadTransportName = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$`)
 
-func (r *WhatsAppMediaResource) customUpload(ctx context.Context, session string, source WhatsAppMediaSource, info EncryptedMediaInfo, max int64, extension WhatsAppMediaUploadTransport) (WhatsAppUploadLocation, error) {
+func (r *WhatsAppMediaResource) customUpload(ctx context.Context, connection string, source WhatsAppMediaSource, info EncryptedMediaInfo, max int64, extension WhatsAppMediaUploadTransport) (WhatsAppUploadLocation, error) {
 	child, cancel := context.WithCancel(ctx)
 	body := &WhatsAppEncryptedUploadBody{info: info, source: source, max: max, ctx: child, cancel: cancel}
 	defer body.finish()
-	location, err := extension.Upload(child, session, body)
+	location, err := extension.Upload(child, connection, body)
 	complete := body.finish()
 	if ctx.Err() != nil {
 		return WhatsAppUploadLocation{}, contextError(ctx, nil)
@@ -187,7 +187,7 @@ func (t builtinMediaUploadTransport) MarshalJSON() ([]byte, error) {
 	return json.Marshal(map[string]string{"name": t.mode})
 }
 
-func (t builtinMediaUploadTransport) Upload(ctx context.Context, session string, body *WhatsAppEncryptedUploadBody) (WhatsAppUploadLocation, error) {
+func (t builtinMediaUploadTransport) Upload(ctx context.Context, connection string, body *WhatsAppEncryptedUploadBody) (WhatsAppUploadLocation, error) {
 	if body == nil || body.source == nil {
 		return WhatsAppUploadLocation{}, configuration("body", "A prepared encrypted upload body is required.")
 	}
@@ -200,10 +200,10 @@ func (t builtinMediaUploadTransport) Upload(ctx context.Context, session string,
 	var result WhatsAppUploadLocation
 	var err error
 	if t.mode == "direct" {
-		result, err = t.resource.directUpload(ctx, session, body.source, body.info, body.max, t.options)
+		result, err = t.resource.directUpload(ctx, connection, body.source, body.info, body.max, t.options)
 	} else {
 		var reader *encryptedUploadReader
-		result, err = t.resource.RelayUpload(ctx, session, body.info, func(child context.Context) (io.ReadCloser, error) {
+		result, err = t.resource.RelayUpload(ctx, connection, body.info, func(child context.Context) (io.ReadCloser, error) {
 			reader, err = openEncryptedUpload(child, body.source, body.info, body.max)
 			return reader, err
 		}, t.options.RequestOptions)

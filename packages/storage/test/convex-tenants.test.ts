@@ -28,7 +28,7 @@ it("supports a real application schema and isolates the same row identity by tru
   const foreign = convexStorageHandlers({ resolveNamespace: () => "ownerB" });
   const row = {
     ...emptyRow(STORAGE_SCHEMA.contacts, {
-      sessionId: "session",
+      connectionId: "connection",
       contactId: "contact",
     }),
     _rev: 1,

@@ -35,46 +35,49 @@ async function setup(status = 200) {
 describe("dynamic Flow endpoints", () => {
   it("binds project identity on endpoint, receipt and key paths", async () => {
     const { server, flows } = await setup();
-    await flows.endpoint(flowId, { sessionId: "support" });
+    await flows.endpoint(flowId, { connectionId: "support" });
     await flows.setEndpoint(flowId, {
-      sessionId: "support",
+      connectionId: "support",
       mode: "forward",
       url: "https://example.com/flow",
     });
     await flows.setEndpoint(flowId, {
-      sessionId: "support",
+      connectionId: "support",
       mode: "function",
       functionId: "fn",
       deploymentId: null,
     });
     await flows.setEndpoint(flowId, {
-      sessionId: "support",
+      connectionId: "support",
       mode: "direct",
       url: "https://example.com/direct",
       expectedRevision: 2,
     });
-    await flows.deleteEndpoint(flowId, { sessionId: "support" });
-    await flows.endpointReceipts(flowId, { sessionId: "support", limit: 10 });
-    await flows.encryptionKey({ sessionId: "support" });
-    await flows.rotateEncryptionKey({ sessionId: "support" });
+    await flows.deleteEndpoint(flowId, { connectionId: "support" });
+    await flows.endpointReceipts(flowId, {
+      connectionId: "support",
+      limit: 10,
+    });
+    await flows.encryptionKey({ connectionId: "support" });
+    await flows.rotateEncryptionKey({ connectionId: "support" });
     expect(server.requests.map((r) => `${r.method} ${r.path}`)).toEqual([
-      `GET /platform/flows/${flowId}/endpoint?sessionId=support&projectId=${projectId}`,
+      `GET /platform/flows/${flowId}/endpoint?connectionId=support&projectId=${projectId}`,
       `PUT /platform/flows/${flowId}/endpoint`,
       `PUT /platform/flows/${flowId}/endpoint`,
       `PUT /platform/flows/${flowId}/endpoint`,
-      `DELETE /platform/flows/${flowId}/endpoint?sessionId=support&projectId=${projectId}`,
-      `GET /platform/flows/${flowId}/endpoint/receipts?sessionId=support&limit=10&projectId=${projectId}`,
-      `GET /platform/flow-encryption-keys?sessionId=support&projectId=${projectId}`,
+      `DELETE /platform/flows/${flowId}/endpoint?connectionId=support&projectId=${projectId}`,
+      `GET /platform/flows/${flowId}/endpoint/receipts?connectionId=support&limit=10&projectId=${projectId}`,
+      `GET /platform/flow-encryption-keys?connectionId=support&projectId=${projectId}`,
       "POST /platform/flow-encryption-keys/rotate",
     ]);
     expect(JSON.parse(server.requests[1]!.body)).toEqual({
-      sessionId: "support",
+      connectionId: "support",
       mode: "forward",
       url: "https://example.com/flow",
       projectId,
     });
     expect(JSON.parse(server.requests[7]!.body)).toEqual({
-      sessionId: "support",
+      connectionId: "support",
       projectId,
     });
   });
@@ -83,13 +86,13 @@ describe("dynamic Flow endpoints", () => {
     const { server, flows } = await setup(503);
     await expect(
       flows.setEndpoint(flowId, {
-        sessionId: "support",
+        connectionId: "support",
         mode: "forward",
         url: "https://example.com/flow",
       }),
     ).rejects.toThrow();
     await expect(
-      flows.rotateEncryptionKey({ sessionId: "support" }),
+      flows.rotateEncryptionKey({ connectionId: "support" }),
     ).rejects.toThrow();
     expect(server.requests).toHaveLength(2);
   });
@@ -97,21 +100,21 @@ describe("dynamic Flow endpoints", () => {
   it("validates input before transport", async () => {
     const { server, flows } = await setup();
     const bad: SetFlowEndpointRequest[] = [
-      { sessionId: "", mode: "forward", url: "https://example.com" },
-      { sessionId: "s", mode: "forward", url: "http://example.com" },
-      { sessionId: "s", mode: "forward", url: "https://" },
-      { sessionId: "s", mode: "direct", url: "https://user:pw@example.com" },
-      { sessionId: "s", mode: "direct", url: "https://example.com/#x" },
-      { sessionId: "s", mode: "function", functionId: "" },
+      { connectionId: "", mode: "forward", url: "https://example.com" },
+      { connectionId: "s", mode: "forward", url: "http://example.com" },
+      { connectionId: "s", mode: "forward", url: "https://" },
+      { connectionId: "s", mode: "direct", url: "https://user:pw@example.com" },
+      { connectionId: "s", mode: "direct", url: "https://example.com/#x" },
+      { connectionId: "s", mode: "function", functionId: "" },
       {
-        sessionId: "s",
+        connectionId: "s",
         mode: "direct",
         url: "https://example.com",
         expectedRevision: 0,
       },
-      { sessionId: "s", mode: "other" } as unknown as SetFlowEndpointRequest,
+      { connectionId: "s", mode: "other" } as unknown as SetFlowEndpointRequest,
       {
-        sessionId: "s",
+        connectionId: "s",
         mode: "forward",
         url: "https://example.com",
         projectId: "x",
@@ -122,8 +125,8 @@ describe("dynamic Flow endpoints", () => {
     expect(() => flows.endpointReceipts(flowId, { limit: 101 })).toThrow(
       "limit",
     );
-    expect(() => flows.rotateEncryptionKey({ sessionId: " " })).toThrow(
-      "sessionId",
+    expect(() => flows.rotateEncryptionKey({ connectionId: " " })).toThrow(
+      "connectionId",
     );
     expect(server.requests).toHaveLength(0);
     const typed: FlowEndpointSetResult["signingSecret"] = undefined;

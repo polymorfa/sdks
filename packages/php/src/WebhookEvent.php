@@ -11,7 +11,7 @@ final readonly class WebhookEvent
  * @param array<string,mixed> $raw */
     public function __construct(
         public string $id,
-        public string $session,
+        public string $connection,
         public string $timestamp,
         public string $event,
         public mixed $payload,
@@ -34,9 +34,9 @@ final readonly class WebhookEvent
     }
     /**
  *
- * @return array{id:string,session:string,timestamp:string,event:string,known:bool} */
+ * @return array{id:string,connection:string,timestamp:string,event:string,known:bool} */
     public function __debugInfo(): array
     {
-        return ['id' => $this->id, 'session' => $this->session, 'timestamp' => $this->timestamp, 'event' => $this->event, 'known' => $this->known];
+        return ['id' => $this->id, 'connection' => $this->connection, 'timestamp' => $this->timestamp, 'event' => $this->event, 'known' => $this->known];
     }
 }

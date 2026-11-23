@@ -38,7 +38,7 @@ func exerciseNativeProvider(t *testing.T, adapter Adapter) {
 		}
 	}
 	assertFixtureRows(t, e, eventRows)
-	batch, err := ReduceHistoryChunk(HistoryInput{SessionID: "provider-history", Chunk: history, ChunkID: str("golden")})
+	batch, err := ReduceHistoryChunk(HistoryInput{ConnectionID: "provider-history", Chunk: history, ChunkID: str("golden")})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -51,7 +51,7 @@ func exerciseNativeProvider(t *testing.T, adapter Adapter) {
 	}
 	for _, rows := range historyRows {
 		for _, row := range rows {
-			row["sessionId"] = "provider-history"
+			row["connectionId"] = "provider-history"
 		}
 	}
 	assertFixtureRows(t, e, historyRows)
@@ -74,48 +74,48 @@ func exerciseNativeProvider(t *testing.T, adapter Adapter) {
 	if _, err := adapter.Commit(ctx, []Write{{Kind: "delete", Entity: "messages", ID: first["_id"].(string)}}); err == nil {
 		t.Fatal("unfenced provider delete")
 	}
-	session := "clear-provider"
-	up := []Operation{upsert("chats", session, map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 1}, 1), upsert("messages", session, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 100}, 0), upsert("media", session, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "mediaKey": "secret"}, 0)}
+	connection := "clear-provider"
+	up := []Operation{upsert("chats", connection, map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 1}, 1), upsert("messages", connection, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "timestamp": 100}, 0), upsert("media", connection, map[string]any{"messageId": "m"}, map[string]any{"chatId": "chat", "mediaKey": "secret"}, 0)}
 	for _, child := range []struct{ entity, key string }{{"reactions", "senderId"}, {"receipts", "recipientId"}, {"poll_votes", "voterId"}} {
-		up = append(up, upsert(child.entity, session, map[string]any{"messageId": "m", child.key: "peer"}, map[string]any{"chatId": "chat", "timestamp": 100}, 0))
+		up = append(up, upsert(child.entity, connection, map[string]any{"messageId": "m", child.key: "peer"}, map[string]any{"chatId": "chat", "timestamp": 100}, 0))
 	}
-	if _, err = e.Apply(ctx, Batch{SessionID: session, Operations: up}); err != nil {
+	if _, err = e.Apply(ctx, Batch{ConnectionID: connection, Operations: up}); err != nil {
 		t.Fatal(err)
 	}
-	clear := []Operation{upsert("chats", session, map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 100}, 100), {Kind: "clearChat", SessionID: session, ChatID: "chat", UpTo: 100}}
-	if _, err = e.Apply(ctx, Batch{SessionID: session, Operations: clear}); err != nil {
+	clear := []Operation{upsert("chats", connection, map[string]any{"chatId": "chat"}, map[string]any{"clearedAt": 100}, 100), {Kind: "clearChat", ConnectionID: connection, ChatID: "chat", UpTo: 100}}
+	if _, err = e.Apply(ctx, Batch{ConnectionID: connection, Operations: clear}); err != nil {
 		t.Fatal("native clear", err)
 	}
 	for i := 1; i < len(up); i++ {
-		up[i].Guard = &Watermark{session, "chat", 100}
+		up[i].Guard = &Watermark{connection, "chat", 100}
 	}
-	if _, err = e.Apply(ctx, Batch{SessionID: session, EventID: str("late"), Operations: up[1:]}); err != nil {
+	if _, err = e.Apply(ctx, Batch{ConnectionID: connection, EventID: str("late"), Operations: up[1:]}); err != nil {
 		t.Fatal(err)
 	}
-	row, err := e.Get(ctx, "messages", map[string]any{"sessionId": session, "messageId": "m"})
+	row, err := e.Get(ctx, "messages", map[string]any{"connectionId": connection, "messageId": "m"})
 	if err != nil || row != nil {
 		t.Fatal("provider late resurrection", err)
 	}
 	for _, child := range []struct{ entity, key string }{{"reactions", "senderId"}, {"receipts", "recipientId"}, {"poll_votes", "voterId"}} {
-		row, err := e.Get(ctx, child.entity, map[string]any{"sessionId": session, "messageId": "m", child.key: "peer"})
+		row, err := e.Get(ctx, child.entity, map[string]any{"connectionId": connection, "messageId": "m", child.key: "peer"})
 		if err != nil || row != nil {
 			t.Fatal("provider clear child", child.entity, err)
 		}
 	}
-	checkpoint := Operation{Kind: "checkpoint", SessionID: session, Stream: "events", Cursor: "c1", ExpectedCursor: &ExpectedCursor{}}
-	if _, err = e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{checkpoint}}); err != nil {
+	checkpoint := Operation{Kind: "checkpoint", ConnectionID: connection, Stream: "events", Cursor: "c1", ExpectedCursor: &ExpectedCursor{}}
+	if _, err = e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{checkpoint}}); err != nil {
 		t.Fatal(err)
 	}
-	if _, err = e.Apply(ctx, Batch{SessionID: session, Operations: []Operation{checkpoint}}); err == nil {
+	if _, err = e.Apply(ctx, Batch{ConnectionID: connection, Operations: []Operation{checkpoint}}); err == nil {
 		t.Fatal("provider explicit-null cursor overwritten")
 	}
 
 	for i, value := range []any{nil, false, float64(0), float64(1.2345678901234567), 1e-30, "", "0", []any{}, map[string]any{}, map[string]any{"nested": []any{nil, false, float64(0), map[string]any{"empty": []any{}}, map[string]any{}}}} {
 		id := fmt.Sprint(i)
-		if _, err = e.Apply(ctx, Batch{SessionID: "json-values", Operations: []Operation{upsert("messages", "json-values", map[string]any{"messageId": id}, map[string]any{"extra": value}, 0)}}); err != nil {
+		if _, err = e.Apply(ctx, Batch{ConnectionID: "json-values", Operations: []Operation{upsert("messages", "json-values", map[string]any{"messageId": id}, map[string]any{"extra": value}, 0)}}); err != nil {
 			t.Fatal("provider JSON write", i, err)
 		}
-		row, err := e.Get(ctx, "messages", map[string]any{"sessionId": "json-values", "messageId": id})
+		row, err := e.Get(ctx, "messages", map[string]any{"connectionId": "json-values", "messageId": id})
 		if err != nil {
 			t.Fatal("provider JSON read", i, err)
 		}
@@ -125,7 +125,7 @@ func exerciseNativeProvider(t *testing.T, adapter Adapter) {
 			t.Fatalf("provider JSON scalar/object/list %d: got %s want %s", i, actual, expected)
 		}
 	}
-	if _, err = e.Apply(ctx, Batch{SessionID: "query-bound", Operations: []Operation{
+	if _, err = e.Apply(ctx, Batch{ConnectionID: "query-bound", Operations: []Operation{
 		upsert("messages", "query-bound", map[string]any{"messageId": "a"}, map[string]any{"chatId": "bound", "timestamp": 1}, 0),
 		upsert("messages", "query-bound", map[string]any{"messageId": "b"}, map[string]any{"chatId": "bound", "timestamp": 2}, 0),
 	}}); err != nil {
@@ -160,7 +160,7 @@ func TestMongoReplicaSetNativeConformance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, _ := EncodeKey("messages", map[string]any{"sessionId": "rollback", "messageId": "a"})
+	id, _ := EncodeKey("messages", map[string]any{"connectionId": "rollback", "messageId": "a"})
 	rows, err := foreign.Get(ctx, "messages", []string{id})
 	if err != nil || len(rows) != 0 {
 		t.Fatal("Mongo namespace leaked", err)
@@ -171,7 +171,7 @@ func TestMongoReplicaSetNativeConformance(t *testing.T) {
 	if err = client.Ping(ctx, nil); err != nil {
 		t.Fatal("borrowed Mongo client closed")
 	}
-	if _, err = db.Collection(a.prefix+"storage_schema").UpdateOne(ctx, bson.M{"_id": "storage"}, bson.M{"$set": bson.M{"version": 3}}); err != nil {
+	if _, err = db.Collection(a.prefix+"storage_schema").UpdateOne(ctx, bson.M{"_id": "storage"}, bson.M{"$set": bson.M{"version": 4}}); err != nil {
 		t.Fatal("mutate owned metadata")
 	}
 	if _, err = NewMongoAdapter(ctx, db, ProviderOptions{Namespace: namespace, Create: true}); err == nil {
@@ -219,7 +219,7 @@ func TestDynamoNativeConformance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, _ := EncodeKey("messages", map[string]any{"sessionId": "rollback", "messageId": "a"})
+	id, _ := EncodeKey("messages", map[string]any{"connectionId": "rollback", "messageId": "a"})
 	rows, err := foreign.Get(ctx, "messages", []string{id})
 	if err != nil || len(rows) != 0 {
 		t.Fatal("Dynamo namespace leaked", err)
@@ -231,7 +231,7 @@ func TestDynamoNativeConformance(t *testing.T) {
 		t.Fatal("borrowed Dynamo client closed")
 	}
 	item := a.key("storage_schema", "storage")
-	item["version"] = &types.AttributeValueMemberN{Value: "3"}
+	item["version"] = &types.AttributeValueMemberN{Value: "4"}
 	if _, err = client.PutItem(ctx, &dynamodb.PutItemInput{TableName: aws.String(table), Item: item}); err != nil {
 		t.Fatal("Dynamo version fixture")
 	}
@@ -274,7 +274,7 @@ func TestFirestoreNativeConformance(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	id, _ := EncodeKey("messages", map[string]any{"sessionId": "rollback", "messageId": "a"})
+	id, _ := EncodeKey("messages", map[string]any{"connectionId": "rollback", "messageId": "a"})
 	rows, err := foreign.Get(ctx, "messages", []string{id})
 	if err != nil || len(rows) != 0 {
 		t.Fatal("Firestore namespace leaked", err)
@@ -285,7 +285,7 @@ func TestFirestoreNativeConformance(t *testing.T) {
 	if _, err = client.Doc("borrowed/probe").Set(ctx, map[string]bool{"ok": true}); err != nil {
 		t.Fatal("borrowed Firestore closed")
 	}
-	if _, err = a.meta().Set(ctx, map[string]int{"version": 3}); err != nil {
+	if _, err = a.meta().Set(ctx, map[string]int{"version": 4}); err != nil {
 		t.Fatal("mutate owned metadata")
 	}
 	if _, err = NewFirestoreAdapter(ctx, client, ProviderOptions{Namespace: namespace, Create: true}); err == nil {
@@ -295,7 +295,7 @@ func TestFirestoreNativeConformance(t *testing.T) {
 
 func assertProviderBound(t *testing.T, a Adapter) {
 	t.Helper()
-	_, err := a.Query(context.Background(), "messages", Query{Index: "by_chat", Equals: map[string]string{"sessionId": "query-bound", "chatId": "bound"}, Limit: 10})
+	_, err := a.Query(context.Background(), "messages", Query{Index: "by_chat", Equals: map[string]string{"connectionId": "query-bound", "chatId": "bound"}, Limit: 10})
 	var typed *Error
 	if !errors.As(err, &typed) || typed.Code != "storage_query_bound_exceeded" {
 		t.Fatal("provider did not enforce query bound", err)

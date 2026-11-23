@@ -60,7 +60,7 @@ const summaryKeys = [
   "firstDeliveredAt",
   "firstReadAt",
   "id",
-  "numberId",
+  "connectionId",
   "readAt",
   "reason",
   "repliedAt",

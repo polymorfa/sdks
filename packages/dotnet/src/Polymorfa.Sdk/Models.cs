@@ -8,12 +8,12 @@ public sealed record SuccessEnvelope<T>(bool Success, T Data);
 public sealed record SuccessResponse(bool Success, string? Message);
 public sealed record OperationAccepted(bool Success, string Message, string OperationId);
 public sealed record StatusResult(string Status);
-public sealed record Session(string SessionId, string Name, string? ExternalId, string TenantId, string Type, bool TestMode, string Status, string? StatusReason, SessionConfigurationView? Configuration, NewChatCapping? NewChatCapping, string CreatedAt, string UpdatedAt, SignalCustodyMode? SignalMode = null);
+public sealed record Connection(string ConnectionId, string Name, string? ExternalId, string TenantId, ConnectionType Type, ConnectionMethod Method, bool TestMode, string Status, string? StatusReason, ConnectionConfigurationView? Configuration, NewChatCapping? NewChatCapping, string CreatedAt, string UpdatedAt, SignalCustodyMode? SignalMode = null, string? PhoneNumberId = null);
 public sealed record NewChatCapping(bool? Enabled, bool Pacing, string? Status, bool Capped, long? Limit, long? Used, long? Remaining, string? CycleStartsAt, string? ResetsAt, string ObservedAt);
-public sealed record PlatformSession([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string ProjectId, string SessionId, string Name, string? Phone, string? Platform, bool IsBusiness, bool TestMode, string? TierOverride, string Status, long MessageCount, long? LastActiveAt, long? PaidUntil);
-public sealed record SessionStartResult(bool Starting, string SessionId);
-public sealed record SessionStopResult(bool Stopping, string SessionId);
-public sealed record SessionRemoveResult(bool Removed, string SessionId);
+public sealed record PlatformConnection([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string ProjectId, string ConnectionId, string Name, string? Phone, string? Platform, bool IsBusiness, bool TestMode, string? TierOverride, string Status, long MessageCount, long? LastActiveAt, long? PaidUntil);
+public sealed record ConnectionStartResult(bool Starting, string ConnectionId);
+public sealed record ConnectionStopResult(bool Stopping, string ConnectionId);
+public sealed record ConnectionRemoveResult(bool Removed, string ConnectionId);
 public sealed record PairCodeRequest(string Phone);
 public sealed record PairCode(string Code);
 public sealed record QrCode(string? Qr, string? Event);
@@ -47,37 +47,37 @@ public sealed record StarRequest(ConversationReference Conversation, string Id, 
 public sealed record MessageOperation(string OperationId, string Status, string? Transport, string? RejectionCode, MessageOperationReceipt? Receipt);
 public sealed record MessageOperationReceipt([property: JsonPropertyName("whatsapp_ids")] WhatsAppMessageIds WhatsAppIds, string Timestamp);
 
-public sealed record CreateQuickLinkRequest(string? Purpose = null, string? Session = null, string? ProjectId = null, string? CustomerId = null, string? ExternalId = null, string? ConnectionGoal = null, string? AddConnection = null, QuickLinkConfiguration? Configuration = null, BillingControls? BillingControls = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<SignalCustodyMode?> SignalMode = default);
+public sealed record CreateQuickLinkRequest(string? Purpose = null, string? Connection = null, string? ProjectId = null, string? CustomerId = null, string? ExternalId = null, string? ConnectionGoal = null, string? AddMethod = null, QuickLinkConfiguration? Configuration = null, BillingControls? BillingControls = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<SignalCustodyMode?> SignalMode = default);
 public sealed record BillingControls([property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] decimal? LimitCredits, int Priority);
 public sealed record TestingProfile(string? Name = null, string? Status = null);
-public sealed record TestingConfiguration(TestingProfile? Profile = null, string? AccountType = null, string? ReplyBehavior = null, string? FailureScenario = null, string? HistoryFixtureId = null);
+public sealed record TestingConfiguration(TestingProfile? Profile = null, TestingAccountType? AccountType = null, string? ReplyBehavior = null, string? FailureScenario = null, string? HistoryFixtureId = null, TestingPrimaryPlatform? PrimaryPlatform = null);
 public sealed record QuickLinkTesting(string? Country = null, TestingConfiguration? Configuration = null, IReadOnlyList<string>? Editable = null);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record QuickLinkConfiguration(string? ConnectionPreference = null, string? ConnectionEnforcement = null, IReadOnlyList<string>? Methods = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> DefaultMethod = default, string? PrefillPhone = null, bool? AllowPhoneChange = null, QuickLinkHistorySync? HistorySync = null, ObservationOverride? Observation = null, HmsConfiguration? Hms = null, QuickLinkTesting? Testing = null);
 [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
 public sealed record QuickLinkHistorySync(string? Consent = null, string? Mode = null, bool? RequestFull = null, [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<HistorySyncDeliveryOverride?> Delivery = default);
-public sealed record QuickLink(string Purpose, string ConnectionGoal, string? AddConnection, string Id, string Url, string Session, string? ExpiresAt)
+public sealed record QuickLink(string Purpose, string ConnectionGoal, string? AddMethod, string Id, string Url, string Connection, string? ExpiresAt)
 {
     public override string ToString() => $"QuickLink {{ Id = {Id}, Url = [REDACTED] }}";
 }
-public sealed record QuickLinkStatus(string Purpose, string ConnectionGoal, string? AddConnection, string? HybridPhase, string Id, string Status, string Session, string? ExpiresAt, string? OpenedAt, string? ConnectedAt, string? Phone, string? ErrorCode, QuickLinkOnboarding? Onboarding);
+public sealed record QuickLinkStatus(string Purpose, string ConnectionGoal, string? AddMethod, string? HybridPhase, string Id, string Status, string Connection, string? ExpiresAt, string? OpenedAt, string? ConnectedAt, string? Phone, string? ErrorCode, QuickLinkOnboarding? Onboarding);
 public sealed record CloudContactSyncStatus(string Request, bool ReceiptRecorded);
 public sealed record CloudHistorySyncStatus(string Request, bool ReceiptRecorded, string Delivery);
 public sealed record CloudSyncStatus(CloudContactSyncStatus Contacts, CloudHistorySyncStatus History);
 public sealed record QuickLinkOnboarding(string Stage, string? Connection, bool? Coexistence, string ContactsSync, string HistorySync, double HistoryProgress, CloudSyncStatus Sync, string? ErrorCode);
-public sealed record HybridQuickLinkAvailability(bool Allowed, string? AddConnection, IReadOnlyList<ConnectionStatus> Connections, string? ResumeQuickLinkId);
+public sealed record HybridQuickLinkAvailability(bool Allowed, string? AddMethod, IReadOnlyList<ConnectionStatus> Methods, string? ResumeQuickLinkId);
 public sealed record ConnectionStatus(string Kind, string Status, bool Enabled);
 
 public sealed record WebhookRetryConfig(int Attempts, int DelaySeconds, string Policy);
 public sealed record WebhookHeader(string Name, string Value);
-public sealed record Webhook(string Id, string TenantId, string? Session, string Url, IReadOnlyList<string> Events, WebhookRetryConfig Retries, IReadOnlyList<WebhookHeader> Headers, bool Enabled, string? Format, string CreatedAt);
-public sealed record CreateWebhookRequest(string Url, string? Session = null, IReadOnlyList<string>? Events = null, string? HmacKey = null, WebhookRetryConfig? Retries = null, IReadOnlyList<WebhookHeader>? Headers = null, string? Format = null);
+public sealed record Webhook(string Id, string TenantId, string? Connection, string Url, IReadOnlyList<string> Events, WebhookRetryConfig Retries, IReadOnlyList<WebhookHeader> Headers, bool Enabled, string? Format, string CreatedAt);
+public sealed record CreateWebhookRequest(string Url, string? Connection = null, IReadOnlyList<string>? Events = null, string? HmacKey = null, WebhookRetryConfig? Retries = null, IReadOnlyList<WebhookHeader>? Headers = null, string? Format = null);
 public sealed record UpdateWebhookRequest(string? Url = null, IReadOnlyList<string>? Events = null, string? HmacKey = null, WebhookRetryConfig? Retries = null, IReadOnlyList<WebhookHeader>? Headers = null, bool? Enabled = null, string? Format = null);
 
 public sealed record ProjectIcon(string Type, string Value, string? Color = null, string? StorageId = null);
 public sealed record CreateProjectRequest(string Name, ProjectIcon? Icon = null, string? DefaultTier = null);
 public sealed record CreatedProject(string Id, string TeamId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage);
-public sealed record ProjectWithStats([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string TeamId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage, long ActiveSessions, long TotalSessions, long TotalMessages, long? LastActivity, string? IconUrl);
+public sealed record ProjectWithStats([property: JsonPropertyName("_id")] string Id, [property: JsonPropertyName("_creationTime")] long CreationTime, string TeamId, string Name, string Slug, ProjectIcon Icon, string DefaultTier, bool IsActive, string Stage, long ActiveConnections, long TotalConnections, long TotalMessages, long? LastActivity, string? IconUrl);
 public sealed record ProductionBusiness(string Name, string Website, string SupportEmail);
 public sealed record ProductionEnrollmentRequest(ProductionBusiness Business);
 public sealed record ProductionEnrollmentResult(string Id, string TeamId, string Name, string Slug, string Stage, string OperationId, string EnrollmentStatus, string BillingMode);

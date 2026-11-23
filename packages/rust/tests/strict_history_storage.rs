@@ -94,7 +94,7 @@ async fn real_archive_decoder_failure_prevents_content_progress_checkpoint_and_a
         if tail {
             bytes.push(0);
         }
-        let raw = json!({"id":"signed-archive","session":"fixture-session","timestamp":"2026-10-17T00:00:00Z","event":"history.sync","payload":{"mode":"deliver","whatsapp_ids":{"linked_devices":"fixture-archive"},"messages":[],"syncType":"RECENT","chunkOrder":7,"progress":92,"fileLength":bytes.len(),"conversationCount":1,"messageCount":0,"pushNameCount":0,"statusMessageCount":0,"whatsapp":{"encoding":"gzip-base64-protobuf","data":STANDARD.encode(bytes)}}}).to_string();
+        let raw = json!({"id":"signed-archive","connection":"fixture-session","timestamp":"2026-10-17T00:00:00Z","event":"history.sync","payload":{"mode":"deliver","whatsapp_ids":{"linked_devices":"fixture-archive"},"messages":[],"syncType":"RECENT","chunkOrder":7,"progress":92,"fileLength":bytes.len(),"conversationCount":1,"messageCount":0,"pushNameCount":0,"statusMessageCount":0,"whatsapp":{"encoding":"gzip-base64-protobuf","data":STANDARD.encode(bytes)}}}).to_string();
         let mut mac = Hmac::<Sha256>::new_from_slice(b"synthetic-archive-secret").unwrap();
         mac.update(raw.as_bytes());
         let event = construct_event(

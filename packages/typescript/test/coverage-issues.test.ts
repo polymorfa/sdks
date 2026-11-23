@@ -67,7 +67,7 @@ describe("coverage issue synchronizer", () => {
       "dev",
       "messaging",
       "GET",
-      "/messaging/sessions",
+      "/messaging/connections",
     );
     const staleMarker = marker("dev", "platform", "GET", "/platform/old");
     const server = await startTestServer((request) => {
@@ -143,13 +143,13 @@ describe("coverage issue synchronizer", () => {
           {
             family: "messaging",
             method: "GET",
-            path: "/messaging/sessions",
-            operationId: "listSessions",
+            path: "/messaging/connections",
+            operationId: "listConnections",
             fingerprint: "a".repeat(64),
             status: "changed",
             typescript: {
               status: "covered",
-              method: "MessagingClient.sessions.list",
+              method: "MessagingClient.connections.list",
             },
           },
           {

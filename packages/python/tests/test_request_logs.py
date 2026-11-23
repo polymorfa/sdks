@@ -25,7 +25,7 @@ ENTRY = {
     "projectId": PROJECT,
     "createdAt": "2026-10-11T00:00:00Z",
     "method": "POST",
-    "route": "/messaging/:session/messages",
+    "route": "/messaging/:connection/messages",
     "status": 422,
     "durationMs": 41.123456,
     "result": "failure",
@@ -79,7 +79,7 @@ async def test_native_public_request_log_list_follow_all_fields_filters_metadata
                 {
                     "status": [404, "5xx"],
                     "method": ["POST", "DELETE"],
-                    "route": "/messaging/:session/messages",
+                    "route": "/messaging/:connection/messages",
                     "source": "mcp",
                     "credentialId": "key_1",
                     "requestId": "req_1",
@@ -105,7 +105,7 @@ async def test_native_public_request_log_list_follow_all_fields_filters_metadata
                 {
                     "status": "404,5xx",
                     "method": "POST,DELETE",
-                    "route": "/messaging/:session/messages",
+                    "route": "/messaging/:connection/messages",
                     "source": "mcp",
                     "credentialId": "key_1",
                     "requestId": "req_1",

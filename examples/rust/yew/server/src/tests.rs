@@ -36,7 +36,7 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
         assert!(head.to_lowercase().contains("authorization: bearer pmfa_"));
         assert_eq!(
             serde_json::from_slice::<serde_json::Value>(&bytes[end..]).unwrap(),
-            json!({"ephemeralId":"example:app-user-id","session":"authorized-support","ttlSeconds":600})
+            json!({"ephemeralId":"example:app-user-id","connection":"authorized-support","ttlSeconds":600})
         );
         let body=json!({"success":true,"data":{"token":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","expiresAt":"2030-01-01T00:00:00Z"}}).to_string();
         stream.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
@@ -56,7 +56,7 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
         username_hash: digest("example-user"),
         password_hash: digest("test-only-password"),
         user_id: "app-user-id".into(),
-        session: "authorized-support".into(),
+        connection: "authorized-support".into(),
         origin: origin.clone(),
         users: Mutex::new(HashMap::new()),
         peer: "+15550001234".into(),
@@ -129,7 +129,7 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
         .header("origin", &origin)
         .header("cookie", cookie)
         .header("x-example-authenticated-user", "evil")
-        .json(&json!({"session":"foreign","customer":"foreign","ephemeralId":"evil"}))
+        .json(&json!({"connection":"foreign","customer":"foreign","ephemeralId":"evil"}))
         .send()
         .await
         .unwrap();
@@ -137,7 +137,7 @@ async fn real_app_login_uses_opaque_cookie_and_server_assignment_for_native_toke
     assert_eq!(minted.headers()["cache-control"], "no-store");
     assert_eq!(
         minted.json::<serde_json::Value>().await.unwrap(),
-        json!({"value":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","audience":"browser","expiresAt":1893456000000i64,"scopes":["read_messages","connect_whatsapp"],"grant":{"session":"authorized-support","conversations":[],"allow":["read_messages","connect_whatsapp"]}})
+        json!({"value":"pmfa_ct_YnJvd3Nlcl9maXh0dXJl","audience":"browser","expiresAt":1893456000000i64,"scopes":["read_messages","connect_whatsapp"],"grant":{"connection":"authorized-support","conversations":[],"allow":["read_messages","connect_whatsapp"]}})
     );
     upstream.await.unwrap();
     assert_eq!(
@@ -191,13 +191,13 @@ async fn connect_and_conversation_require_app_session_and_keep_assignment_on_ser
                     assert!(head.starts_with("POST /messaging/quicklinks HTTP/1.1"));
                     assert_eq!(
                         serde_json::from_slice::<serde_json::Value>(&bytes[end + 4..]).unwrap(),
-                        json!({"purpose":"add_connection","session":"authorized-support","addConnection":"linked_devices","connectionGoal":"hybrid"})
+                        json!({"purpose":"add_method","connection":"authorized-support","addMethod":"linked_devices","connectionGoal":"hybrid"})
                     );
                     break;
                 }
             }
         }
-        let body=json!({"success":true,"data":{"purpose":"add_connection","connectionGoal":"hybrid","addConnection":"linked_devices","id":"link","url":"https://quick.example.com/link","session":"authorized-support","expiresAt":null}}).to_string();
+        let body=json!({"success":true,"data":{"purpose":"add_method","connectionGoal":"hybrid","addMethod":"linked_devices","id":"link","url":"https://quick.example.com/link","connection":"authorized-support","expiresAt":null}}).to_string();
         stream.write_all(format!("HTTP/1.1 200 OK\r\ncontent-type: application/json\r\ncontent-length: {}\r\nconnection: close\r\n\r\n{body}",body.len()).as_bytes()).await.unwrap();
     });
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -215,7 +215,7 @@ async fn connect_and_conversation_require_app_session_and_keep_assignment_on_ser
         username_hash: digest("user"),
         password_hash: digest("fixture"),
         user_id: "app-user".into(),
-        session: "authorized-support".into(),
+        connection: "authorized-support".into(),
         origin: origin.clone(),
         peer: "+15550001234".into(),
         webhook_secret: "local-test-signing-key".into(),
@@ -253,7 +253,7 @@ async fn connect_and_conversation_require_app_session_and_keep_assignment_on_ser
             .json::<serde_json::Value>()
             .await
             .unwrap(),
-        json!({"messages":[],"peer":"+15550001234","session":"authorized-support","receivedEvents":0,"lastEvent":"","localTest":true})
+        json!({"messages":[],"peer":"+15550001234","connection":"authorized-support","receivedEvents":0,"lastEvent":"","localTest":true})
     );
     assert_eq!(
         client
@@ -269,7 +269,7 @@ async fn connect_and_conversation_require_app_session_and_keep_assignment_on_ser
         .post(format!("{origin}/api/polymorfa/connect"))
         .header("origin", &origin)
         .header("cookie", "polymorfa_example_session=opaque-app-session")
-        .json(&json!({"session":"foreign"}))
+        .json(&json!({"connection":"foreign"}))
         .send()
         .await
         .unwrap();
@@ -315,7 +315,7 @@ async fn native_inbox_sends_once_and_consumes_signed_peer_reply_after_reload() {
         username_hash: digest("example-user"),
         password_hash: digest("test-only-password"),
         user_id: "app-user-id".into(),
-        session: "authorized-support".into(),
+        connection: "authorized-support".into(),
         origin: origin.clone(),
         users: Mutex::new(HashMap::new()),
         peer: "+15550001234".into(),
@@ -387,7 +387,7 @@ async fn native_inbox_sends_once_and_consumes_signed_peer_reply_after_reload() {
     let event = polymorfa_sdk::webhooks::WebhookEvent::Unknown(
         polymorfa_sdk::webhooks::WebhookEnvelope {
             id: "event-1".into(),
-            session: "authorized-support".into(),
+            connection: "authorized-support".into(),
             timestamp: "2026-10-18T10:00:01Z".into(),
             event: "message.received".into(),
             external_id: None,

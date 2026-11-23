@@ -1,4 +1,4 @@
-"""Per-session durable CAS leases, deterministic merge and fenced batch application."""
+"""Per-connection durable CAS leases, deterministic merge and fenced batch application."""
 
 from __future__ import annotations
 
@@ -118,8 +118,8 @@ class Storage:
         self._now = now or (lambda: time.time() * 1000)
         self._size = caps.max_commit_size - 1
 
-    async def _acquire(self, session: str) -> _Lease:
-        identity = encode_key("leases", {"sessionId": session})
+    async def _acquire(self, connection: str) -> _Lease:
+        identity = encode_key("leases", {"connectionId": connection})
         deadline = time.monotonic() + self._wait / 1000
         owner = str(uuid.uuid4())
         while True:
@@ -129,7 +129,7 @@ class Storage:
                 or not existing.values.get("owner")
                 or cast(float, existing.values.get("expiresAt") or 0) <= self._now()
             ):
-                base = existing or empty_row("leases", {"sessionId": session})
+                base = existing or empty_row("leases", {"connectionId": connection})
                 row = replace(
                     base,
                     revision=base.revision + 1,
@@ -145,12 +145,12 @@ class Storage:
                 if result.ok:
                     return _Lease(row)
             if time.monotonic() >= deadline:
-                raise StorageLeaseLostError("Storage session lease is held by another writer")
+                raise StorageLeaseLostError("Storage connection lease is held by another writer")
             await asyncio.sleep(0.005)
 
     async def _fenced_commit(self, lease: _Lease, writes: Sequence[RowWrite]) -> CommitResult:
         if lease.lost or cast(float, lease.row.values.get("expiresAt") or 0) <= self._now():
-            raise StorageLeaseLostError("Storage session lease expired")
+            raise StorageLeaseLostError("Storage connection lease expired")
         row = replace(
             lease.row,
             revision=lease.row.revision + 1,
@@ -161,7 +161,7 @@ class Storage:
             lease.row = row
         elif lease.row.id in result.conflicts:
             lease.lost = True
-            raise StorageLeaseLostError("Storage session lease was replaced")
+            raise StorageLeaseLostError("Storage connection lease was replaced")
         return result
 
     async def _release(self, lease: _Lease) -> None:
@@ -203,7 +203,7 @@ class Storage:
                         "Storage checkpoint changed before the cursor could advance"
                     )
                 base = current or empty_row(
-                    "checkpoints", {"sessionId": op.session_id, "stream": op.stream}
+                    "checkpoints", {"connectionId": op.connection_id, "stream": op.stream}
                 )
                 stored[slot] = replace(
                     base,
@@ -277,7 +277,7 @@ class Storage:
                 "messages",
                 IndexQuery(
                     "by_chat",
-                    {"sessionId": operation.session_id, "chatId": operation.chat_id},
+                    {"connectionId": operation.connection_id, "chatId": operation.chat_id},
                     self._page_size,
                     range=IndexRange(lte=operation.up_to),
                 ),
@@ -287,7 +287,7 @@ class Storage:
             deletes: list[StorageOperation] = []
             for message in messages:
                 message_id = cast(str, message.values["messageId"])
-                key = {"sessionId": operation.session_id, "messageId": message_id}
+                key = {"connectionId": operation.connection_id, "messageId": message_id}
                 for entity in ("reactions", "receipts", "poll_votes"):
                     while True:
                         children = await self.adapter.query(
@@ -313,7 +313,9 @@ class Storage:
 
     async def _watermarks(self, operations: Sequence[Upsert]) -> list[Upsert]:
         keys = {
-            encode_key("chats", {"sessionId": op.guard.session_id, "chatId": op.guard.chat_id})
+            encode_key(
+                "chats", {"connectionId": op.guard.connection_id, "chatId": op.guard.chat_id}
+            )
             for op in operations
             if op.guard is not None
         }
@@ -325,7 +327,7 @@ class Storage:
                 result.append(op)
                 continue
             row = chats.get(
-                encode_key("chats", {"sessionId": guard.session_id, "chatId": guard.chat_id})
+                encode_key("chats", {"connectionId": guard.connection_id, "chatId": guard.chat_id})
             )
             marks = [
                 cast(float, row.values[name])
@@ -337,28 +339,28 @@ class Storage:
         return result
 
     async def apply(self, batch: OperationBatch) -> ApplyResult:
-        if not isinstance(batch.session_id, str) or not batch.session_id:
-            raise ValueError("A storage session is required")
+        if not isinstance(batch.connection_id, str) or not batch.connection_id:
+            raise ValueError("A storage connection is required")
         for operation in batch.operations:
-            session = (
-                operation.session_id
+            connection = (
+                operation.connection_id
                 if isinstance(operation, (Checkpoint, ClearChat))
-                else operation.key.get("sessionId")
+                else operation.key.get("connectionId")
             )
             if (
-                session != batch.session_id
+                connection != batch.connection_id
                 or isinstance(operation, Upsert)
                 and operation.guard is not None
-                and operation.guard.session_id != batch.session_id
+                and operation.guard.connection_id != batch.connection_id
             ):
-                raise ValueError("A storage batch cannot write a foreign session")
+                raise ValueError("A storage batch cannot write a foreign connection")
             if isinstance(operation, (Upsert, Delete)) and operation.entity == "leases":
                 raise ValueError("Storage lease rows are owned by the engine")
-        lease = await self._acquire(batch.session_id)
+        lease = await self._acquire(batch.connection_id)
         try:
             marker: list[RowWrite] = []
             if batch.event_id is not None:
-                key = {"sessionId": batch.session_id, "eventId": batch.event_id}
+                key = {"connectionId": batch.connection_id, "eventId": batch.event_id}
                 identity = encode_key("events", key)
                 if identity in await self.adapter.get("events", [identity]):
                     return ApplyResult(False, 0)
@@ -404,8 +406,8 @@ class Storage:
             else None,
         )
 
-    async def get_checkpoint(self, session_id: str, stream: str) -> SavedCheckpoint | None:
-        row = await self.get("checkpoints", {"sessionId": session_id, "stream": stream})
+    async def get_checkpoint(self, connection_id: str, stream: str) -> SavedCheckpoint | None:
+        row = await self.get("checkpoints", {"connectionId": connection_id, "stream": stream})
         if row is None or not isinstance(row.get("cursor"), str):
             return None
         return SavedCheckpoint(
@@ -414,14 +416,17 @@ class Storage:
             cast(float, row["updatedAt"]) if finite(row.get("updatedAt")) else None,
         )
 
-    async def has_event(self, session_id: str, event_id: str) -> bool:
-        return await self.get("events", {"sessionId": session_id, "eventId": event_id}) is not None
+    async def has_event(self, connection_id: str, event_id: str) -> bool:
+        return (
+            await self.get("events", {"connectionId": connection_id, "eventId": event_id})
+            is not None
+        )
 
 
 def _operation_identity(operation: StorageOperation) -> tuple[EntityName, str]:
     if isinstance(operation, Checkpoint):
         return "checkpoints", encode_key(
-            "checkpoints", {"sessionId": operation.session_id, "stream": operation.stream}
+            "checkpoints", {"connectionId": operation.connection_id, "stream": operation.stream}
         )
     if isinstance(operation, ClearChat):
         raise TypeError("Clear-chat operations cannot enter row planning")

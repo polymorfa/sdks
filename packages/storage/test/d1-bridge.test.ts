@@ -17,7 +17,11 @@ import type {
   RowWrite,
   StorageAdapter,
 } from "../src/types.js";
-import { entityDefinition, type EntityName } from "../src/schema.js";
+import {
+  entityDefinition,
+  STORAGE_SCHEMA_VERSION,
+  type EntityName,
+} from "../src/schema.js";
 
 const secret = "synthetic_D1_bridge_fixture_secret_only_20261015";
 const authority = "fixture-customer-a";
@@ -91,7 +95,7 @@ async function request(
       envelope.schemaVersion,
       envelope.authority,
       envelope.tablePrefix,
-    ]).toEqual([D1_BRIDGE_CONTRACT, 2, authority, prefix]);
+    ]).toEqual([D1_BRIDGE_CONTRACT, STORAGE_SCHEMA_VERSION, authority, prefix]);
   }
   return { response, envelope: JSON.parse(raw), raw };
 }
@@ -138,7 +142,7 @@ describe("D1 bridge authority and wire failures", () => {
   it("matches independently calculated portable HMAC vectors", async () => {
     const fixture = JSON.parse(
       readFileSync(
-        new URL("../d1-bridge-fixtures.json", import.meta.url),
+        new URL("../d1-bridge-fixtures.v3.json", import.meta.url),
         "utf8",
       ),
     );
@@ -326,7 +330,7 @@ describe("D1 bridge authority and wire failures", () => {
               entity: "messages",
               row: {
                 ...emptyRow(entityDefinition("messages"), {
-                  sessionId: "bad",
+                  connectionId: "bad",
                   messageId: "shape",
                 }),
                 secretField: secret,
@@ -353,7 +357,7 @@ describe("D1 bridge authority and wire failures", () => {
           entity: "messages",
           query: {
             index: "by_chat",
-            equals: { sessionId: "scope", chatId: "chat" },
+            equals: { connectionId: "scope", chatId: "chat" },
             limit: 1001,
           },
         },
@@ -366,14 +370,16 @@ describe("D1 bridge authority and wire failures", () => {
     await call("/setup", {});
     const row = {
       ...emptyRow(entityDefinition("receipts"), {
-        sessionId: "fenced-delete",
+        connectionId: "fenced-delete",
         messageId: "message",
         recipientId: "recipient",
       }),
       _rev: 1,
     };
     const lease = {
-      ...emptyRow(entityDefinition("leases"), { sessionId: "fenced-delete" }),
+      ...emptyRow(entityDefinition("leases"), {
+        connectionId: "fenced-delete",
+      }),
       _rev: 1,
       owner: "fixture",
       expiresAt: 2000000000000,
@@ -409,7 +415,12 @@ describe("D1 bridge authority and wire failures", () => {
             {
               kind: "put",
               entity: "leases",
-              row: { ...lease, sessionId: "foreign", _id: "kforeign", _rev: 2 },
+              row: {
+                ...lease,
+                connectionId: "foreign",
+                _id: "kforeign",
+                _rev: 2,
+              },
               expectedRev: 1,
             },
           ],
@@ -421,7 +432,7 @@ describe("D1 bridge authority and wire failures", () => {
     await call("/setup", {});
     const old = {
       ...emptyRow(entityDefinition("messages"), {
-        sessionId: "wire-cas",
+        connectionId: "wire-cas",
         messageId: "old",
       }),
       _rev: 1,
@@ -435,7 +446,7 @@ describe("D1 bridge authority and wire failures", () => {
     ).toEqual({ ok: true });
     const fresh = {
       ...emptyRow(entityDefinition("messages"), {
-        sessionId: "wire-cas",
+        connectionId: "wire-cas",
         messageId: "new",
       }),
       _rev: 1,

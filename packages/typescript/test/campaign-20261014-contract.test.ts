@@ -31,7 +31,7 @@ import { startTestServer, type TestServer } from "./support/http-server.js";
 const projectId = "018f0000-0000-7000-8000-000000000001";
 const campaignId = "018f0000-0000-7000-8000-000000000002";
 const flowId = "018f0000-0000-7000-8000-000000000003";
-const sessionId = "018f0000-0000-7000-8000-000000000004";
+const connectionId = "018f0000-0000-7000-8000-000000000004";
 const customerId = "018f0000-0000-7000-8000-000000000005";
 const jobId = "018f0000-0000-7000-8000-000000000006";
 const phone = "+15551234567";
@@ -61,7 +61,7 @@ const profile = {
   tags: ["interested"],
   attributes: { plan: "pro", count: 1, enabled: false, empty: null },
 };
-const testSend = { sessionId, to: phone, variables: {} };
+const testSend = { connectionId, to: phone, variables: {} };
 const custody: SignalCustodyDefault = {
   signalModeDefault: null,
   effectiveSignalMode: "standard",
@@ -176,7 +176,7 @@ function successFixture(operation: string): unknown {
         id: jobId,
         campaignId,
         status: "sent",
-        from: { sessionId, phone },
+        from: { connectionId, phone },
         to: phone,
         messageId: null,
         variables: {},
@@ -764,7 +764,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
     }
   });
 
-  it("accounts for exactly the thirty pinned source operations without advancing the baseline", () => {
+  it("binds the thirty campaign and custody operations to the Connection source", () => {
     const contract = JSON.parse(
       readFileSync(
         new URL(
@@ -786,9 +786,9 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         }
       >;
     };
-    expect(contract.commit).toBe("f97ad78b172e80788c33bdc0fcf28f75db9283ec");
+    expect(contract.commit).toBe("15db8b1c9d88e2ceccb58c851e731feabb659a39");
     expect(contract.published).toBe(false);
-    expect(contract.apiVersion).toBe("2026-10-14");
+    expect(contract.apiVersion).toBe("2026-09-22");
     const operations = Object.values(contract.sources).flatMap((source) =>
       Object.values(source.paths).flatMap((methods) =>
         Object.values(methods).map((operation) => operation.operationId),
@@ -804,7 +804,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
         "utf8",
       ),
     ) as { commit: string };
-    expect(baseline.commit).toBe("f180dc1ee2bd45dbecf01702f73bdd75c664634b");
+    expect(baseline.commit).toBe("15db8b1c9d88e2ceccb58c851e731feabb659a39");
   });
 
   it("preserves every send variant and accepted whitespace labels without rewriting the graph", async () => {
@@ -1084,7 +1084,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
           id: jobId,
           campaignId,
           status: "sent",
-          from: { sessionId, phone },
+          from: { connectionId, phone },
           messageId: null,
           createdAt: 1,
         },
@@ -1147,7 +1147,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
           "idempotent-replayed": "true",
         },
         body: JSON.stringify({
-          error: { code, message: "Refused", param: "sessionId" },
+          error: { code, message: "Refused", param: "connectionId" },
         }),
       }));
       servers.push(server);
@@ -1160,7 +1160,7 @@ describe("2026-10-14 typed campaign and custody consumers", () => {
       await expect(result).rejects.toMatchObject({
         code,
         requestId: "failed-request",
-        param: "sessionId",
+        param: "connectionId",
         metadata: {
           headers: {
             "retry-after": "3",

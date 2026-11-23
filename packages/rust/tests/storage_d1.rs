@@ -19,7 +19,7 @@ fn options(url: &str) -> D1BridgeOptions {
 }
 fn key(s: &str, m: &str) -> RowKey {
     BTreeMap::from([
-        ("sessionId".into(), s.into()),
+        ("connectionId".into(), s.into()),
         ("messageId".into(), m.into()),
     ])
 }
@@ -121,7 +121,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
     let s = format!("rust-native-{}", uuid::Uuid::new_v4());
     let store = Arc::new(Storage::new(adapter.clone(), StorageOptions::default()).unwrap());
     let first = OperationBatch {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         event_id: Some("first".into()),
         event_type: None,
         operations: vec![upsert(&s, "first", 1)],
@@ -167,7 +167,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
         tasks.push(tokio::spawn(async move {
             store
                 .apply(&OperationBatch {
-                    session_id: s.clone(),
+                    connection_id: s.clone(),
                     event_id: None,
                     event_type: None,
                     operations: vec![upsert(&s, "first", n)],
@@ -180,7 +180,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
         task.await.unwrap();
     }
     let huge = OperationBatch {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         event_id: Some("history".into()),
         event_type: None,
         operations: (0..2000).map(|n| upsert(&s, &n.to_string(), n)).collect(),
@@ -190,7 +190,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
     let mut query = IndexQuery {
         index: "by_chat".into(),
         equals: BTreeMap::from([
-            ("sessionId".into(), s.clone()),
+            ("connectionId".into(), s.clone()),
             ("chatId".into(), "chat".into()),
         ]),
         range: None,
@@ -208,11 +208,11 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
     let second = adapter.query(Entity::Messages, &query).await.unwrap();
     assert_eq!(second.len(), 1000);
     let checkpoint = OperationBatch {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         event_id: None,
         event_type: None,
         operations: vec![StorageOperation::Checkpoint {
-            session_id: s.clone(),
+            connection_id: s.clone(),
             stream: "events".into(),
             cursor: "saved".into(),
             expected_cursor: Some(None),
@@ -226,14 +226,14 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
         Err(StorageError::CheckpointConflict)
     ));
     let clear = OperationBatch {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         event_id: Some("clear".into()),
         event_type: None,
         operations: vec![
             StorageOperation::Upsert {
                 entity: Entity::Chats,
                 key: BTreeMap::from([
-                    ("sessionId".into(), s.clone()),
+                    ("connectionId".into(), s.clone()),
                     ("chatId".into(), "chat".into()),
                 ]),
                 fields: BTreeMap::from([(
@@ -246,7 +246,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
                 guard: None,
             },
             StorageOperation::ClearChat {
-                session_id: s.clone(),
+                connection_id: s.clone(),
                 chat_id: "chat".into(),
                 up_to: 1000.,
             },
@@ -259,7 +259,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
         999
     );
     let late = OperationBatch {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         event_id: Some("late".into()),
         event_type: None,
         operations: vec![match upsert(&s, "late", 1) {
@@ -273,7 +273,7 @@ async fn actual_worker_binding_atomicity_history_replay_checkpoint_and_clear() {
                 key,
                 fields,
                 guard: Some(ChatWatermarkGuard {
-                    session_id: s.clone(),
+                    connection_id: s.clone(),
                     chat_id: "chat".into(),
                     timestamp: 1.,
                 }),
@@ -329,7 +329,7 @@ async fn authenticated_but_wrong_identity_capabilities_nonce_and_body_are_reject
                 .lines()
                 .find_map(|l| l.strip_prefix("polymorfa-storage-nonce: "))
                 .unwrap();
-            let mut envelope = json!({"contract":"polymorfa-d1-storage-v1","schemaVersion":2,"authority":"fixture-customer-a","tablePrefix":"bridge_a_","data":{"atomicCommit":true,"maxCommitSize":50,"maxGetSize":1000,"maxQuerySize":1000,"maxBodyBytes":8388608,"conditionalDeletes":true,"setupAllowed":false}});
+            let mut envelope = json!({"contract":"polymorfa-d1-storage-v1","schemaVersion":3,"authority":"fixture-customer-a","tablePrefix":"bridge_a_","data":{"atomicCommit":true,"maxCommitSize":50,"maxGetSize":1000,"maxQuerySize":1000,"maxBodyBytes":8388608,"conditionalDeletes":true,"setupAllowed":false}});
             match mode {
                 "authority" => envelope["authority"] = json!("other"),
                 "prefix" => envelope["tablePrefix"] = json!("other_"),
@@ -395,7 +395,7 @@ async fn handshake_server() -> (
             };
             let nonce = header("polymorfa-storage-nonce: ");
             let secret = header("authorization: Bearer ");
-            let body = json!({"contract":"polymorfa-d1-storage-v1","schemaVersion":2,"authority":"fixture-customer-a","tablePrefix":"bridge_a_","data":{"atomicCommit":true,"maxCommitSize":50,"maxGetSize":1000,"maxQuerySize":1000,"maxBodyBytes":8388608,"conditionalDeletes":true,"setupAllowed":false}}).to_string();
+            let body = json!({"contract":"polymorfa-d1-storage-v1","schemaVersion":3,"authority":"fixture-customer-a","tablePrefix":"bridge_a_","data":{"atomicCommit":true,"maxCommitSize":50,"maxGetSize":1000,"maxQuerySize":1000,"maxBodyBytes":8388608,"conditionalDeletes":true,"setupAllowed":false}}).to_string();
             let mut mac = Hmac::<Sha256>::new_from_slice(secret.as_bytes()).unwrap();
             mac.update(format!("{nonce}.200.{body}").as_bytes());
             let signature = format!("v1={}", hex::encode(mac.finalize().into_bytes()));

@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import { test } from "node:test";
 import Ajv from "ajv";
 const read = (p) => readFileSync(new URL("../" + p, import.meta.url), "utf8");
+// Frozen historical acceptance at 77e9ce3. Current Connection routes and scopes
+// are tested by the six native packages against the main pinned OpenAPI.
 const m = JSON.parse(read("contracts/passkeys.candidate.json"));
 const fragment = JSON.parse(read(m.fragment.path));
 const f = JSON.parse(read("contracts/fixtures/passkeys.candidate.json"));
@@ -28,7 +30,7 @@ function jsonSchema(value) {
 
 const ACCEPTED = "77e9ce31aa5e0ea58815662ba0028f1927f690d5";
 const sha = (p) => createHash("sha256").update(read(p)).digest("hex");
-test("five-operation scope bound to the accepted API dev source, unpublished", () => {
+test("historical five-operation scope bound to its original accepted API dev source, unpublished", () => {
   assert.equal(m.sourceAccepted, true);
   assert.equal(m.published, false);
   assert.equal(m.acceptedSource.commit, ACCEPTED);

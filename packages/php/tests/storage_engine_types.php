@@ -9,14 +9,14 @@ use Polymorfa\Resources\Events;
 function storageEngineTypedUsage(Adapter $adapter, Events $events): void
 {
     $storage = new Engine($adapter);
-    $storage->apply(new Batch('session', [
-        new Upsert('messages', ['sessionId' => 'session','messageId' => 'm'], ['text' => new FieldWrite('body', 1)], new Watermark('session', 'chat', 1)),
-        new Patch('messages', ['sessionId' => 'session','messageId' => 'm'], ['starred' => new FieldWrite(false, 2)]),
-        new Delete('media', ['sessionId' => 'session','messageId' => 'm']),
-        new ClearChat('session', 'chat', 2),
-        new Checkpoint('session', 'events', 'cursor', expectedCursor:null),
+    $storage->apply(new Batch('connection', [
+        new Upsert('messages', ['connectionId' => 'connection','messageId' => 'm'], ['text' => new FieldWrite('body', 1)], new Watermark('connection', 'chat', 1)),
+        new Patch('messages', ['connectionId' => 'connection','messageId' => 'm'], ['starred' => new FieldWrite(false, 2)]),
+        new Delete('media', ['connectionId' => 'connection','messageId' => 'm']),
+        new ClearChat('connection', 'chat', 2),
+        new Checkpoint('connection', 'events', 'cursor', expectedCursor:null),
     ], 'event', 'message.received'));
-    HistoryReducer::reduce('session', ['syncType' => 2], new HistoryIdentityIndex(messages:[['nativeId' => 'wa','id' => 'opaque','chatId' => 'chat','fromMe' => false]]));
+    HistoryReducer::reduce('connection', ['syncType' => 2], new HistoryIdentityIndex(messages:[['nativeId' => 'wa','id' => 'opaque','chatId' => 'chat','fromMe' => false]]));
     $sync = new Sync(new ApiEventSource($events, 'project'), $storage);
     $sync->close();
 }

@@ -62,8 +62,8 @@ TEST_EVENT_FIXTURES: Final = (
     "call.received",
     "call.missed",
     "call.ended",
-    "session.status",
-    "session.restriction_updated",
+    "connection.status",
+    "connection.restriction_updated",
     "template.status",
 )
 PRIVACY_SETTING_VALUES: Final = MappingProxyType(

@@ -17,7 +17,7 @@ from polymorfa.storage.reduce_history import reduce_history_chunk
 from polymorfa.webhooks import WebhookEvent
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.json").read_text())
+FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.v3.json").read_text())
 
 
 @pytest.fixture(params=["mongodb", "dynamodb", "firestore"])
@@ -38,7 +38,7 @@ async def native_document(request):
     elif request.param == "dynamodb":
         import aioboto3
 
-        manager = aioboto3.Session().client(
+        manager = aioboto3.Connection().client(
             "dynamodb",
             endpoint_url="http://127.0.0.1:" + os.environ["POLYMORFA_TEST_DYNAMO_PORT"],
             region_name="us-east-1",
@@ -73,7 +73,7 @@ async def test_actual_document_schema2_fixtures_replay(native_document, kind):
         for value in FIXTURE["events"]:
             event = WebhookEvent(
                 value["id"],
-                value["session"],
+                value["connection"],
                 value["timestamp"],
                 value["event"],
                 value["payload"],
@@ -95,8 +95,8 @@ async def test_actual_document_schema2_fixtures_replay(native_document, kind):
 
 
 async def test_actual_document_conditional_rollback_delete_and_namespace(native_document):
-    one = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
-    two = replace(empty_row("messages", {"sessionId": "s", "messageId": "two"}), revision=1)
+    one = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
+    two = replace(empty_row("messages", {"connectionId": "s", "messageId": "two"}), revision=1)
     assert (await native_document.commit([RowPut("messages", one, None)])).ok
     failed = await native_document.commit(
         [RowPut("messages", two, None), RowPut("messages", replace(one, revision=2), 8)]
@@ -111,7 +111,7 @@ async def test_actual_document_conditional_rollback_delete_and_namespace(native_
     assert (
         len(
             await native_document.query(
-                "messages", IndexQuery("by_chat", {"sessionId": "foreign", "chatId": "chat"}, 10)
+                "messages", IndexQuery("by_chat", {"connectionId": "foreign", "chatId": "chat"}, 10)
             )
         )
         == 0
@@ -134,7 +134,9 @@ async def test_actual_document_history_2000(native_document):
     for conversation in chunk["conversations"]:
         page = await storage.query(
             "messages",
-            IndexQuery("by_chat", {"sessionId": "s", "chatId": "wa:" + conversation["id"]}, 1000),
+            IndexQuery(
+                "by_chat", {"connectionId": "s", "chatId": "wa:" + conversation["id"]}, 1000
+            ),
         )
         total += len(page.rows)
     assert total == 2000

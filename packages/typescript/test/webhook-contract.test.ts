@@ -10,7 +10,7 @@ import {
   type KnownWebhookEventType,
   type ProjectWebhookDeliveryAttempt,
   type TeamWebhookDeliveryAttempt,
-  type SessionLoggedOutPayload,
+  type ConnectionLoggedOutPayload,
   type RuntimeTemplateStatusPayload,
   type CloudTemplateStatusPayload,
   type CloudAccountStatusPayload,
@@ -41,53 +41,11 @@ const load = (family: "messaging" | "platform") =>
   JSON.parse(
     readFileSync(resolve(root, `contracts/openapi.${family}.json`), "utf8"),
   ) as OpenApiDocument;
-const round2Marketing = JSON.parse(
-  readFileSync(
-    resolve(root, "contracts/official-api-round2/oa-17.json"),
-    "utf8",
-  ),
-) as OpenApiDocument;
 const baselineMessaging = load("messaging");
 const abpropsContract = JSON.parse(
   readFileSync(resolve(root, "contracts/abprops-capabilities.json"), "utf8"),
 ) as OpenApiDocument;
-const pausedReasonsContract = JSON.parse(
-  readFileSync(resolve(root, "contracts/campaign-paused-reasons.json"), "utf8"),
-) as {
-  readonly commit: string;
-  readonly sources: {
-    readonly messaging: {
-      readonly sourcePath: string;
-      readonly sourceSha256: string;
-      readonly schemas: Readonly<Record<string, Schema>>;
-    };
-  };
-};
-const pausedReasons = pausedReasonsContract.sources.messaging.schemas;
-// Consume the capability event from its exact scoped source revision.
-const messaging: OpenApiDocument = {
-  components: {
-    schemas: {
-      ...baselineMessaging.components.schemas,
-      ...Object.fromEntries(
-        [
-          "MarketingOnboardingUpdatedEvent",
-          "ContactMarketingPreferenceUpdatedEvent",
-          "MarketingOnboardingUpdatedPayload",
-          "ContactMarketingPreferencePayload",
-        ].map((name) => [name, round2Marketing.components.schemas[name]!]),
-      ),
-      SessionCapabilitiesUpdatedPayload:
-        abpropsContract.components.schemas.SessionCapabilitiesUpdatedPayload!,
-      SessionCapabilitiesUpdatedEvent:
-        abpropsContract.components.schemas.SessionCapabilitiesUpdatedEvent!,
-      // Campaign pause reasons and skip timestamps from their merged API revision.
-      CampaignPausedPayload: pausedReasons.CampaignPausedPayload!,
-      CampaignRecipientSkippedPayload:
-        pausedReasons.CampaignRecipientSkippedPayload!,
-    },
-  },
-};
+const messaging = baselineMessaging;
 const platform = load("platform");
 
 function resolveRef(document: OpenApiDocument, schema: Schema): Schema {
@@ -219,7 +177,7 @@ const IDS = {
   project: "0b0e5b1e-0000-4000-8000-000000000003",
   customer: "0b0e5b1e-0000-4000-8000-000000000004",
   pairingLink: "0b0e5b1e-0000-4000-8000-000000000005",
-  session: "0b0e5b1e-0000-4000-8000-000000000006",
+  connection: "0b0e5b1e-0000-4000-8000-000000000006",
 };
 const AT = "2026-09-16T00:00:00.000Z";
 const customer = {
@@ -248,9 +206,11 @@ const PAYLOADS: {
     ? Shape<RuntimeTemplateStatusPayload>
     : Shape<P[K]>;
 } = {
-  "session.capabilities_updated": shape<P["session.capabilities_updated"]>()(
+  "connection.capabilities_updated": shape<
+    P["connection.capabilities_updated"]
+  >()(
     {
-      session: "support",
+      connection: "support",
       projectId: IDS.project,
       status: "synced",
       syncedAt: AT,
@@ -268,7 +228,7 @@ const PAYLOADS: {
       changedKeys: ["polls.endTime"],
     },
     [
-      "session",
+      "connection",
       "projectId",
       "status",
       "syncedAt",
@@ -283,26 +243,28 @@ const PAYLOADS: {
       phone: "+15551234567",
       source: "stop-keyword",
       keyword: "START",
-      session: "support",
+      connection: "support",
       projectId: IDS.project,
     },
-    ["phone", "source", "keyword", "session"],
+    ["phone", "source", "keyword", "connection"],
   ),
   "contact.opted_out": shape<P["contact.opted_out"]>()(
     {
       phone: "+15551234567",
       source: "stop-keyword",
       keyword: "STOP",
-      session: "support",
+      connection: "support",
       projectId: IDS.project,
     },
-    ["phone", "source", "keyword", "session"],
+    ["phone", "source", "keyword", "connection"],
   ),
-  "session.logged_out": shape<P["session.logged_out"]>()(
+  "connection.logged_out": shape<P["connection.logged_out"]>()(
     { reason: "banned", code: 401 },
     ["reason", "code"],
   ),
-  "session.restriction_updated": shape<P["session.restriction_updated"]>()(
+  "connection.restriction_updated": shape<
+    P["connection.restriction_updated"]
+  >()(
     {
       type: "reachout_timelock",
       active: true,
@@ -329,12 +291,12 @@ const PAYLOADS: {
     [...customerRequired, "fields"],
   ),
   "customer.enabled": shape<P["customer.enabled"]>()(
-    { ...customer, migratedNumberCount: 2 },
-    [...customerRequired, "migratedNumberCount"],
+    { ...customer, migratedConnectionCount: 2 },
+    [...customerRequired, "migratedConnectionCount"],
   ),
   "customer.archiving": shape<P["customer.archiving"]>()(
-    { ...customer, blockingNumberCount: 1, revokedPairingLinkCount: 3 },
-    [...customerRequired, "blockingNumberCount", "revokedPairingLinkCount"],
+    { ...customer, blockingConnectionCount: 1, revokedPairingLinkCount: 3 },
+    [...customerRequired, "blockingConnectionCount", "revokedPairingLinkCount"],
   ),
   "customer.pairing_link.created": shape<P["customer.pairing_link.created"]>()(
     { ...customer, pairingLinkId: IDS.pairingLink },
@@ -350,11 +312,14 @@ const PAYLOADS: {
   ),
   "customer.pairing_link.connected": shape<
     P["customer.pairing_link.connected"]
-  >()({ ...customer, pairingLinkId: IDS.pairingLink, sessionId: IDS.session }, [
-    ...customerRequired,
-    "pairingLinkId",
-    "sessionId",
-  ]),
+  >()(
+    {
+      ...customer,
+      pairingLinkId: IDS.pairingLink,
+      connectionId: IDS.connection,
+    },
+    [...customerRequired, "pairingLinkId", "connectionId"],
+  ),
   "customer.pairing_link.failed": shape<P["customer.pairing_link.failed"]>()(
     { ...customer, pairingLinkId: IDS.pairingLink, errorCode: "expired" },
     [...customerRequired, "pairingLinkId", "errorCode"],
@@ -367,21 +332,30 @@ const PAYLOADS: {
     },
     [...customerRequired, "pairingLinkId"],
   ),
-  "customer.number.attached": shape<P["customer.number.attached"]>()(
-    { ...customer, sessionId: IDS.session, pairingLinkId: IDS.pairingLink },
-    [...customerRequired, "sessionId"],
+  "customer.connection.attached": shape<P["customer.connection.attached"]>()(
+    {
+      ...customer,
+      connectionId: IDS.connection,
+      pairingLinkId: IDS.pairingLink,
+    },
+    [...customerRequired, "connectionId"],
   ),
-  "customer.number.transferred": shape<P["customer.number.transferred"]>()(
-    { ...customer, sessionId: IDS.session, sourceCustomerId: IDS.event },
-    [...customerRequired, "sessionId", "sourceCustomerId"],
+  "customer.connection.transferred": shape<
+    P["customer.connection.transferred"]
+  >()(
+    { ...customer, connectionId: IDS.connection, sourceCustomerId: IDS.event },
+    [...customerRequired, "connectionId", "sourceCustomerId"],
   ),
-  "customer.number.disconnected": shape<P["customer.number.disconnected"]>()(
-    { ...customer, sessionId: IDS.session, reason: "logged_out" },
-    [...customerRequired, "sessionId", "reason"],
-  ),
+  "customer.connection.disconnected": shape<
+    P["customer.connection.disconnected"]
+  >()({ ...customer, connectionId: IDS.connection, reason: "logged_out" }, [
+    ...customerRequired,
+    "connectionId",
+    "reason",
+  ]),
   "bansafe.health_threshold": shape<P["bansafe.health_threshold"]>()(
     {
-      sessionId: IDS.session,
+      connectionId: IDS.connection,
       projectId: IDS.project,
       health: 41.5,
       threshold: 45,
@@ -394,7 +368,7 @@ const PAYLOADS: {
       actionId: IDS.pairingLink,
     },
     [
-      "sessionId",
+      "connectionId",
       "projectId",
       "health",
       "threshold",
@@ -438,7 +412,7 @@ const PAYLOADS: {
     {
       phoneNumber: "+15551234567",
       action: "applied",
-      scope: "number",
+      scope: "connection",
       rung: "throttle",
       previousRung: null,
       reason: "finding",
@@ -558,7 +532,7 @@ const PAYLOADS: {
       sourceKind: "call",
       sourceId: "call_1",
       projectId: IDS.project,
-      session: "number-1",
+      connection: "number-1",
       occurredAt: AT,
       recordedAt: AT,
       revision: 1,
@@ -576,7 +550,7 @@ const PAYLOADS: {
       "sourceKind",
       "sourceId",
       "projectId",
-      "session",
+      "connection",
       "occurredAt",
       "recordedAt",
       "revision",
@@ -734,7 +708,7 @@ const PAYLOADS: {
       ...campaign,
       recipientId: "rcp_1",
       phone: "+15551234567",
-      sessionKey: "support",
+      connectionKey: "support",
       externalMessageId: "msg_1",
       variantKey: "a",
       attempt: 1,
@@ -744,7 +718,7 @@ const PAYLOADS: {
       "campaignId",
       "recipientId",
       "phone",
-      "sessionKey",
+      "connectionKey",
       "externalMessageId",
       "variantKey",
       "attempt",
@@ -777,17 +751,17 @@ const PAYLOADS: {
   "campaign.throttled": shape<P["campaign.throttled"]>()(
     {
       ...campaign,
-      sessionKey: "support",
+      connectionKey: "support",
       reason: "safe_mode",
       deferredCount: 20,
       at: 6,
     },
-    ["campaignId", "sessionKey", "reason", "deferredCount", "at"],
+    ["campaignId", "connectionKey", "reason", "deferredCount", "at"],
   ),
   "campaign.cap_reached": shape<P["campaign.cap_reached"]>()(
     {
       ...campaign,
-      sessionKey: "support",
+      connectionKey: "support",
       phone: "+15551234567",
       capType: "daily",
       capLimit: 250,
@@ -796,7 +770,7 @@ const PAYLOADS: {
     },
     [
       "campaignId",
-      "sessionKey",
+      "connectionKey",
       "phone",
       "capType",
       "capLimit",
@@ -830,10 +804,10 @@ type LegacyEventType = Exclude<
   | `voice.${string}`
   | "usage.recorded"
   | "message.failed"
-  | "session.capabilities_updated"
-  | "session.restriction_updated"
+  | "connection.capabilities_updated"
+  | "connection.restriction_updated"
   | "template.status"
-  | "session.logged_out"
+  | "connection.logged_out"
 >;
 
 /** Union payloads whose PAYLOADS fixture covers one named alternative. */
@@ -940,7 +914,7 @@ describe("webhook catalog contract", () => {
     );
   });
 
-  it("types the Meta account notification variant of session.status", () => {
+  it("types the Meta account notification variant of connection.status", () => {
     expectShape(
       messaging,
       "CloudAccountStatusPayload",
@@ -962,7 +936,7 @@ describe("webhook catalog contract", () => {
       const body = Buffer.from(
         JSON.stringify({
           id: "evt_1",
-          session: "support",
+          connection: "support",
           externalId: "crm-42",
           timestamp: AT,
           event: type,
@@ -981,7 +955,7 @@ describe("webhook catalog contract", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "evt_2",
-        session: "support",
+        connection: "support",
         timestamp: AT,
         event: "message.failed",
         payload,
@@ -992,7 +966,7 @@ describe("webhook catalog contract", () => {
     if (isEvent(event, "message.failed")) {
       expectTypeOf(event.payload.error).toEqualTypeOf<
         | "invalid_recipient"
-        | "session_not_connected"
+        | "connection_not_connected"
         | "ack_timeout"
         | "send_failed"
         | "blocked_by_safety"
@@ -1028,7 +1002,7 @@ describe("webhook catalog contract", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "evt_hand_raised",
-        session: "support",
+        connection: "support",
         timestamp: AT,
         event: "call.participant_state",
         payload: { callId: "call-1", participant },
@@ -1042,15 +1016,15 @@ describe("webhook catalog contract", () => {
   });
 
   it("types logged-out reasons and the required integer code from the pinned contract", async () => {
-    const payload = shape<SessionLoggedOutPayload>()(
+    const payload = shape<ConnectionLoggedOutPayload>()(
       { reason: "device_removed", code: 401 },
       ["reason", "code"],
     );
-    expectShape(messaging, "SessionLoggedOutPayload", payload);
-    expectTypeOf<SessionLoggedOutPayload["reason"]>().toEqualTypeOf<
+    expectShape(messaging, "ConnectionLoggedOutPayload", payload);
+    expectTypeOf<ConnectionLoggedOutPayload["reason"]>().toEqualTypeOf<
       "banned" | "device_removed" | "unknown"
     >();
-    const schema = messaging.components.schemas.SessionLoggedOutPayload!;
+    const schema = messaging.components.schemas.ConnectionLoggedOutPayload!;
     expect(
       violations(messaging, schema, { reason: "device_removed" }),
     ).toContain("$.code is required");
@@ -1063,16 +1037,16 @@ describe("webhook catalog contract", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "evt_logout",
-        session: "support",
+        connection: "support",
         timestamp: AT,
-        event: "session.logged_out",
+        event: "connection.logged_out",
         payload: payload.value,
       }),
     );
     const event = await constructWebhookEvent(body, sign(body), secret);
-    if (!isEvent(event, "session.logged_out"))
+    if (!isEvent(event, "connection.logged_out"))
       throw new Error("Expected logged-out event");
-    expectTypeOf(event.payload).toEqualTypeOf<SessionLoggedOutPayload>();
+    expectTypeOf(event.payload).toEqualTypeOf<ConnectionLoggedOutPayload>();
     expect(event.payload).toEqual({ reason: "device_removed", code: 401 });
   });
 });

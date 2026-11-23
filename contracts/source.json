@@ -1,19 +1,19 @@
 {
   "repository": "polymorfa/polymorfa",
-  "commit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
-  "branch": "recovery/org-team-backend-20261028",
-  "published": true,
-  "note": "Full Messaging and Platform snapshots are byte-identical copies of the API specifications at polymorfa/polymorfa#887 pushed head f180dc1ee2 (contract revision f180dc1ee2). That head includes the team rename and later dev changes. SDK publication and API deployment remain separate gates.",
+  "commit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+  "branch": "rajeh/connection-rename-backend",
+  "published": false,
+  "note": "Breaking Connection source candidate at held API date 2026-09-22. Exact committed producer snapshots; no source merge, deployed API acceptance or package publication is inferred. Nightly/stable release gates remain closed until matching staging/production acceptance.",
   "contracts": {
     "messaging": {
       "sourcePath": "apps/api/docs/openapi.json",
       "snapshotPath": "contracts/openapi.messaging.json",
-      "sha256": "0c66f1ee93923cf57425ac29c01a84c5c140b703ace2160e1b899ee6dad0b071"
+      "sha256": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7"
     },
     "platform": {
       "sourcePath": "apps/api/docs/openapi.management.json",
       "snapshotPath": "contracts/openapi.platform.json",
-      "sha256": "bee9be6cc08d2ec78f5eb5e05135bea3751f93af917b8dd6983b26029feac485"
+      "sha256": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559"
     }
   }
 }

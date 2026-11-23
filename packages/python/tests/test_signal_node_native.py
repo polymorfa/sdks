@@ -23,9 +23,11 @@ async def test_actual_service_decrypts_receive_and_waits_for_python_manual_ack()
     identity = "python-native-" + uuid.uuid4().hex
     text = "synthetic Python native Signal proof λ"
     async with SignalNodeClient(metadata["applicationSecret"], base_url=metadata["url"]) as client:
-        sessions = await client.list_sessions()
-        assert any(item.id == metadata["sessionId"] and item.claimed for item in sessions.sessions)
-        async with client.events(session_id=metadata["sessionId"], reconnect=False) as stream:
+        connections = await client.list_connections()
+        assert any(
+            item.id == metadata["connectionId"] and item.claimed for item in connections.connections
+        )
+        async with client.events(connection_id=metadata["connectionId"], reconnect=False) as stream:
             iterator = stream.__aiter__()
             receiving = asyncio.create_task(iterator.__anext__())
             try:
@@ -41,7 +43,7 @@ async def test_actual_service_decrypts_receive_and_waits_for_python_manual_ack()
                     json.dumps({"messageId": identity, "text": text})
                 )
                 event = await asyncio.wait_for(receiving, 5)
-                assert event.session_id == metadata["sessionId"]
+                assert event.connection_id == metadata["connectionId"]
                 assert event.message_id == identity and event.text == text
                 assert event.timestamp == 1720000000 and event.sender_alt == "123456@lid"
                 assert event.message_bytes() and not receipt.exists()

@@ -5,8 +5,8 @@ import type {
   BanSafeClaim,
   BanSafeClaimEvidence,
   BanSafeClaimVerdict,
-  SessionCallSettings,
-  UpdateSessionCallSettingsRequest,
+  ConnectionCallSettings,
+  UpdateConnectionCallSettingsRequest,
   WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -85,7 +85,7 @@ describe("simultaneous calls contract supplement", () => {
           "simultaneousCalls",
           "revision",
           "updatedAt",
-        ] satisfies (keyof SessionCallSettings)[]
+        ] satisfies (keyof ConnectionCallSettings)[]
       ).sort(),
     );
     expect(platform.PlatformAccessCallSettings!.required).toContain(
@@ -103,17 +103,17 @@ describe("simultaneous calls contract supplement", () => {
           "simultaneousCalls",
           "acknowledgeRisk",
           "expectedRevision",
-        ] satisfies (keyof UpdateSessionCallSettingsRequest)[]
+        ] satisfies (keyof UpdateConnectionCallSettingsRequest)[]
       ).sort(),
     );
     expectTypeOf<
-      SessionCallSettings["simultaneousCalls"]
+      ConnectionCallSettings["simultaneousCalls"]
     >().toEqualTypeOf<boolean>();
     expectTypeOf<
-      UpdateSessionCallSettingsRequest["simultaneousCalls"]
+      UpdateConnectionCallSettingsRequest["simultaneousCalls"]
     >().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<
-      UpdateSessionCallSettingsRequest["acknowledgeRisk"]
+      UpdateConnectionCallSettingsRequest["acknowledgeRisk"]
     >().toEqualTypeOf<boolean | undefined>();
   });
 

@@ -116,7 +116,7 @@ describe("MessagingClient quick replies", () => {
     >().toEqualTypeOf<QuickRepliesResource>();
   });
 
-  it("lists the bounded observation projection with metadata and an encoded session", async () => {
+  it("lists the bounded observation projection with metadata and an encoded connection", async () => {
     const { client, requests } = await quickRepliesServer();
 
     const listed = await client.quickReplies.list("support/eu", {

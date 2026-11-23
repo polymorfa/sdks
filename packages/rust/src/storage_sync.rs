@@ -10,7 +10,7 @@ impl From<&crate::webhooks::WebhookEnvelope> for StorageEvent {
     fn from(event: &crate::webhooks::WebhookEnvelope) -> Self {
         Self {
             id: event.id.clone(),
-            session: event.session.clone(),
+            connection: event.connection.clone(),
             timestamp: event.timestamp.clone(),
             event: event.event.clone(),
             payload: event.payload.clone(),

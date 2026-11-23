@@ -13,7 +13,7 @@ internal static class Media41Tests
     private sealed class Wrapper(Func<string, WhatsAppEncryptedUploadBody, Task<WhatsAppUploadLocation>> upload) : IWhatsAppMediaUploadTransport
     {
         public string Name => "custom-direct-name-is-not-authority";
-        public Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default) => upload(session, body);
+        public Task<WhatsAppUploadLocation> UploadAsync(string connection, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default) => upload(connection, body);
     }
     internal static async Task RunAsync()
     {

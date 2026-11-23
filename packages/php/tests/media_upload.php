@@ -42,19 +42,19 @@ foreach ($cases as [$mode,$kind]) {
                     $copy[0] = chr(ord($copy[0]) ^ 1);
                 } return Utils::streamFor($copy);
             };
-            $error = raises(fn () => $client->whatsappMedia->upload('session', $source, $options), MediaIntegrityException::class);
+            $error = raises(fn () => $client->whatsappMedia->upload('connection', $source, $options), MediaIntegrityException::class);
             check($error->errorCode === 'media_source_changed' && $opens === 2, 'Changed document source fails repeat pass before finalization');
         } elseif (in_array($mode, ['status507','status413','status415','redirect'], true)) {
-            $error = raises(fn () => $client->whatsappMedia->uploadBytes('session', $plain, $options), ServerException::class);
+            $error = raises(fn () => $client->whatsappMedia->uploadBytes('connection', $plain, $options), ServerException::class);
             check($error->status === ($mode === 'redirect' ? 302 : (int) substr($mode, 6)), 'Nonretryable upload statuses preserve safe status');
             check(!str_contains($error->getMessage(), 'synthetic_grant') && $error->getPrevious() === null, 'Signed URL omitted from native errors');
         } elseif ($mode === 'invalid-grant') {
-            $error = raises(fn () => $client->whatsappMedia->uploadBytes('session', $plain, $options), ServerException::class);
+            $error = raises(fn () => $client->whatsappMedia->uploadBytes('connection', $plain, $options), ServerException::class);
             check($error->errorCode === 'invalid_response', 'Grant must match encrypted media path before CDN request');
         } elseif ($mode === 'stall') {
-            raises(fn () => $client->whatsappMedia->uploadBytes('session', $plain, $options), TimeoutException::class);
+            raises(fn () => $client->whatsappMedia->uploadBytes('connection', $plain, $options), TimeoutException::class);
         } else {
-            $result = $client->whatsappMedia->uploadBytes('session', $plain, $options);
+            $result = $client->whatsappMedia->uploadBytes('connection', $plain, $options);
             check(json_encode($result) === '{"redacted":true}' && !str_contains(print_r($result, true), 'synthetic_grant'), 'Upload result redacts locations and keys');
         }
         fwrite($pipes[0], "finish\n");
@@ -91,6 +91,6 @@ foreach ($cases as [$mode,$kind]) {
 $cancelled = new CancellationToken();
 $cancelled->cancel();
 $client = new MessagingClient($credential);
-raises(fn () => $client->whatsappMedia->uploadBytes('session', 'fixture', new UploadWhatsAppMediaOptions('image', requestOptions:new RequestOptions(cancellation:$cancelled))), CancelledException::class);
+raises(fn () => $client->whatsappMedia->uploadBytes('connection', 'fixture', new UploadWhatsAppMediaOptions('image', requestOptions:new RequestOptions(cancellation:$cancelled))), CancelledException::class);
 raises(fn () => new UploadWhatsAppMediaOptions('image', documentPartSize:67108865), ConfigurationException::class);
 echo "Native TLS direct/relay uploads, six-kind integrity, refresh/resume, multipart fences, redirect/cancel/deadline and credential isolation passed.\n";

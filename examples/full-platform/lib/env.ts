@@ -18,14 +18,14 @@ export const env = {
   teamApiKey: () => requiredEnv("POLYMORFA_TEAM_API_KEY"),
   projectId: () => requiredEnv("POLYMORFA_PROJECT_ID"),
   projectSlug: () => requiredEnv("POLYMORFA_PROJECT_SLUG"),
-  session: () => requiredEnv("POLYMORFA_SESSION"),
-  templateSession: () => requiredEnv("POLYMORFA_TEMPLATE_SESSION"),
+  connection: () => requiredEnv("POLYMORFA_CONNECTION"),
+  templateConnection: () => requiredEnv("POLYMORFA_TEMPLATE_CONNECTION"),
   webhookSecret: () => requiredEnv("POLYMORFA_WEBHOOK_SECRET"),
   messagingWebhookSecret: () =>
     requiredEnv("POLYMORFA_MESSAGING_WEBHOOK_SECRET"),
-  /** Extra sessions agents may address; the default session is always allowed. */
-  agentSessions: () =>
-    (optionalEnv("POLYMORFA_AGENT_SESSIONS") ?? "")
+  /** Extra connections agents may address; the default connection is always allowed. */
+  agentConnections: () =>
+    (optionalEnv("POLYMORFA_AGENT_CONNECTIONS") ?? "")
       .split(",")
       .map((name) => name.trim())
       .filter((name) => name.length > 0),

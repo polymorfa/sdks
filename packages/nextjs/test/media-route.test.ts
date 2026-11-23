@@ -76,7 +76,7 @@ describe("createMediaDownloadRoute", () => {
       for (const authorize of [
         () => null,
         () => {
-          throw new Error("session store down");
+          throw new Error("connection store down");
         },
         () => ({}) as never,
         () => ({ mediaId: "" }),
@@ -88,7 +88,7 @@ describe("createMediaDownloadRoute", () => {
         });
         const response = await route(get());
         expect(response.status).toBe(403);
-        expect(await response.text()).not.toContain("session store");
+        expect(await response.text()).not.toContain("connection store");
       }
       expect(resource.downloadStream).not.toHaveBeenCalled();
       expect(resource.downloadUrl).not.toHaveBeenCalled();

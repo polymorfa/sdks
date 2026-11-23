@@ -3,10 +3,10 @@
 declare(strict_types=1);
 $time = '2026-10-11T00:00:00Z';
 $idem = ['id' => 'idem','key' => 'fixture','replayed' => true,'createdAt' => $time,'expiresAt' => $time];
-$event = ['id' => 'event','teamId' => 'team','projectId' => null,'type' => 'session.status','source' => 'runtime','environment' => 'production','createdAt' => $time,'payloadAvailability' => 'not_retained','payload' => null,'replayableUntil' => null,'metadataExpiresAt' => $time];
+$event = ['id' => 'event','teamId' => 'team','projectId' => null,'type' => 'connection.status','source' => 'runtime','environment' => 'production','createdAt' => $time,'payloadAvailability' => 'not_retained','payload' => null,'replayableUntil' => null,'metadataExpiresAt' => $time];
 $replay = ['eventId' => 'event','deliveryId' => 'delivery','operationId' => 'op','idempotency' => $idem];
 $secretMetadata = ['version' => 2,'createdAt' => $time,'previousValidUntil' => null];
-$webhook = ['id' => 'webhook','teamId' => 'team','owner' => 'team','projectId' => null,'url' => 'https://fixture.invalid/events','eventTypes' => ['session.status'],'enabled' => false,'format' => 'native','retryPolicy' => ['maximumAttempts' => 5,'backoff' => 'exponential','initialDelaySeconds' => 2],'headers' => [['name' => 'X-Application']],'secret' => $secretMetadata,'createdAt' => $time,'updatedAt' => $time];
+$webhook = ['id' => 'webhook','teamId' => 'team','owner' => 'team','projectId' => null,'url' => 'https://fixture.invalid/events','eventTypes' => ['connection.status'],'enabled' => false,'format' => 'native','retryPolicy' => ['maximumAttempts' => 5,'backoff' => 'exponential','initialDelaySeconds' => 2],'headers' => [['name' => 'X-Application']],'secret' => $secretMetadata,'createdAt' => $time,'updatedAt' => $time];
 $creation = ['webhook' => $webhook,'operationId' => null,'idempotency' => $idem,'secret' => null,'secretAvailable' => false];
 $mutation = ['webhook' => $webhook,'operationId' => null,'idempotency' => $idem];
 $deletion = ['webhookId' => 'webhook','deleted' => true,'operationId' => null,'idempotency' => $idem];
@@ -14,7 +14,7 @@ $rotation = ['webhookId' => 'webhook','operationId' => null,'secret' => null,'se
 $delivery = ['id' => 'delivery','teamId' => 'team','projectId' => null,'eventId' => 'event','webhookId' => 'webhook','status' => 'failed','attemptCount' => 1,'capabilities' => ['retryable' => false],'payloadAvailability' => 'expired','replayableUntil' => null,'metadataExpiresAt' => $time,'nextAttemptAt' => null,'lastAttemptAt' => $time,'completedAt' => $time,'createdAt' => $time,'updatedAt' => $time,'lastOutcome' => ['statusCode' => 503,'errorCode' => 'upstream']];
 $attempt = ['id' => 'attempt','teamId' => 'team','projectId' => null,'deliveryId' => 'delivery','number' => 1,'status' => 'failed','startedAt' => $time,'completedAt' => $time,'nextRetryAt' => null,'durationMs' => 1.25,'statusCode' => 503,'errorCode' => 'upstream','response' => ['contentType' => 'text/plain','excerpt' => 'Failure','truncated' => true],'metadataExpiresAt' => $time];
 $retry = ['deliveryId' => 'delivery','attemptId' => 'attempt','operationId' => 'op','idempotency' => $idem];
-$operation = ['id' => 'op','teamId' => 'team','projectId' => null,'kind' => 'session_lifecycle','status' => 'action_required','resource' => ['type' => 'session','id' => 'session'],'sequence' => 3,'capabilities' => ['cancellable' => true,'watchable' => true],'progress' => ['code' => 'queued','current' => null,'total' => null],'result' => ['receipt' => null],'error' => null,'actionRequired' => ['code' => 'approval','details' => ['enabled' => false]],'createdAt' => $time,'updatedAt' => $time,'completedAt' => null];
+$operation = ['id' => 'op','teamId' => 'team','projectId' => null,'kind' => 'connection_lifecycle','status' => 'action_required','resource' => ['type' => 'connection','id' => 'connection'],'sequence' => 3,'capabilities' => ['cancellable' => true,'watchable' => true],'progress' => ['code' => 'queued','current' => null,'total' => null],'result' => ['receipt' => null],'error' => null,'actionRequired' => ['code' => 'approval','details' => ['enabled' => false]],'createdAt' => $time,'updatedAt' => $time,'completedAt' => null];
 $transition = ['operationId' => 'op','sequence' => 3,'fromStatus' => 'running','toStatus' => 'action_required','reasonCode' => null,'occurredAt' => $time,'snapshot' => ['progress' => $operation['progress'],'error' => null,'actionRequired' => $operation['actionRequired']]];
 $cancellation = ['operation' => $operation,'operationId' => 'op','idempotency' => $idem];
 $page = fn ($data) => ['data' => [$data],'page' => ['nextCursor' => null,'hasMore' => false]];
@@ -29,7 +29,7 @@ foreach (['/platform','/platform/projects/project'] as $prefix) {
     $delivery['projectId'] = $attempt['projectId'] = $operation['projectId'] = $project ? 'project' : null;
     $cancellation['operation'] = $operation;
     $cases = [
-        ['GET',$prefix.'/events?type=session.status&limit=2',null,$page($event),fn ($c) => $pageResponse($c->events->list(['type' => 'session.status','limit' => 2])),[$event]],
+        ['GET',$prefix.'/events?type=connection.status&limit=2',null,$page($event),fn ($c) => $pageResponse($c->events->list(['type' => 'connection.status','limit' => 2])),[$event]],
         ['GET',$prefix.'/events/event?includePayload=false',null,['data' => $event],fn ($c) => $c->events->retrieve('event', ['includePayload' => false]),$event],
         ['POST',$prefix.'/events/event/replays',['webhookId' => 'webhook'],['data' => $replay],fn ($c) => $c->events->replay('event', ['webhookId' => 'webhook']),$replay],
         ['GET',$prefix.'/webhooks?enabled=false&limit=2',null,$page($webhook),fn ($c) => $pageResponse($c->webhooks->list(['enabled' => false,'limit' => 2])),[$webhook]],
@@ -44,7 +44,7 @@ foreach (['/platform','/platform/projects/project'] as $prefix) {
         ['GET',$prefix.'/webhook-deliveries/delivery/attempts?limit=2',null,$page($attempt),fn ($c) => $pageResponse($c->webhookDeliveries->listAttempts('delivery', ['limit' => 2])),[$attempt]],
         ['GET',$prefix.'/webhook-deliveries/delivery/attempts/attempt',null,['data' => $attempt],fn ($c) => $c->webhookDeliveries->retrieveAttempt('delivery', 'attempt'),$attempt],
         ['POST',$prefix.'/webhook-deliveries/delivery/retry',[],['data' => $retry],fn ($c) => $c->webhookDeliveries->retry('delivery'),$retry],
-        ['GET',$prefix.'/operations?kind=session_lifecycle',null,$page($operation),fn ($c) => $pageResponse($c->operations->list(['kind' => 'session_lifecycle'])),[$operation]],
+        ['GET',$prefix.'/operations?kind=connection_lifecycle',null,$page($operation),fn ($c) => $pageResponse($c->operations->list(['kind' => 'connection_lifecycle'])),[$operation]],
         ['GET',$prefix.'/operations/op?wait=1&afterSequence=2',null,['data' => $operation],fn ($c) => $c->operations->retrieve('op', ['wait' => 1,'afterSequence' => 2]),$operation],
         ['GET',$prefix.'/operations/op/transitions?afterSequence=2',null,$page($transition),fn ($c) => $pageResponse($c->operations->listTransitions('op', ['afterSequence' => 2])),[$transition]],
         ['POST',$prefix.'/operations/op/cancel',null,['data' => $cancellation],fn ($c) => $c->operations->cancel('op'),$cancellation],

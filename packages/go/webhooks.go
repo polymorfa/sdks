@@ -11,11 +11,11 @@ import (
 	"unicode/utf8"
 )
 
-// WebhookEvent retains unknown payloads without coercion. Session can be empty
+// WebhookEvent retains unknown payloads without coercion. Connection can be empty
 // on project events. The raw signed bytes must be verified before parsing.
 type WebhookEvent struct {
 	ID         string          `json:"id"`
-	Session    string          `json:"session"`
+	Connection string          `json:"connection"`
 	ExternalID string          `json:"externalId,omitempty"`
 	Timestamp  string          `json:"timestamp"`
 	Event      string          `json:"event"`
@@ -49,7 +49,7 @@ func ParseVerifiedWebhookEvent(body []byte) (WebhookEvent, error) {
 	if err := json.Unmarshal(body, &shape); err != nil {
 		return e, &Error{Kind: ValidationError, Code: "invalid_webhook_json", Message: "Webhook body must contain valid JSON."}
 	}
-	if err := json.Unmarshal(body, &e); err != nil || e.ID == "" || e.Timestamp == "" || e.Event == "" || shape["session"] == nil || string(shape["session"]) == "null" || shape["payload"] == nil {
+	if err := json.Unmarshal(body, &e); err != nil || e.ID == "" || e.Timestamp == "" || e.Event == "" || shape["connection"] == nil || string(shape["connection"]) == "null" || shape["payload"] == nil {
 		return WebhookEvent{}, &Error{Kind: ValidationError, Code: "invalid_webhook_event", Message: "Webhook body is not a valid event envelope."}
 	}
 	return e, nil
@@ -62,8 +62,8 @@ var knownWebhookEvents = map[string]struct{}{
 	"call.accepted": {}, "call.connection_joined": {}, "call.connection_left": {}, "call.ended": {}, "call.missed": {}, "call.participant_joined": {}, "call.participant_left": {}, "call.participant_state": {}, "call.permission_changed": {}, "call.received": {}, "call.rejected": {}, "call.telemetry": {},
 	"campaign.cap_reached": {}, "campaign.cold_blocked": {}, "campaign.completed": {}, "campaign.failed": {}, "campaign.launched": {}, "campaign.paused": {}, "campaign.recipient_failed": {}, "campaign.recipient_sent": {}, "campaign.recipient_skipped": {}, "campaign.rescheduled": {}, "campaign.resumed": {}, "campaign.stopped": {}, "campaign.throttled": {},
 	"chat.archive": {}, "chat.clear": {}, "chat.delete": {}, "chat.mute": {}, "chat.read": {}, "command.result": {}, "contact.opted_in": {}, "contact.opted_out": {}, "contact.sync": {}, "contact.update": {},
-	"customer.archived": {}, "customer.archiving": {}, "customer.created": {}, "customer.enabled": {}, "customer.number.attached": {}, "customer.number.disconnected": {}, "customer.number.transferred": {}, "customer.pairing_link.connected": {}, "customer.pairing_link.created": {}, "customer.pairing_link.expired": {}, "customer.pairing_link.failed": {}, "customer.pairing_link.opened": {}, "customer.pairing_link.revoked": {}, "customer.restored": {}, "customer.updated": {},
-	"group.participant": {}, "group.update": {}, "history.sync": {}, "labels.update": {}, "message.ack": {}, "message.delete": {}, "message.echo": {}, "message.edited": {}, "message.failed": {}, "message.reaction": {}, "message.received": {}, "message.revoked": {}, "message.sent": {}, "message.update": {}, "message.vote": {}, "newsletter.update": {}, "order.payment_updated": {}, "presence.update": {}, "session.capabilities_updated": {}, "session.connected": {}, "session.logged_out": {}, "session.phone_offline": {}, "session.restriction_updated": {}, "session.status": {}, "template.status": {}, "usage.recorded": {}, "voice.asset_failed": {}, "voice.asset_ready": {},
+	"customer.archived": {}, "customer.archiving": {}, "customer.created": {}, "customer.enabled": {}, "customer.connection.attached": {}, "customer.connection.disconnected": {}, "customer.connection.transferred": {}, "customer.pairing_link.connected": {}, "customer.pairing_link.created": {}, "customer.pairing_link.expired": {}, "customer.pairing_link.failed": {}, "customer.pairing_link.opened": {}, "customer.pairing_link.revoked": {}, "customer.restored": {}, "customer.updated": {},
+	"group.participant": {}, "group.update": {}, "history.sync": {}, "labels.update": {}, "message.ack": {}, "message.delete": {}, "message.echo": {}, "message.edited": {}, "message.failed": {}, "message.reaction": {}, "message.received": {}, "message.revoked": {}, "message.sent": {}, "message.update": {}, "message.vote": {}, "newsletter.update": {}, "order.payment_updated": {}, "presence.update": {}, "connection.capabilities_updated": {}, "connection.connected": {}, "connection.logged_out": {}, "connection.phone_offline": {}, "connection.restriction_updated": {}, "connection.status": {}, "template.status": {}, "usage.recorded": {}, "voice.asset_failed": {}, "voice.asset_ready": {},
 }
 
 // DecodeWebhookPayload decodes a verified event into an application-selected

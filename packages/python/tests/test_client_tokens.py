@@ -25,16 +25,16 @@ CASES = [
     (
         "POST",
         "/platform/client-tokens",
-        {"ephemeralId": "browser_1", "session": "support", "allow": []},
+        {"ephemeralId": "browser_1", "connection": "support", "allow": []},
         TOKEN,
-        lambda r: r.mint({"ephemeralId": "browser_1", "session": "support", "allow": []}),
+        lambda r: r.mint({"ephemeralId": "browser_1", "connection": "support", "allow": []}),
     ),
     (
         "POST",
         "/platform/client-tokens",
         {
             "ephemeralId": "browser_1",
-            "session": "support",
+            "connection": "support",
             "allow": [
                 "chats_read",
                 "chats_manage",
@@ -55,7 +55,7 @@ CASES = [
         lambda r: r.mint(
             {
                 "ephemeralId": "browser_1",
-                "session": "support",
+                "connection": "support",
                 "allow": [
                     "chats_read",
                     "chats_manage",
@@ -77,9 +77,9 @@ CASES = [
     (
         "POST",
         "/platform/client-tokens",
-        {"ephemeralId": "browser_1", "session": "support", "ttlSeconds": 600},
+        {"ephemeralId": "browser_1", "connection": "support", "ttlSeconds": 600},
         TOKEN,
-        lambda r: r.mint({"ephemeralId": "browser_1", "session": "support", "ttlSeconds": 600}),
+        lambda r: r.mint({"ephemeralId": "browser_1", "connection": "support", "ttlSeconds": 600}),
     ),
     (
         "POST",
@@ -92,21 +92,21 @@ CASES = [
     ),
     (
         "GET",
-        "/platform/sessions/support/client-rules",
+        "/platform/connections/support/client-rules",
         None,
         {"success": True, "data": RULES},
         lambda r: r.retrieve_rules("support"),
     ),
     (
         "PUT",
-        "/platform/sessions/support/client-rules",
+        "/platform/connections/support/client-rules",
         {"recipientMode": "none", "enabled": False},
         {"success": True},
         lambda r: r.update_rules("support", {"recipientMode": "none", "enabled": False}),
     ),
     (
         "DELETE",
-        "/platform/sessions/support/client-rules",
+        "/platform/connections/support/client-rules",
         None,
         {"success": True},
         lambda r: r.delete_rules("support"),
@@ -144,7 +144,7 @@ async def test_mint_target_guards_before_network():
     ) as client:
         for body in (
             {"ephemeralId": "browser_1"},
-            {"ephemeralId": "browser_1", "session": "support", "customer": "cust_1"},
+            {"ephemeralId": "browser_1", "connection": "support", "customer": "cust_1"},
         ):
             with pytest.raises(ConfigurationError):
                 await client.client_tokens.mint(body)

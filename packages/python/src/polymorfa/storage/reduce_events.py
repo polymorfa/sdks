@@ -55,9 +55,9 @@ STORED_EVENT_TYPES = (
     "message.update",
     "message.vote",
     "newsletter.update",
-    "session.connected",
-    "session.logged_out",
-    "session.status",
+    "connection.connected",
+    "connection.logged_out",
+    "connection.status",
 )
 _ACK_STATUS = {
     "pending": "pending",
@@ -83,17 +83,21 @@ def ack_status(value: str | None) -> str | None:
 
 def reduce_event(event: WebhookEvent) -> OperationBatch:
     return OperationBatch(
-        event.session,
-        _operations(event.event, event.session, record(event.payload), iso_millis(event.timestamp)),
+        event.connection,
+        _operations(
+            event.event, event.connection, record(event.payload), iso_millis(event.timestamp)
+        ),
         event.id,
         event.event,
     )
 
 
-def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[StorageOperation]:
+def _operations(
+    kind: str, connection: str, p: dict[str, Json], at: float
+) -> list[StorageOperation]:
     if kind in ("message.received", "message.update", "message.edited", "message.sent"):
         return _message(
-            session,
+            connection,
             p,
             at,
             edit=kind == "message.edited" or p.get("edited") is True,
@@ -106,7 +110,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
         "message.ack",
         "message.vote",
     ):
-        return _message_action(kind, session, p, at)
+        return _message_action(kind, connection, p, at)
     fields: Fields = {}
     if kind in ("chat.archive", "chat.mute", "chat.read", "chat.clear", "chat.delete"):
         chat = text(record(p.get("from")).get("id"))
@@ -130,12 +134,16 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
         else:
             put(fields, "clearedAt" if kind == "chat.clear" else "deletedAt", at, at)
             return [
-                Upsert("chats", {"sessionId": session, "chatId": chat}, fields),
-                ClearChat(session, chat, at),
+                Upsert("chats", {"connectionId": connection, "chatId": chat}, fields),
+                ClearChat(connection, chat, at),
             ]
-        return [Upsert("chats", {"sessionId": session, "chatId": chat}, fields)] if fields else []
-    if kind in ("session.connected", "session.status", "session.logged_out"):
-        if kind == "session.connected":
+        return (
+            [Upsert("chats", {"connectionId": connection, "chatId": chat}, fields)]
+            if fields
+            else []
+        )
+    if kind in ("connection.connected", "connection.status", "connection.logged_out"):
+        if kind == "connection.connected":
             put(fields, "connected", True, at)
             for target, source in (
                 ("phoneNumber", "phoneNumber"),
@@ -146,7 +154,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
                 ("businessName", "businessName"),
             ):
                 put_present(fields, target, text(p.get(source)), at)
-        elif kind == "session.status":
+        elif kind == "connection.status":
             if not isinstance(p.get("status"), str):
                 return []
             put(fields, "status", p["status"], at)
@@ -155,7 +163,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
             put(fields, "connected", False, at)
             put_present(fields, "loggedOutReason", text(p.get("reason")), at)
             put_present(fields, "loggedOutCode", number(p.get("code")), at)
-        return [Upsert("sessions", {"sessionId": session}, fields)]
+        return [Upsert("connections", {"connectionId": connection}, fields)]
     if kind == "contact.update":
         identity = text(p.get("id"))
         if not identity:
@@ -175,7 +183,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
         else:
             put_present(fields, "pictureId", text(p.get("pictureId")), at)
         return (
-            [Upsert("contacts", {"sessionId": session, "contactId": identity}, fields)]
+            [Upsert("contacts", {"connectionId": connection, "contactId": identity}, fields)]
             if fields
             else []
         )
@@ -188,7 +196,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
                 put(fields, "blocked", action.lower() == "block", at)
                 put_present(fields, "phoneNumber", text(change.get("phoneNumber")), at)
                 result.append(
-                    Upsert("contacts", {"sessionId": session, "contactId": identity}, fields)
+                    Upsert("contacts", {"connectionId": connection, "contactId": identity}, fields)
                 )
         return result
     if kind == "group.update":
@@ -210,14 +218,14 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
         put(group_chat, "kind", "group", 0)
         put_present(group_chat, "name", text(p.get("newSubject")), at)
         return [
-            Upsert("groups", {"sessionId": session, "groupId": identity}, fields),
-            Upsert("chats", {"sessionId": session, "chatId": identity}, group_chat),
+            Upsert("groups", {"connectionId": connection, "groupId": identity}, fields),
+            Upsert("chats", {"connectionId": connection, "chatId": identity}, group_chat),
         ]
     if kind == "group.participant":
         group = text(p.get("id"))
         if not group:
             return []
-        result = [Upsert("groups", {"sessionId": session, "groupId": group}, {})]
+        result = [Upsert("groups", {"connectionId": connection, "groupId": group}, {})]
         for action in ("joined", "left", "promoted", "demoted"):
             for participant in records(p.get(action)):
                 identity = text(participant.get("id"))
@@ -242,7 +250,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
                 result.append(
                     Upsert(
                         "group_participants",
-                        {"sessionId": session, "groupId": group, "participantId": identity},
+                        {"connectionId": connection, "groupId": group, "participantId": identity},
                         fields,
                     )
                 )
@@ -253,12 +261,12 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
             return []
         put(fields, "kind", "channel", 0)
         put(fields, "muted", p.get("muted", Unset.VALUE), at)
-        return [Upsert("chats", {"sessionId": session, "chatId": identity}, fields)]
+        return [Upsert("chats", {"connectionId": connection, "chatId": identity}, fields)]
     if kind == "history.sync" and p.get("kind") != "history":
         from .reduce_history import history_progress_operations, history_sync_type_name
 
         return history_progress_operations(
-            session,
+            connection,
             history_sync_type_name(p.get("syncType")),
             number(p.get("chunkOrder")),
             number(p.get("progress")),
@@ -275,7 +283,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
             put_present(fields, "color", number(p.get("color")), version)
             put_present(fields, "orderIndex", number(p.get("orderIndex")), version)
             put(fields, "deleted", p.get("deleted", False), version)
-            return [Upsert("labels", {"sessionId": session, "labelId": label}, fields)]
+            return [Upsert("labels", {"connectionId": connection, "labelId": label}, fields)]
         if (
             label_action in ("label_association_chat", "label_association_message")
             and label
@@ -293,7 +301,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
                     Upsert(
                         "label_associations",
                         {
-                            "sessionId": session,
+                            "connectionId": connection,
                             "labelId": label,
                             "targetKind": "chat"
                             if label_action == "label_association_chat"
@@ -313,7 +321,7 @@ def _operations(kind: str, session: str, p: dict[str, Json], at: float) -> list[
             return [
                 Upsert(
                     "messages",
-                    {"sessionId": session, "messageId": cast(str, p["messageId"])},
+                    {"connectionId": connection, "messageId": cast(str, p["messageId"])},
                     fields,
                 )
             ]
@@ -335,7 +343,7 @@ def _identity(p: dict[str, Json]) -> tuple[str, str, float | None, bool, str | N
 
 
 def _chat(
-    session: str, p: dict[str, Json], timestamp: float | None, is_group: bool | None
+    connection: str, p: dict[str, Json], timestamp: float | None, is_group: bool | None
 ) -> list[StorageOperation]:
     conversation = record(p.get("conversation"))
     chat = text(conversation.get("id"))
@@ -348,7 +356,7 @@ def _chat(
         for name in ("phoneNumber", "bsuid", "username"):
             put_present(fields, name, text(conversation.get(name)), timestamp or 0)
     put_present(fields, "lastMessageAt", timestamp, timestamp or 0)
-    return [Upsert("chats", {"sessionId": session, "chatId": chat}, fields)]
+    return [Upsert("chats", {"connectionId": connection, "chatId": chat}, fields)]
 
 
 def _content(p: dict[str, Json], version: float) -> Fields:
@@ -383,7 +391,7 @@ def _content(p: dict[str, Json], version: float) -> Fields:
 
 
 def _message(
-    session: str, p: dict[str, Json], at: float, *, edit: bool = False, sent: bool = False
+    connection: str, p: dict[str, Json], at: float, *, edit: bool = False, sent: bool = False
 ) -> list[StorageOperation]:
     if sent:
         p = {**p, "fromMe": True}
@@ -394,7 +402,7 @@ def _message(
     kind = text(p.get("type"))
     if kind in ("reaction", "revoke"):
         return _message_action(
-            "message.reaction" if kind == "reaction" else "message.revoked", session, p, at
+            "message.reaction" if kind == "reaction" else "message.revoked", connection, p, at
         )
     fields: Fields = {}
     put(fields, "chatId", chat, 0)
@@ -405,14 +413,14 @@ def _message(
     ids = record(p.get("whatsapp_ids"))
     put_present(fields, "waMessageId", text(ids.get("linked_devices")), 0)
     put_present(fields, "cloudMessageId", text(ids.get("official_api")), 0)
-    guard = ChatWatermarkGuard(session, chat, timestamp) if timestamp is not None else None
+    guard = ChatWatermarkGuard(connection, chat, timestamp) if timestamp is not None else None
     group = p.get("isGroup") if isinstance(p.get("isGroup"), bool) else None
     if sent:
         put_present(fields, "type", kind, 0)
         status_writes(fields, "sent", timestamp)
         return [
-            *_chat(session, p, timestamp, None),
-            Upsert("messages", {"sessionId": session, "messageId": message}, fields, guard),
+            *_chat(connection, p, timestamp, None),
+            Upsert("messages", {"connectionId": connection, "messageId": message}, fields, guard),
         ]
     put_present(fields, "quotedId", text(p.get("parentMessageId")), 0)
     if not mine:
@@ -425,8 +433,8 @@ def _message(
         put_present(fields, "type", kind, 0)
         fields.update(_content(p, 0))
     operations = [
-        *_chat(session, p, None if edit else timestamp, cast(bool | None, group)),
-        Upsert("messages", {"sessionId": session, "messageId": message}, fields, guard),
+        *_chat(connection, p, None if edit else timestamp, cast(bool | None, group)),
+        Upsert("messages", {"connectionId": connection, "messageId": message}, fields, guard),
     ]
     if (
         text(p.get("media"))
@@ -444,7 +452,7 @@ def _message(
         ):
             put_present(media, target, text(p.get(source)), timestamp or at if edit else 0)
         operations.append(
-            Upsert("media", {"sessionId": session, "messageId": message}, media, guard)
+            Upsert("media", {"connectionId": connection, "messageId": message}, media, guard)
         )
     push_name = text(p.get("pushName")) or text(p.get("senderName"))
     if not mine and sender and push_name and timestamp is not None:
@@ -452,12 +460,14 @@ def _message(
         conversation = record(p.get("conversation"))
         reference = record(conversation.get("sender")) if group else conversation
         put_present(contact, "phoneNumber", text(reference.get("phoneNumber")), timestamp)
-        operations.append(Upsert("contacts", {"sessionId": session, "contactId": sender}, contact))
+        operations.append(
+            Upsert("contacts", {"connectionId": connection, "contactId": sender}, contact)
+        )
     return operations
 
 
 def _message_action(
-    kind: str, session: str, p: dict[str, Json], at: float
+    kind: str, connection: str, p: dict[str, Json], at: float
 ) -> list[StorageOperation]:
     identity = _identity(p)
     chat = text(record(p.get("conversation")).get("id"))
@@ -469,7 +479,7 @@ def _message_action(
         return [
             Upsert(
                 "reactions",
-                {"sessionId": session, "messageId": target, "senderId": identity[4]},
+                {"connectionId": connection, "messageId": target, "senderId": identity[4]},
                 {
                     "chatId": FieldWrite(identity[1], 0),
                     "emoji": FieldWrite(
@@ -491,7 +501,7 @@ def _message_action(
             identity[2] or at if identity is not None and kind == "message.revoked" else at,
             FINAL_VERSION,
         )
-        key = {"sessionId": session, "messageId": target}
+        key = {"connectionId": connection, "messageId": target}
         return [Upsert("messages", key, fields), Upsert("media", key, cleared_media())]
     if kind == "message.ack":
         status = ack_status(text(p.get("type")))
@@ -508,7 +518,7 @@ def _message_action(
                 fields = {"chatId": FieldWrite(chat, 0)}
                 status_writes(fields, status, timestamp)
                 result.append(
-                    Upsert("messages", {"sessionId": session, "messageId": message}, fields)
+                    Upsert("messages", {"connectionId": connection, "messageId": message}, fields)
                 )
                 receipt = {"chatId": FieldWrite(chat, 0)}
                 status_writes(receipt, status, timestamp)
@@ -516,7 +526,11 @@ def _message_action(
                 result.append(
                     Upsert(
                         "receipts",
-                        {"sessionId": session, "messageId": message, "recipientId": recipient},
+                        {
+                            "connectionId": connection,
+                            "messageId": message,
+                            "recipientId": recipient,
+                        },
                         receipt,
                     )
                 )
@@ -529,7 +543,7 @@ def _message_action(
         return [
             Upsert(
                 "poll_votes",
-                {"sessionId": session, "messageId": message, "voterId": voter},
+                {"connectionId": connection, "messageId": message, "voterId": voter},
                 {
                     "chatId": FieldWrite(chat, 0),
                     "selectedHashes": FieldWrite(p.get("selectedHashes", []), version),

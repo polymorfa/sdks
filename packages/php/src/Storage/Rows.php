@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Polymorfa\Storage;
 
-/** Handwritten schema2 merge and canonical comparison; source SDK 3bacf46. */
+/** Handwritten schema3 merge and canonical comparison; source SDK d80b581. */
 final class Rows
 {
     public const FINAL_VERSION = 9007199254740991;

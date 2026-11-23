@@ -17,7 +17,7 @@ function editGuardCheck(bool $ok, string $message): void
 function editGuardWire(Upsert|ClearChat $op): array
 {
     if ($op instanceof ClearChat) {
-        return ['kind' => 'clearChat','sessionId' => $op->sessionId,'chatId' => $op->chatId,'upTo' => $op->upTo];
+        return ['kind' => 'clearChat','connectionId' => $op->connectionId,'chatId' => $op->chatId,'upTo' => $op->upTo];
     }
     $out = ['kind' => 'upsert','entity' => $op->entity,'key' => $op->key,'fields' => array_map(fn ($v) => ['value' => $v->value,'version' => $v->version], $op->fields)];
     if ($op->guard !== null) {
@@ -25,7 +25,7 @@ function editGuardWire(Upsert|ClearChat $op): array
     }
     return $out;
 }
-$editGuardFixture = json_decode(file_get_contents(__DIR__.'/fixtures/history-edit-guard/fixture.json'), true, flags:JSON_THROW_ON_ERROR);
+$editGuardFixture = json_decode(file_get_contents(__DIR__.'/fixtures/history-edit-guard/fixture.v3.json'), true, flags:JSON_THROW_ON_ERROR);
 editGuardCheck(count($editGuardFixture['cases']) === 13, 'edit guard cases');
 $editGuardMismatches = [];
 foreach (['memory','sqlite'] as $kind) {
@@ -40,10 +40,10 @@ foreach (['memory','sqlite'] as $kind) {
         foreach ($c['steps'] as $i => $step) {
             if (isset($step['history'])) {
                 $h = $step['history'];
-                $batch = HistoryReducer::reduce($h['sessionId'], $h['chunk'], chunkId:$h['chunkId']);
+                $batch = HistoryReducer::reduce($h['connectionId'], $h['chunk'], chunkId:$h['chunkId']);
             } else {
                 $e = $step['event'];
-                $batch = EventReducer::reduce(new WebhookEvent($e['id'], $e['session'], $e['timestamp'], $e['event'], $e['payload'], $e, true));
+                $batch = EventReducer::reduce(new WebhookEvent($e['id'], $e['connection'], $e['timestamp'], $e['event'], $e['payload'], $e, true));
             }
             if (Rows::canonical(array_map(editGuardWire(...), $batch->operations)) !== Rows::canonical($step['operations'])) {
                 $editGuardMismatches[] = $kind.' '.$c['name'].' step '.$i.' operations';

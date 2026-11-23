@@ -18,7 +18,7 @@ from polymorfa.downloads import signed_url_expiry
 
 INFO = {
     "id": "media_1",
-    "session": "support",
+    "connection": "support",
     "messageId": "message_1",
     "mimeType": "image/jpeg",
     "fileLength": 5,

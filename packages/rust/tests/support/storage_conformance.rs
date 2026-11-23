@@ -67,7 +67,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
             d.name
         );
     }
-    let scalar_key = key(&[("sessionId", "scalars"), ("messageId", "json")]);
+    let scalar_key = key(&[("connectionId", "scalars"), ("messageId", "json")]);
     let mut scalar = empty_row(Entity::Messages, &scalar_key).unwrap();
     for (index, value) in [
         json!("string 💎"),
@@ -105,10 +105,10 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
     }
     fences(adapter.clone()).await;
     let store = Arc::new(Storage::new(adapter.clone(), StorageOptions::default()).unwrap());
-    let session = format!("native-sql-{}", uuid::Uuid::new_v4());
+    let connection = format!("native-sql-{}", uuid::Uuid::new_v4());
     let message = |id: &str, n: usize| StorageOperation::Upsert {
         entity: Entity::Messages,
-        key: key(&[("sessionId", &session), ("messageId", id)]),
+        key: key(&[("connectionId", &connection), ("messageId", id)]),
         fields: BTreeMap::from([
             (
                 "timestamp".into(),
@@ -135,7 +135,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
         guard: None,
     };
     let batch = OperationBatch {
-        session_id: session.clone(),
+        connection_id: connection.clone(),
         event_id: Some("event".into()),
         event_type: None,
         operations: (0..2000).map(|n| message(&n.to_string(), n)).collect(),
@@ -144,7 +144,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
     assert!(!store.apply(&batch).await.unwrap().applied);
     let query = IndexQuery {
         index: "by_chat".into(),
-        equals: key(&[("sessionId", &session), ("chatId", "chat")]),
+        equals: key(&[("connectionId", &connection), ("chatId", "chat")]),
         range: None,
         order: Some("asc".into()),
         limit: 17,
@@ -165,7 +165,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
     assert_eq!(next.rows[0]["timestamp"].as_f64(), Some(17.));
     let id = encode_key(
         Entity::Messages,
-        &key(&[("sessionId", &session), ("messageId", "0")]),
+        &key(&[("connectionId", &connection), ("messageId", "0")]),
     )
     .unwrap();
     let existing = adapter
@@ -176,7 +176,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
         .unwrap();
     let mut created = empty_row(
         Entity::Messages,
-        &key(&[("sessionId", &session), ("messageId", "rolled-back")]),
+        &key(&[("connectionId", &connection), ("messageId", "rolled-back")]),
     )
     .unwrap();
     created.revision = 1;
@@ -201,17 +201,17 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
     assert!(store
         .get(
             Entity::Messages,
-            &key(&[("sessionId", &session), ("messageId", "rolled-back")])
+            &key(&[("connectionId", &connection), ("messageId", "rolled-back")])
         )
         .await
         .unwrap()
         .is_none());
     let checkpoint = OperationBatch {
-        session_id: session.clone(),
+        connection_id: connection.clone(),
         event_id: None,
         event_type: None,
         operations: vec![StorageOperation::Checkpoint {
-            session_id: session.clone(),
+            connection_id: connection.clone(),
             stream: "events".into(),
             cursor: "saved".into(),
             expected_cursor: Some(None),
@@ -226,13 +226,13 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
     ));
     store
         .apply(&OperationBatch {
-            session_id: session.clone(),
+            connection_id: connection.clone(),
             event_id: Some("clear".into()),
             event_type: None,
             operations: vec![
                 StorageOperation::Upsert {
                     entity: Entity::Chats,
-                    key: key(&[("sessionId", &session), ("chatId", "chat")]),
+                    key: key(&[("connectionId", &connection), ("chatId", "chat")]),
                     fields: BTreeMap::from([(
                         "clearedAt".into(),
                         FieldWrite {
@@ -243,7 +243,7 @@ pub async fn conformance(adapter: Arc<dyn StorageAdapter>) {
                     guard: None,
                 },
                 StorageOperation::ClearChat {
-                    session_id: session.clone(),
+                    connection_id: connection.clone(),
                     chat_id: "chat".into(),
                     up_to: 1000.,
                 },
@@ -317,14 +317,14 @@ async fn fences(adapter: Arc<dyn StorageAdapter>) {
     });
     let old = Storage::new(paused.clone(), options.clone()).unwrap();
     let new = Storage::new(adapter.clone(), options).unwrap();
-    let session = format!("fence-{}", uuid::Uuid::new_v4());
+    let connection = format!("fence-{}", uuid::Uuid::new_v4());
     let batch = |id: &str| OperationBatch {
-        session_id: session.clone(),
+        connection_id: connection.clone(),
         event_id: Some(id.into()),
         event_type: None,
         operations: vec![StorageOperation::Upsert {
             entity: Entity::Messages,
-            key: key(&[("sessionId", &session), ("messageId", id)]),
+            key: key(&[("connectionId", &connection), ("messageId", id)]),
             fields: BTreeMap::from([(
                 "text".into(),
                 FieldWrite {
@@ -353,11 +353,11 @@ async fn fences(adapter: Arc<dyn StorageAdapter>) {
     #[cfg(target_arch = "wasm32")]
     let (result, ()) = futures_util::future::join(old_work, replacement).await;
     assert!(matches!(result, Err(StorageError::LeaseLost)));
-    assert!(!new.has_event(&session, "old-only").await.unwrap());
+    assert!(!new.has_event(&connection, "old-only").await.unwrap());
     assert!(new
         .get(
             Entity::Messages,
-            &key(&[("sessionId", &session), ("messageId", "old-only")])
+            &key(&[("connectionId", &connection), ("messageId", "old-only")])
         )
         .await
         .unwrap()
@@ -365,7 +365,7 @@ async fn fences(adapter: Arc<dyn StorageAdapter>) {
     assert!(new
         .get(
             Entity::Messages,
-            &key(&[("sessionId", &session), ("messageId", "new-only")])
+            &key(&[("connectionId", &connection), ("messageId", "new-only")])
         )
         .await
         .unwrap()

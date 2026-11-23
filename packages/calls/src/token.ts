@@ -28,7 +28,7 @@ export interface CallsTokenSourceOptions {
   readonly expirySkewMs?: number;
 }
 
-/** Client tokens are bound to one session and one participant by the platform. */
+/** Client tokens are bound to one connection and one participant by the platform. */
 export function isClientToken(value: string): boolean {
   return value.startsWith("pmfa_ct_");
 }
@@ -36,7 +36,7 @@ export function isClientToken(value: string): boolean {
 /**
  * Caches a provider's token until shortly before it expires. A static string
  * never expires from the client's point of view; the platform still closes
- * sockets with 4401 when it stops authorizing the session.
+ * sockets with 4401 when it stops authorizing the connection.
  */
 export class CallsTokenSource {
   readonly #provider: CallsTokenProvider;

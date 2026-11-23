@@ -18,7 +18,7 @@ def event(payload):
         json.dumps(
             {
                 "id": "descriptor-event",
-                "session": "descriptor-session",
+                "connection": "descriptor-session",
                 "event": "history.sync",
                 "timestamp": "2026-10-17T00:00:00Z",
                 "payload": payload,
@@ -124,7 +124,7 @@ async def test_descriptor_dispatch(branch, mode):
         await storage_webhook_handler(storage, **options)(e)
         assert await adapter.rows("history_progress")
         assert not (await apply_event(storage, e)).applied
-    assert await storage.has_event(e.session, e.id) == (not fail)
+    assert await storage.has_event(e.connection, e.id) == (not fail)
     rows = await adapter.rows("messages")
     assert len(rows) == (1 if mode == "full" else 0)
     serialized = json.dumps([[asdict(row) for row in await adapter.rows(n)] for n in ENTITY_NAMES])
@@ -190,10 +190,10 @@ async def test_descriptor_archive_and_cloud_controls():
         if mode == "error":
             with pytest.raises(RuntimeError, match="archive failure"):
                 await apply_event(storage, e, **options)
-            assert not await storage.has_event(e.session, e.id)
+            assert not await storage.has_event(e.connection, e.id)
         else:
             await apply_event(storage, e, **options)
-            assert await storage.has_event(e.session, e.id)
+            assert await storage.has_event(e.connection, e.id)
         if mode in ("missing", "cloud"):
             assert not calls
 
@@ -374,11 +374,11 @@ async def test_descriptor_producer_datetime(value, valid):
     e = signed({**FIXTURE["inline"], "oldestMessageAt": value})
     if valid:
         await apply_event(storage, e, history_descriptor_mode="metadata-only")
-        assert await storage.has_event(e.session, e.id)
+        assert await storage.has_event(e.connection, e.id)
     else:
         with pytest.raises(ValueError, match="descriptor"):
             await apply_event(storage, e, history_descriptor_mode="metadata-only")
-        assert not await storage.has_event(e.session, e.id)
+        assert not await storage.has_event(e.connection, e.id)
 
 
 @pytest.mark.parametrize("branch", ["top", "inline", "media"])
@@ -401,5 +401,5 @@ async def test_unrelated_unknown_event_fields_remain_forward_compatible():
     adapter = memory_adapter()
     storage = Storage(adapter)
     await apply_event(storage, e)
-    assert await storage.has_event(e.session, e.id)
+    assert await storage.has_event(e.connection, e.id)
     assert not await adapter.rows("history_progress")

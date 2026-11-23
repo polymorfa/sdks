@@ -8,10 +8,10 @@ $token = ['id' => 'token','start' => 'pmfa_pt','last4' => 'last','label' => null
 $project = ['id' => 'project','teamId' => 'team','name' => 'Project','slug' => 'project','icon' => ['type' => 'emoji','value' => '🐈'],'defaultTier' => 'free','isActive' => true,'stage' => 'development'];
 $stats = $project;
 unset($stats['id']);
-$stats += ['_id' => 'project','_creationTime' => 1,'activeSessions' => 0,'totalSessions' => 1,'totalMessages' => 2,'lastActivity' => null,'iconUrl' => null];
+$stats += ['_id' => 'project','_creationTime' => 1,'activeConnections' => 0,'totalConnections' => 1,'totalMessages' => 2,'lastActivity' => null,'iconUrl' => null];
 $business = ['name' => 'Business','website' => 'https://example.com','supportEmail' => 'support@example.com'];
 $enrollment = ['id' => 'project','teamId' => 'team','name' => 'Project','slug' => 'project','stage' => 'development','operationId' => 'op','enrollmentStatus' => 'approval_required','billingMode' => 'payg'];
-$number = ['id' => 'number','name' => 'support','transport' => 'linked_devices','status' => 'connected','canBeAbsorbed' => false];
+$connection = ['id' => 'connection','name' => 'support','method' => 'linked_device','status' => 'connected','canBeAbsorbed' => false];
 $cases = [
  ['GET','/platform/team',null,['data' => $team],fn ($c) => $c->teams->retrieve()],
  ['GET','/platform/members',null,['data' => [$member]],fn ($c) => $c->members->list()],
@@ -20,7 +20,7 @@ $cases = [
  ['GET','/platform/tokens?projectId=project',null,['data' => [$token]],fn ($c) => $c->projectTokens->list('project')],
  ['GET','/platform/projects',null,['data' => [$stats]],fn ($c) => $c->projects->list()],
  ['POST','/platform/projects',['name' => 'Project','icon' => ['type' => 'emoji','value' => '🐈'],'defaultTier' => 'free'],['data' => $project],fn ($c) => $c->projects->create(['name' => 'Project','icon' => ['type' => 'emoji','value' => '🐈'],'defaultTier' => 'free'])],
- ['GET','/platform/projects/project/hybrid-merge-candidates',null,['data' => [['numbers' => [$number,$number],'eligible' => false,'ineligibleReason' => 'hms_enabled']]],fn ($c) => $c->projects->listHybridMergeCandidates('project')],
+ ['GET','/platform/projects/project/hybrid-merge-candidates',null,['data' => [['connections' => [$connection, [...$connection, 'id' => 'other-connection', 'method' => 'cloud_api']],'eligible' => false,'ineligibleReason' => 'hms_enabled']]],fn ($c) => $c->projects->listHybridMergeCandidates('project')],
  ['POST','/platform/projects/project/promote',['business' => $business],['data' => $enrollment],fn ($c) => $c->projects->requestProductionEnrollment('project', ['business' => $business])],
  ['POST','/platform/projects/project/production-enrollments/op/approve',null,['data' => ['operationId' => 'op','action' => 'approve','accepted' => true]],fn ($c) => $c->projects->approveProductionEnrollment('project', 'op')],
  ['POST','/platform/projects/project/production-enrollments/op/cancel',null,['data' => ['operationId' => 'op','action' => 'cancel','accepted' => true]],fn ($c) => $c->projects->cancelProductionEnrollment('project', 'op')],

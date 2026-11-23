@@ -183,16 +183,16 @@ export function checkNativeSupplements(root, inventory) {
         .map(
           (entry) =>
             `${entry.method} ${entry.fixturePath
-              .replace(/^\/messaging\/[^/]+/, "/messaging/{session}")
+              .replace(/^\/messaging\/[^/]+/, "/messaging/{connection}")
               .replace(/\/devices\/\d+\//, "/devices/{deviceId}/")}`,
         )
         .sort(),
       [
-        "GET /messaging/{session}/phone",
-        "POST /messaging/{session}/phone/devices/{deviceId}/unlink",
-        "POST /messaging/{session}/phone/messages",
+        "GET /messaging/{connection}/phone",
+        "POST /messaging/{connection}/phone/devices/{deviceId}/unlink",
+        "POST /messaging/{connection}/phone/messages",
       ],
-      `${language} supplements.json must record the three Number-scoped phone routes`,
+      `${language} supplements.json must record the three Connection-scoped phone routes`,
     );
     for (const entry of phone) {
       assert.ok(

@@ -36,7 +36,7 @@ class Host:
     def __init__(self) -> None:
         self.username = os.environ["EXAMPLE_APP_USERNAME"]
         self.password = hashlib.sha256(os.environ["EXAMPLE_APP_PASSWORD"].encode()).digest()
-        self.session = os.environ["POLYMORFA_SESSION"]
+        self.connection = os.environ["POLYMORFA_CONNECTION"]
         self.peer = os.environ["POLYMORFA_RECIPIENT"]
         self.webhook_secret = os.environ["POLYMORFA_WEBHOOK_SECRET"]
         if not self.peer or not self.webhook_secret:
@@ -53,8 +53,8 @@ class Host:
         self.origin = os.environ.get("EXAMPLE_APP_ORIGIN", "http://127.0.0.1:8080")
         self.api = os.environ.get("POLYMORFA_API_BASE_URL", "https://api.polymorfa.com")
         self.credential = Credential("project_token", os.environ["POLYMORFA_PROJECT_TOKEN"])
-        if not self.username or not self.session or not os.environ["EXAMPLE_APP_PASSWORD"]:
-            raise ValueError("Configure the example account and authorized number.")
+        if not self.username or not self.connection or not os.environ["EXAMPLE_APP_PASSWORD"]:
+            raise ValueError("Configure the example account and authorized Connection.")
         if urlsplit(self.origin).hostname not in ("127.0.0.1", "localhost", "::1"):
             raise ValueError("The example host is restricted to loopback.")
         self.sessions: dict[str, float] = {}
@@ -99,7 +99,7 @@ class Host:
             response = await client.client_tokens.mint(
                 {
                     "ephemeralId": "example:local-app-user",
-                    "session": self.session,
+                    "connection": self.connection,
                     "ttlSeconds": 600,
                 }
             )
@@ -113,19 +113,19 @@ class Host:
             "expiresAt": int(expiry.timestamp() * 1000),
             "scopes": ["read_messages", "connect_whatsapp"],
             "grant": {
-                "session": self.session,
+                "connection": self.connection,
                 "conversations": [],
                 "allow": ["read_messages", "connect_whatsapp"],
             },
         }
 
-    async def connect_number(self) -> object:
+    async def connect_connection(self) -> object:
         async with AsyncMessagingClient(self.credential, base_url=self.api) as client:
             result = await client.quick_links.create(
                 {
-                    "purpose": "add_connection",
-                    "session": self.session,
-                    "addConnection": "linked_devices",
+                    "purpose": "add_method",
+                    "connection": self.connection,
+                    "addMethod": "linked_devices",
                     "connectionGoal": "hybrid",
                 }
             )
@@ -137,7 +137,7 @@ class Host:
                 {
                     "messages": self.messages,
                     "peer": self.peer,
-                    "session": self.session,
+                    "connection": self.connection,
                     "receivedEvents": self.received,
                     "lastEvent": self.last_event,
                 }
@@ -174,7 +174,7 @@ class Host:
             try:
                 async with AsyncMessagingClient(self.credential, base_url=self.api) as client:
                     response = await client.messages.send(
-                        self.session,
+                        self.connection,
                         {"conversation": {"phoneNumber": self.peer}, "content": {"text": text}},
                         options=RequestOptions(idempotency_key=key, timeout=60),
                     )
@@ -207,7 +207,7 @@ class Host:
         self.messages = self.messages[-100:]
 
     def receive(self, event):
-        if event.session != self.session or not isinstance(event.payload, dict):
+        if event.connection != self.connection or not isinstance(event.payload, dict):
             return
         payload = event.payload
         with self.state_lock:

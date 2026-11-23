@@ -29,7 +29,7 @@ import { PrivacyResource } from "./privacy.js";
 import { PresenceResource } from "./presence.js";
 import { QuickRepliesResource } from "./quick-replies.js";
 import { QuickLinksResource } from "./quicklinks.js";
-import { SessionsResource } from "./sessions.js";
+import { ConnectionsResource } from "./connections.js";
 import { TemplatesResource } from "./templates.js";
 import { CloudTemplatesResource } from "./cloud-templates.js";
 import { OfficialGroupsResource } from "./official-groups.js";
@@ -60,7 +60,7 @@ export class MessagingClient {
   /** Direct history commands: chunk retry and CDN deletion. */
   readonly historySync: HistorySyncResource;
   readonly observationPolicies: ObservationPoliciesResource;
-  readonly sessions: SessionsResource;
+  readonly connections: ConnectionsResource;
   readonly messages: MessagesResource;
   readonly hybridLink: HybridLinkResource;
   readonly profile: ProfileResource;
@@ -111,7 +111,7 @@ export class MessagingClient {
     this.whatsappMedia = new WhatsAppMediaResource(transport, credential.type);
     this.historySync = new HistorySyncResource(transport, credential.type);
     this.observationPolicies = new ObservationPoliciesResource(transport);
-    this.sessions = new SessionsResource(transport, credential.type);
+    this.connections = new ConnectionsResource(transport, credential.type);
     this.hybridLink = new HybridLinkResource(transport, credential.type);
     this.messages = new MessagesResource(transport, credential.type);
     this.profile = new ProfileResource(transport);

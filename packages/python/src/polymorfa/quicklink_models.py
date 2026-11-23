@@ -7,8 +7,8 @@ from typing_extensions import Never, NotRequired, TypedDict
 from .campaign_contract_models import SignalCustodyMode
 from .configuration import Hms, ObservationPatch
 
-Purpose = Literal["initial", "add_connection", "reauthorization"]
-Connection = Literal["linked_devices", "official_api"]
+Purpose = Literal["initial", "add_method", "reauthorization"]
+ConnectionMethodKind = Literal["linked_devices", "official_api"]
 Goal = Literal["single", "hybrid"]
 
 
@@ -19,7 +19,8 @@ class TestingProfile(TypedDict, total=False):
 
 class TestingConfiguration(TypedDict, total=False):
     profile: TestingProfile
-    accountType: Literal["personal", "business"]
+    accountType: Literal["whatsapp_app", "business_app", "meta_cloud", "meta_coexistence"]
+    primaryPlatform: Literal["android", "ios"]
     replyBehavior: Literal["off", "echo"]
     failureScenario: Literal["none", "reject-send"]
     historyFixtureId: str
@@ -29,6 +30,7 @@ TestingField = Literal[
     "profile.name",
     "profile.status",
     "accountType",
+    "primaryPlatform",
     "replyBehavior",
     "failureScenario",
     "historyFixtureId",
@@ -78,14 +80,14 @@ class Initial(CreateBase, total=False):
     customerId: str
     externalId: str
     connectionGoal: Goal
-    session: Never
-    addConnection: Never
+    connection: Never
+    addMethod: Never
 
 
-class AddConnection(CreateBase):
-    purpose: Literal["add_connection"]
-    session: str
-    addConnection: Connection
+class AddMethod(CreateBase):
+    purpose: Literal["add_method"]
+    connection: str
+    addMethod: ConnectionMethodKind
     connectionGoal: NotRequired[Literal["hybrid"]]
     signalMode: NotRequired[Never]
     billingControls: NotRequired[Never]
@@ -93,16 +95,16 @@ class AddConnection(CreateBase):
     externalId: NotRequired[Never]
 
 
-Create = Initial | AddConnection
+Create = Initial | AddMethod
 
 
 class Link(TypedDict):
     purpose: Purpose
     connectionGoal: Goal
-    addConnection: NotRequired[Connection]
+    addMethod: NotRequired[ConnectionMethodKind]
     id: str
     url: str
-    session: str
+    connection: str
     expiresAt: str | None
 
 
@@ -141,12 +143,12 @@ class Onboarding(TypedDict):
 class Status(TypedDict):
     purpose: Purpose
     connectionGoal: Goal
-    addConnection: NotRequired[Connection]
+    addMethod: NotRequired[ConnectionMethodKind]
     hybridPhase: Literal["cloud_setup", "linked_pairing", "repair_linked", "ready"] | None
     onboarding: NotRequired[Onboarding | None]
     id: str
     status: Literal["pending", "opened", "linked", "connected", "failed", "cancelled"]
-    session: str
+    connection: str
     expiresAt: str | None
     openedAt: str | None
     connectedAt: str | None
@@ -155,13 +157,13 @@ class Status(TypedDict):
 
 
 class ConnectionState(TypedDict):
-    kind: Connection
+    kind: ConnectionMethodKind
     status: str
     enabled: bool
 
 
 class Availability(TypedDict):
     allowed: bool
-    addConnection: Connection | None
-    connections: list[ConnectionState]
+    addMethod: ConnectionMethodKind | None
+    methods: list[ConnectionState]
     resumeQuickLinkId: str | None

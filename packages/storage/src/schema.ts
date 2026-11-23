@@ -9,7 +9,7 @@ export type FieldType = "string" | "number" | "boolean" | "json";
 export interface IndexDefinition {
   /** Stable index name, used in SQL index names and DynamoDB/Firestore indexes. */
   readonly name: string;
-  /** Fields matched by equality. Always starts with `sessionId`. */
+  /** Fields matched by equality. Always starts with `connectionId`. */
   readonly equals: readonly string[];
   /** Numeric field the index orders by. */
   readonly sort: string;
@@ -25,7 +25,7 @@ export interface EntityDefinition {
 }
 
 export const ENTITY_NAMES = [
-  "sessions",
+  "connections",
   "chats",
   "messages",
   "reactions",
@@ -47,9 +47,9 @@ export const ENTITY_NAMES = [
 export type EntityName = (typeof ENTITY_NAMES)[number];
 
 const entities = {
-  sessions: {
-    name: "sessions",
-    key: ["sessionId"],
+  connections: {
+    name: "connections",
+    key: ["connectionId"],
     fields: {
       phoneNumber: "string",
       waId: "string",
@@ -67,7 +67,7 @@ const entities = {
   },
   chats: {
     name: "chats",
-    key: ["sessionId", "chatId"],
+    key: ["connectionId", "chatId"],
     fields: {
       jid: "string",
       kind: "string",
@@ -88,12 +88,12 @@ const entities = {
       deletedAt: "number",
     },
     indexes: [
-      { name: "by_activity", equals: ["sessionId"], sort: "lastMessageAt" },
+      { name: "by_activity", equals: ["connectionId"], sort: "lastMessageAt" },
     ],
   },
   messages: {
     name: "messages",
-    key: ["sessionId", "messageId"],
+    key: ["connectionId", "messageId"],
     fields: {
       chatId: "string",
       waMessageId: "string",
@@ -123,48 +123,52 @@ const entities = {
       statusAt: "number",
     },
     indexes: [
-      { name: "by_chat", equals: ["sessionId", "chatId"], sort: "timestamp" },
+      {
+        name: "by_chat",
+        equals: ["connectionId", "chatId"],
+        sort: "timestamp",
+      },
     ],
   },
   reactions: {
     name: "reactions",
-    key: ["sessionId", "messageId", "senderId"],
+    key: ["connectionId", "messageId", "senderId"],
     fields: { chatId: "string", emoji: "string", timestamp: "number" },
     indexes: [
       {
         name: "by_message",
-        equals: ["sessionId", "messageId"],
+        equals: ["connectionId", "messageId"],
         sort: "timestamp",
       },
     ],
   },
   receipts: {
     name: "receipts",
-    key: ["sessionId", "messageId", "recipientId"],
+    key: ["connectionId", "messageId", "recipientId"],
     fields: { chatId: "string", status: "string", timestamp: "number" },
     indexes: [
       {
         name: "by_message",
-        equals: ["sessionId", "messageId"],
+        equals: ["connectionId", "messageId"],
         sort: "timestamp",
       },
     ],
   },
   poll_votes: {
     name: "poll_votes",
-    key: ["sessionId", "messageId", "voterId"],
+    key: ["connectionId", "messageId", "voterId"],
     fields: { chatId: "string", selectedHashes: "json", timestamp: "number" },
     indexes: [
       {
         name: "by_message",
-        equals: ["sessionId", "messageId"],
+        equals: ["connectionId", "messageId"],
         sort: "timestamp",
       },
     ],
   },
   contacts: {
     name: "contacts",
-    key: ["sessionId", "contactId"],
+    key: ["connectionId", "contactId"],
     fields: {
       jid: "string",
       lidJid: "string",
@@ -182,7 +186,7 @@ const entities = {
   },
   groups: {
     name: "groups",
-    key: ["sessionId", "groupId"],
+    key: ["connectionId", "groupId"],
     fields: {
       jid: "string",
       subject: "string",
@@ -197,7 +201,7 @@ const entities = {
   },
   group_participants: {
     name: "group_participants",
-    key: ["sessionId", "groupId", "participantId"],
+    key: ["connectionId", "groupId", "participantId"],
     fields: {
       jid: "string",
       phoneNumber: "string",
@@ -209,14 +213,14 @@ const entities = {
     indexes: [
       {
         name: "by_group",
-        equals: ["sessionId", "groupId"],
+        equals: ["connectionId", "groupId"],
         sort: "changedAt",
       },
     ],
   },
   media: {
     name: "media",
-    key: ["sessionId", "messageId"],
+    key: ["connectionId", "messageId"],
     fields: {
       chatId: "string",
       kind: "string",
@@ -240,7 +244,7 @@ const entities = {
   },
   labels: {
     name: "labels",
-    key: ["sessionId", "labelId"],
+    key: ["connectionId", "labelId"],
     fields: {
       name: "string",
       color: "number",
@@ -251,13 +255,13 @@ const entities = {
   },
   label_associations: {
     name: "label_associations",
-    key: ["sessionId", "labelId", "targetKind", "targetId"],
+    key: ["connectionId", "labelId", "targetKind", "targetId"],
     fields: { labeled: "boolean", changedAt: "number" },
     indexes: [],
   },
   history_chunks: {
     name: "history_chunks",
-    key: ["sessionId", "syncType", "chunkOrder"],
+    key: ["connectionId", "syncType", "chunkOrder"],
     fields: {
       progress: "number",
       conversationCount: "number",
@@ -268,25 +272,25 @@ const entities = {
   },
   history_progress: {
     name: "history_progress",
-    key: ["sessionId", "syncType"],
+    key: ["connectionId", "syncType"],
     fields: { progress: "number", lastChunkOrder: "number" },
     indexes: [],
   },
   checkpoints: {
     name: "checkpoints",
-    key: ["sessionId", "stream"],
+    key: ["connectionId", "stream"],
     fields: { cursor: "string", position: "json", updatedAt: "number" },
     indexes: [],
   },
   leases: {
     name: "leases",
-    key: ["sessionId"],
+    key: ["connectionId"],
     fields: { owner: "string", expiresAt: "number" },
     indexes: [],
   },
   events: {
     name: "events",
-    key: ["sessionId", "eventId"],
+    key: ["connectionId", "eventId"],
     fields: { type: "string" },
     indexes: [],
   },
@@ -296,7 +300,7 @@ export const STORAGE_SCHEMA: Readonly<Record<EntityName, EntityDefinition>> =
   entities;
 
 /** Bumped when a field, entity or index changes. Stored by SQL migrations. */
-export const STORAGE_SCHEMA_VERSION = 2;
+export const STORAGE_SCHEMA_VERSION = 3;
 
 /**
  * Columns every stored row carries in addition to its key and fields:

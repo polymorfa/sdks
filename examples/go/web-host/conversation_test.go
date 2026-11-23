@@ -18,7 +18,7 @@ import (
 )
 
 func TestSignedIncomingReplySurvivesReloadAndRejectsOtherTargets(t *testing.T) {
-	a := &app{peer: "+15550001111", session: "assigned", webhookSecret: "private-local-test-secret", sessions: map[string]appSession{"signed-in": {expires: time.Now().Add(time.Minute), userID: "user"}}}
+	a := &app{peer: "+15550001111", connection: "assigned", webhookSecret: "private-local-test-secret", sessions: map[string]appSession{"signed-in": {expires: time.Now().Add(time.Minute), userID: "user"}}}
 	a.conversation.peerID = "assigned-conversation"
 	server := httptest.NewServer(a.routes())
 	defer server.Close()
@@ -37,11 +37,11 @@ func TestSignedIncomingReplySurvivesReloadAndRejectsOtherTargets(t *testing.T) {
 		m.Write([]byte(body))
 		return "sha256=" + hex.EncodeToString(m.Sum(nil))
 	}
-	body := `{"id":"event-1","session":"assigned","timestamp":"2026-10-18T06:00:00Z","event":"message.received","payload":{"id":"incoming-1","conversation":{"id":"assigned-conversation"},"fromMe":false,"timestamp":1792303200,"type":"text","text":"Independent peer reply"}}`
+	body := `{"id":"event-1","connection":"assigned","timestamp":"2026-10-18T06:00:00Z","event":"message.received","payload":{"id":"incoming-1","conversation":{"id":"assigned-conversation"},"fromMe":false,"timestamp":1792303200,"type":"text","text":"Independent peer reply"}}`
 	if post(body, "sha256=wrong") != 400 {
 		t.Fatal("unsigned message accepted")
 	}
-	for _, foreign := range []string{strings.Replace(body, `"session":"assigned"`, `"session":"foreign"`, 1), strings.Replace(body, "assigned-conversation", "foreign-conversation", 1)} {
+	for _, foreign := range []string{strings.Replace(body, `"connection":"assigned"`, `"connection":"foreign"`, 1), strings.Replace(body, "assigned-conversation", "foreign-conversation", 1)} {
 		if post(foreign, sign(foreign)) != 204 {
 			t.Fatal("foreign envelope handling")
 		}
@@ -103,7 +103,7 @@ func TestNativeSendKeepsCallerKeyAndServerAssignment(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	a := &app{client: sdk, username: sha256.Sum256([]byte("user")), password: sha256.Sum256([]byte("password")), session: "assigned", userID: "user", sessions: map[string]appSession{}}
+	a := &app{client: sdk, username: sha256.Sum256([]byte("user")), password: sha256.Sum256([]byte("password")), connection: "assigned", userID: "user", sessions: map[string]appSession{}}
 	server := httptest.NewServer(a.routes())
 	defer server.Close()
 	a.origin = server.URL
@@ -137,7 +137,7 @@ func TestNativeSendKeepsCallerKeyAndServerAssignment(t *testing.T) {
 	if r.StatusCode != 403 {
 		t.Fatal("foreign origin send accepted")
 	}
-	r = call("/api/polymorfa/send", server.URL, `{"text":"Hello from Go","session":"foreign"}`)
+	r = call("/api/polymorfa/send", server.URL, `{"text":"Hello from Go","connection":"foreign"}`)
 	r.Body.Close()
 	if r.StatusCode != 400 {
 		t.Fatal("browser target override accepted")

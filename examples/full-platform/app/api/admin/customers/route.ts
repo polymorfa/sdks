@@ -82,7 +82,7 @@ export const POST = route("admin", async ({ body, request }) => {
         { idempotencyKey: idempotencyKey(request) },
       );
     case "numbers":
-      return customers.listNumbers(customerId, projectId);
+      return customers.listConnections(customerId, projectId);
     case "events":
       return customers.listEvents(customerId, { projectId, limit: 50 });
     case "createPairingLink": {
@@ -108,10 +108,10 @@ export const POST = route("admin", async ({ body, request }) => {
         text(body, "pairingLinkId"),
         projectId,
       );
-    case "transferNumber":
-      return customers.transferNumber(
+    case "transferConnection":
+      return customers.transferConnection(
         customerId,
-        text(body, "sessionId"),
+        text(body, "connectionId"),
         {
           projectId,
           sourceCustomerId: text(body, "sourceCustomerId"),

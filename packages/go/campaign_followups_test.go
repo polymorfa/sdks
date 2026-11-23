@@ -121,7 +121,7 @@ func TestCampaignFollowUpNativeWrites(t *testing.T) {
 
 func TestCampaignFollowUpNativeReports(t *testing.T) {
 	report := `{"total":12,"waiting":1,"scheduled":2,"sending":3,"sent":4,"delivered":5,"read":6,"replied":7,"cancelled":8,"expired":9,"failed":10,"unknown":11,"nextDueAt":1720000000001}`
-	summary := `{"id":"followup","numberId":"sender","status":"scheduled","anchorKind":"read","firstDeliveredAt":1720000000001,"firstReadAt":1720000000002,"dueAt":1720000060002,"expiresAt":1720086400000,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":null,"commandId":null}`
+	summary := `{"id":"followup","connectionId":"sender","status":"scheduled","anchorKind":"read","firstDeliveredAt":1720000000001,"firstReadAt":1720000000002,"dueAt":1720000060002,"expiresAt":1720086400000,"sentAt":null,"deliveredAt":null,"readAt":null,"repliedAt":null,"reason":null,"commandId":null}`
 	s := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 		if strings.HasSuffix(r.URL.Path, "/analytics") {

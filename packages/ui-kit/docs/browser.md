@@ -26,7 +26,7 @@ import {
 } from "@polymorfa/ui-kit";
 
 const messaging = new BrowserMessagingClient({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
 });
 
@@ -48,9 +48,9 @@ Requests expose status, request ID, response headers, and attempt count. Safe re
 
 Product controllers use immutable snapshots and `subscribe()`/`getSnapshot()` so Web Components and framework bindings share the same behavior.
 
-`BrowserMessagingClient` binds one session and exposes only the exact
+`BrowserMessagingClient` binds one connection and exposes only the exact
 client-token allowlist: message actions, presence reads/subscriptions, contact
-reads, and permitted widget pairing actions. Session start and status require a server
+reads, and permitted widget pairing actions. Connection start and status require a server
 Platform credential; use QuickLink for onboarding. The browser widget start/status
 helpers are removed in this breaking contract revision. Conversation history,
 template management and media upload remain application-owned server adapters.
@@ -66,7 +66,7 @@ routes directly.
 `ContactDirectoryController` loads the WhatsApp account's contacts once,
 filters them by name (case and accents folded) or digits, and can check an
 unsaved number with `lookupPhone()`. An older load or lookup never replaces a
-newer one; `setSource()` drops results from the previous session.
+newer one; `setSource()` drops results from the previous Connection.
 `NewChatController` adds starting a one-to-one chat and the two-step
 new-group flow. `GroupController` holds one group and makes every change
 client tokens allow, reloading after each.
@@ -91,7 +91,7 @@ chat.start();
 `create`, `join`, `leave`, `setSubject`, `setDescription`,
 `revokeInviteCode`, `addParticipants`, `removeParticipants`, `promote`,
 `demote` and the four settings (`groups_manage`). Creating and adding need the
-session's recipient mode `any`. Group capabilities and the group picture are
+Connection's recipient mode `any`. Group capabilities and the group picture are
 server-only. `InboxController.open(conversation)` selects a conversation that
 is not in the list yet; it stays in `draft` until its first message.
 
@@ -107,7 +107,7 @@ disappearing timer; `channels`; `catalog`; `presence.set`; and contact
 base64; client tokens cannot pass a URL.
 
 A Customer-scoped token covers several numbers. Pass the one a call uses as
-`clientTokenSession` to `createBrowserCalls`; it is sent as `?session=`.
+`clientTokenConnection` to `createBrowserCalls`; it is sent as `?connection=`.
 
 ## Call permission requests
 
@@ -178,7 +178,7 @@ import {
 } from "@polymorfa/ui-kit";
 
 const calls = createBrowserCalls({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
   onError: (error) => {
     // "unauthorized": the platform stopped accepting the token.
@@ -328,7 +328,7 @@ await templates.refreshPreview();
 ```
 
 The same-origin transport sends application actions with browser cookies. It
-does not accept a server credential, project slug, or Cloud API session. The
+does not accept a server credential, project slug, or Cloud API connection. The
 application route resolves those values after authorizing the request.
 
 Microphone and camera controls synchronize the connection's media preferences

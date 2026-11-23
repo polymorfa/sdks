@@ -13,10 +13,10 @@ var billingFixtures = []operationFixture{
 	{"TeamClient.Billing.Retrieve", "GET", "/platform/billing", "", "", `{"data":{"balanceCents":1.234567,"preferredCurrency":"USD"}}`, "data.preferredCurrency", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().Retrieve(ctx))
 	}},
-	{"TeamClient.Billing.Usage", "GET", "/platform/billing/usage", "", "", `{"data":{"activeNumbers":2,"totalChargedCents":1.234567}}`, "data.totalChargedCents", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Billing.Usage", "GET", "/platform/billing/usage", "", "", `{"data":{"activeConnections":2,"totalChargedCents":1.234567}}`, "data.totalChargedCents", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().Usage(ctx))
 	}},
-	{"TeamClient.Billing.ListTransactions", "GET", "/platform/billing/transactions", "", "", `{"data":[{"id":"transaction","amountCents":1.234567,"balanceAfterCents":4.567891,"type":"charge","description":"Number","sessionId":null,"projectId":null,"tier":null,"currency":"USD","paymentStatus":"paid","createdAt":123}]}`, "data.0.paymentStatus", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Billing.ListTransactions", "GET", "/platform/billing/transactions", "", "", `{"data":[{"id":"transaction","amountCents":1.234567,"balanceAfterCents":4.567891,"type":"charge","description":"Number","connectionId":null,"projectId":null,"tier":null,"currency":"USD","paymentStatus":"paid","createdAt":123}]}`, "data.0.paymentStatus", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().ListTransactions(ctx))
 	}},
 	{"TeamClient.Billing.ListPricing", "GET", "/platform/billing/pricing", "", "", `{"data":[{"id":"price","tier":"sandbox","dailyRateCents":0.000001,"label":"Test","description":"Test number","features":["messaging"]}]}`, "data.0.features.0", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
@@ -31,18 +31,18 @@ var billingFixtures = []operationFixture{
 	{"TeamClient.Billing.GetLimits", "GET", "/platform/billing/limits", "projectId=12345678-1234-1234-1234-123456789abc&scope=project", "", `{"data":{"checkedAt":"today","periodStart":"start","periodEnd":"end","todayCredits":1.25,"monthCredits":10.5,"daily":[{"date":"today","credits":1.25}],"budgets":[]}}`, "data.daily.0.credits", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().GetLimits(ctx, BillingReadParams{ProjectID: billingFixtureID, Scope: "project"}))
 	}},
-	{"TeamClient.Billing.SetLimit", "PUT", "/platform/billing/limits/number/12345678-1234-1234-1234-123456789abc", "", `{"limitCredits":1.25,"expectedRevision":2}`, `{"data":{"saved":true}}`, "data.saved", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Billing.SetLimit", "PUT", "/platform/billing/limits/connection/12345678-1234-1234-1234-123456789abc", "", `{"limitCredits":1.25,"expectedRevision":2}`, `{"data":{"saved":true}}`, "data.saved", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := 1.25
-		return wireData(o.Billing().SetLimit(ctx, BillingNumber, billingFixtureID, SetBillingLimitRequest{LimitCredits: &v, ExpectedRevision: 2}))
+		return wireData(o.Billing().SetLimit(ctx, BillingConnection, billingFixtureID, SetBillingLimitRequest{LimitCredits: &v, ExpectedRevision: 2}))
 	}},
-	{"TeamClient.Billing.GetPriorities", "GET", "/platform/billing/priorities", "scope=project", "", `{"data":{"revision":2,"projects":[{"id":"project","name":"Project","priority":0}],"customers":[],"numbers":[]}}`, "data.projects.0.priority", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Billing.GetPriorities", "GET", "/platform/billing/priorities", "scope=project", "", `{"data":{"revision":2,"projects":[{"id":"project","name":"Project","priority":0}],"customers":[],"connections":[]}}`, "data.projects.0.priority", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().GetPriorities(ctx, BillingReadParams{Scope: "project"}))
 	}},
-	{"TeamClient.Billing.SetPriority", "PUT", "/platform/billing/priorities/customer/12345678-1234-1234-1234-123456789abc", "", `{"priority":2,"expectedRevision":3}`, `{"data":{"revision":4,"projects":[],"customers":[{"id":"customer","name":"Customer","priority":2,"projectId":"project"}],"numbers":[]}}`, "data.customers.0.projectId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Billing.SetPriority", "PUT", "/platform/billing/priorities/customer/12345678-1234-1234-1234-123456789abc", "", `{"priority":2,"expectedRevision":3}`, `{"data":{"revision":4,"projects":[],"customers":[{"id":"customer","name":"Customer","priority":2,"projectId":"project"}],"connections":[]}}`, "data.customers.0.projectId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Billing().SetPriority(ctx, BillingCustomer, billingFixtureID, SetBillingPriorityRequest{Priority: 2, ExpectedRevision: 3}))
 	}},
-	{"TeamClient.Billing.ReorderPriorities", "PUT", "/platform/billing/priorities", "", `{"scope":"resource","projectId":"12345678-1234-1234-1234-123456789abc","resources":[{"scope":"number","resourceId":"12345678-1234-1234-1234-123456789abc"}],"expectedRevision":2}`, `{"data":{"revision":3,"projects":[],"customers":[],"numbers":[{"id":"number","name":"Number","priority":1,"projectId":"project"}]}}`, "data.numbers.0.priority", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		rows := []BillingReorderResource{{Scope: BillingNumber, ResourceID: billingFixtureID}}
+	{"TeamClient.Billing.ReorderPriorities", "PUT", "/platform/billing/priorities", "", `{"scope":"resource","projectId":"12345678-1234-1234-1234-123456789abc","resources":[{"scope":"connection","resourceId":"12345678-1234-1234-1234-123456789abc"}],"expectedRevision":2}`, `{"data":{"revision":3,"projects":[],"customers":[],"connections":[{"id":"connection","name":"Number","priority":1,"projectId":"project"}]}}`, "data.connections.0.priority", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		rows := []BillingReorderResource{{Scope: BillingConnection, ResourceID: billingFixtureID}}
 		return wireData(o.Billing().ReorderPriorities(ctx, ReorderBillingPrioritiesRequest{Scope: "resource", ProjectID: billingFixtureID, Resources: &rows, ExpectedRevision: 2}))
 	}},
 }

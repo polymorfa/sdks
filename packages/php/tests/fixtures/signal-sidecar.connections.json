@@ -1,0 +1,10 @@
+{
+  "syntheticOnly": true,
+  "sourceCommit": "61209057729b002a2122b898d744a8813a702fc7",
+  "secret": "synthetic_signal_app_secret_for_native_fixtures",
+  "timestamp": "1792022400",
+  "eventId": "event-fixture",
+  "rawBody": "{\"id\":\"event-fixture\",\"type\":\"message\",\"connection_id\":\"session-fixture\",\"chat\":\"chat-fixture\",\"sender\":\"sender-fixture\",\"sender_alt\":\"alternate@lid\",\"message_id\":\"message-fixture\",\"timestamp\":1720000000,\"is_from_me\":false,\"redelivered\":false,\"identity_changed\":false,\"message_proto\":\"CgdmaXh0dXJl\",\"text\":\"private fixture text\",\"future_field\":{\"retained\":true}}",
+  "signature": "v1=6c6a6faa7ede380da88712b66cfcb5f33a8bade60a730d0f86a7a856f6c572f1",
+  "derivedFrom": "packages/go/testdata/signal-sidecar.json"
+}

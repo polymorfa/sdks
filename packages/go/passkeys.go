@@ -22,7 +22,7 @@ type IssuePasskeyChallengeRequest struct {
 type PasskeyTicket struct {
 	Version          int    `json:"version"`
 	Ticket           string `json:"ticket"`
-	Session          string `json:"session"`
+	Connection       string `json:"connection"`
 	RPID             string `json:"rpId"`
 	ChallengeB64URL  string `json:"challengeB64Url"`
 	UserVerification string `json:"userVerification"`
@@ -45,9 +45,9 @@ type SubmitPasskeyAssertionRequest struct {
 	Assertion PasskeyAssertion `json:"assertion"`
 }
 type PasskeyAssertionResult struct {
-	OK      bool   `json:"ok"`
-	Ticket  string `json:"ticket"`
-	Session string `json:"session"`
+	OK         bool   `json:"ok"`
+	Ticket     string `json:"ticket"`
+	Connection string `json:"connection"`
 }
 type ConfirmPasskeyRequest struct {
 	TicketID string  `json:"ticketId"`
@@ -65,7 +65,7 @@ var PasskeyConfirmationStatuses = []string{"none", "challenge_pending", "asserti
 
 func passkeyPath(s string) (string, error) {
 	if s == "" {
-		return "", validation("Provide a session.")
+		return "", validation("Provide a connection.")
 	}
 	return messagingPath(s) + "/passkey", nil
 }

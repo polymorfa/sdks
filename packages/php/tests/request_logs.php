@@ -1,7 +1,7 @@
 <?php
 
 declare(strict_types=1);
-$log = ['id' => 'request','projectId' => 'project','createdAt' => '2026-10-11T00:00:00Z','method' => 'POST','route' => '/messaging/:session/messages','status' => 503,'durationMs' => 1.25,'result' => 'failure','source' => 'mcp','requestId' => 'request_id','traceId' => null,'errorCode' => 'upstream','mcpTool' => 'send_message','credential' => ['type' => 'project_token','id' => null,'last4' => 'abcd']];
+$log = ['id' => 'request','projectId' => 'project','createdAt' => '2026-10-11T00:00:00Z','method' => 'POST','route' => '/messaging/:connection/messages','status' => 503,'durationMs' => 1.25,'result' => 'failure','source' => 'mcp','requestId' => 'request_id','traceId' => null,'errorCode' => 'upstream','mcpTool' => 'send_message','credential' => ['type' => 'project_token','id' => null,'last4' => 'abcd']];
 $logBody = ['data' => [$log],'page' => ['hasMore' => false,'nextCursor' => null,'followCursor' => 'follow_cursor']];
 $logResponse = fn ($page) => new Polymorfa\ApiResponse($page->items, $page->metadata);
 nativeCases([

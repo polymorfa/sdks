@@ -16,7 +16,7 @@ import {
 } from "@polymorfa/ui-kit/react";
 
 const calls = createBrowserCalls({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
   onError: (error) => {
     // "unauthorized": the token was revoked or expired; the next reconnect

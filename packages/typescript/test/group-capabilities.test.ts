@@ -2,7 +2,7 @@ import { afterEach, describe, it, expect, expectTypeOf } from "vitest";
 import {
   MessagingClient,
   type GroupCapabilities,
-  type SessionCapabilitiesUpdatedPayload,
+  type ConnectionCapabilitiesUpdatedPayload,
   isEvent,
   type WebhookEvent,
 } from "../src/index.js";
@@ -52,9 +52,9 @@ describe("group capabilities", () => {
   });
   it("narrows capability changes to the canonical number view", () => {
     const event = {
-      event: "session.capabilities_updated",
+      event: "connection.capabilities_updated",
       payload: {
-        session: "support",
+        connection: "support",
         projectId: "00000000-0000-4000-8000-000000000001",
         status: "unknown",
         syncedAt: null,
@@ -64,10 +64,10 @@ describe("group capabilities", () => {
         changedKeys: ["polls.endTime"],
       },
     } as WebhookEvent;
-    expect(isEvent(event, "session.capabilities_updated")).toBe(true);
-    if (isEvent(event, "session.capabilities_updated"))
+    expect(isEvent(event, "connection.capabilities_updated")).toBe(true);
+    if (isEvent(event, "connection.capabilities_updated"))
       expectTypeOf(
         event.payload,
-      ).toEqualTypeOf<SessionCapabilitiesUpdatedPayload>();
+      ).toEqualTypeOf<ConnectionCapabilitiesUpdatedPayload>();
   });
 });

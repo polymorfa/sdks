@@ -13,7 +13,7 @@ from typing_extensions import Never, NotRequired, TypedDict
 
 from .cloud_order import CloudOrder
 from .models import WhatsAppMessageIds
-from .platform_core import SessionCapabilities
+from .platform_core import ConnectionCapabilities
 from .transport import Json, JsonObject
 
 
@@ -181,7 +181,7 @@ class PollVotePayload(TypedDict):
     timestamp: float
 
 
-class RuntimeSessionStatusPayload(TypedDict):
+class RuntimeConnectionStatusPayload(TypedDict):
     status: str
     statusReason: NotRequired[str]
     banCode: NotRequired[float]
@@ -197,10 +197,10 @@ class CloudAccountStatusPayload(TypedDict):
     value: JsonObject
 
 
-SessionStatusPayload = RuntimeSessionStatusPayload | CloudAccountStatusPayload
+ConnectionStatusPayload = RuntimeConnectionStatusPayload | CloudAccountStatusPayload
 
 
-class SessionRestrictionUpdatedPayload(TypedDict):
+class ConnectionRestrictionUpdatedPayload(TypedDict):
     type: Literal["reachout_timelock"]
     active: bool
     enforcementType: str | None
@@ -208,7 +208,7 @@ class SessionRestrictionUpdatedPayload(TypedDict):
     observedAt: str
 
 
-class SessionConnectedPayload(TypedDict):
+class ConnectionConnectedPayload(TypedDict):
     phoneNumber: str
     id: NotRequired[str]
     pushName: str
@@ -217,12 +217,12 @@ class SessionConnectedPayload(TypedDict):
     businessName: NotRequired[str]
 
 
-class SessionLoggedOutPayload(TypedDict):
+class ConnectionLoggedOutPayload(TypedDict):
     reason: Literal["banned", "device_removed", "unknown"]
     code: float
 
 
-class SessionPhoneOfflinePayload(TypedDict):
+class ConnectionPhoneOfflinePayload(TypedDict):
     daysSinceLastSeen: float
     daysRemaining: float
     lastSeen: str
@@ -285,7 +285,7 @@ class ContactOptPayload(TypedDict):
     phone: str
     source: Literal["stop-keyword"]
     keyword: str
-    session: str
+    connection: str
     projectId: NotRequired[str]
 
 
@@ -361,7 +361,7 @@ Connection = Literal["linked_device", "cloud_api"]
 class CallReceivedPayload(_From):
     callId: str
     hasVideo: bool
-    sessionConnection: NotRequired[Connection]
+    connectionMethod: NotRequired[Connection]
     capabilities: NotRequired[WebhookCallCapabilities]
 
 
@@ -374,7 +374,7 @@ class CallAcceptedPayload(_From):
     callId: str
     answeredBy: NotRequired[str]
     exclusive: NotRequired[bool]
-    sessionConnection: NotRequired[Connection]
+    connectionMethod: NotRequired[Connection]
     capabilities: NotRequired[WebhookCallCapabilities]
 
 
@@ -388,7 +388,7 @@ class CallEndedPayload(_NullableFrom):
     reason: str
     direction: Literal["inbound", "outbound"]
     hadVideo: bool
-    sessionConnection: NotRequired[Connection]
+    connectionMethod: NotRequired[Connection]
 
 
 class CallTelemetryPayload(TypedDict):
@@ -617,11 +617,11 @@ class CustomerUpdatedPayload(CustomerEventPayload):
 
 
 class CustomerEnabledPayload(CustomerEventPayload):
-    migratedNumberCount: float
+    migratedConnectionCount: float
 
 
 class CustomerArchivingPayload(CustomerEventPayload):
-    blockingNumberCount: float
+    blockingConnectionCount: float
     revokedPairingLinkCount: float
 
 
@@ -635,7 +635,7 @@ CustomerPairingLinkExpiredPayload = CustomerPairingLinkPayload
 
 
 class CustomerPairingLinkConnectedPayload(CustomerPairingLinkPayload):
-    sessionId: str
+    connectionId: str
 
 
 class CustomerPairingLinkFailedPayload(CustomerPairingLinkPayload):
@@ -653,18 +653,18 @@ class CustomerPairingLinkRevokedPayload(CustomerPairingLinkPayload):
     ]
 
 
-class CustomerNumberAttachedPayload(CustomerEventPayload):
-    sessionId: str
+class CustomerConnectionAttachedPayload(CustomerEventPayload):
+    connectionId: str
     pairingLinkId: NotRequired[str]
 
 
-class CustomerNumberTransferredPayload(CustomerEventPayload):
-    sessionId: str
+class CustomerConnectionTransferredPayload(CustomerEventPayload):
+    connectionId: str
     sourceCustomerId: str
 
 
-class CustomerNumberDisconnectedPayload(CustomerEventPayload):
-    sessionId: str
+class CustomerConnectionDisconnectedPayload(CustomerEventPayload):
+    connectionId: str
     reason: str
 
 
@@ -681,7 +681,7 @@ BanSafeEventRung = Literal["none", "notify", "throttle", "block_cold", "suspend"
 
 
 class BanSafeHealthThresholdPayload(TypedDict):
-    sessionId: str
+    connectionId: str
     projectId: str
     health: float
     threshold: float
@@ -703,7 +703,7 @@ class BanSafeRequiredFinding(TypedDict):
 class BanSafeActionPayload(TypedDict):
     phoneNumber: str
     action: Literal["applied", "changed", "lifted", "daily_allowance_reached"]
-    scope: Literal["number", "team"]
+    scope: Literal["connection", "team"]
     rung: BanSafeEventRung
     previousRung: BanSafeEventRung | None
     reason: Literal[
@@ -827,7 +827,7 @@ class MessageFailedPayload(TypedDict):
     type: str
     error: Literal[
         "invalid_recipient",
-        "session_not_connected",
+        "connection_not_connected",
         "ack_timeout",
         "send_failed",
         "blocked_by_safety",
@@ -921,7 +921,7 @@ class CampaignRecipientSentPayload(TypedDict):
     campaignId: str
     recipientId: str
     phone: str
-    sessionKey: str
+    connectionKey: str
     externalMessageId: str
     variantKey: str
     attempt: float
@@ -948,7 +948,7 @@ class CampaignRecipientSkippedPayload(TypedDict):
 
 class CampaignThrottledPayload(TypedDict):
     campaignId: str
-    sessionKey: str
+    connectionKey: str
     reason: str
     deferredCount: float
     at: float
@@ -956,7 +956,7 @@ class CampaignThrottledPayload(TypedDict):
 
 class CampaignCapReachedPayload(TypedDict):
     campaignId: str
-    sessionKey: str
+    connectionKey: str
     phone: str
     capType: str
     capLimit: float
@@ -993,7 +993,7 @@ class VoiceAssetFailedPayload(VoiceAssetEventPayload):
     failureReason: str
 
 
-class SessionCapabilitiesUpdatedPayload(SessionCapabilities):
+class ConnectionCapabilitiesUpdatedPayload(ConnectionCapabilities):
     changedKeys: list[str]
 
 
@@ -1026,7 +1026,7 @@ class UsageRecordedPayload(TypedDict):
     sourceKind: Literal["call", "attempt", "flow_run", "conversation", "asset", "team"]
     sourceId: str
     projectId: str | None
-    session: str | None
+    connection: str | None
     occurredAt: str
     recordedAt: str
     revision: float
@@ -1042,7 +1042,7 @@ Payload_co = TypeVar("Payload_co", covariant=True)
 @dataclass(frozen=True)
 class TypedWebhookEvent(Generic[EventName_co, Payload_co]):
     id: str
-    session: str
+    connection: str
     timestamp: str
     event: EventName_co
     payload: Payload_co = field(repr=False)

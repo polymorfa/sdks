@@ -8,7 +8,7 @@ from .models import ConversationIdentity
 
 
 class CallLinkRequest(TypedDict):
-    session: str
+    connection: str
     video: NotRequired[bool]
 
 
@@ -17,14 +17,14 @@ class PreviewCallLinkRequest(CallLinkRequest):
 
 
 class CreatedCallLink(TypedDict):
-    session: str
+    connection: str
     token: str
     url: str
     video: bool
 
 
 class PreviewedCallLink(TypedDict):
-    session: str
+    connection: str
     video: bool
     creator: ConversationIdentity
     approvalRequired: bool
@@ -44,7 +44,7 @@ class CallParticipant(TypedDict):
     username: NotRequired[str]
 
 
-class SessionCallSettings(TypedDict):
+class ConnectionCallSettings(TypedDict):
     simultaneousCallsCoverageExcludedUntil: str | None
     simultaneousCalls: bool
     callsEnabled: bool
@@ -89,7 +89,7 @@ class CallPermission(PermissionState):
 
 
 class CallCheckRequest(TypedDict):
-    session: str
+    connection: str
     to: str
 
 

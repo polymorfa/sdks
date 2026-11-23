@@ -1,6 +1,6 @@
 //! Server-only client for the customer-operated Signal service.
-//! Contract: signal-node 8aa191ef0d4c318229c91bcdf474bf2d79dac47c.
-//! This client holds an application bearer, never a Signal master/session key.
+//! Contract: signal-node 61209057729b002a2122b898d744a8813a702fc7.
+//! This client holds an application bearer, never a Signal master/connection key.
 use crate::{Error, ErrorKind, Result};
 use base64::{engine::general_purpose::STANDARD, Engine as _};
 use futures_util::{Stream, StreamExt as _};
@@ -10,7 +10,7 @@ use sha2::Sha256;
 use std::{pin::Pin, sync::Arc, time::Duration};
 use tokio_util::sync::CancellationToken;
 
-pub const SIGNAL_SERVICE_CONTRACT: &str = "8aa191ef0d4c318229c91bcdf474bf2d79dac47c";
+pub const SIGNAL_SERVICE_CONTRACT: &str = "61209057729b002a2122b898d744a8813a702fc7";
 const BODY_LIMIT: usize = 4 * 1024 * 1024;
 #[derive(Clone)]
 pub struct SignalClientOptions {
@@ -41,12 +41,12 @@ pub struct SignalClient {
     timeout: Duration,
 }
 #[derive(Clone, Deserialize)]
-pub struct SignalSessions {
+pub struct SignalConnections {
     pub node_id: String,
-    pub sessions: Vec<SignalSession>,
+    pub connections: Vec<SignalConnection>,
 }
 #[derive(Clone, Deserialize)]
-pub struct SignalSession {
+pub struct SignalConnection {
     pub id: String,
     pub lease_generation: u64,
     pub claimed: bool,
@@ -121,7 +121,7 @@ pub struct SignalEvent {
     pub id: String,
     #[serde(rename = "type")]
     pub event_type: String,
-    pub session_id: String,
+    pub connection_id: String,
     pub chat: String,
     pub sender: String,
     pub message_id: String,
@@ -311,8 +311,8 @@ impl SignalClient {
         }
         serde_json::from_slice(&bytes).map_err(|_| malformed())
     }
-    pub async fn sessions(&self, cancellation: &CancellationToken) -> Result<SignalSessions> {
-        self.json(reqwest::Method::GET, "/v1/sessions", None, cancellation)
+    pub async fn connections(&self, cancellation: &CancellationToken) -> Result<SignalConnections> {
+        self.json(reqwest::Method::GET, "/v1/connections", None, cancellation)
             .await
     }
     /// Persist the event in application storage before calling this method. No auto-ACK.
@@ -337,18 +337,18 @@ impl SignalClient {
     }
     pub async fn send(
         &self,
-        session: &str,
+        connection: &str,
         request: &SignalSendRequest,
         cancellation: &CancellationToken,
     ) -> Result<SignalSendOutcome> {
-        if session.is_empty() {
-            return Err(invalid("Session ID is required."));
+        if connection.is_empty() {
+            return Err(invalid("Connection ID is required."));
         }
         self.json(
             reqwest::Method::POST,
             &format!(
-                "/v1/sessions/{}/messages",
-                crate::transport::encode(session)
+                "/v1/connections/{}/messages",
+                crate::transport::encode(connection)
             ),
             Some(serde_json::to_value(request).map_err(|_| invalid("Invalid send request."))?),
             cancellation,
@@ -358,14 +358,14 @@ impl SignalClient {
     /// One native SSE connection, without cursor replay or automatic acknowledgment.
     pub fn events(
         &self,
-        session: Option<&str>,
+        connection: Option<&str>,
         cancellation: CancellationToken,
     ) -> Pin<Box<dyn Stream<Item = Result<SignalEvent>> + Send>> {
         let client = self.clone();
-        let expected_session = session.map(str::to_owned);
-        let path = session.map_or_else(
+        let expected_connection = connection.map(str::to_owned);
+        let path = connection.map_or_else(
             || "/v1/events".into(),
-            |id| format!("/v1/events?session_id={}", crate::transport::encode(id)),
+            |id| format!("/v1/events?connection_id={}", crate::transport::encode(id)),
         );
         Box::pin(async_stream::try_stream! {
             let response=client.open(reqwest::Method::GET,&path,None,&cancellation,"text/event-stream",tokio::time::Instant::now()+client.timeout).await?;
@@ -376,7 +376,7 @@ impl SignalClient {
                 let Some(chunk)=next.map_err(|_|Error::local(ErrorKind::Timeout,"Signal event stream timed out.","request_timeout"))? else {parser.finish()?; break};
                 for message in parser.feed(&chunk.map_err(|_|network())?)? {
                     let event:SignalEvent=serde_json::from_str(&message.data).map_err(|_|malformed())?;
-                    if event.id.is_empty() || message.id.as_deref()!=Some(event.id.as_str()) || message.event!=event.event_type || expected_session.as_ref().is_some_and(|session| session != &event.session_id) {Err(malformed())?;}
+                    if event.id.is_empty() || message.id.as_deref()!=Some(event.id.as_str()) || message.event!=event.event_type || expected_connection.as_ref().is_some_and(|connection| connection != &event.connection_id) {Err(malformed())?;}
                     yield event;
                 }
             }

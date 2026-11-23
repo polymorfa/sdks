@@ -13,7 +13,7 @@ go test -race ./...
 go run . -framework gin -port 8080
 ```
 
-Before the last command, set `EXAMPLE_APP_USERNAME`, `EXAMPLE_APP_PASSWORD`, `POLYMORFA_PROJECT_TOKEN`, `POLYMORFA_SESSION`, `POLYMORFA_RECIPIENT` and `POLYMORFA_WEBHOOK_SECRET` in the server environment. The recipient is the authorized peer's phone number. Open `http://127.0.0.1:8080`. Use `-framework nethttp` for the standard library host. `POLYMORFA_API_BASE_URL` optionally selects an API origin; authenticated plaintext is restricted to loopback. Asset building bundles the workspace Web Components and downloads HTMX 2.0.4 after checking its SHA-256 digest.
+Before the last command, set `EXAMPLE_APP_USERNAME`, `EXAMPLE_APP_PASSWORD`, `POLYMORFA_PROJECT_TOKEN`, `POLYMORFA_CONNECTION`, `POLYMORFA_RECIPIENT` and `POLYMORFA_WEBHOOK_SECRET` in the server environment. The recipient is the authorized peer's phone number. Open `http://127.0.0.1:8080`. Use `-framework nethttp` for the standard library host. `POLYMORFA_API_BASE_URL` optionally selects an API origin; authenticated plaintext is restricted to loopback. Asset building bundles the workspace Web Components and downloads HTMX 2.0.4 after checking its SHA-256 digest.
 
 This loopback example has one configured application account. Sign-in creates a random, server-held session with a 30-minute lifetime and an HttpOnly, SameSite=Strict cookie. Application POST routes enforce the application origin. Browser input cannot select an identity, number or recipient. Sign-out removes the server session and stops browser polling.
 
@@ -25,7 +25,7 @@ Register `/webhooks/polymorfa` with the API for the assigned Number, native form
 
 Set `POLYMORFA_EXAMPLE_TRANSPORT=local-test-number` when using isolated local test numbers. The page then labels simulated WhatsApp transport. This is a local transport label, not evidence of real WhatsApp-network delivery.
 
-Before hosting it publicly, integrate the application's real authentication, live membership and Number/recipient authorization, HTTPS origin, durable sessions and transactional message/idempotency storage. Keep project and team credentials exclusively in the server process.
+Before hosting it publicly, integrate the application's real authentication, live membership and Connection/recipient authorization, HTTPS origin, durable sessions and transactional message/idempotency storage. Keep project and team credentials exclusively in the server process.
 
 `main_test.go` and `conversation_test.go` use real HTTP servers with a fixture upstream to verify both hosts, native credential/version headers, authentication, assigned targets, origin rejection, caller-key replay and conflict handling, webhook signatures, event deduplication, target confinement and conversation reads after reload. Those tests do not prove a deployed or real WhatsApp-network exchange.
 

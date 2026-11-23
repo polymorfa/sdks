@@ -14,8 +14,8 @@ import { BrowserTransport } from "../transport.js";
 import { CallsSignalingClient, claimedError } from "./signaling.js";
 
 /**
- * Client-token call controls. The token determines the session and the
- * participant, so `session` and `participant` are never sent.
+ * Client-token call controls. The token determines the connection and the
+ * participant, so `connection` and `participant` are never sent.
  */
 export class BrowserCallsApi implements CallsApi {
   readonly #transport: BrowserTransport;

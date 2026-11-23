@@ -37,21 +37,21 @@ func descriptorFixture(t *testing.T) map[string]json.RawMessage {
 func TestDescriptorStorageMissingDecoder(t *testing.T) {
 	a, _ := s.NewMemoryAdapter(1000)
 	e, _ := s.NewEngine(a, s.EngineOptions{})
-	ev := sdk.WebhookEvent{ID: "descriptor-event", Session: "descriptor-session", Timestamp: "2026-10-17T00:00:00Z", Event: "history.sync", Payload: descriptorFixture(t)["inline"]}
+	ev := sdk.WebhookEvent{ID: "descriptor-event", Connection: "descriptor-connection", Timestamp: "2026-10-17T00:00:00Z", Event: "history.sync", Payload: descriptorFixture(t)["inline"]}
 	_, err := e.ApplyEvent(context.Background(), ev, s.ApplyEventOptions{})
 	if err == nil {
 		t.Fatal("undecoded descriptor consumed")
 	}
-	marked, _ := e.HasEvent(context.Background(), ev.Session, ev.ID)
+	marked, _ := e.HasEvent(context.Background(), ev.Connection, ev.ID)
 	if marked {
 		t.Fatal("failure marked")
 	}
 }
 func descriptorRows(t *testing.T, e *s.Engine, entity string) []s.Row {
 	t.Helper()
-	key := map[string]any{"sessionId": "descriptor-session", "syncType": "RECENT"}
+	key := map[string]any{"connectionId": "descriptor-connection", "syncType": "RECENT"}
 	if entity == "messages" {
-		key = map[string]any{"sessionId": "descriptor-session", "messageId": "wa:fixture-user@s.whatsapp.net:0::native-history-message"}
+		key = map[string]any{"connectionId": "descriptor-connection", "messageId": "wa:fixture-user@s.whatsapp.net:0::native-history-message"}
 	}
 	row, err := e.Get(context.Background(), entity, key)
 	if err != nil {
@@ -70,7 +70,7 @@ func TestDescriptorStoragePublicMatrix(t *testing.T) {
 			t.Run(branch+"/"+mode, func(t *testing.T) {
 				a, _ := s.NewMemoryAdapter(1000)
 				e, _ := s.NewEngine(a, s.EngineOptions{})
-				ev := sdk.WebhookEvent{ID: "descriptor-event", Session: "descriptor-session", Timestamp: "2026-10-17T00:00:00Z", Event: "history.sync", Payload: f[branch]}
+				ev := sdk.WebhookEvent{ID: "descriptor-event", Connection: "descriptor-connection", Timestamp: "2026-10-17T00:00:00Z", Event: "history.sync", Payload: f[branch]}
 				raw, _ := json.Marshal(ev)
 				mac := hmac.New(sha256.New, []byte("synthetic-secret"))
 				mac.Write(raw)
@@ -134,7 +134,7 @@ func TestDescriptorStoragePublicMatrix(t *testing.T) {
 				if err != nil && strings.Contains(err.Error(), "synthetic-key-secret") {
 					t.Fatal("secret error")
 				}
-				marked, _ := e.HasEvent(ctx, ev.Session, ev.ID)
+				marked, _ := e.HasEvent(ctx, ev.Connection, ev.ID)
 				if marked == fail {
 					t.Fatal("marker")
 				}
@@ -176,7 +176,7 @@ func TestDescriptorStoragePublicMatrix(t *testing.T) {
 		raw, _ := json.Marshal(p)
 		a, _ := s.NewMemoryAdapter(1000)
 		e, _ := s.NewEngine(a, s.EngineOptions{})
-		_, err := e.ApplyEvent(ctx, sdk.WebhookEvent{ID: "bad", Session: "descriptor-session", Event: "history.sync", Payload: raw}, s.ApplyEventOptions{HistoryDescriptorMode: s.DescriptorMetadataOnly})
+		_, err := e.ApplyEvent(ctx, sdk.WebhookEvent{ID: "bad", Connection: "descriptor-connection", Event: "history.sync", Payload: raw}, s.ApplyEventOptions{HistoryDescriptorMode: s.DescriptorMetadataOnly})
 		if err == nil {
 			t.Fatal("malformed consumed", patch)
 		}
@@ -198,13 +198,13 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 					p["delivery"] = nil
 					payload, _ = json.Marshal(p)
 				}
-				ev := sdk.WebhookEvent{ID: "descriptor-event", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: payload}
+				ev := sdk.WebhookEvent{ID: "descriptor-event", Connection: "descriptor-connection", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: payload}
 				raw, _ := json.Marshal(ev)
 				acked := 0
 				resume := false
 				server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 					if r.Method == "POST" {
-						marked, _ := e.HasEvent(context.Background(), ev.Session, ev.ID)
+						marked, _ := e.HasEvent(context.Background(), ev.Connection, ev.ID)
 						cursor, _ := e.GetCheckpoint(context.Background(), "*", "events")
 						if !marked || cursor == nil || cursor.Cursor != "descriptor-cursor" {
 							t.Error("ACK preceded data/checkpoint")
@@ -226,7 +226,7 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 						t.Error("resume")
 					}
 					if mode == "conflict" {
-						e.Apply(context.Background(), s.Batch{SessionID: "*", Operations: []s.Operation{{Kind: "checkpoint", SessionID: "*", Stream: "events", Cursor: "competitor"}}})
+						e.Apply(context.Background(), s.Batch{ConnectionID: "*", Operations: []s.Operation{{Kind: "checkpoint", ConnectionID: "*", Stream: "events", Cursor: "competitor"}}})
 					}
 					w.Header().Set("Content-Type", "text/event-stream")
 					fmt.Fprintf(w, "data: {\"type\":\"event\",\"cursor\":\"descriptor-cursor\",\"streamId\":\"fixture-stream\",\"sequence\":2,\"event\":{\"id\":\"metadata\",\"payload\":{\"data\":%q}}}\n\n", base64.StdEncoding.EncodeToString(raw))
@@ -254,7 +254,7 @@ func TestDescriptorStorageHTTP(t *testing.T) {
 				}
 				err = s.SyncToStorage(ctx, s.APIEventSource{Events: project.Events()}, e, opts)
 				failed := mode == "missing" || mode == "null" || mode == "malformed"
-				marked, _ := e.HasEvent(context.Background(), ev.Session, ev.ID)
+				marked, _ := e.HasEvent(context.Background(), ev.Connection, ev.ID)
 				if marked == failed {
 					t.Fatal("marker")
 				}
@@ -305,12 +305,12 @@ func TestDescriptorStorageProducerIDUTF16Boundary(t *testing.T) {
 			raw, _ := json.Marshal(p)
 			a, _ := s.NewMemoryAdapter(1000)
 			e, _ := s.NewEngine(a, s.EngineOptions{})
-			ev := sdk.WebhookEvent{ID: "utf16", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: raw}
+			ev := sdk.WebhookEvent{ID: "utf16", Connection: "descriptor-connection", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: raw}
 			_, err := e.ApplyEvent(ctx, ev, s.ApplyEventOptions{HistoryDescriptorMode: s.DescriptorMetadataOnly})
 			if (err == nil) != (units == 512) {
 				t.Fatalf("producer UTF16 boundary: %s units=%d accepted=%v", field, units, err == nil)
 			}
-			marked, _ := e.HasEvent(ctx, ev.Session, ev.ID)
+			marked, _ := e.HasEvent(ctx, ev.Connection, ev.ID)
 			if marked != (units == 512) {
 				t.Fatal("UTF16 marker")
 			}
@@ -344,7 +344,7 @@ func TestDescriptorStorageArchiveCloudControls(t *testing.T) {
 		if mode == "cloud" {
 			payload = []byte(`{"kind":"history","value":{}}`)
 		}
-		event := sdk.WebhookEvent{ID: "archive", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: payload}
+		event := sdk.WebhookEvent{ID: "archive", Connection: "descriptor-connection", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: payload}
 		calls := 0
 		options := s.ApplyEventOptions{DecodeHistoryDescriptor: func(context.Context, map[string]any, sdk.WebhookEvent) (map[string]any, error) {
 			t.Fatal("descriptor callback for archive/cloud")
@@ -376,7 +376,7 @@ func TestDescriptorStorageArchiveCloudControls(t *testing.T) {
 				t.Fatal("archive/cloud callback")
 			}
 		}
-		marked, _ := engine.HasEvent(ctx, event.Session, event.ID)
+		marked, _ := engine.HasEvent(ctx, event.Connection, event.ID)
 		if marked != (mode != "error") {
 			t.Fatal("archive marker")
 		}
@@ -400,7 +400,7 @@ func TestDescriptorStorageRejectsUnprojectedFields(t *testing.T) {
 		raw, _ := json.Marshal(p)
 		a, _ := s.NewMemoryAdapter(1000)
 		engine, _ := s.NewEngine(a, s.EngineOptions{})
-		ev := sdk.WebhookEvent{ID: "extra", Session: "descriptor-session", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: raw}
+		ev := sdk.WebhookEvent{ID: "extra", Connection: "descriptor-connection", Event: "history.sync", Timestamp: "2026-10-17T00:00:00Z", Payload: raw}
 		if _, err := engine.ApplyEvent(context.Background(), ev, s.ApplyEventOptions{HistoryDescriptorMode: s.DescriptorMetadataOnly}); err == nil {
 			t.Fatal("unprojected descriptor field consumed", branch)
 		}

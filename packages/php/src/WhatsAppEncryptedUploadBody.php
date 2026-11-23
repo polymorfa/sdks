@@ -74,11 +74,11 @@ final class WhatsAppEncryptedUploadBody implements \JsonSerializable
         $this->cancellation?->throwIfCancelled();
     }
     /** @internal The implementation stays inside the owning API resource. */
-    public function uploadUsing(WhatsAppMedia $resource, string $session, string $mode, UploadWhatsAppMediaOptions $options): WhatsAppUploadLocation
+    public function uploadUsing(WhatsAppMedia $resource, string $connection, string $mode, UploadWhatsAppMediaOptions $options): WhatsAppUploadLocation
     {
         try {
             $this->check();
-            $result = ($this->builtin)($resource, $session, $mode, $options);
+            $result = ($this->builtin)($resource, $connection, $mode, $options);
             $this->check();
             $this->completed = true;
             return $result;

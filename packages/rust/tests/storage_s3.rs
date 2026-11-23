@@ -574,7 +574,7 @@ async fn invalid_keys_metadata_and_cancellation_fail_before_any_customer_request
     invalid.encryption.max_bytes = 0;
     assert_eq!(
         store
-            .upload_to_whatsapp(&resource, "session", invalid)
+            .upload_to_whatsapp(&resource, "connection", invalid)
             .await
             .err()
             .unwrap()
@@ -594,7 +594,7 @@ async fn invalid_keys_metadata_and_cancellation_fail_before_any_customer_request
         };
         assert_eq!(
             store
-                .upload_to_whatsapp(&resource, "session", cancelled)
+                .upload_to_whatsapp(&resource, "connection", cancelled)
                 .await
                 .err()
                 .unwrap()

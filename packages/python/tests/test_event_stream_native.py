@@ -348,3 +348,56 @@ async def test_event_stream_utf8_boundary_and_frame_reset():
             if len(items) == 2:
                 stream.close()
         assert [item.cursor for item in items] == ["boundary", "boundary"]
+
+
+def test_retained_stream_selector_read_view_keeps_active_parser_strict():
+    from polymorfa.errors import ValidationError, WebhookSignatureError
+    from polymorfa.events import _parse_stream_webhook
+    from polymorfa.webhooks import parse_verified_webhook_event
+
+    original = b'{"id":"retained","session":"support.old","timestamp":"now","event":"message.received","payload":{"opaque":[false,42]}}'
+    import base64
+    import hashlib
+    import hmac
+
+    from polymorfa.webhooks import construct_local_webhook_event
+
+    key = bytes([7]) * 32
+    secret = base64.urlsafe_b64encode(key).decode().rstrip("=")
+    signature = (
+        "t=1700000000,v1=" + hmac.new(key, b"1700000000." + original, hashlib.sha256).hexdigest()
+    )
+    assert (
+        construct_local_webhook_event(
+            original, signature, secret, now_unix_seconds=1700000000
+        ).connection
+        == "support.old"
+    )
+    with pytest.raises(WebhookSignatureError):
+        construct_local_webhook_event(
+            original + b" ", signature, secret, now_unix_seconds=1700000000
+        )
+    before = bytes(original)
+    event = _parse_stream_webhook(original)
+    assert event.connection == "support.old"
+    assert event.payload == {"opaque": [False, 42]}
+    assert original == before
+    with pytest.raises(ValidationError):
+        parse_verified_webhook_event(original)
+    for selector in [
+        {"session": None},
+        {"session": 1},
+        {"session": "old", "connection": "current"},
+    ]:
+        with pytest.raises(ValueError):
+            _parse_stream_webhook(
+                json.dumps(
+                    {
+                        "id": "e",
+                        "timestamp": "now",
+                        "event": "message.received",
+                        "payload": {},
+                        **selector,
+                    }
+                ).encode()
+            )

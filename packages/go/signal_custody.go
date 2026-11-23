@@ -2,7 +2,7 @@ package polymorfa
 
 import "context"
 
-// SignalCustodyResource controls future reservation defaults, never existing Numbers.
+// SignalCustodyResource controls future reservation defaults, never existing Connections.
 type SignalCustodyResource struct {
 	t         *transport
 	projectID string

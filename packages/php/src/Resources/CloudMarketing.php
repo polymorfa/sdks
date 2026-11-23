@@ -11,12 +11,12 @@ final class CloudMarketing extends Resource
 {
     /** Beta Number status. Unknown observations never grant access.
      * @return ApiResponse<array{success:true,data:MarketingStatus}> */
-    public function getStatus(string $session, ?RequestOptions $options = null): ApiResponse
+    public function getStatus(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        if (trim($session) === '' || strlen($session) > 128) { throw new \Polymorfa\ValidationException('Provide a Number ID of 1 to 128 characters.'); }
+        if (trim($connection) === '' || strlen($connection) > 128) { throw new \Polymorfa\ValidationException('Provide a Number ID of 1 to 128 characters.'); }
         /** @var ApiResponse<array{success:true,data:MarketingStatus}> */
-        return $this->request('GET', '/messaging/'.self::segment($session).'/marketing-messages/status', options:$options);
+        return $this->request('GET', '/messaging/'.self::segment($connection).'/marketing-messages/status', options:$options);
     }
     /** These raw provider observations never grant eligibility or terms.
      * @param array{version:string} $params

@@ -81,7 +81,7 @@ export interface CampaignReplyFlow {
 }
 
 export interface CampaignTestSendRequest {
-  readonly sessionId: string;
+  readonly connectionId: string;
   readonly to: string;
   readonly sampleRecipientId?: string;
   readonly variables?: Readonly<Record<string, string | number | boolean>>;
@@ -95,7 +95,7 @@ export interface CampaignTestSend {
   readonly id: string;
   readonly campaignId: string;
   readonly status: "sent";
-  readonly from: { readonly sessionId: string; readonly phone: string };
+  readonly from: { readonly connectionId: string; readonly phone: string };
   readonly to: string;
   readonly messageId: string | null;
   readonly variables: Readonly<Record<string, string>>;
@@ -128,7 +128,7 @@ export type CampaignRecipientFailureReason =
   | "cold_held"
   | "campaign_cancelled"
   | "invalid_recipient"
-  | "session_not_connected"
+  | "connection_not_connected"
   | "ack_timeout"
   | "blocked_by_safety"
   | "send_failed"

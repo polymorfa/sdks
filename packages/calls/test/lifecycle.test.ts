@@ -10,7 +10,7 @@ function lifecycleWith(report = vi.fn(), now = () => 0) {
   const t = timers();
   const socket = new LifecycleSocket({
     api,
-    session: "support",
+    connection: "support",
     WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
     setTimeout: t.setTimeout,
     clearTimeout: t.clearTimeout,
@@ -40,7 +40,7 @@ describe("LifecycleSocket authentication", () => {
     expect(h.socket.sendCandidate("c", "conn-0001", { candidate: "x" })).toBe(
       false,
     );
-    ws.text({ type: "ready", session: "support", participant: "client:e1" });
+    ws.text({ type: "ready", connection: "support", participant: "client:e1" });
     await connecting;
     expect(states).toEqual([true]);
     expect(h.socket.connected).toBe(true);
@@ -114,14 +114,14 @@ describe("LifecycleSocket authentication", () => {
     h.socket.close();
   });
 
-  it("names the session and participant in the query for server credentials", async () => {
+  it("names the connection and participant in the query for server credentials", async () => {
     FakeWebSocket.instances = [];
     const api = fakeApi();
     api.token.mockResolvedValue({ value: "pmfa_live_key" });
     const t = timers();
     const socket = new LifecycleSocket({
       api,
-      session: "support",
+      connection: "support",
       participant: "voice-agent",
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setTimeout: t.setTimeout,
@@ -133,13 +133,13 @@ describe("LifecycleSocket authentication", () => {
     await flush();
     const ws = FakeWebSocket.instances[0]!;
     expect(ws.url).toBe(
-      "wss://api.example/voip/ws?session=support&participant=voice-agent",
+      "wss://api.example/voip/ws?connection=support&participant=voice-agent",
     );
     ws.open();
     expect(ws.texts).toEqual([{ type: "auth", token: "pmfa_live_key" }]);
     ws.text({
       type: "ready",
-      session: "support",
+      connection: "support",
       participant: "server:voice-agent",
     });
     await connecting;
@@ -343,8 +343,8 @@ describe("Customer-scoped client tokens", () => {
     const t = timers();
     const socket = new LifecycleSocket({
       api: fakeApi(),
-      session: "support",
-      clientTokenSession: "sales",
+      connection: "support",
+      clientTokenConnection: "sales",
       WebSocket: FakeWebSocket as unknown as typeof globalThis.WebSocket,
       setTimeout: t.setTimeout,
       clearTimeout: t.clearTimeout,
@@ -354,7 +354,7 @@ describe("Customer-scoped client tokens", () => {
     void socket.connect().catch(() => undefined);
     await flush();
     expect(FakeWebSocket.instances[0]!.url).toBe(
-      "wss://api.example/voip/ws?session=sales",
+      "wss://api.example/voip/ws?connection=sales",
     );
     socket.close();
   });

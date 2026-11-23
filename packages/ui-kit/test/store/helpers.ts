@@ -14,12 +14,12 @@ export const BASE_TIME = Date.parse("2026-09-01T10:00:00.000Z");
 export function event(
   type: string,
   payload: unknown,
-  options: { id?: string; at?: number; session?: string } = {},
+  options: { id?: string; at?: number; connection?: string } = {},
 ): PolymorfaEvent {
   sequence += 1;
   return {
     id: options.id ?? `evt_${sequence}`,
-    session: options.session ?? "support",
+    connection: options.connection ?? "support",
     timestamp: new Date(BASE_TIME + (options.at ?? sequence)).toISOString(),
     event: type,
     payload,

@@ -1,4 +1,4 @@
-"""Run with POLYMORFA_API_KEY and POLYMORFA_SESSION from your server environment."""
+"""Run with POLYMORFA_API_KEY and POLYMORFA_CONNECTION from your server environment."""
 
 import asyncio
 import os
@@ -11,7 +11,7 @@ async def main() -> None:
         Credential("team_api_key", os.environ["POLYMORFA_API_KEY"])
     ) as client:
         response = await client.messages.send(
-            os.environ["POLYMORFA_SESSION"],
+            os.environ["POLYMORFA_CONNECTION"],
             {
                 "conversation": {"phoneNumber": os.environ["POLYMORFA_RECIPIENT"]},
                 "content": {"text": "Hello from Python"},

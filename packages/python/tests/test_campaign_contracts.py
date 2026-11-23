@@ -140,7 +140,7 @@ FLOW = {
         ],
     },
 }
-TEST = {"sessionId": ID, "to": PHONE, "variables": {"a": 0, "b": False, "c": ""}}
+TEST = {"connectionId": ID, "to": PHONE, "variables": {"a": 0, "b": False, "c": ""}}
 
 
 def route_cases():

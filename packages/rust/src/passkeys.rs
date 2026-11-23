@@ -28,7 +28,7 @@ pub struct IssuePasskeyChallenge {
 pub struct PasskeyTicket {
     pub version: u8,
     pub ticket: String,
-    pub session: String,
+    pub connection: String,
     pub rp_id: String,
     pub challenge_b64_url: String,
     pub user_verification: String,
@@ -64,7 +64,7 @@ pub struct SubmitPasskeyAssertion {
 pub struct PasskeyAssertionResult {
     pub ok: bool,
     pub ticket: String,
-    pub session: String,
+    pub connection: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -103,12 +103,12 @@ fn text(s: &str, max: usize) -> bool {
     !s.is_empty() && s.encode_utf16().count() <= max
 }
 impl Passkeys<'_> {
-    fn path(&self, session: &str) -> Result<String> {
+    fn path(&self, connection: &str) -> Result<String> {
         self.0.server()?;
-        if session.is_empty() {
-            return Err(invalid("Provide a Number ID."));
+        if connection.is_empty() {
+            return Err(invalid("Provide a Connection ID."));
         }
-        Ok(format!("/messaging/{}/passkey", encode(session)))
+        Ok(format!("/messaging/{}/passkey", encode(connection)))
     }
     async fn write<T: serde::de::DeserializeOwned, B: Serialize + ?Sized>(
         &self,
@@ -127,11 +127,11 @@ impl Passkeys<'_> {
     }
     pub async fn issue_challenge(
         &self,
-        session: &str,
+        connection: &str,
         body: &IssuePasskeyChallenge,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PasskeyTicket>>> {
-        let path = self.path(session)?;
+        let path = self.path(connection)?;
         if body
             .challenge_b64_url
             .as_ref()
@@ -148,11 +148,11 @@ impl Passkeys<'_> {
     }
     pub async fn get_challenge(
         &self,
-        session: &str,
+        connection: &str,
         ticket: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PasskeyTicket>>> {
-        let path = self.path(session)?;
+        let path = self.path(connection)?;
         if ticket.is_empty() {
             return Err(invalid("Provide a ticket."));
         }
@@ -168,11 +168,11 @@ impl Passkeys<'_> {
     }
     pub async fn submit_assertion(
         &self,
-        session: &str,
+        connection: &str,
         body: &SubmitPasskeyAssertion,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PasskeyAssertionResult>>> {
-        let path = self.path(session)?;
+        let path = self.path(connection)?;
         let a = &body.assertion;
         let r = &a.response;
         if body.ticket_id.is_empty()
@@ -191,13 +191,13 @@ impl Passkeys<'_> {
     }
     pub async fn get_confirmation(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &(self.path(session)? + "/confirmation"),
+                &(self.path(connection)? + "/confirmation"),
                 &[],
                 None,
                 options,
@@ -206,11 +206,11 @@ impl Passkeys<'_> {
     }
     pub async fn confirm(
         &self,
-        session: &str,
+        connection: &str,
         body: &ConfirmPasskey,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> {
-        let path = self.path(session)?;
+        let path = self.path(connection)?;
         if body.ticket_id.is_empty()
             || body.code.as_ref().is_some_and(|s| {
                 s.len() != 9

@@ -12,19 +12,19 @@ from urllib.parse import unquote
 
 from . import campaign_contract_models as M
 from . import campaign_contract_validation as V
+from . import connection_delivery_validation as SD
 from . import developer_models as D
-from . import session_delivery_validation as SD
 from .bansafe import (
+    ConnectionSafeMode,
     ProjectHealthPolicy,
     ProjectInsuranceEvidence,
     ProjectSafeMode,
     ProjectWarmupPlan,
-    SessionSafeMode,
+    UpdateConnectionSafeMode,
     UpdateProjectHealthPolicy,
     UpdateProjectInsuranceEvidence,
     UpdateProjectSafeMode,
     UpdateProjectWarmupPlan,
-    UpdateSessionSafeMode,
 )
 from .campaign_contract_resources import custody_request
 from .campaign_contract_response import checked
@@ -33,28 +33,28 @@ from .events import EventStream, StreamGap
 from .indexed_events import IndexedEventPage, validate_after_offset
 from .messaging import O, Resource, segment
 from .models import (
+    Connection,
+    ConnectionRemoved,
+    ConnectionStarting,
+    ConnectionStopping,
+    ConnectionUpdate,
     DataEnvelope,
     Envelope,
-    PlatformSession,
-    Session,
-    SessionRemoved,
-    SessionStarting,
-    SessionStopping,
-    SessionUpdate,
+    PlatformConnection,
 )
 from .platform_core import (
     BatchRemoved,
     BatchStopped,
+    ConnectionBatch,
+    ConnectionCapabilities,
+    ConnectionTierChange,
     CreatedProject,
     CreateProject,
     HybridMergeCandidate,
-    NumberTierChange,
     ProductionEnrollment,
     ProductionEnrollmentCommand,
     ProductionEnrollmentResult,
     ProjectWithStats,
-    SessionBatch,
-    SessionCapabilities,
     TierConfirmation,
     TierQuoteRequest,
 )
@@ -303,117 +303,122 @@ class Projects(Resource):
         )
 
 
-class PlatformSessions(Resource):
+class PlatformConnections(Resource):
     async def list(
         self, *, project_id: str | None = None, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[builtins.list[PlatformSession]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[PlatformConnection]]]:
         return await self._request(
-            "GET", "/platform/sessions", query={"projectId": project_id}, options=options
+            "GET", "/platform/connections", query={"projectId": project_id}, options=options
         )
 
     async def retrieve(
-        self, session_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[Session]]:
+        self, connection_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[Connection]]:
         return await self._request(
-            "GET", f"/platform/sessions/{segment(session_id)}", options=options
+            "GET", f"/platform/connections/{segment(connection_id)}", options=options
         )
 
     async def update(
-        self, session_id: str, body: SessionUpdate, *, options: RequestOptions = O
-    ) -> ApiResponse[Envelope[Session]]:
+        self, connection_id: str, body: ConnectionUpdate, *, options: RequestOptions = O
+    ) -> ApiResponse[Envelope[Connection]]:
         return await self._request(
             "PUT",
-            f"/platform/sessions/{segment(session_id)}",
+            f"/platform/connections/{segment(connection_id)}",
             body=V.capture(body),
             options=SD.options(options, SD.configuration_intent(body)),
         )
 
     async def start(
-        self, session_id: str, *, project_id: str | None = None, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionStarting]]:
+        self, connection_id: str, *, project_id: str | None = None, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionStarting]]:
         return await self._request(
             "POST",
-            f"/platform/sessions/{segment(session_id)}/start",
+            f"/platform/connections/{segment(connection_id)}/start",
             body={} if project_id is None else {"projectId": project_id},
             options=options,
         )
 
     async def stop(
-        self, session_id: str, *, project_id: str | None = None, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionStopping]]:
+        self, connection_id: str, *, project_id: str | None = None, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionStopping]]:
         return await self._request(
             "POST",
-            f"/platform/sessions/{segment(session_id)}/stop",
+            f"/platform/connections/{segment(connection_id)}/stop",
             body={} if project_id is None else {"projectId": project_id},
             options=options,
         )
 
     async def stop_many(
-        self, body: SessionBatch, *, options: RequestOptions = O
+        self, body: ConnectionBatch, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[BatchStopped]]:
-        return await self._request("POST", "/platform/sessions/stop", body=body, options=options)
+        return await self._request("POST", "/platform/connections/stop", body=body, options=options)
 
     async def delete(
-        self, session_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionRemoved]]:
+        self, connection_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionRemoved]]:
         return await self._request(
-            "DELETE", f"/platform/sessions/{segment(session_id)}", options=options
+            "DELETE", f"/platform/connections/{segment(connection_id)}", options=options
         )
 
     async def delete_many(
-        self, body: SessionBatch, *, options: RequestOptions = O
+        self, body: ConnectionBatch, *, options: RequestOptions = O
     ) -> ApiResponse[DataEnvelope[BatchRemoved]]:
-        return await self._request("POST", "/platform/sessions/delete", body=body, options=options)
+        return await self._request(
+            "POST", "/platform/connections/delete", body=body, options=options
+        )
 
     async def quote_tier_change(
-        self, session_id: str, body: TierQuoteRequest, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[NumberTierChange]]:
+        self, connection_id: str, body: TierQuoteRequest, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionTierChange]]:
         if "hybridResolution" in body and "hybridMerge" in body:
             raise ValidationError("Provide hybridResolution or hybridMerge, not both.")
         return await self._request(
             "POST",
-            f"/platform/sessions/{segment(session_id)}/tier-quotes",
+            f"/platform/connections/{segment(connection_id)}/tier-quotes",
             body=body,
             options=options,
         )
 
     async def retrieve_tier_change(
-        self, session_id: str, quote_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[NumberTierChange]]:
+        self, connection_id: str, quote_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionTierChange]]:
         return await self._request(
             "GET",
-            f"/platform/sessions/{segment(session_id)}/tier-quotes/{segment(quote_id)}",
+            f"/platform/connections/{segment(connection_id)}/tier-quotes/{segment(quote_id)}",
             options=options,
         )
 
     async def set_tier_override(
-        self, session_id: str, body: TierConfirmation, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[NumberTierChange]]:
+        self, connection_id: str, body: TierConfirmation, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionTierChange]]:
         if not isinstance(body.get("quoteId"), str) or not body["quoteId"].strip():
             raise ValidationError("Review a quote before confirming its quoteId.")
         return await self._request(
-            "PATCH", f"/platform/sessions/{segment(session_id)}", body=body, options=options
+            "PATCH", f"/platform/connections/{segment(connection_id)}", body=body, options=options
         )
 
     async def get_capabilities(
-        self, session_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionCapabilities]]:
+        self, connection_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionCapabilities]]:
         return await self._request(
-            "GET", f"/platform/sessions/{segment(session_id)}/capabilities", options=options
+            "GET", f"/platform/connections/{segment(connection_id)}/capabilities", options=options
         )
 
     async def get_safe_mode(
-        self, session_id: str, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionSafeMode]]:
+        self, connection_id: str, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionSafeMode]]:
         return await self._request(
-            "GET", f"/platform/sessions/{segment(session_id)}/safe-mode", options=options
+            "GET", f"/platform/connections/{segment(connection_id)}/safe-mode", options=options
         )
 
     async def update_safe_mode(
-        self, session_id: str, body: UpdateSessionSafeMode, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[SessionSafeMode]]:
+        self, connection_id: str, body: UpdateConnectionSafeMode, *, options: RequestOptions = O
+    ) -> ApiResponse[DataEnvelope[ConnectionSafeMode]]:
         return await self._request(
-            "PUT", f"/platform/sessions/{segment(session_id)}/safe-mode", body=body, options=options
+            "PUT",
+            f"/platform/connections/{segment(connection_id)}/safe-mode",
+            body=body,
+            options=options,
         )
 
 
@@ -586,8 +591,8 @@ class PlatformWebhooks(PlatformResource):
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[D.ReplayReceipt]:
-        if self._prefix == "/platform" and body and ("body" in body or "sessionId" in body):
-            raise ValidationError("Team tests do not accept body or sessionId.")
+        if self._prefix == "/platform" and body and ("body" in body or "connectionId" in body):
+            raise ValidationError("Team tests do not accept body or connectionId.")
         return await self._unwrapped(
             "POST",
             self._prefix + "/webhooks/" + segment(webhook_id) + "/tests",

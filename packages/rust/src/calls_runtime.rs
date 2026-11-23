@@ -125,7 +125,7 @@ pub enum CallsEvent {
 }
 #[derive(Clone)]
 pub struct CallsClientOptions {
-    pub session: String,
+    pub connection: String,
     pub participant: Option<String>,
     pub client: ClientOptions,
     pub reconnect_attempts: u32,
@@ -138,9 +138,9 @@ pub struct CallsClientOptions {
     pub diagnostics: bool,
 }
 impl CallsClientOptions {
-    pub fn new(session: impl Into<String>) -> Self {
+    pub fn new(connection: impl Into<String>) -> Self {
         Self {
-            session: session.into(),
+            connection: connection.into(),
             participant: None,
             client: ClientOptions::default(),
             reconnect_attempts: 3,
@@ -280,7 +280,7 @@ impl ClientInner {
 }
 impl CallsClient {
     pub fn new(tokens: CallsTokenSource, options: CallsClientOptions) -> Result<Self> {
-        if options.session.trim().is_empty()
+        if options.connection.trim().is_empty()
             || options
                 .participant
                 .as_deref()
@@ -420,7 +420,7 @@ impl CallsClient {
             .calls()
             .place(
                 &PlaceCallRequest {
-                    session: Some(self.0.options.session.clone()),
+                    connection: Some(self.0.options.connection.clone()),
                     to: Some(to.clone()),
                     video: Some(options.video),
                     participants,
@@ -1153,7 +1153,7 @@ async fn lifecycle_worker(
             let socket = api
                 .calls()
                 .open_lifecycle(
-                    &inner.options.session,
+                    &inner.options.connection,
                     inner.server_participant(&token),
                     cancel.clone(),
                 )

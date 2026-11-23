@@ -90,7 +90,7 @@ export class ContactDirectoryController extends ObservableController<ContactDire
     return this.#source;
   }
 
-  /** Replace the source, for example after the grant's session changed. */
+  /** Replace the source, for example after the grant's connection changed. */
   setSource(source: ContactDirectorySource): void {
     this.assertActive();
     this.#source = source;
@@ -390,9 +390,9 @@ export async function withTokenRetry<T>(
  */
 export function createApiContactSource(
   client: PolymorfaClient,
-  options: { readonly session?: string } = {},
+  options: { readonly connection?: string } = {},
 ): ContactDirectorySource {
-  const messaging = () => client.messaging(options.session);
+  const messaging = () => client.messaging(options.connection);
   const signalOf = (signal: AbortSignal | undefined) =>
     signal === undefined ? {} : { signal };
   return {

@@ -29,7 +29,7 @@ public sealed record ProjectTemplate(string Id, string Name, string Category, st
 public sealed record CreateProjectTemplateRequest(string Name, TemplateDefinition Definition, IReadOnlyDictionary<string, string>? SampleValues = null);
 public sealed record UpdateProjectTemplateRequest(string? Name = null, string? Status = null, TemplateDefinition? Definition = null, IReadOnlyDictionary<string, string>? SampleValues = null);
 public sealed record PreviewProjectTemplateRequest(IReadOnlyDictionary<string, string>? Values = null, TemplateSurface? Surface = null);
-public sealed record SubmitProjectTemplateRequest(string Session);
+public sealed record SubmitProjectTemplateRequest(string Connection);
 public sealed class Templates : Resource
 {
     internal Templates(HttpTransport http) : base(http) { }
@@ -43,21 +43,21 @@ public sealed class Templates : Resource
     public Task<ApiResponse<SuccessEnvelope<JsonElement>>> PreviewAsync(string slug, string id, PreviewProjectTemplateRequest? body = null, RequestOptions? options = null) => Post<SuccessEnvelope<JsonElement>>(Path(slug, id) + "/preview", body ?? new(), options);
     public Task<ApiResponse<SuccessEnvelope<JsonElement>>> SubmitAsync(string slug, string id, SubmitProjectTemplateRequest body, RequestOptions? options = null) => Post<SuccessEnvelope<JsonElement>>(Path(slug, id) + "/submit", body, (options ?? new()) with { MaxNetworkRetries = 0 });
 }
-public sealed record CloudTemplate(string Id, string TenantId, string Session, string WabaId, string Name, string Language, TemplateCategory Category, string Status, IReadOnlyList<JsonElement> Components, string CreatedAt, string UpdatedAt, string? MetaTemplateId = null, string? RejectionReason = null, string? QualityScore = null);
+public sealed record CloudTemplate(string Id, string TenantId, string Connection, string WabaId, string Name, string Language, TemplateCategory Category, string Status, IReadOnlyList<JsonElement> Components, string CreatedAt, string UpdatedAt, string? MetaTemplateId = null, string? RejectionReason = null, string? QualityScore = null);
 public sealed record CreateCloudTemplateRequest(string Name, string Language, TemplateCategory Category, IReadOnlyList<JsonElement> Components);
 public sealed record EditCloudTemplateRequest(IReadOnlyList<JsonElement> Components);
 public sealed record EditCloudTemplateResult(bool Accepted, string Name, string Language);
 public sealed class CloudTemplates : Resource
 {
     internal CloudTemplates(HttpTransport http) : base(http) { }
-    private static string Path(string session) => "/messaging/" + E(session) + "/templates";
-    private static string Path(string session, string name) => Path(session) + "/" + E(name);
+    private static string Path(string connection) => "/messaging/" + E(connection) + "/templates";
+    private static string Path(string connection, string name) => Path(connection) + "/" + E(name);
     private Task<ApiResponse<T>> Request<T>(HttpMethod method, string path, object? body, string? language, RequestOptions? options) { Http.Credential.RequireServer(); options ??= new(); if (method != HttpMethod.Get) options = options with { MaxNetworkRetries = 0 }; return Http.RequestAsync<T>(method, path, body, options, Query(new { language })); }
-    public Task<ApiResponse<SuccessEnvelope<IReadOnlyList<CloudTemplate>>>> ListAsync(string session, RequestOptions? options = null) => Request<SuccessEnvelope<IReadOnlyList<CloudTemplate>>>(HttpMethod.Get, Path(session), null, null, options);
-    public Task<ApiResponse<SuccessEnvelope<CloudTemplate>>> RetrieveAsync(string session, string name, string? language = null, RequestOptions? options = null) => Request<SuccessEnvelope<CloudTemplate>>(HttpMethod.Get, Path(session, name), null, language, options);
-    public Task<ApiResponse<SuccessEnvelope<CloudTemplate>>> CreateAsync(string session, CreateCloudTemplateRequest body, RequestOptions? options = null) => Request<SuccessEnvelope<CloudTemplate>>(HttpMethod.Post, Path(session), body, null, options);
-    public Task<ApiResponse<SuccessEnvelope<EditCloudTemplateResult>>> UpdateAsync(string session, string name, EditCloudTemplateRequest body, string? language = null, RequestOptions? options = null) => Request<SuccessEnvelope<EditCloudTemplateResult>>(HttpMethod.Patch, Path(session, name), body, language, options);
-    public Task<ApiResponse<SuccessResponse>> DeleteAsync(string session, string name, RequestOptions? options = null) => Request<SuccessResponse>(HttpMethod.Delete, Path(session, name), null, null, options);
+    public Task<ApiResponse<SuccessEnvelope<IReadOnlyList<CloudTemplate>>>> ListAsync(string connection, RequestOptions? options = null) => Request<SuccessEnvelope<IReadOnlyList<CloudTemplate>>>(HttpMethod.Get, Path(connection), null, null, options);
+    public Task<ApiResponse<SuccessEnvelope<CloudTemplate>>> RetrieveAsync(string connection, string name, string? language = null, RequestOptions? options = null) => Request<SuccessEnvelope<CloudTemplate>>(HttpMethod.Get, Path(connection, name), null, language, options);
+    public Task<ApiResponse<SuccessEnvelope<CloudTemplate>>> CreateAsync(string connection, CreateCloudTemplateRequest body, RequestOptions? options = null) => Request<SuccessEnvelope<CloudTemplate>>(HttpMethod.Post, Path(connection), body, null, options);
+    public Task<ApiResponse<SuccessEnvelope<EditCloudTemplateResult>>> UpdateAsync(string connection, string name, EditCloudTemplateRequest body, string? language = null, RequestOptions? options = null) => Request<SuccessEnvelope<EditCloudTemplateResult>>(HttpMethod.Patch, Path(connection, name), body, language, options);
+    public Task<ApiResponse<SuccessResponse>> DeleteAsync(string connection, string name, RequestOptions? options = null) => Request<SuccessResponse>(HttpMethod.Delete, Path(connection, name), null, null, options);
 }
 
 internal sealed class TemplateHeaderConverter : JsonConverter<TemplateHeader>

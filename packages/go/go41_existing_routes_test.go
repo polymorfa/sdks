@@ -122,7 +122,7 @@ func TestGo41AnalyticsCompletenessRoutes(t *testing.T) {
 					t.Error("analytics route")
 				}
 				w.Header().Set("Content-Type", "application/json")
-				io.WriteString(w, `{"data":{"enabled":true,"period":{"start":0,"end":1},"requestVitals":{"requests":0,"failures":0,"errorRate":null},"summary":{`+metrics+`},"numbers":[],"series":[],"callSeries":[]}}`)
+				io.WriteString(w, `{"data":{"enabled":true,"period":{"start":0,"end":1},"requestVitals":{"requests":0,"failures":0,"errorRate":null},"summary":{`+metrics+`},"connections":[],"series":[],"callSeries":[]}}`)
 			})
 			a := o.Analytics()
 			if project {

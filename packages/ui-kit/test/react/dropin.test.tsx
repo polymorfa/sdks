@@ -26,7 +26,7 @@ import {
 const conversations: InboxConversation[] = [
   {
     id: "chat_1",
-    session: "support",
+    connection: "support",
     name: "Ada Lovelace",
     phoneNumber: "+15550001",
     lastMessage: {
@@ -39,7 +39,7 @@ const conversations: InboxConversation[] = [
   },
   {
     id: "chat_2",
-    session: "support",
+    connection: "support",
     name: "Grace Hopper",
     lastMessage: { text: "Thanks!", createdAt: 1_000, direction: "outbound" },
     lastActivity: 1_000,
@@ -124,7 +124,7 @@ function clientWith(allow: readonly PolymorfaPermission[]) {
       value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.now() + 600_000,
-      grant: { session: "support", conversations: "all", allow },
+      grant: { connection: "support", conversations: "all", allow },
     });
   });
   return { client: new PolymorfaClient({ fetch }), fetch };
@@ -514,7 +514,7 @@ describe("<PolymorfaProvider tokenEndpoint>", () => {
         audience: "browser",
         expiresAt: Date.now() + 600_000,
         grant: {
-          session: "support",
+          connection: "support",
           conversations: "all",
           allow: ["send_message"],
         },

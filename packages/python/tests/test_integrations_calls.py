@@ -31,7 +31,7 @@ from polymorfa.calls import (
 )
 from polymorfa.integrations import django_webhook_event, fastapi_webhook_event
 
-RAW = b'{"id":"event_1", "session":"support","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
+RAW = b'{"id":"event_1", "connection":"support","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
 SIG = hmac.new(b"secret", RAW, hashlib.sha256).hexdigest()
 
 

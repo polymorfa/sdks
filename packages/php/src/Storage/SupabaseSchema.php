@@ -18,9 +18,9 @@ final class SupabaseSchema
         $out = SqlSchema::statements('postgres', $tablePrefix, $schema);
         array_push(
             $out,
-            "INSERT INTO $meta (id,version) VALUES ('storage',2) ON CONFLICT(id) DO NOTHING",
-            "DO \$\$ BEGIN IF (SELECT version FROM $meta WHERE id='storage') <> 2 THEN RAISE EXCEPTION 'Storage schema2 migration required'; END IF; END \$\$",
-            "CREATE TABLE IF NOT EXISTS $members (session_id text NOT NULL,subject uuid NOT NULL,PRIMARY KEY(session_id,subject))",
+            "INSERT INTO $meta (id,version) VALUES ('storage',3) ON CONFLICT(id) DO NOTHING",
+            "DO \$\$ BEGIN IF (SELECT version FROM $meta WHERE id='storage') <> 3 THEN RAISE EXCEPTION 'Storage schema3 migration required'; END IF; END \$\$",
+            "CREATE TABLE IF NOT EXISTS $members (connection_id text NOT NULL,subject uuid NOT NULL,PRIMARY KEY(connection_id,subject))",
             "ALTER TABLE $members ENABLE ROW LEVEL SECURITY",
             "ALTER TABLE $members FORCE ROW LEVEL SECURITY",
             "REVOKE ALL ON $members FROM PUBLIC",
@@ -41,7 +41,7 @@ final class SupabaseSchema
                 "REVOKE ALL ON $table FROM PUBLIC",
                 "GRANT SELECT ON $table TO ".$q($readerRole),
                 "GRANT SELECT,INSERT,UPDATE,DELETE ON $table TO ".$q($serverRole),
-                'CREATE POLICY '.$q($tablePrefix.$entity.'_reader')." ON $table FOR SELECT TO ".$q($readerRole)." USING(EXISTS(SELECT 1 FROM $members m WHERE m.session_id=$table.session_id AND m.subject=auth.uid()))",
+                'CREATE POLICY '.$q($tablePrefix.$entity.'_reader')." ON $table FOR SELECT TO ".$q($readerRole)." USING(EXISTS(SELECT 1 FROM $members m WHERE m.connection_id=$table.connection_id AND m.subject=auth.uid()))",
                 'CREATE POLICY '.$q($tablePrefix.$entity.'_writer')." ON $table TO ".$q($serverRole).' USING(true) WITH CHECK(true)'
             );
         }

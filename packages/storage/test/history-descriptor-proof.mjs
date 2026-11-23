@@ -5,7 +5,7 @@ export async function prove(sdk, lib, fixture, history) {
   let outcomes = 0;
   const event = (p, id = "descriptor-event") => ({
     id,
-    session: "descriptor-session",
+    connection: "descriptor-session",
     event: "history.sync",
     timestamp: "2026-10-17T00:00:00Z",
     payload: p,
@@ -35,7 +35,7 @@ export async function prove(sdk, lib, fixture, history) {
       err = x;
     }
     check(Boolean(err) === fail, "wrong failure outcome");
-    check((await s.hasEvent(e.session, e.id)) === !fail, "marker");
+    check((await s.hasEvent(e.connection, e.id)) === !fail, "marker");
     check(
       fail
         ? a.rows("history_progress").length === 0

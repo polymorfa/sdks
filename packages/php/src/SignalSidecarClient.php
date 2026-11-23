@@ -12,7 +12,7 @@ use Psr\Http\Message\{ResponseInterface,StreamInterface};
 /** Customer application HTTP boundary; never imports or owns Signal core keys. */
 final class SignalSidecarClient implements \JsonSerializable
 {
-    public const SOURCE_COMMIT = '8aa191ef0d4c318229c91bcdf474bf2d79dac47c';
+    public const SOURCE_COMMIT = '61209057729b002a2122b898d744a8813a702fc7';
     private readonly string $baseUrl;
     private readonly ClientInterface $http;
     public function __construct(string $url, #[\SensitiveParameter] private readonly string $secret, ?ClientInterface $http = null, private readonly float $timeout = 30)
@@ -123,24 +123,24 @@ final class SignalSidecarClient implements \JsonSerializable
             SignalCodec::invalid();
         }
     }
-    public function sessions(?CancellationToken $cancellation = null): SignalSessions
+    public function connections(?CancellationToken $cancellation = null): SignalConnections
     {
-        $data = SignalCodec::object($this->request('GET', '/v1/sessions', null, true, 200, $cancellation));
+        $data = SignalCodec::object($this->request('GET', '/v1/connections', null, true, 200, $cancellation));
         $id = SignalCodec::string($data, 'node_id');
-        if ($id === '' || !isset($data['sessions']) || !is_array($data['sessions']) || !array_is_list($data['sessions'])) {
+        if ($id === '' || !isset($data['connections']) || !is_array($data['connections']) || !array_is_list($data['connections'])) {
             SignalCodec::invalid();
-        }$sessions = [];
-        foreach ($data['sessions'] as $session) {
-            if (!is_array($session) || array_is_list($session)) {
+        }$connections = [];
+        foreach ($data['connections'] as $connection) {
+            if (!is_array($connection) || array_is_list($connection)) {
                 SignalCodec::invalid();
-            }$sessions[] = SignalSessionInfo::fromWire($session);
-        }return new SignalSessions($id, $sessions);
+            }$connections[] = SignalConnectionInfo::fromWire($connection);
+        }return new SignalConnections($id, $connections);
     }
-    public function send(string $session, SignalSendRequest $body, ?CancellationToken $cancellation = null): SignalSendOutcome
+    public function send(string $connection, SignalSendRequest $body, ?CancellationToken $cancellation = null): SignalSendOutcome
     {
-        if ($session === '') {
-            throw new ConfigurationException('session');
-        }$data = SignalCodec::object($this->request('POST', '/v1/sessions/'.rawurlencode($session).'/messages', $body->toWire(), true, 200, $cancellation));
+        if ($connection === '') {
+            throw new ConfigurationException('connection');
+        }$data = SignalCodec::object($this->request('POST', '/v1/connections/'.rawurlencode($connection).'/messages', $body->toWire(), true, 200, $cancellation));
         $id = SignalCodec::string($data, 'message_id');
         if ($id === '') {
             SignalCodec::invalid();
@@ -154,9 +154,9 @@ final class SignalSidecarClient implements \JsonSerializable
         }$this->request('POST', '/v1/events/'.rawurlencode($eventId).'/ack', null, true, 204, $cancellation);
     }
     /** One connection; no Last-Event-ID, cursor, auto reconnect or auto ACK. */
-    public function events(?string $sessionId = null, ?CancellationToken $cancellation = null): SignalEventStream
+    public function events(?string $connectionId = null, ?CancellationToken $cancellation = null): SignalEventStream
     {
-        $path = '/v1/events'.($sessionId === null || $sessionId === '' ? '' : '?session_id='.rawurlencode($sessionId));
+        $path = '/v1/events'.($connectionId === null || $connectionId === '' ? '' : '?connection_id='.rawurlencode($connectionId));
         [$response] = $this->perform('GET', $path, null, true, true, $cancellation);
         if ($response->getStatusCode() !== 200) {
             $response->getBody()->close();
@@ -166,7 +166,7 @@ final class SignalSidecarClient implements \JsonSerializable
             $response->getBody()->close();
             SignalCodec::invalid();
         }
-        return new SignalEventStream($response->getBody(), $sessionId, $cancellation);
+        return new SignalEventStream($response->getBody(), $connectionId, $cancellation);
     }
     /** @return array{redacted:true} */public function __debugInfo(): array
     {

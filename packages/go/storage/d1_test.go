@@ -18,7 +18,7 @@ import (
 
 func d1Fixture(t *testing.T) map[string]any {
 	t.Helper()
-	raw, err := os.ReadFile("testdata/d1-bridge-fixtures.json")
+	raw, err := os.ReadFile("testdata/d1-bridge-fixtures.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,14 +75,14 @@ func TestD1HandshakeFailClosedAndBodyDeadline(t *testing.T) {
 					w.WriteHeader(302)
 					return
 				}
-				env := map[string]any{"contract": D1BridgeContract, "schemaVersion": 2, "authority": v["authority"], "tablePrefix": v["tablePrefix"], "data": capabilitiesData()}
+				env := map[string]any{"contract": D1BridgeContract, "schemaVersion": SchemaVersion, "authority": v["authority"], "tablePrefix": v["tablePrefix"], "data": capabilitiesData()}
 				switch mode {
 				case "authority":
 					env["authority"] = "other"
 				case "prefix":
 					env["tablePrefix"] = "other_"
 				case "schema":
-					env["schemaVersion"] = 3
+					env["schemaVersion"] = SchemaVersion + 1
 				case "capabilities":
 					env["data"].(map[string]any)["atomicCommit"] = false
 				}
@@ -134,13 +134,13 @@ func TestD1HandshakeFailClosedAndBodyDeadline(t *testing.T) {
 		})
 	}
 }
-func newFixtureRow(t *testing.T, entity, session string, values map[string]any) Row {
+func newFixtureRow(t *testing.T, entity, connection string, values map[string]any) Row {
 	t.Helper()
 	d, err := DefinitionOf(entity)
 	if err != nil {
 		t.Fatal(err)
 	}
-	row := Row{"sessionId": session, "_rev": float64(1), "_v": map[string]any{}}
+	row := Row{"connectionId": connection, "_rev": float64(1), "_v": map[string]any{}}
 	for name := range d.Fields {
 		row[name] = nil
 	}
@@ -168,8 +168,8 @@ func TestActualD1WorkerNativeConsumer(t *testing.T) {
 	if err = adapter.Setup(ctx); err != nil {
 		t.Fatal(err)
 	}
-	session := fmt.Sprintf("go-native-d1-%d", time.Now().UnixNano())
-	raw, err := os.ReadFile("testdata/conformance-fixtures.json")
+	connection := fmt.Sprintf("go-native-d1-%d", time.Now().UnixNano())
+	raw, err := os.ReadFile("testdata/conformance-fixtures.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -182,8 +182,8 @@ func TestActualD1WorkerNativeConsumer(t *testing.T) {
 	for entity, rows := range fixture.Rows {
 		expected[entity] = map[string]Row{}
 		for _, source := range rows {
-			row := newFixtureRow(t, entity, session, source)
-			row["sessionId"] = session
+			row := newFixtureRow(t, entity, connection, source)
+			row["connectionId"] = connection
 			id, _ := EncodeKey(entity, row)
 			row["_id"] = id
 			writes = append(writes, Write{Kind: "put", Entity: entity, Row: row})
@@ -212,7 +212,7 @@ func TestActualD1WorkerNativeConsumer(t *testing.T) {
 			t.Fatal("portable rows changed", entity)
 		}
 	}
-	bulk := session + "-bulk"
+	bulk := connection + "-bulk"
 	all := []Write{}
 	for i := 0; i < 2000; i++ {
 		row := newFixtureRow(t, "messages", bulk, map[string]any{"messageId": fmt.Sprintf("m%04d", i), "chatId": "bulk-chat", "timestamp": float64(i), "text": "synthetic"})
@@ -224,7 +224,7 @@ func TestActualD1WorkerNativeConsumer(t *testing.T) {
 			t.Fatal("2000-row commit", i, err, result)
 		}
 	}
-	query := Query{Index: "by_chat", Equals: map[string]string{"sessionId": bulk, "chatId": "bulk-chat"}, Limit: 700}
+	query := Query{Index: "by_chat", Equals: map[string]string{"connectionId": bulk, "chatId": "bulk-chat"}, Limit: 700}
 	total := 0
 	for {
 		rows, err := adapter.Query(ctx, "messages", query)
@@ -288,7 +288,7 @@ func TestD1ZeroValueDoesNotAdvertiseAtomicity(t *testing.T) {
 	if adapter.Capabilities().AtomicCommit {
 		t.Fatal("unverified zero-value adapter advertised atomicity")
 	}
-	_, err := adapter.Get(context.Background(), "sessions", []string{"kfixture"})
+	_, err := adapter.Get(context.Background(), "connections", []string{"kfixture"})
 	var typed *Error
 	if !errors.As(err, &typed) || typed.Code != "storage_handshake_required" {
 		t.Fatal("unverified adapter performed operation", err)
@@ -303,7 +303,7 @@ func TestD1SignedMiswiredRowAndCommitResponses(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				var data any = capabilitiesData()
 				if r.URL.Path == "/get" {
-					row := newFixtureRow(t, "sessions", "other", nil)
+					row := newFixtureRow(t, "connections", "other", nil)
 					if mode == "malformed-row" {
 						row["_rev"] = float64(0)
 					}
@@ -321,7 +321,7 @@ func TestD1SignedMiswiredRowAndCommitResponses(t *testing.T) {
 				if r.URL.Path == "/commit" {
 					data = map[string]any{"ok": false, "conflicts": []string{"foreign"}}
 				}
-				raw, _ := json.Marshal(map[string]any{"contract": D1BridgeContract, "schemaVersion": 2, "authority": fixture["authority"], "tablePrefix": fixture["tablePrefix"], "data": data})
+				raw, _ := json.Marshal(map[string]any{"contract": D1BridgeContract, "schemaVersion": SchemaVersion, "authority": fixture["authority"], "tablePrefix": fixture["tablePrefix"], "data": data})
 				nonce := r.Header.Get("Polymorfa-Storage-Nonce")
 				w.Header().Set("Polymorfa-Storage-Nonce", nonce)
 				w.Header().Set("Polymorfa-Storage-Signature", signD1(secret, nonce+".200."+string(raw)))
@@ -334,11 +334,11 @@ func TestD1SignedMiswiredRowAndCommitResponses(t *testing.T) {
 			}
 			switch mode {
 			case "foreign-get", "malformed-row":
-				_, err = adapter.Get(context.Background(), "sessions", []string{"kexpected"})
+				_, err = adapter.Get(context.Background(), "connections", []string{"kexpected"})
 			case "foreign-query", "reordered-query":
-				_, err = adapter.Query(context.Background(), "messages", Query{Index: "by_chat", Equals: map[string]string{"sessionId": "expected", "chatId": "chat"}, Limit: 10})
+				_, err = adapter.Query(context.Background(), "messages", Query{Index: "by_chat", Equals: map[string]string{"connectionId": "expected", "chatId": "chat"}, Limit: 10})
 			case "foreign-conflict":
-				_, err = adapter.Commit(context.Background(), []Write{{Kind: "put", Entity: "sessions", Row: newFixtureRow(t, "sessions", "expected", nil)}})
+				_, err = adapter.Commit(context.Background(), []Write{{Kind: "put", Entity: "connections", Row: newFixtureRow(t, "connections", "expected", nil)}})
 			}
 			var typed *Error
 			if !errors.As(err, &typed) || typed.Code != "untrusted_storage_response" {

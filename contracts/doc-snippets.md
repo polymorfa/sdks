@@ -9,7 +9,7 @@ later tooling or documentation commit does not create a self-reference.
 
 The current source includes main's separately pinned webhook phone-offline
 supplement. The baseline stays at `Polymorfa-Version: 2026-09-22`, with API source
-`f180dc1ee2bd45dbecf01702f73bdd75c664634b` (polymorfa/polymorfa#887) and the two
+`15db8b1c9d88e2ceccb58c851e731feabb659a39` (the Connection source candidate) and the two
 hashes in `specs`.
 Separately pinned supplements retain their own versions. The generator rejects
 changed source files, coverage pins and OpenAPI snapshots until the source is
@@ -25,15 +25,15 @@ reference being rendered. A newer or mismatched page uses cURL, even if its
 operation ID has the same spelling. Do not rewrite an older SDK call to fit it.
 
 Replace `{{POLYMORFA_API_KEY}}` with a credential of the explicit
-`credentialKind`. These recipes use an **team API key** and the matching
+`credentialKind`. These recipes use a **team API key** and the matching
 client principal. A project Test key does not authorize team operations.
 The docs renderer owns key selection and retrieval; this catalog never retrieves,
 stores or logs a reader's key. It must escape substituted values as string
 literals in the selected language. Plain text replacement of untrusted values is
 unsafe, particularly for PHP dollar interpolation and quote/backslash handling.
 
-Every spec path parameter appears under its exact name, such as `{{session}}`,
-`{{sessionId}}`, `{{projectId}}`, `{{operationId}}` and `{{collectionId}}`.
+Every spec path parameter appears under its exact name, such as `{{connection}}`,
+`{{connectionId}}`, `{{projectId}}`, `{{operationId}}` and `{{collectionId}}`.
 Preserve their names when consuming the artifact. Non-path request values are
 synthetic examples: replace the send recipient `+15550001111`, message IDs,
 business ID `42` and product IDs with values authorized for the intended request.
@@ -42,8 +42,8 @@ recipe. Its schemas and union branches are validated against the pinned OpenAPI.
 No optional request fields are included in this initial catalog.
 
 There are **31 operations per language**, 186 complete programs. The TypeScript
-coverage ledger contains 457 covered operations (**426 omitted**) and each
-native ledger 451 (**420 omitted**). The initial recipes cover text sends, message actions, session
+coverage ledger contains 460 covered operations (**429 omitted**) and each
+native ledger 454 (**423 omitted**). The initial recipes cover text sends, message actions, Connection
 lifecycle, business profiles/catalogs/collections and project event listing.
 The remaining operations have no verified recipe in this catalog and retain
 cURL fallback. Coverage of a method does not imply a verified documentation

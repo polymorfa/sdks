@@ -106,9 +106,9 @@ fn data(response: &ApiResponse<Value>) -> Result<&Value> {
         .filter(|v| v.is_object())
         .ok_or_else(|| invalid().with_metadata(response.metadata.clone()))
 }
-fn session_valid(session: &str) -> Result<()> {
-    if session.is_empty() {
-        Err(crate::transport::configuration("session"))
+fn connection_valid(connection: &str) -> Result<()> {
+    if connection.is_empty() {
+        Err(crate::transport::configuration("connection"))
     } else {
         Ok(())
     }
@@ -136,18 +136,18 @@ fn upload_request(kind: UploadMediaType, hash: &[u8; 32]) -> Value {
 impl WhatsAppMediaResource<'_> {
     pub async fn create_upload_grant(
         &self,
-        session: &str,
+        connection: &str,
         kind: UploadMediaType,
         hash: &[u8; 32],
         options: RequestOptions,
     ) -> Result<UploadGrant> {
         self.0.server()?;
-        session_valid(session)?;
+        connection_valid(connection)?;
         let response: ApiResponse<Value> = self
             .0
             .request(
                 reqwest::Method::POST,
-                &format!("/messaging/{}/media/upload-grants", encode(session)),
+                &format!("/messaging/{}/media/upload-grants", encode(connection)),
                 &[],
                 Some(&upload_request(kind, hash)),
                 version(options),
@@ -187,14 +187,14 @@ impl WhatsAppMediaResource<'_> {
     }
     pub async fn relay_upload(
         &self,
-        session: &str,
+        connection: &str,
         kind: UploadMediaType,
         hash: &[u8; 32],
         body: reqwest::Body,
         length: u64,
         options: RequestOptions,
     ) -> Result<UploadLocation> {
-        session_valid(session)?;
+        connection_valid(connection)?;
         let mut query = vec![
             ("type", kind.api_type().into()),
             ("fileEncSha256", URL_SAFE_NO_PAD.encode(hash)),
@@ -205,7 +205,7 @@ impl WhatsAppMediaResource<'_> {
         let response: ApiResponse<Value> = self
             .0
             .request_binary(
-                &format!("/messaging/{}/media/uploads", encode(session)),
+                &format!("/messaging/{}/media/uploads", encode(connection)),
                 &query,
                 body,
                 length,
@@ -223,12 +223,12 @@ impl WhatsAppMediaResource<'_> {
 impl HistorySyncResource<'_> {
     pub async fn request_chunk_retry(
         &self,
-        session: &str,
+        connection: &str,
         request: &HistoryChunkRetry,
         options: RequestOptions,
     ) -> Result<HistoryChunkRetryResult> {
         self.0.server()?;
-        session_valid(session)?;
+        connection_valid(connection)?;
         if request
             .chunk_message_id
             .as_ref()
@@ -240,7 +240,7 @@ impl HistorySyncResource<'_> {
             .0
             .request(
                 reqwest::Method::POST,
-                &format!("/messaging/{}/history/chunks/retry", encode(session)),
+                &format!("/messaging/{}/history/chunks/retry", encode(connection)),
                 &[],
                 Some(request),
                 version(options),
@@ -255,12 +255,12 @@ impl HistorySyncResource<'_> {
     }
     pub async fn delete_chunk(
         &self,
-        session: &str,
+        connection: &str,
         request: &HistoryChunkDelete,
         options: RequestOptions,
     ) -> Result<()> {
         self.0.server()?;
-        session_valid(session)?;
+        connection_valid(connection)?;
         let hash = &request.file_enc_sha256;
         // The producer permits nonzero unused padding bits. Validate the original alphabet and decoded length.
         let decoder = GeneralPurpose::new(
@@ -293,7 +293,7 @@ impl HistorySyncResource<'_> {
             .0
             .request::<Value, _>(
                 reqwest::Method::POST,
-                &format!("/messaging/{}/history/media/delete", encode(session)),
+                &format!("/messaging/{}/history/media/delete", encode(connection)),
                 &[],
                 Some(request),
                 version(options),

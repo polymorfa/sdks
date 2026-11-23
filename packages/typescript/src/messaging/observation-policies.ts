@@ -2,7 +2,7 @@ import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
 import type {
   UpdateProjectObservationPolicyResponse,
-  UpdateSessionObservationPolicyResponse,
+  UpdateConnectionObservationPolicyResponse,
 } from "./types.js";
 
 export class ObservationPoliciesResource {
@@ -19,13 +19,13 @@ export class ObservationPoliciesResource {
     });
   }
 
-  retrieveForSession(
-    session: string,
+  retrieveForConnection(
+    connection: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<UpdateSessionObservationPolicyResponse>> {
+  ): Promise<ApiResponse<UpdateConnectionObservationPolicyResponse>> {
     return this.transport.request({
       method: "GET",
-      path: sessionPolicyPath(session),
+      path: connectionPolicyPath(connection),
       ...options,
     });
   }
@@ -35,6 +35,6 @@ function projectPolicyPath(projectId: string): string {
   return `/messaging/projects/${encodeURIComponent(projectId)}/observation-policy`;
 }
 
-function sessionPolicyPath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/observation-policy`;
+function connectionPolicyPath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/observation-policy`;
 }

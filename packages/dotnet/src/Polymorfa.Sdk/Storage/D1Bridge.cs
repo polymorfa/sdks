@@ -13,7 +13,7 @@ public sealed record D1BridgeOptions(Uri BaseUrl, string Authority, string Table
 }
 public sealed class D1BridgeStorageAdapter : IStorageAdapter, IDisposable
 {
-    public const string SourceBridgeCommit = "9ae35e671f7f4868a67c1562422c5af9284b95c1";
+    public const string SourceBridgeCommit = "d80b581c9df122411e9149a7e39a33700a51571c";
     private const int MaximumBody = 8 * 1024 * 1024;
     private const string Contract = "polymorfa-d1-storage-v1";
     private static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.CamelCase, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, MaxDepth = 64 };
@@ -48,7 +48,7 @@ public sealed class D1BridgeStorageAdapter : IStorageAdapter, IDisposable
             using var response = await http.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, deadline.Token).ConfigureAwait(false);
             if (Header(response, "Polymorfa-Storage-Nonce") != nonce || response.Content.Headers.ContentLength > MaximumBody || response.Content.Headers.ContentType?.MediaType != "application/json") throw Untrusted(); var signature = Header(response, "Polymorfa-Storage-Signature"); await using var stream = await response.Content.ReadAsStreamAsync(deadline.Token).ConfigureAwait(false); using var target = new MemoryStream(); var buffer = new byte[16384]; while (true) { var count = await stream.ReadAsync(buffer, deadline.Token).ConfigureAwait(false); if (count == 0) break; if (target.Length + count > MaximumBody) throw Untrusted(); target.Write(buffer, 0, count); }
             var bytes = target.ToArray(); if (!Verify(Join($"{nonce}.{(int)response.StatusCode}.", bytes), signature)) throw Untrusted(); using var document = JsonDocument.Parse(bytes, new JsonDocumentOptions { MaxDepth = 64 }); var envelope = document.RootElement;
-            if (!EqualsString(envelope, "contract", Contract) || !ExactNumber(envelope, "schemaVersion", 2) || !EqualsString(envelope, "authority", authority) || !EqualsString(envelope, "tablePrefix", prefix)) throw Untrusted(); if (!response.IsSuccessStatusCode) throw new StorageProviderException("Customer storage operation was rejected."); return envelope.GetProperty("data").Deserialize<T>(Json) ?? throw Untrusted();
+            if (!EqualsString(envelope, "contract", Contract) || !ExactNumber(envelope, "schemaVersion", 3) || !EqualsString(envelope, "authority", authority) || !EqualsString(envelope, "tablePrefix", prefix)) throw Untrusted(); if (!response.IsSuccessStatusCode) throw new StorageProviderException("Customer storage operation was rejected."); return envelope.GetProperty("data").Deserialize<T>(Json) ?? throw Untrusted();
         }
         catch (OperationCanceledException) { if (cancellation.IsCancellationRequested) throw; throw new StorageProviderException("Customer storage request timed out; the commit outcome may be unknown."); }
         catch (HttpRequestException) { throw Transport(); }

@@ -39,7 +39,7 @@ async def test_native_lifecycle_query_isolation_and_incoming_answer_pcm_video_co
         if request.path == "/voip/ws":
             assert "authorization" not in request.headers
             assert dict(request.query) == (
-                {} if token == CLIENT else {"session": "support", "participant": "worker"}
+                {} if token == CLIENT else {"connection": "support", "participant": "worker"}
             )
             socket = web.WebSocketResponse(autoping=False)
             await socket.prepare(request)

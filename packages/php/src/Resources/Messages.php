@@ -23,7 +23,7 @@ final class Messages extends Resource
  * @param MessageRequest $body
  *
  * @return ApiResponse<array{success:true,data:MessageResponse}> */
-    public function send(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function send(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         [$body, $settings] = self::prepareDescriptors($body, $options ?? new RequestOptions());
         \Polymorfa\InteractiveMessageValidation::validate($body['content']);
@@ -32,7 +32,7 @@ final class Messages extends Resource
         }
         $response = $this->request(
             'POST',
-            '/messaging/' . self::segment($session) . '/messages/send',
+            '/messaging/' . self::segment($connection) . '/messages/send',
             self::hasDescriptor($body) ? \Polymorfa\ExistingContract::body($body) : $body,
             options: $settings->withIdempotencyKey()
         );
@@ -132,12 +132,12 @@ final class Messages extends Resource
  * @param array{conversation:Conversation,id:string,reaction:string,transport?:'auto'|'linked_devices'|'official_api'} $body
  *
  * @return ApiResponse<array{success:true,data:MessageReceipt}> */
-    public function react(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function react(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:true,data:MessageReceipt}> */
         return $this->request(
             'POST',
-            '/messaging/' . self::segment($session) . '/messages/react',
+            '/messaging/' . self::segment($connection) . '/messages/react',
             $body,
             options: ($options ?? new RequestOptions())->withIdempotencyKey()
         );
@@ -147,37 +147,37 @@ final class Messages extends Resource
  * @param array{conversation:Conversation,id:string} $body
  *
  * @return ApiResponse<array{success:bool,data:array{status:string}}> */
-    public function markSeen(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function markSeen(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:bool,data:array{status:string}}> */
-        return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/seen', $body, options: $options);
+        return $this->request('POST', '/messaging/' . self::segment($connection) . '/messages/seen', $body, options: $options);
     }
 
     /**
  * @param array{conversation:Conversation,id?:string,state:'typing'|'recording'|'paused'} $body
  *
  * @return ApiResponse<array{success:bool,data:array{status:string}}> */
-    public function setTyping(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function setTyping(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:bool,data:array{status:string}}> */
-        return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/typing', $body, options: $options);
+        return $this->request('POST', '/messaging/' . self::segment($connection) . '/messages/typing', $body, options: $options);
     }
 
     /**
  * @param array{conversation:Conversation,id:string,star:bool} $body
  *
  * @return ApiResponse<array{success:bool,data:array{status:'OK'}}> */
-    public function star(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function star(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         /** @var ApiResponse<array{success:bool,data:array{status:'OK'}}> */
-        return $this->request('POST', '/messaging/' . self::segment($session) . '/messages/star', $body, options: $options);
+        return $this->request('POST', '/messaging/' . self::segment($connection) . '/messages/star', $body, options: $options);
     }
 
     /** @return ApiResponse<array{success:true,data:Operation}> */
-    public function operationStatus(string $session, string $operationId, ?RequestOptions $options = null): ApiResponse
+    public function operationStatus(string $connection, string $operationId, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         /** @var ApiResponse<array{success:true,data:Operation}> */
-        return $this->request('GET', '/messaging/' . self::segment($session) . '/operations/' . self::segment($operationId), options: $options);
+        return $this->request('GET', '/messaging/' . self::segment($connection) . '/operations/' . self::segment($operationId), options: $options);
     }
 }

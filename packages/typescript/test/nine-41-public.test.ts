@@ -22,13 +22,13 @@ afterEach(async () => {
 it("checks bare testing-phone results and actual202 through native HTTP", async () => {
   const fixtures = [
     {
-      session: "s/a",
+      connection: "s/a",
       phone: "+15551234567",
       online: false,
       devices: [{ deviceId: 99 }],
     },
-    { session: "s/a", to: "+15551234568", messageId: null },
-    { session: "s/a", deviceId: 99, unlinked: true },
+    { connection: "s/a", to: "+15551234568", messageId: null },
+    { connection: "s/a", deviceId: 99, unlinked: true },
   ];
   const server = await startTestServer((_request, index) => ({
     status: index === 1 ? 202 : 200,
@@ -197,7 +197,7 @@ it("exports the projected descriptor union alongside archive/Cloud and verifies 
   for (const payload of [inline, media, archive, cloud]) {
     const raw = JSON.stringify({
       id: projectId,
-      session: "s",
+      connection: "s",
       timestamp: "2026-10-14T00:00:00Z",
       event: "history.sync",
       payload,

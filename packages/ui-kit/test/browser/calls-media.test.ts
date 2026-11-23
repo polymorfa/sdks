@@ -254,7 +254,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
     const s = signaling({
       candidates: vi.fn(async () => [candidate]),
     });
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: s,
       candidateTransport: t,
@@ -280,7 +280,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
       tick();
       expect(s["candidates"]).toHaveBeenCalledTimes(2);
     } finally {
-      await session.close({ leave: false });
+      await connection.close({ leave: false });
       expect(t.connectionListeners).toBe(0);
     }
   });
@@ -300,7 +300,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
     const now = vi.spyOn(Date, "now").mockReturnValue(1_000);
     const t = transport();
     t.setConnected(false);
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer: peerConnection(),
       signaling: s,
       candidateTransport: t,
@@ -330,7 +330,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
       expect(s["candidates"]).toHaveBeenCalledTimes(2);
     } finally {
       now.mockRestore();
-      await session.close({ leave: false });
+      await connection.close({ leave: false });
     }
   });
 
@@ -353,7 +353,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
       }) as never,
       clearInterval: vi.fn() as never,
     });
-    const session = await factory.open(
+    const connection = await factory.open(
       "call-1",
       false,
       callbacks,
@@ -365,7 +365,7 @@ describe("WebRtcMediaFactory candidate handling", () => {
     abort.abort();
     tick!();
     expect(s["candidates"]).toHaveBeenCalledTimes(1);
-    await session.close({ leave: false });
+    await connection.close({ leave: false });
     tick!();
     expect(s["candidates"]).toHaveBeenCalledTimes(1);
   });
@@ -433,11 +433,11 @@ describe("WebRtcMediaFactory candidate handling", () => {
     expect(s["offer"]).toHaveBeenCalled();
     expect(s["candidate"]).not.toHaveBeenCalled();
     releaseAnswer();
-    const session = await opening;
+    const connection = await opening;
     expect(s["candidate"]).toHaveBeenCalledWith(
       "call-1",
       { candidate: "candidate:1" },
-      session.connectionId,
+      connection.connectionId,
       expect.any(AbortSignal),
     );
   });
@@ -471,13 +471,17 @@ describe("WebRtcMediaFactory track negotiation", () => {
       .mockResolvedValueOnce(local)
       .mockResolvedValueOnce(new FakeStream([camera]));
     const peer = peerConnection();
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       getUserMedia,
     }).open("call-1", false, callbacks, new AbortController().signal);
 
-    await session.switchInput?.("video", "cam-1", new AbortController().signal);
+    await connection.switchInput?.(
+      "video",
+      "cam-1",
+      new AbortController().signal,
+    );
     // Keeping one would satisfy enableVideo's guard and strand the upgrade.
     expect(getUserMedia).toHaveBeenCalledTimes(1);
     expect(local.getVideoTracks()).toHaveLength(0);
@@ -494,14 +498,14 @@ describe("WebRtcMediaFactory track negotiation", () => {
         throw new Error("re-offer rejected");
       }),
     } as never);
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: s,
       getUserMedia,
     }).open("call-1", false, callbacks, new AbortController().signal);
 
     await expect(
-      session.restartIce?.(new AbortController().signal),
+      connection.restartIce?.(new AbortController().signal),
     ).rejects.toThrow("re-offer rejected");
     // Left in have-local-offer, every later upgrade or restart would fail on
     // the stale offer rather than on its own merits.
@@ -529,18 +533,18 @@ describe("WebRtcMediaFactory track negotiation", () => {
       )
       .mockResolvedValueOnce(new FakeStream([second]));
     const peer = peerConnection();
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       getUserMedia,
     }).open("call-1", false, callbacks, new AbortController().signal);
 
-    const a = session.switchInput?.(
+    const a = connection.switchInput?.(
       "audio",
       "mic-2",
       new AbortController().signal,
     );
-    const b = session.switchInput?.(
+    const b = connection.switchInput?.(
       "audio",
       "mic-3",
       new AbortController().signal,
@@ -567,7 +571,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
       .mockResolvedValueOnce(local)
       .mockResolvedValueOnce(new FakeStream([replacement]));
     const peer = peerConnection();
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       getUserMedia,
@@ -580,7 +584,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
     };
 
     await expect(
-      session.switchInput?.("audio", "mic-2", new AbortController().signal),
+      connection.switchInput?.("audio", "mic-2", new AbortController().signal),
     ).rejects.toThrow("swap rejected");
     expect(replacement.stop).toHaveBeenCalled();
     // The original capture is untouched, so the call keeps its microphone.
@@ -596,7 +600,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
       .mockResolvedValueOnce(new FakeStream([audio]))
       .mockResolvedValueOnce(new FakeStream([camera]));
     const peer = peerConnection();
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       getUserMedia,
@@ -604,7 +608,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
       devices: { videoInput: "cam-at-open" },
     });
 
-    await session.enableVideo?.(new AbortController().signal, {
+    await connection.enableVideo?.(new AbortController().signal, {
       videoInput: "cam-chosen-later",
     });
     expect(getUserMedia).toHaveBeenLastCalledWith({
@@ -630,14 +634,14 @@ describe("WebRtcMediaFactory track negotiation", () => {
       )
       .mockResolvedValueOnce(new FakeStream([second]));
     const peer = peerConnection();
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       getUserMedia,
     }).open("call-1", false, callbacks, new AbortController().signal);
 
-    const a = session.enableVideo?.(new AbortController().signal);
-    const b = session.enableVideo?.(new AbortController().signal);
+    const a = connection.enableVideo?.(new AbortController().signal);
+    const b = connection.enableVideo?.(new AbortController().signal);
     // The queue defers each turn by a microtask, so let the first one reach
     // its acquisition before releasing it.
     for (let i = 0; i < 5; i += 1) await Promise.resolve();
@@ -661,7 +665,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
     const audio = new FakeTrack("audio");
     const basic = signaling();
     delete (basic as { renegotiate?: unknown }).renegotiate;
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer: peerConnection(),
       signaling: basic,
       getUserMedia: vi.fn().mockResolvedValue(new FakeStream([audio])),
@@ -669,8 +673,8 @@ describe("WebRtcMediaFactory track negotiation", () => {
 
     // Present but rejecting, these satisfied the controller's optional-method
     // guards and failed into handlers that swallow the reason.
-    expect(session.enableVideo).toBeUndefined();
-    expect(session.restartIce).toBeUndefined();
+    expect(connection.enableVideo).toBeUndefined();
+    expect(connection.restartIce).toBeUndefined();
   });
 
   it("rolls the camera back when attaching it to the sender fails", async () => {
@@ -682,7 +686,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
       .mockResolvedValueOnce(local)
       .mockResolvedValueOnce(new FakeStream([camera]));
     const peer = peerConnection();
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       getUserMedia,
@@ -697,7 +701,7 @@ describe("WebRtcMediaFactory track negotiation", () => {
     };
 
     await expect(
-      session.enableVideo?.(new AbortController().signal),
+      connection.enableVideo?.(new AbortController().signal),
     ).rejects.toThrow("attach rejected");
     expect(camera.stop).toHaveBeenCalled();
     // No camera track is left behind to satisfy a later upgrade's guard.
@@ -718,14 +722,14 @@ describe("WebRtcMediaFactory track negotiation", () => {
         throw new Error("re-offer rejected");
       }),
     } as never);
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: s,
       getUserMedia,
     }).open("call-1", false, callbacks, new AbortController().signal);
 
     await expect(
-      session.enableVideo?.(new AbortController().signal),
+      connection.enableVideo?.(new AbortController().signal),
     ).rejects.toThrow("re-offer rejected");
     expect(camera.stop).toHaveBeenCalled();
     expect(local.getVideoTracks()).toHaveLength(0);
@@ -771,7 +775,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
         ? {}
         : { maxVideoSlots: options.maxVideoSlots }),
     });
-    const session = await factory.open(
+    const connection = await factory.open(
       "call-1",
       options.video === true,
       {
@@ -788,12 +792,12 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
         ? {}
         : { connectionId: options.connectionId },
     );
-    return { peer, session, signaling: s, audio, camera, getUserMedia };
+    return { peer, connection, signaling: s, audio, camera, getUserMedia };
   }
 
   it("delivers only validated social controls from the data channel and stops on close", async () => {
     const onControl = vi.fn();
-    const { peer, session } = await opened({ onControl });
+    const { peer, connection } = await opened({ onControl });
     for (const frame of [
       { type: "reaction", participantId: "123", emoji: "👍" },
       { type: "hand_state", raised: true, supported: true },
@@ -801,7 +805,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     ])
       control(peer, frame);
     expect(onControl).toHaveBeenCalledTimes(2);
-    await session.close();
+    await connection.close();
     control(peer, { type: "reaction", self: true, emoji: "👍" });
     expect(onControl).toHaveBeenCalledTimes(2);
   });
@@ -809,7 +813,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
   it("offers audio, a negotiated control channel, the camera and three receive slots", async () => {
     const {
       peer,
-      session,
+      connection,
       signaling: s,
       camera,
     } = await opened({
@@ -830,7 +834,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       ["video", "recvonly"],
     ]);
     expect(peer.transceivers[1]?.sender.track).toBe(camera);
-    expect(session.connectionId).toBe("tab-conn-0001");
+    expect(connection.connectionId).toBe("tab-conn-0001");
     expect(s["offer"]).toHaveBeenCalledWith(
       "call-1",
       { sdp: "v=0", connectionId: "tab-conn-0001" },
@@ -839,7 +843,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
   });
 
   it("keeps a camera transceiver on audio calls and honours the slot option", async () => {
-    const { peer, session } = await opened({ videoSlots: 1 });
+    const { peer, connection } = await opened({ videoSlots: 1 });
     expect(peer.transceivers.map((t) => t.direction)).toEqual([
       "sendrecv",
       "sendrecv",
@@ -847,25 +851,25 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     ]);
     expect(peer.transceivers[1]?.sender.track).toBeNull();
     // A generated connection id follows the contract.
-    expect(session.connectionId).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
+    expect(connection.connectionId).toMatch(/^[A-Za-z0-9_-]{8,64}$/);
   });
 
   it("sends candidates with the connection id over REST", async () => {
-    const { peer, signaling: s, session } = await opened();
+    const { peer, signaling: s, connection } = await opened();
     peer.onicecandidate?.({
       candidate: { toJSON: () => ({ candidate: "candidate:7", sdpMid: "0" }) },
     } as unknown as RTCPeerConnectionIceEvent);
     expect(s["candidate"]).toHaveBeenCalledWith(
       "call-1",
       { candidate: "candidate:7", sdpMid: "0" },
-      session.connectionId,
+      connection.connectionId,
       expect.any(AbortSignal),
     );
   });
 
   it("maps video_source and video_source_removed to per-participant streams", async () => {
     const seen: (readonly RemoteVideo[])[] = [];
-    const { peer, session, getUserMedia } = await opened({
+    const { peer, connection, getUserMedia } = await opened({
       onRemoteVideos: (videos) => seen.push(videos),
     });
     const participant = {
@@ -897,7 +901,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
     });
     control(peer, { type: "video_source", source: 6, mid: "3" });
     expect(seen).toHaveLength(2);
-    const videos = session.remoteVideos ?? [];
+    const videos = connection.remoteVideos ?? [];
     expect(videos.map((v) => [v.key, v.source, v.mid])).toEqual([
       ["participant:123", 4, "1"],
       ["connection:peer-conn-1", 9, "2"],
@@ -919,7 +923,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       participant,
       connectionParticipant: "client:x",
     });
-    expect(session.remoteVideos).toHaveLength(2);
+    expect(connection.remoteVideos).toHaveLength(2);
     // Each source has its own stream carrying its transceiver's track.
     expect((videos[1]?.stream as unknown as FakeStream).getTracks()).toEqual([
       peer.transceivers[2]?.receiver.track,
@@ -927,9 +931,9 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
 
     // A removal for the wrong mid is ignored; the right one removes the tile.
     control(peer, { type: "video_source_removed", source: 9, mid: "1" });
-    expect(session.remoteVideos).toHaveLength(2);
+    expect(connection.remoteVideos).toHaveLength(2);
     control(peer, { type: "video_source_removed", source: 9, mid: "2" });
-    expect(session.remoteVideos?.map((v) => v.source)).toEqual([4]);
+    expect(connection.remoteVideos?.map((v) => v.source)).toEqual([4]);
 
     // A new source on a reused slot replaces the old one.
     control(peer, {
@@ -938,7 +942,7 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
       mid: "1",
       connectionId: "peer-conn-3",
     });
-    expect(session.remoteVideos?.map((v) => v.key)).toEqual([
+    expect(connection.remoteVideos?.map((v) => v.key)).toEqual([
       "connection:peer-conn-3",
     ]);
   });
@@ -1026,16 +1030,16 @@ describe("WebRtcMediaFactory transceivers and video sources", () => {
 
   it("leaves the connection on close unless told not to", async () => {
     const first = await opened();
-    await first.session.close();
+    await first.connection.close();
     expect(first.signaling["leave"]).toHaveBeenCalledWith(
       "call-1",
-      first.session.connectionId,
+      first.connection.connectionId,
     );
     expect(first.signaling["end"]).not.toHaveBeenCalled();
     expect(first.peer.close).toHaveBeenCalled();
 
     const second = await opened();
-    await second.session.close({ leave: false });
+    await second.connection.close({ leave: false });
     expect(second.signaling["leave"]).not.toHaveBeenCalled();
     expect(second.signaling["end"]).not.toHaveBeenCalled();
   });
@@ -1046,7 +1050,7 @@ describe("connection media control", () => {
     const peer = peerConnection();
     const failure = vi.fn();
     const video = new FakeTrack("video");
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       stream: new FakeStream([new FakeTrack("audio"), video]),
@@ -1068,19 +1072,19 @@ describe("connection media control", () => {
         code: "media_control_unknown",
       });
     });
-    session.setMuted({ audio: true });
+    connection.setMuted({ audio: true });
     await vi.waitFor(() => expect(failure).toHaveBeenCalled());
     expect(video.enabled).toBe(true);
     expect(
       JSON.parse(peer.channels[0]!.send.mock.calls.at(-1)![0] as string),
     ).not.toHaveProperty("videoEnabled");
-    await session.close();
+    await connection.close();
   });
   it("sends a microphone state change and preserves remote reception", async () => {
     const peer = peerConnection();
     const muted = vi.fn();
     const local = new FakeStream([new FakeTrack("audio")]);
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       stream: local,
@@ -1090,7 +1094,7 @@ describe("connection media control", () => {
       { ...callbacks, onRemoteMute: muted },
       new AbortController().signal,
     );
-    session.setMuted({ audio: true });
+    connection.setMuted({ audio: true });
     await Promise.resolve();
     expect(
       JSON.parse(peer.channels[0]!.send.mock.calls[0]![0] as string),
@@ -1103,13 +1107,13 @@ describe("connection media control", () => {
     control(peer, { type: "remote_media", audioMuted: null });
     expect(muted).toHaveBeenLastCalledWith(null);
     expect(local.getVideoTracks()).toHaveLength(0);
-    await session.close();
+    await connection.close();
   });
   it("reports a refused publisher and switches off local capture", async () => {
     const peer = peerConnection();
     const failure = vi.fn();
     const video = new FakeTrack("video");
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       stream: new FakeStream([new FakeTrack("audio"), video]),
@@ -1127,19 +1131,19 @@ describe("connection media control", () => {
         code: "video_publisher_busy",
       });
     });
-    session.setMuted({ video: false });
+    connection.setMuted({ video: false });
     for (let i = 0; i < 8; i++) await Promise.resolve();
     expect(video.enabled).toBe(false);
     expect(failure).toHaveBeenCalledWith(
       expect.objectContaining({ code: "video_publisher_busy" }),
     );
-    await session.close();
+    await connection.close();
   });
   it("keeps the latest unmute after an earlier media-state command fails", async () => {
     const peer = peerConnection();
     const failure = vi.fn();
     const video = new FakeTrack("video");
-    const session = await factoryFor({
+    const connection = await factoryFor({
       peer,
       signaling: signaling(),
       stream: new FakeStream([new FakeTrack("audio"), video]),
@@ -1152,8 +1156,8 @@ describe("connection media control", () => {
     const channel = peer.channels[0]!;
     channel.send.mockImplementation(() => undefined);
 
-    session.setMuted({ video: true });
-    session.setMuted({ video: false });
+    connection.setMuted({ video: true });
+    connection.setMuted({ video: false });
     await vi.waitFor(() => expect(channel.send).toHaveBeenCalledTimes(1));
     const first = JSON.parse(channel.send.mock.calls[0]![0] as string) as {
       requestId: string;
@@ -1179,8 +1183,8 @@ describe("connection media control", () => {
     });
     await vi.waitFor(() => expect(failure).toHaveBeenCalledTimes(1));
     expect(video.enabled).toBe(true);
-    expect(session.videoEnabled()).toBe(true);
-    await session.close();
+    expect(connection.videoEnabled()).toBe(true);
+    await connection.close();
   });
 });
 
@@ -1205,14 +1209,14 @@ describe("display capture on the owned outgoing video stream", () => {
       setInterval: (() => 0) as never,
       clearInterval: (() => undefined) as never,
     });
-    const session = await factory.open(
+    const connection = await factory.open(
       "call-screen",
       camera !== undefined,
       { ...callbacks, onScreenSharing: sharing },
       new AbortController().signal,
     );
     return {
-      session,
+      connection,
       display,
       mic,
       local,
@@ -1228,14 +1232,16 @@ describe("display capture on the owned outgoing video stream", () => {
       const camera = new FakeTrack("video");
       camera.enabled = enabled;
       const f = await setup(camera);
-      const start = f.session.startScreenShare!(new AbortController().signal);
+      const start = f.connection.startScreenShare!(
+        new AbortController().signal,
+      );
       // Picker runs synchronously, preserving transient user activation.
       expect(f.getDisplayMedia).toHaveBeenCalledWith({
         video: true,
         audio: false,
       });
       await start;
-      expect(f.session.screenSharing).toBe(true);
+      expect(f.connection.screenSharing).toBe(true);
       expect(f.peer.transceivers[1]!.sender.track).toBe(f.display);
       expect(camera.enabled).toBe(false);
       expect(f.local.getVideoTracks()).toEqual([f.display]);
@@ -1248,13 +1254,13 @@ describe("display capture on the owned outgoing video stream", () => {
       expect(f.local.getVideoTracks()).toEqual([camera]);
       expect(f.getUserMedia).toHaveBeenCalledTimes(1);
       expect(f.display.stop).toHaveBeenCalled();
-      await f.session.close();
+      await f.connection.close();
     },
   );
   it("returns to audio-only without opening the camera", async () => {
     const f = await setup();
-    await f.session.startScreenShare!(new AbortController().signal);
-    await f.session.stopScreenShare!();
+    await f.connection.startScreenShare!(new AbortController().signal);
+    await f.connection.stopScreenShare!();
     expect(f.peer.transceivers[1]!.sender.track).toBeNull();
     expect(f.local.getVideoTracks()).toHaveLength(0);
     expect(f.getUserMedia).toHaveBeenCalledTimes(1);
@@ -1265,11 +1271,11 @@ describe("display capture on the owned outgoing video stream", () => {
       expect.objectContaining({ videoEnabled: true, screenSharing: true }),
       expect.objectContaining({ videoEnabled: false, screenSharing: false }),
     ]);
-    await f.session.close();
+    await f.connection.close();
   });
   it("preserves display publishing on a refused microphone-only update", async () => {
     const f = await setup();
-    await f.session.startScreenShare!(new AbortController().signal);
+    await f.connection.startScreenShare!(new AbortController().signal);
     f.peer.channels[0]!.send.mockImplementation((raw: string) => {
       const request = JSON.parse(raw) as { requestId: string };
       control(f.peer, {
@@ -1278,17 +1284,17 @@ describe("display capture on the owned outgoing video stream", () => {
         code: "media_control_unknown",
       });
     });
-    f.session.setMuted({ audio: true });
+    f.connection.setMuted({ audio: true });
     for (let i = 0; i < 12; i++) await Promise.resolve();
     expect(f.display.enabled).toBe(true);
-    expect(f.session.screenSharing).toBe(true);
+    expect(f.connection.screenSharing).toBe(true);
     expect(f.display.stop).not.toHaveBeenCalled();
-    await f.session.close();
+    await f.connection.close();
   });
   it("clears display capture and leaves the saved camera off after full-state refusal", async () => {
     const camera = new FakeTrack("video");
     const f = await setup(camera);
-    await f.session.startScreenShare!(new AbortController().signal);
+    await f.connection.startScreenShare!(new AbortController().signal);
     f.peer.channels[0]!.send.mockImplementation((raw: string) => {
       const request = JSON.parse(raw) as { requestId: string };
       control(f.peer, {
@@ -1298,12 +1304,12 @@ describe("display capture on the owned outgoing video stream", () => {
       });
     });
     f.peer.channels[0]!.onopen?.();
-    await vi.waitFor(() => expect(f.session.screenSharing).toBe(false));
+    await vi.waitFor(() => expect(f.connection.screenSharing).toBe(false));
     expect(f.display.stop).toHaveBeenCalled();
     expect(f.sharing).toHaveBeenLastCalledWith(false);
     expect(camera.enabled).toBe(false);
-    expect(f.session.videoEnabled()).toBe(false);
-    await f.session.close();
+    expect(f.connection.videoEnabled()).toBe(false);
+    await f.connection.close();
   });
   it("stops display capture and restores the camera on publisher refusal", async () => {
     const camera = new FakeTrack("video");
@@ -1317,13 +1323,13 @@ describe("display capture on the owned outgoing video stream", () => {
       });
     });
     await expect(
-      f.session.startScreenShare!(new AbortController().signal),
+      f.connection.startScreenShare!(new AbortController().signal),
     ).rejects.toMatchObject({ code: "video_publisher_busy" });
     expect(f.display.stop).toHaveBeenCalled();
     expect(camera.enabled).toBe(true);
     expect(f.peer.transceivers[1]!.sender.track).toBe(camera);
     expect(f.sharing).not.toHaveBeenCalledWith(true);
-    await f.session.close();
+    await f.connection.close();
   });
   it("cleans late capture when the call closes while the picker is open", async () => {
     let resolve!: (stream: FakeStream) => void;
@@ -1331,8 +1337,8 @@ describe("display capture on the owned outgoing video stream", () => {
       resolve = r;
     });
     const f = await setup(undefined, capture);
-    const start = f.session.startScreenShare!(new AbortController().signal);
-    await f.session.close({ leave: false });
+    const start = f.connection.startScreenShare!(new AbortController().signal);
+    await f.connection.close({ leave: false });
     resolve(new FakeStream([f.display]));
     await start;
     expect(f.display.stop).toHaveBeenCalled();
@@ -1342,11 +1348,11 @@ describe("display capture on the owned outgoing video stream", () => {
   it("closes both saved camera and display without reacquiring on reconnect", async () => {
     const camera = new FakeTrack("video");
     const f = await setup(camera);
-    await f.session.startScreenShare!(new AbortController().signal);
-    await f.session.close({ leave: false });
+    await f.connection.startScreenShare!(new AbortController().signal);
+    await f.connection.close({ leave: false });
     expect(camera.stop).toHaveBeenCalled();
     expect(f.display.stop).toHaveBeenCalled();
-    expect(f.session.screenSharing).toBe(false);
+    expect(f.connection.screenSharing).toBe(false);
     expect(f.getDisplayMedia).toHaveBeenCalledTimes(1);
   });
 });
@@ -1364,14 +1370,14 @@ it("sends waiting-room effects through authenticated signaling, never the data c
       ok: true,
     }),
   );
-  const session = await factoryFor({
+  const connection = await factoryFor({
     peer,
     signaling: signaling({ moderateWaitingRoom: moderate }),
   }).open("call-1", false, callbacks, new AbortController().signal, {
     connectionId: "owner_connection",
   });
   try {
-    await session.moderateWaitingRoom!({
+    await connection.moderateWaitingRoom!({
       operation: "admit",
       participantId: "123",
     });
@@ -1393,10 +1399,13 @@ it("sends waiting-room effects through authenticated signaling, never the data c
     ).toBe(false);
     moderate.mockRejectedValueOnce(new Error("revoked credential"));
     await expect(
-      session.moderateWaitingRoom!({ operation: "deny", participantId: "123" }),
+      connection.moderateWaitingRoom!({
+        operation: "deny",
+        participantId: "123",
+      }),
     ).rejects.toMatchObject({ code: "waiting_room_control_unknown" });
     expect(moderate).toHaveBeenCalledTimes(2);
   } finally {
-    await session.close({ leave: false });
+    await connection.close({ leave: false });
   }
 });

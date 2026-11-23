@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Polymorfa\Storage;
 
-/** Same schema2 tables, columns and indexes as the owning TypeScript SQL adapters. */
+/** Same schema3 tables, columns and indexes as the owning TypeScript SQL adapters. */
 final class SqlSchema
 {
-    public const ENTITIES = ['sessions','chats','messages','reactions','receipts','poll_votes','contacts','groups','group_participants','media','labels','label_associations','history_chunks','history_progress','checkpoints','events','leases'];
+    public const ENTITIES = ['connections','chats','messages','reactions','receipts','poll_votes','contacts','groups','group_participants','media','labels','label_associations','history_chunks','history_progress','checkpoints','events','leases'];
     public static function column(string $field): string
     {
         return preg_replace_callback('/[A-Z]/', static fn (array $m): string => '_'.strtolower($m[0]), $field) ?? throw new StorageException('invalid_storage_sql_name');

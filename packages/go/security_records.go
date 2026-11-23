@@ -28,14 +28,14 @@ type ListAuditLogsParams struct {
 	Action, Resource string
 	Limit            int
 }
-type SessionBan struct {
-	ID           string  `json:"id"`
-	SessionName  string  `json:"sessionName"`
-	BanCode      *int    `json:"banCode"`
-	BanReason    *string `json:"banReason"`
-	BanExpiresAt *int64  `json:"banExpiresAt"`
-	OccurredAt   int64   `json:"occurredAt"`
-	Status       string  `json:"status"`
+type ConnectionBan struct {
+	ID             string  `json:"id"`
+	ConnectionName string  `json:"connectionName"`
+	BanCode        *int    `json:"banCode"`
+	BanReason      *string `json:"banReason"`
+	BanExpiresAt   *int64  `json:"banExpiresAt"`
+	OccurredAt     int64   `json:"occurredAt"`
+	Status         string  `json:"status"`
 }
 type SecurityIncident struct {
 	ID             string  `json:"id"`
@@ -54,11 +54,11 @@ type SecurityIncidentAcknowledgement struct {
 	Acknowledged bool `json:"acknowledged"`
 }
 type AuditLogs struct{ t *transport }
-type SessionBans struct{ t *transport }
+type ConnectionBans struct{ t *transport }
 type SecurityIncidents struct{ t *transport }
 
 func (c *TeamClient) AuditLogs() *AuditLogs                 { return &AuditLogs{c.t} }
-func (c *TeamClient) SessionBans() *SessionBans             { return &SessionBans{c.t} }
+func (c *TeamClient) ConnectionBans() *ConnectionBans       { return &ConnectionBans{c.t} }
 func (c *TeamClient) SecurityIncidents() *SecurityIncidents { return &SecurityIncidents{c.t} }
 func (r *AuditLogs) List(ctx context.Context, p ListAuditLogsParams, o ...RequestOptions) (Response[Envelope[[]AuditLog]], error) {
 	q := url.Values{}
@@ -67,11 +67,11 @@ func (r *AuditLogs) List(ctx context.Context, p ListAuditLogsParams, o ...Reques
 	setInt(q, "limit", p.Limit)
 	return request[Envelope[[]AuditLog]](ctx, r.t, "GET", "/platform/audit", q, nil, options(o))
 }
-func (r *SessionBans) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]SessionBan]], error) {
-	return request[Envelope[[]SessionBan]](ctx, r.t, "GET", "/platform/bans", nil, nil, options(o))
+func (r *ConnectionBans) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]ConnectionBan]], error) {
+	return request[Envelope[[]ConnectionBan]](ctx, r.t, "GET", "/platform/bans", nil, nil, options(o))
 }
-func (r *SessionBans) ListActive(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]SessionBan]], error) {
-	return request[Envelope[[]SessionBan]](ctx, r.t, "GET", "/platform/bans/active", nil, nil, options(o))
+func (r *ConnectionBans) ListActive(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]ConnectionBan]], error) {
+	return request[Envelope[[]ConnectionBan]](ctx, r.t, "GET", "/platform/bans/active", nil, nil, options(o))
 }
 func (r *SecurityIncidents) List(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]SecurityIncident]], error) {
 	return request[Envelope[[]SecurityIncident]](ctx, r.t, "GET", "/platform/incidents", nil, nil, options(o))

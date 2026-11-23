@@ -10,7 +10,7 @@ import (
 )
 
 func TestProducerProtoNumberExactBitsAndStrictRows(t *testing.T) {
-	raw, err := os.ReadFile("../testdata/numeric-storage/fixture.json")
+	raw, err := os.ReadFile("../testdata/numeric-storage/fixture.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +45,7 @@ func TestProducerProtoNumberExactBitsAndStrictRows(t *testing.T) {
 }
 
 func TestNumericSQLiteProducerRows(t *testing.T) {
-	raw, err := os.ReadFile("../testdata/numeric-storage/fixture.json")
+	raw, err := os.ReadFile("../testdata/numeric-storage/fixture.v3.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func TestNumericSQLiteProducerRows(t *testing.T) {
 	for _, h := range f.Histories {
 		t.Run(h.Name, func(t *testing.T) {
 			e := engineFor(t, sqlAdapterFor(t, SQLite, sqliteDB(t)), EngineOptions{})
-			b, err := ReduceHistoryChunk(HistoryInput{SessionID: "numeric", Chunk: h.Chunk, ChunkID: &h.Name})
+			b, err := ReduceHistoryChunk(HistoryInput{ConnectionID: "numeric", Chunk: h.Chunk, ChunkID: &h.Name})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -75,7 +75,7 @@ func TestNumericSQLiteProducerRows(t *testing.T) {
 			}
 			assertFixtureRows(t, e, h.Rows)
 			for i, c := range h.Cleanup {
-				if _, err = e.Apply(context.Background(), Batch{SessionID: "numeric", Operations: c.Operations}); err != nil {
+				if _, err = e.Apply(context.Background(), Batch{ConnectionID: "numeric", Operations: c.Operations}); err != nil {
 					t.Fatal(err)
 				}
 				id := fmt.Sprint(h.Name, "late", i)

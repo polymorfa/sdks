@@ -1,7 +1,7 @@
 #[allow(dead_code)]
 mod support;
 use polymorfa_sdk::{
-    voip::{SessionCallSettings, UpdateSessionCallSettingsRequest},
+    voip::{ConnectionCallSettings, UpdateConnectionCallSettingsRequest},
     RequestOptions,
 };
 use serde_json::{json, Value};
@@ -19,7 +19,7 @@ async fn coverage_end_is_a_nullable_response_only_projection() {
         wire_messaging!(
             client,
             "GET",
-            "/platform/sessions/support/call-settings",
+            "/platform/connections/support/call-settings",
             None,
             json!({"success":true,"data":settings}),
             client
@@ -29,12 +29,12 @@ async fn coverage_end_is_a_nullable_response_only_projection() {
         wire_messaging!(
             client,
             "PUT",
-            "/platform/sessions/support/call-settings",
+            "/platform/connections/support/call-settings",
             Some(json!({"callsEnabled":false})),
             json!({"success":true,"data":settings}),
             client.voip().update_call_settings(
                 "support",
-                &UpdateSessionCallSettingsRequest {
+                &UpdateConnectionCallSettingsRequest {
                     calls_enabled: Some(false),
                     ..Default::default()
                 },
@@ -42,9 +42,9 @@ async fn coverage_end_is_a_nullable_response_only_projection() {
             )
         );
     }
-    let old: SessionCallSettings = serde_json::from_value(fixture["settings"].clone()).unwrap();
+    let old: ConnectionCallSettings = serde_json::from_value(fixture["settings"].clone()).unwrap();
     assert_eq!(old.simultaneous_calls_coverage_excluded_until, None);
-    let literal = SessionCallSettings {
+    let literal = ConnectionCallSettings {
         calls_enabled: true,
         conference_mode: false,
         inbound_route: "clients".into(),
@@ -60,7 +60,7 @@ async fn coverage_end_is_a_nullable_response_only_projection() {
         serde_json::to_value(literal).unwrap()["simultaneousCallsCoverageExcludedUntil"],
         "2026-11-22T12:34:56.789Z"
     );
-    let write = serde_json::to_value(UpdateSessionCallSettingsRequest {
+    let write = serde_json::to_value(UpdateConnectionCallSettingsRequest {
         calls_enabled: Some(false),
         ..Default::default()
     })

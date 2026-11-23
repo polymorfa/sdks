@@ -3,14 +3,14 @@ mod support;
 use polymorfa_sdk::{request_logs::*, ErrorKind};
 use serde_json::json;
 fn log(id: &str) -> serde_json::Value {
-    json!({"id":id,"projectId":"project","createdAt":"2026-10-11T00:00:00Z","method":"POST","route":"/messaging/:session/messages","status":503,"durationMs":10.125,"result":"failure","source":"api","requestId":"req","traceId":"trace","errorCode":"upstream","mcpTool":null,"credential":{"type":"project_token","id":"token-id","last4":"abcd"}})
+    json!({"id":id,"projectId":"project","createdAt":"2026-10-11T00:00:00Z","method":"POST","route":"/messaging/:connection/messages","status":503,"durationMs":10.125,"result":"failure","source":"api","requestId":"req","traceId":"trace","errorCode":"upstream","mcpTool":null,"credential":{"type":"project_token","id":"token-id","last4":"abcd"}})
 }
 fn page() -> serde_json::Value {
     json!({"data":[log("log")],"page":{"nextCursor":null,"hasMore":false,"followCursor":"follow"}})
 }
 #[tokio::test]
 async fn list_follow_decode_full_typed_payload_and_encode_filters() {
-    let (base,server)=support::wire("GET","/platform/projects/project/request-logs?status=404%2C5xx&method=GET%2CPOST&source=api&route=%2Fmessaging%2F%3Asession%2Fmessages&credentialId=key&requestId=req&traceId=trace&since=2026-10-11T00%3A00%3A00Z&until=2026-10-12T00%3A00%3A00Z&limit=5",None,page()).await;
+    let (base,server)=support::wire("GET","/platform/projects/project/request-logs?status=404%2C5xx&method=GET%2CPOST&source=api&route=%2Fmessaging%2F%3Aconnection%2Fmessages&credentialId=key&requestId=req&traceId=trace&since=2026-10-11T00%3A00%3A00Z&until=2026-10-12T00%3A00%3A00Z&limit=5",None,page()).await;
     let client = support::team(base);
     let result = client
         .request_logs()
@@ -22,7 +22,7 @@ async fn list_follow_decode_full_typed_payload_and_encode_filters() {
                     status: vec!["404".into(), "5xx".into()],
                     method: vec![RequestLogMethod::GET, RequestLogMethod::POST],
                     source: Some(RequestLogSource::Api),
-                    route: Some("/messaging/:session/messages".into()),
+                    route: Some("/messaging/:connection/messages".into()),
                     credential_id: Some("key".into()),
                     request_id: Some("req".into()),
                     trace_id: Some("trace".into()),

@@ -81,11 +81,11 @@ export const COMPONENT_SLOTS = [
   "groupParticipants",
   "connectButton",
   "callButton",
-  "callNumberPicker",
+  "callConnectionPicker",
   "callLog",
   "callLogItem",
-  "callNumberLabel",
-  "callNumberSelect",
+  "callConnectionLabel",
+  "callConnectionSelect",
 ] as const;
 
 export type ComponentSlot = (typeof COMPONENT_SLOTS)[number];

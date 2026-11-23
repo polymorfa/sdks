@@ -22,11 +22,11 @@ SUMMARY = {
     "start": "2026-10-01T00:00:00Z",
     "end": "2026-11-01T00:00:00Z",
     "projectId": "project_1",
-    "session": "support",
+    "connection": "support",
     "billingEnabled": False,
     "meters": [TOTAL],
-    "numbers": [{"session": "support", "projectId": "project_1", "meters": [TOTAL]}],
-    "numbersTruncated": False,
+    "connections": [{"connection": "support", "projectId": "project_1", "meters": [TOTAL]}],
+    "connectionsTruncated": False,
 }
 RECORD = {
     "id": "record_1",
@@ -46,7 +46,7 @@ RECORD = {
     "sourceKind": "call",
     "sourceId": "call_1",
     "projectId": "project_1",
-    "session": "support",
+    "connection": "support",
     "occurredAt": "2026-10-11T00:00:00Z",
     "recordedAt": "2026-10-11T00:00:01Z",
     "revision": 2,
@@ -55,12 +55,12 @@ RECORD = {
     "pricedCredits": None,
 }
 GATES = {
-    "session": "support",
+    "connection": "support",
     "gates": [
         {
             "key": "calls.outbound_monthly",
             "kind": "quota",
-            "subject": "number",
+            "subject": "connection",
             "mode": "record",
             "active": True,
             "limit": None,
@@ -75,7 +75,7 @@ CASES = [
     (
         "summary",
         "/platform/usage",
-        {"projectId": "project_1", "session": "support", "period": "2026-10"},
+        {"projectId": "project_1", "connection": "support", "period": "2026-10"},
         SUMMARY,
     ),
     (
@@ -83,7 +83,7 @@ CASES = [
         "/platform/usage/records",
         {
             "projectId": "project_1",
-            "session": "support",
+            "connection": "support",
             "period": "2026-10",
             "callId": "call_1",
             "meter": "call.duration",
@@ -92,7 +92,7 @@ CASES = [
         },
         {"records": [RECORD], "nextCursor": None},
     ),
-    ("list_gates", "/platform/gates", {"projectId": "project_1", "session": "support"}, GATES),
+    ("list_gates", "/platform/gates", {"projectId": "project_1", "connection": "support"}, GATES),
 ]
 
 

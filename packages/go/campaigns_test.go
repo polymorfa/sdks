@@ -142,7 +142,7 @@ func TestCampaignAndTemplateWriteRetryBoundaries(t *testing.T) {
 			case "append":
 				_, err = m.Campaigns().AddRecipients(context.Background(), "p", "campaign", AddCampaignRecipientsRequest{Recipients: []CampaignRecipientInput{}}, opts)
 			case "submit":
-				_, err = m.Templates().Submit(context.Background(), "p", "template", SubmitProjectTemplateRequest{Session: "s"}, opts)
+				_, err = m.Templates().Submit(context.Background(), "p", "template", SubmitProjectTemplateRequest{Connection: "s"}, opts)
 			case "launch":
 				_, err = m.Campaigns().Launch(context.Background(), "p", "campaign", LaunchCampaignRequest{})
 			}

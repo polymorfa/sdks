@@ -392,7 +392,7 @@ async def test_replay_body_is_captured_before_first_http_await(which):
             "2026-10-14",
         ),
         (
-            {"purpose": "add_connection", "session": "s", "addConnection": "linked_devices"},
+            {"purpose": "add_method", "connection": "s", "addMethod": "linked_devices"},
             "2026-09-22",
         ),
     ],
@@ -415,12 +415,12 @@ async def test_quicklink_intent_default_and_override(intent, expected):
 @pytest.mark.parametrize(
     "body",
     [
-        {"purpose": "initial", "session": "s"},
-        {"purpose": "add_connection", "session": "s"},
+        {"purpose": "initial", "connection": "s"},
+        {"purpose": "add_method", "connection": "s"},
         {
-            "purpose": "add_connection",
-            "session": "s",
-            "addConnection": "linked_devices",
+            "purpose": "add_method",
+            "connection": "s",
+            "addMethod": "linked_devices",
             "signalMode": "standard",
         },
         {"configuration": {"historySync": {"delivery": "archive"}}},
@@ -444,7 +444,7 @@ async def test_invalid_quicklink_branches_do_not_send(body):
         ({"set": {"historySync": {"requestFull": False}}}, "2026-09-22"),
     ],
 )
-async def test_configuration_defaults_and_session_update_versions(patch, version):
+async def test_configuration_defaults_and_connection_update_versions(patch, version):
     import json
 
     from polymorfa import AsyncClient, RequestOptions
@@ -455,14 +455,14 @@ async def test_configuration_defaults_and_session_update_versions(patch, version
         AsyncClient(KEY, base_url=url) as c,
         AsyncMessagingClient(KEY, base_url=url) as m,
     ):
-        await c.project(PROJECT).session_configuration.update(body)
-        await c.sessions.update("s", body)
-        await m.sessions.update("s", body)
-        await c.project(PROJECT).session_configuration.update(
+        await c.project(PROJECT).connection_configuration.update(body)
+        await c.connections.update("s", body)
+        await m.connections.update("s", body)
+        await c.project(PROJECT).connection_configuration.update(
             body, options=RequestOptions(api_version="2026-08-01")
         )
-        await c.project(PROJECT).session_configuration.retrieve()
-        await c.sessions.retrieve("s", options=RequestOptions(api_version="2026-10-14"))
+        await c.project(PROJECT).connection_configuration.retrieve()
+        await c.connections.retrieve("s", options=RequestOptions(api_version="2026-10-14"))
         assert [call[2]["polymorfa-version"] for call in calls] == [version] * 3 + [
             "2026-08-01",
             "2026-09-22",
@@ -488,7 +488,7 @@ async def test_nine_group_testing_and_history_public_tcp(version):
         ],
     }
     phone = {
-        "session": "a/b",
+        "connection": "a/b",
         "phone": "+15551234567",
         "online": False,
         "devices": [{"deviceId": 99}],
@@ -501,11 +501,15 @@ async def test_nine_group_testing_and_history_public_tcp(version):
             return web.json_response(phone)
         if request.path.endswith("/phone/messages"):
             return web.json_response(
-                {"session": "a/b", "to": "+15557654321", "messageId": None}, status=202
+                {"connection": "a/b", "to": "+15557654321", "messageId": None}, status=202
             )
         if request.path.endswith("/unlink"):
             return web.json_response(
-                {"session": "a/b", "deviceId": int(request.path.split("/")[-2]), "unlinked": True}
+                {
+                    "connection": "a/b",
+                    "deviceId": int(request.path.split("/")[-2]),
+                    "unlinked": True,
+                }
             )
         return web.json_response(
             {
@@ -630,7 +634,7 @@ async def test_nine_malformed_success_is_safe(operation, bad):
         ("campaign_approval_required", 409),
         ("campaign_approval_stale", 409),
         ("campaign_variables_missing", 422),
-        ("zero_knowledge_session", 400),
+        ("zero_knowledge_connection", 400),
         ("future_remote_error", 422),
     ],
 )
@@ -761,7 +765,7 @@ async def test_client_custom_ciphertext_transport_remains_available():
     class Custom:
         name = "customer"
 
-        async def upload(self, session, body, *, options):
+        async def upload(self, connection, body, *, options):
             chunks = [chunk async for chunk in body.open()]
             assert b"".join(chunks) != b"private plaintext"
             return UploadLocation("/media/custom", "https://cdn.whatsapp.net/media/custom")
@@ -968,7 +972,7 @@ async def test_open_extensions_and_configuration_cannot_replace_authority():
             {"reset": ["signalMode"]},
         ):
             with pytest.raises(ValidationError):
-                await c.sessions.update("s", {"revision": 0, "configuration": configuration})
+                await c.connections.update("s", {"revision": 0, "configuration": configuration})
         assert calls == []
 
 

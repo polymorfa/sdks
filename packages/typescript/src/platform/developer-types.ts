@@ -139,7 +139,7 @@ interface WebhookBase {
   readonly retryPolicy: WebhookRetryPolicy;
   /**
    * First day without the phone on which this webhook receives
-   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * `connection.phone_offline` (7-13, default 10). WhatsApp signs the linked
    * device out on day 14. To stop the warning, leave the event out of
    * the webhook's events.
    */
@@ -166,7 +166,7 @@ interface CreateWebhookInputBase {
   readonly retryPolicy?: WebhookRetryPolicyInput;
   /**
    * First day without the phone on which this webhook receives
-   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * `connection.phone_offline` (7-13, default 10). WhatsApp signs the linked
    * device out on day 14. To stop the warning, leave the event out of
    * the webhook's events.
    */
@@ -184,7 +184,7 @@ interface UpdateWebhookInputBase {
   readonly retryPolicy?: WebhookRetryPolicyInput;
   /**
    * First day without the phone on which this webhook receives
-   * `session.phone_offline` (7-13, default 10). WhatsApp signs the linked
+   * `connection.phone_offline` (7-13, default 10). WhatsApp signs the linked
    * device out on day 14. To stop the warning, leave the event out of
    * the webhook's events.
    */
@@ -207,18 +207,18 @@ export type RetryWebhookDeliveryInput = Readonly<Record<string, never>>;
 export interface TeamWebhookTestInput {
   readonly eventType?: string;
   readonly body?: never;
-  readonly sessionId?: never;
+  readonly connectionId?: never;
 }
 export type TestWebhookInput =
   | {
       readonly eventType?: string;
       readonly body?: never;
-      readonly sessionId?: never;
+      readonly connectionId?: never;
     }
   | {
       readonly eventType?: string;
       readonly body: EncodedEventPayload;
-      readonly sessionId: string;
+      readonly connectionId: string;
     };
 
 export type TestTeamWebhookInput = TeamWebhookTestInput;
@@ -353,7 +353,7 @@ export type OperationStatus =
   | "cancelled";
 export type OperationKind =
   | "auth_projection_repair"
-  | "session_lifecycle"
+  | "connection_lifecycle"
   | "auth_session_purge"
   | "label_projection_purge"
   | "billing_reconciliation"

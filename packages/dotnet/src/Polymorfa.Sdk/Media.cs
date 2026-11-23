@@ -3,7 +3,7 @@ using System.Net;
 
 namespace Polymorfa.Sdk;
 
-public sealed record MessagingMediaInfo(string Id, string Session, string MessageId, string MimeType, long FileLength, bool Persisted, string? S3Url = null);
+public sealed record MessagingMediaInfo(string Id, string Connection, string MessageId, string MimeType, long FileLength, bool Persisted, string? S3Url = null);
 public sealed class MediaDownload : IAsyncDisposable, IDisposable
 {
     public Stream Body { get; }

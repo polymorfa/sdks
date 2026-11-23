@@ -7,7 +7,7 @@ import { authenticate } from "../../../../lib/auth.js";
 import { env, isDemoMode } from "../../../../lib/env.js";
 import { messaging } from "../../../../lib/polymorfa.js";
 
-// Browser messaging token. The session's client rules decide what it can do
+// Browser messaging token. The connection's client rules decide what it can do
 // (see /api/messaging/client-rules).
 export const POST = createClientTokenRoute({
   authorize: async (request) => {
@@ -20,7 +20,7 @@ export const POST = createClientTokenRoute({
     createMessagingClientTokenMint({
       clientTokens: messaging().clientTokens,
       resolve: () => ({
-        session: env.session(),
+        connection: env.connection(),
         // One ephemeral id per operator keeps rate limits per person.
         ephemeralId: subject.userId,
         ttlSeconds: 300,

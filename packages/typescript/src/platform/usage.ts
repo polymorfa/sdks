@@ -65,8 +65,8 @@ export interface UsageRecord {
   /** The call id for call meters. */
   readonly sourceId: string;
   readonly projectId: string | null;
-  /** The number (session name) the usage belongs to. */
-  readonly session: string | null;
+  /** The Connection (name) the usage belongs to. */
+  readonly connection: string | null;
   readonly occurredAt: string;
   readonly recordedAt: string;
   /** Increases when a later observation corrects the record. Keep the highest. */
@@ -97,17 +97,17 @@ export interface UsageSummary {
   readonly start: string;
   readonly end: string;
   readonly projectId: string | null;
-  readonly session: string | null;
+  readonly connection: string | null;
   /** Always `false` while usage is measured but not charged. */
   readonly billingEnabled: boolean;
   readonly meters: readonly UsageMeterTotal[];
-  /** Totals per number, most call time first (at most 100). */
-  readonly numbers: readonly {
-    readonly session: string;
+  /** Totals per Connection, most call time first (at most 100). */
+  readonly connections: readonly {
+    readonly connection: string;
     readonly projectId: string | null;
     readonly meters: readonly UsageMeterTotal[];
   }[];
-  readonly numbersTruncated: boolean;
+  readonly connectionsTruncated: boolean;
 }
 
 export type UsageGateKey =
@@ -139,11 +139,11 @@ export type UsageGateMode = "off" | "record" | "enforce";
 export interface UsageGate {
   readonly key: UsageGateKey;
   readonly kind: "capability" | "quota" | "limit" | "concurrency";
-  readonly subject: "team" | "number" | "project" | "campaign";
+  readonly subject: "team" | "connection" | "project" | "campaign";
   readonly mode: UsageGateMode;
   /** Whether an action checks this gate today. */
   readonly active: boolean;
-  /** `-1` for no limit; `null` when the limit applies per number and no `session` was given. */
+  /** `-1` for no limit; `null` when the limit applies per Connection and no `connection` was given. */
   readonly limit: number | null;
   readonly used: number | null;
   readonly unit: UsageUnit | "count" | "minute" | null;
@@ -157,15 +157,15 @@ export interface UsageGate {
 }
 
 export interface UsageGateList {
-  readonly session: string | null;
+  readonly connection: string | null;
   readonly gates: readonly UsageGate[];
 }
 
 export interface UsageSummaryParams {
   /** Team keys only; a project client always reads its own project. */
   readonly projectId?: string;
-  /** One number (session name). */
-  readonly session?: string;
+  /** One number (connection name). */
+  readonly connection?: string;
   /** Calendar month in UTC, `YYYY-MM`. Defaults to the current month. */
   readonly period?: string;
 }
@@ -183,13 +183,13 @@ export interface UsageRecordParams extends UsageSummaryParams {
 
 export interface UsageGateParams {
   readonly projectId?: string;
-  /** Include limits that apply per number. */
-  readonly session?: string;
+  /** Include limits that apply per Connection. */
+  readonly connection?: string;
 }
 
 /**
  * Metered usage and usage gates. Usage is measured, not charged. Requires the
- * `sessions:read` scope; a project token reads only its own project's usage,
+ * `connections:read` scope; a project token reads only its own project's usage,
  * and gate state needs a team key.
  */
 export class UsageResource {
@@ -198,7 +198,7 @@ export class UsageResource {
     private readonly projectId: string | null,
   ) {}
 
-  /** `GET /platform/usage`: totals for one calendar month, by meter and by number. */
+  /** `GET /platform/usage`: totals for one calendar month, by meter and by Connection. */
   async summary(
     params: UsageSummaryParams = {},
     options: RequestOptions = {},

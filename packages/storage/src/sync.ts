@@ -66,7 +66,7 @@ export async function applyEvent(
   validateDescriptorMode(options);
   if (event.event === "history.sync" && descriptorIntent(event.payload)) {
     const payload = historyDescriptor(event.payload);
-    if (await storage.hasEvent(event.session, event.id))
+    if (await storage.hasEvent(event.connection, event.id))
       return { applied: false, writes: 0 };
     const batch = reduceEvent(event);
     if (options.historyDescriptorMode === "metadata-only")
@@ -78,7 +78,7 @@ export async function applyEvent(
         await options.decodeHistoryDescriptor(payload, event),
       );
       const history = reduceHistoryChunk({
-        sessionId: event.session,
+        connectionId: event.connection,
         chunk,
         identities: {},
       });
@@ -97,13 +97,13 @@ export async function applyEvent(
     options.decodeHistory &&
     (event.payload as { kind?: unknown } | null)?.kind !== "history"
   ) {
-    if (await storage.hasEvent(event.session, event.id))
+    if (await storage.hasEvent(event.connection, event.id))
       return { applied: false, writes: 0 };
     const payload = event.payload as LinkedHistorySyncPayload;
     const chunk = await options.decodeHistory(payload, event);
     if (chunk) {
       const history = reduceHistoryChunk({
-        sessionId: event.session,
+        connectionId: event.connection,
         chunk,
         identities: historyIdentityIndex(payload),
       });
@@ -138,8 +138,11 @@ export interface EventStreamSource {
 }
 
 export interface SyncToStorageOptions extends ApplyEventOptions {
-  /** Where the stream cursor is saved. Default `{ sessionId: "*", stream: "events" }`. */
-  readonly checkpoint?: { readonly sessionId: string; readonly stream: string };
+  /** Where the stream cursor is saved. Default `{ connectionId: "*", stream: "events" }`. */
+  readonly checkpoint?: {
+    readonly connectionId: string;
+    readonly stream: string;
+  };
   /** Stream parameters, such as event `types`. `since` comes from the checkpoint. */
   readonly params?: Omit<EventStreamParams, "since" | "signal" | "ack">;
   /** Explicit metadata-only consumption may skip absent payloads. Default true. */
@@ -173,11 +176,14 @@ export function syncToStorage(
   const signal = options.signal
     ? AbortSignal.any([options.signal, controller.signal])
     : controller.signal;
-  const checkpoint = options.checkpoint ?? { sessionId: "*", stream: "events" };
+  const checkpoint = options.checkpoint ?? {
+    connectionId: "*",
+    stream: "events",
+  };
   const now = options.now ?? Date.now;
   const done = (async () => {
     const saved = await storage.getCheckpoint(
-      checkpoint.sessionId,
+      checkpoint.connectionId,
       checkpoint.stream,
     );
     let expectedCursor = saved?.cursor ?? null;
@@ -210,11 +216,11 @@ export function syncToStorage(
           options,
         );
       await storage.apply({
-        sessionId: checkpoint.sessionId,
+        connectionId: checkpoint.connectionId,
         operations: [
           {
             kind: "checkpoint",
-            sessionId: checkpoint.sessionId,
+            connectionId: checkpoint.connectionId,
             stream: checkpoint.stream,
             cursor: item.cursor,
             expectedCursor,

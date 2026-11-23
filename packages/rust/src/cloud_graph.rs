@@ -140,7 +140,7 @@ impl CloudCatalogs<'_> {
 impl CloudMarketing<'_> {
     pub async fn get_status(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<
         ApiResponse<
@@ -148,17 +148,20 @@ impl CloudMarketing<'_> {
         >,
     > {
         self.0.server()?;
-        if session.trim().is_empty() || session.len() > 128 {
+        if connection.trim().is_empty() || connection.len() > 128 {
             return Err(crate::Error::local(
                 crate::ErrorKind::Validation,
-                "Provide a Number ID of 1 to 128 characters.",
+                "Provide a phone number ID of 1 to 128 characters.",
                 "invalid_parameter",
             ));
         }
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &format!("/messaging/{}/marketing-messages/status", encode(session)),
+                &format!(
+                    "/messaging/{}/marketing-messages/status",
+                    encode(connection)
+                ),
                 &[],
                 None,
                 options,

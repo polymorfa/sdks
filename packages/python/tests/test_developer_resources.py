@@ -17,7 +17,7 @@ PAYLOAD = {
     "encoding": "base64",
     "contentType": "application/json",
     "data": base64.b64encode(
-        b'{"id":"event_1","session":"support","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
+        b'{"id":"event_1","connection":"support","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}'
     ).decode(),
 }
 EVENT = {
@@ -392,7 +392,7 @@ async def test_webhook_test_owner_and_operation_wait_guards():
         )
     ) as client:
         with pytest.raises(ValidationError):
-            await client.webhooks.test("hook_1", {"body": PAYLOAD, "sessionId": "support"})
+            await client.webhooks.test("hook_1", {"body": PAYLOAD, "connectionId": "support"})
         for wait in [True, -1, 31, 1.5]:
             from polymorfa import ConfigurationError
 

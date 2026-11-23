@@ -95,9 +95,9 @@ class AuditLog(TypedDict):
     createdAt: int
 
 
-class SessionBan(TypedDict):
+class ConnectionBan(TypedDict):
     id: str
-    sessionName: str
+    connectionName: str
     banCode: int | None
     banReason: str | None
     banExpiresAt: int | None
@@ -173,15 +173,15 @@ class AuditLogs(Resource):
         )
 
 
-class SessionBans(Resource):
+class ConnectionBans(Resource):
     async def list(
         self, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[builtins.list[SessionBan]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[ConnectionBan]]]:
         return await self._request("GET", "/platform/bans", options=options)
 
     async def list_active(
         self, *, options: RequestOptions = O
-    ) -> ApiResponse[DataEnvelope[builtins.list[SessionBan]]]:
+    ) -> ApiResponse[DataEnvelope[builtins.list[ConnectionBan]]]:
         return await self._request("GET", "/platform/bans/active", options=options)
 
 

@@ -34,12 +34,12 @@ try {
     $adapter = SqlAdapter::pdo($write, 'p_', $schema, createTables:false);
     $adapter->setup();
     $engine = new Engine($adapter);
-    $engine->apply(new Batch('allowed', [new Upsert('messages', ['sessionId' => 'allowed','messageId' => 'm'], ['text' => new FieldWrite('customer-only fixture', 0)])]));
+    $engine->apply(new Batch('allowed', [new Upsert('messages', ['connectionId' => 'allowed','messageId' => 'm'], ['text' => new FieldWrite('customer-only fixture', 0)])]));
     $subject = '11111111-1111-1111-1111-111111111111';
-    $write->exec('INSERT INTO '.$q($schema).'.p_storage_memberships(session_id,subject) VALUES ('.$write->quote('allowed').','.$write->quote($subject).')');
+    $write->exec('INSERT INTO '.$q($schema).'.p_storage_memberships(connection_id,subject) VALUES ('.$write->quote('allowed').','.$write->quote($subject).')');
     $read->exec("SELECT set_config('request.jwt.claim.sub',".$read->quote($subject).',false)');
     $table = $q($schema).'.p_messages';
-    storageCheck((int)$read->query('SELECT count(*) FROM '.$table)->fetchColumn() === 1, 'nonprivileged member reads own session');
+    storageCheck((int)$read->query('SELECT count(*) FROM '.$table)->fetchColumn() === 1, 'nonprivileged member reads own connection');
     try {
         $read->exec("UPDATE $table SET text='forbidden'");
         throw new RuntimeException('browser write unexpectedly allowed');

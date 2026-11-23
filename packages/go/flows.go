@@ -91,13 +91,13 @@ func (r *Flows) Sync(ctx context.Context, id string, b FlowProviderRequest, o ..
 func (r *Flows) Receipts(ctx context.Context, id string, o ...RequestOptions) (Response[[]FlowProviderOperation], error) {
 	return flowIDRequest[[]FlowProviderOperation](ctx, r, "GET", id, "/receipts", nil, nil, o)
 }
-func flowNumberQuery(p FlowNumberRequest) (url.Values, error) {
-	if strings.TrimSpace(p.SessionID) == "" {
-		return nil, validation("sessionId is required.")
+func flowNumberQuery(p FlowConnectionRequest) (url.Values, error) {
+	if strings.TrimSpace(p.ConnectionID) == "" {
+		return nil, validation("connectionId is required.")
 	}
-	return url.Values{"sessionId": {p.SessionID}}, nil
+	return url.Values{"connectionId": {p.ConnectionID}}, nil
 }
-func (r *Flows) Endpoint(ctx context.Context, id string, p FlowNumberRequest, o ...RequestOptions) (Response[FlowEndpointState], error) {
+func (r *Flows) Endpoint(ctx context.Context, id string, p FlowConnectionRequest, o ...RequestOptions) (Response[FlowEndpointState], error) {
 	q, err := flowNumberQuery(p)
 	if err != nil {
 		return Response[FlowEndpointState]{}, err
@@ -105,7 +105,7 @@ func (r *Flows) Endpoint(ctx context.Context, id string, p FlowNumberRequest, o 
 	return flowIDRequest[FlowEndpointState](ctx, r, "GET", id, "/endpoint", nil, q, o)
 }
 func (r *Flows) SetEndpoint(ctx context.Context, id string, b SetFlowEndpointRequest, o ...RequestOptions) (Response[FlowEndpointSetResult], error) {
-	invalid := strings.TrimSpace(b.SessionID) == "" || b.ExpectedRevision != nil && *b.ExpectedRevision < 1
+	invalid := strings.TrimSpace(b.ConnectionID) == "" || b.ExpectedRevision != nil && *b.ExpectedRevision < 1
 	switch b.Mode {
 	case "forward", "direct":
 		u, err := url.Parse(b.URL)
@@ -123,7 +123,7 @@ func (r *Flows) SetEndpoint(ctx context.Context, id string, b SetFlowEndpointReq
 	}
 	return flowIDRequest[FlowEndpointSetResult](ctx, r, "PUT", id, "/endpoint", b, nil, o)
 }
-func (r *Flows) DeleteEndpoint(ctx context.Context, id string, p FlowNumberRequest, o ...RequestOptions) (Response[FlowOK], error) {
+func (r *Flows) DeleteEndpoint(ctx context.Context, id string, p FlowConnectionRequest, o ...RequestOptions) (Response[FlowOK], error) {
 	q, err := flowNumberQuery(p)
 	if err != nil {
 		return Response[FlowOK]{}, err
@@ -135,18 +135,18 @@ func (r *Flows) EndpointReceipts(ctx context.Context, id string, p ListFlowEndpo
 		return Response[[]FlowEndpointReceipt]{}, validation("limit must be from 1 to 100.")
 	}
 	q := url.Values{}
-	setString(q, "sessionId", p.SessionID)
+	setString(q, "connectionId", p.ConnectionID)
 	setInt(q, "limit", p.Limit)
 	return flowIDRequest[[]FlowEndpointReceipt](ctx, r, "GET", id, "/endpoint/receipts", nil, q, o)
 }
-func (r *Flows) EncryptionKey(ctx context.Context, p FlowNumberRequest, o ...RequestOptions) (Response[FlowEncryptionCustody], error) {
+func (r *Flows) EncryptionKey(ctx context.Context, p FlowConnectionRequest, o ...RequestOptions) (Response[FlowEncryptionCustody], error) {
 	q, err := flowNumberQuery(p)
 	if err != nil {
 		return Response[FlowEncryptionCustody]{}, err
 	}
 	return flowRequest[FlowEncryptionCustody](ctx, r, "GET", "/platform/flow-encryption-keys", nil, q, o)
 }
-func (r *Flows) RotateEncryptionKey(ctx context.Context, p FlowNumberRequest, o ...RequestOptions) (Response[FlowEncryptionKeyRotation], error) {
+func (r *Flows) RotateEncryptionKey(ctx context.Context, p FlowConnectionRequest, o ...RequestOptions) (Response[FlowEncryptionKeyRotation], error) {
 	if _, err := flowNumberQuery(p); err != nil {
 		return Response[FlowEncryptionKeyRotation]{}, err
 	}

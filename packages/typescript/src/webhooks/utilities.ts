@@ -10,7 +10,7 @@ import {
 import {
   WebhookSignatureError,
   constructWebhookEvent,
-  parseVerifiedWebhookEvent,
+  parseRetainedStreamEvent,
   verifyWebhookSignature,
   type WebhookBody,
 } from "./verify.js";
@@ -58,7 +58,7 @@ export const webhooks: WebhookUtilities = Object.freeze({
     if (!(await verifyLocalSignature(input, secret))) {
       throw new WebhookSignatureError();
     }
-    return parseVerifiedWebhookEvent(input.body);
+    return parseRetainedStreamEvent(input.body);
   },
   async createFixture(input: CreateWebhookFixtureInput) {
     const body = new TextEncoder().encode(JSON.stringify(input.event));

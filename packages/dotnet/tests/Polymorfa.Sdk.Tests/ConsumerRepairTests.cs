@@ -12,7 +12,7 @@ internal static class ConsumerRepairTests
 {
     private const string Key = "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k";
     private static void Check(bool value, string message) { if (!value) throw new Exception(message); }
-    public static async Task RunAsync() { await MediaAsync(); await CallsAsync(); await CursorAsync(); await UsageAsync(); await SignalSessionAsync(); await SignalTruncationAsync(); await SignalAckAsync(); await SignalDeadlineAsync(); }
+    public static async Task RunAsync() { await MediaAsync(); await CallsAsync(); await CursorAsync(); await UsageAsync(); await SignalConnectionAsync(); await SignalTruncationAsync(); await SignalAckAsync(); await SignalDeadlineAsync(); }
     public static async Task UsageAsync()
     {
         foreach (var repeated in new[] { false, true })
@@ -26,25 +26,25 @@ internal static class ConsumerRepairTests
         Console.WriteLine("PASS public usage: initial cursor retained and seeded duplicate guard");
     }
     private const string SignalSecret = "application-fixture-secret";
-    private static string SignalFrame(string session) => "id: e\nevent: message\ndata: " + JsonSerializer.Serialize(new { id = "e", type = "message", session_id = session, chat = "c", sender = "p", message_id = "m", timestamp = 1, is_from_me = false, redelivered = false, identity_changed = false, message_proto = "", text = "private" }) + "\n\n";
+    private static string SignalFrame(string connection) => "id: e\nevent: message\ndata: " + JsonSerializer.Serialize(new { id = "e", type = "message", connection_id = connection, chat = "c", sender = "p", message_id = "m", timestamp = 1, is_from_me = false, redelivered = false, identity_changed = false, message_proto = "", text = "private" }) + "\n\n";
     private static void SignalHeaders(Request request)
     {
         Check(request.Headers["authorization"] == "Bearer " + SignalSecret && !request.Headers.ContainsKey("cookie") && !request.Headers.ContainsKey("origin") && !request.Headers.ContainsKey("polymorfa-version"), "Signal authority changed");
     }
     private static Task SignalReply(NetworkStream stream, string body) => stream.WriteAsync(Encoding.UTF8.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: text/event-stream\r\nContent-Length: {Encoding.UTF8.GetByteCount(body)}\r\nConnection: close\r\n\r\n{body}")).AsTask();
-    public static async Task SignalSessionAsync()
+    public static async Task SignalConnectionAsync()
     {
-        await using (var peer = new Peer((request, stream, _) => { SignalHeaders(request); Check(request.Target == "/v1/events?session_id=assigned%20%2F%2B", "Signal filter query lost"); return SignalReply(stream, SignalFrame("other")); }))
+        await using (var peer = new Peer((request, stream, _) => { SignalHeaders(request); Check(request.Target == "/v1/events?connection_id=assigned%20%2F%2B", "Signal filter query lost"); return SignalReply(stream, SignalFrame("other")); }))
         {
             using var client = new SignalClient(new(peer.Url, SignalSecret));
-            try { await foreach (var _ in client.EventsAsync("assigned /+")) { throw new Exception("Cross-session Signal event escaped"); } throw new Exception("Missing Signal mismatch error"); } catch (PolymorfaServerException error) { Check(error.Code == "invalid_response", "Signal mismatch error changed"); }
+            try { await foreach (var _ in client.EventsAsync("assigned /+")) { throw new Exception("Cross-connection Signal event escaped"); } throw new Exception("Missing Signal mismatch error"); } catch (PolymorfaServerException error) { Check(error.Code == "invalid_response", "Signal mismatch error changed"); }
         }
         foreach (var filter in new string?[] { null, "s" })
         {
             await using var peer = new Peer((request, stream, _) => { SignalHeaders(request); return SignalReply(stream, ": keepalive\r\n\r\n" + SignalFrame("s")); });
-            using var client = new SignalClient(new(peer.Url, SignalSecret)); var events = new List<SignalEvent>(); await foreach (var item in client.EventsAsync(filter)) events.Add(item); Check(events.Count == 1 && events[0].SessionId == "s", "Valid Signal filter/EOF changed");
+            using var client = new SignalClient(new(peer.Url, SignalSecret)); var events = new List<SignalEvent>(); await foreach (var item in client.EventsAsync(filter)) events.Add(item); Check(events.Count == 1 && events[0].ConnectionId == "s", "Valid Signal filter/EOF changed");
         }
-        Console.WriteLine("PASS public Signal: session filtering and unfiltered/clean EOF controls");
+        Console.WriteLine("PASS public Signal: connection filtering and unfiltered/clean EOF controls");
     }
     public static async Task SignalTruncationAsync()
     {
@@ -69,9 +69,9 @@ internal static class ConsumerRepairTests
     }
     public static async Task SignalDeadlineAsync()
     {
-        await using var peer = new Peer(async (request, stream, stop) => { SignalHeaders(request); await Task.Delay(160, stop); var body = "{\"node_id\":\"n\",\"sessions\":[]}"; await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {body.Length}\r\nConnection: close\r\n\r\n"), stop); await Task.Delay(240, stop); await stream.WriteAsync(Encoding.UTF8.GetBytes(body), stop); });
+        await using var peer = new Peer(async (request, stream, stop) => { SignalHeaders(request); await Task.Delay(160, stop); var body = "{\"node_id\":\"n\",\"connections\":[]}"; await stream.WriteAsync(Encoding.ASCII.GetBytes($"HTTP/1.1 200 OK\r\nContent-Type: application/json\r\nContent-Length: {body.Length}\r\nConnection: close\r\n\r\n"), stop); await Task.Delay(240, stop); await stream.WriteAsync(Encoding.UTF8.GetBytes(body), stop); });
         using var client = new SignalClient(new(peer.Url, SignalSecret) { Timeout = TimeSpan.FromMilliseconds(300) });
-        try { await client.SessionsAsync(); throw new Exception("Signal header time reset body deadline"); } catch (PolymorfaTimeoutException) { }
+        try { await client.ConnectionsAsync(); throw new Exception("Signal header time reset body deadline"); } catch (PolymorfaTimeoutException) { }
         Console.WriteLine("PASS public Signal: finite JSON shares header/body deadline");
     }
     public static async Task MediaAsync()
@@ -151,10 +151,10 @@ internal static class ConsumerRepairTests
                         await socket.SendAsync(Encoding.UTF8.GetBytes(media ? "{\"type\":\"ready\",\"sampleRate\":16000,\"video\":false}" : "{\"type\":\"ready\"}").AsMemory(), WebSocketMessageType.Text, true, stop);
                         await Task.Delay(Timeout.Infinite, stop);
                     });
-                    var options = new CallsSocketOptions { BaseUrl = new(peer.Url.AbsoluteUri.TrimEnd('/') + prefix), Session = "session/a ?&b", Participant = "agent:one@example.test", Heartbeat = TimeSpan.Zero };
+                    var options = new CallsSocketOptions { BaseUrl = new(peer.Url.AbsoluteUri.TrimEnd('/') + prefix), Connection = "connection/a ?&b", Participant = "agent:one@example.test", Heartbeat = TimeSpan.Zero };
                     await using var socket = media ? await CallsSocket.OpenMediaAsync(new(credential), "call /?+", "connection_1", options) : await CallsSocket.OpenLifecycleAsync(new(credential), options);
                     var auth = await authenticated.Task; Check(auth.GetProperty("token").GetString() == credential && auth.GetProperty("type").GetString() == "auth", "First-frame Calls authentication changed");
-                    var expected = prefix.TrimEnd('/') + (media ? "/voip/calls/call%20%2F%3F%2B/media" : "/voip/ws" + (clientToken ? "" : "?session=session%2Fa%20%3F%26b&participant=agent%3Aone%40example.test"));
+                    var expected = prefix.TrimEnd('/') + (media ? "/voip/calls/call%20%2F%3F%2B/media" : "/voip/ws" + (clientToken ? "" : "?connection=connection%2Fa%20%3F%26b&participant=agent%3Aone%40example.test"));
                     Check(peer.Requests.Single().Target == expected, "Calls base prefix/escaping lost: " + peer.Requests.Single().Target + " expected " + expected);
                     if (media) { Check(auth.GetProperty("connectionId").GetString() == "connection_1", "Connection binding lost"); Check(clientToken ? !auth.TryGetProperty("participant", out _) : auth.GetProperty("participant").GetString() == options.Participant, "Participant authority changed"); }
                 }

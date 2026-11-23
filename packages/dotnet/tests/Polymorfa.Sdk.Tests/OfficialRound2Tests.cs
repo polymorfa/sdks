@@ -70,7 +70,7 @@ internal static class OfficialRound2Tests
     }
     private static void Batch()
     {
-        const string ev = """{"id":"e","session":"","timestamp":"now","event":"contact.update","payload":{"id":"new","parentBsuid":"new-p","identityChange":{"reason":"user_id_changed","messageId":"m","previous":{"id":"old","parentBsuid":"old-p"}}}}""";
+        const string ev = """{"id":"e","connection":"","timestamp":"now","event":"contact.update","payload":{"id":"new","parentBsuid":"new-p","identityChange":{"reason":"user_id_changed","messageId":"m","previous":{"id":"old","parentBsuid":"old-p"}}}}""";
         var e = JsonSerializer.Deserialize<JsonElement>(ev); var batch = new { @object = "event_batch", version = 1, id = "00000000-0000-4000-8000-000000000001", events = new[] { e, e } };
         var raw = JsonSerializer.SerializeToUtf8Bytes(batch); var sig = Convert.ToHexString(HMACSHA256.HashData("s"u8, raw));
         var delivery = (WebhookEventBatch)Webhooks.ConstructDelivery(raw, sig, "s"); Check(delivery.Events.Count == 2 && delivery.Events[0].Envelope.Id == "e");

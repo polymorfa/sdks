@@ -11,10 +11,10 @@ public sealed record UpdateProjectWarmupPlanRequest(bool? Enabled = null, int? W
 public sealed record ProjectInsuranceEvidence(string ProjectId, bool Enabled, bool BanInsuranceIncluded);
 public sealed record UpdateProjectInsuranceEvidenceRequest(bool Enabled);
 public sealed record ProjectHealthPolicyIntegrations(bool EmailConfigured, bool WebhookConfigured);
-public sealed record ProjectHealthPolicy(string ProjectId, long Version, bool Enabled, double Threshold, string SessionAction, decimal? SlowDownMps, bool EmailNotification, bool WebhookNotification, ProjectHealthPolicyIntegrations Integrations);
-public sealed record UpdateProjectHealthPolicyRequest(long Version, bool Enabled, double Threshold, string SessionAction, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] decimal? SlowDownMps, bool EmailNotification, bool WebhookNotification);
-public sealed record HybridMergeCandidateNumber(string Id, string Name, string Transport, string Status, bool CanBeAbsorbed);
-public sealed record HybridMergeCandidate(IReadOnlyList<HybridMergeCandidateNumber> Numbers, bool Eligible, string? IneligibleReason = null);
+public sealed record ProjectHealthPolicy(string ProjectId, long Version, bool Enabled, double Threshold, string ConnectionAction, decimal? SlowDownMps, bool EmailNotification, bool WebhookNotification, ProjectHealthPolicyIntegrations Integrations);
+public sealed record UpdateProjectHealthPolicyRequest(long Version, bool Enabled, double Threshold, string ConnectionAction, [property: JsonIgnore(Condition = JsonIgnoreCondition.Never)] decimal? SlowDownMps, bool EmailNotification, bool WebhookNotification);
+public sealed record HybridMergeCandidateConnection(string Id, string Name, ConnectionMethod Method, string Status, bool CanBeAbsorbed);
+public sealed record HybridMergeCandidate(IReadOnlyList<HybridMergeCandidateConnection> Connections, bool Eligible, string? IneligibleReason = null);
 public sealed partial class Projects
 {
     public Task<ApiResponse<DataEnvelope<ProjectSafeMode>>> GetSafeModeAsync(string projectId, RequestOptions? options = null) => new ProjectSettings(http, projectId).GetSafeModeAsync(options);
@@ -54,6 +54,6 @@ public sealed class MessagingBanSafe : Resource
     public Task<ApiResponse<SuccessEnvelope<ProjectInsuranceEvidence>>> UpdateProjectInsuranceEvidenceAsync(string projectId, UpdateProjectInsuranceEvidenceRequest body, RequestOptions? options = null) => Write<ProjectInsuranceEvidence>(Path(projectId, "insurance-evidence"), body, options);
     public Task<ApiResponse<SuccessEnvelope<ProjectHealthPolicy>>> GetProjectHealthPolicyAsync(string projectId, RequestOptions? options = null) => Read<ProjectHealthPolicy>(Path(projectId, "health-policy"), options);
     public Task<ApiResponse<SuccessEnvelope<ProjectHealthPolicy>>> UpdateProjectHealthPolicyAsync(string projectId, UpdateProjectHealthPolicyRequest body, RequestOptions? options = null) => Write<ProjectHealthPolicy>(Path(projectId, "health-policy"), body, options);
-    public Task<ApiResponse<SuccessEnvelope<SessionSafeMode>>> GetSessionSafeModeAsync(string session, RequestOptions? options = null) => Read<SessionSafeMode>($"/messaging/{E(session)}/safe-mode", options);
-    public Task<ApiResponse<SuccessEnvelope<SessionSafeMode>>> UpdateSessionSafeModeAsync(string session, UpdateSessionSafeModeRequest body, RequestOptions? options = null) => Write<SessionSafeMode>($"/messaging/{E(session)}/safe-mode", body, options);
+    public Task<ApiResponse<SuccessEnvelope<ConnectionSafeMode>>> GetConnectionSafeModeAsync(string connection, RequestOptions? options = null) => Read<ConnectionSafeMode>($"/messaging/{E(connection)}/safe-mode", options);
+    public Task<ApiResponse<SuccessEnvelope<ConnectionSafeMode>>> UpdateConnectionSafeModeAsync(string connection, UpdateConnectionSafeModeRequest body, RequestOptions? options = null) => Write<ConnectionSafeMode>($"/messaging/{E(connection)}/safe-mode", body, options);
 }

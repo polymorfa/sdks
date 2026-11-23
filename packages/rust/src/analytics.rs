@@ -128,16 +128,16 @@ pub struct WhatsAppMetrics {
 pub struct AnalyticsSummary {
     #[serde(flatten)]
     pub metrics: WhatsAppMetrics,
-    pub total_numbers: u32,
-    pub measured_numbers: u32,
-    pub connected_numbers: u32,
+    pub total_connections: u32,
+    pub measured_connections: u32,
+    pub connected_connections: u32,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct NumberAnalytics {
+pub struct ConnectionAnalytics {
     #[serde(flatten)]
     pub metrics: WhatsAppMetrics,
-    pub session_id: String,
+    pub connection_id: String,
     pub project_id: String,
     pub project_name: String,
     pub name: String,
@@ -149,23 +149,23 @@ pub struct NumberAnalytics {
 pub struct CallSeries {
     #[serde(flatten)]
     pub metrics: CallOutcomeMetrics,
-    pub session_id: String,
+    pub connection_id: String,
     pub ts: u64,
 }
-model!(AnalyticsSeries {customer_online_signals:u64,customer_typing_signals:u64,primary_phone_messages:u64,other_device_messages:u64,primary_phone_replies:u64,phone_active_periods:u64,completed_phone_activity_periods:u64,phone_activity_ms:u64,phone_quiet_gaps:u64,phone_quiet_ms:u64,session_id:String,ts:u64,outgoing_messages:u64,incoming_messages:u64,send_failures:u64,business_replies:u64,average_business_response_ms:Option<f64>,online_ms:u64,disconnects:u64});
+model!(AnalyticsSeries {customer_online_signals:u64,customer_typing_signals:u64,primary_phone_messages:u64,other_device_messages:u64,primary_phone_replies:u64,phone_active_periods:u64,completed_phone_activity_periods:u64,phone_activity_ms:u64,phone_quiet_gaps:u64,phone_quiet_ms:u64,connection_id:String,ts:u64,outgoing_messages:u64,incoming_messages:u64,send_failures:u64,business_replies:u64,average_business_response_ms:Option<f64>,online_ms:u64,disconnects:u64});
 model!(AnalyticsPeriod {
     start: u64,
     end: u64
 });
 model!(RequestVitals {requests:u64,failures:u64,error_rate:Option<f64>});
-model!(WhatsAppAnalytics {call_series:Vec<CallSeries>,enabled:bool,period:AnalyticsPeriod,request_vitals:RequestVitals,summary:Option<AnalyticsSummary>,numbers:Vec<NumberAnalytics>,series:Vec<AnalyticsSeries>});
+model!(WhatsAppAnalytics {call_series:Vec<CallSeries>,enabled:bool,period:AnalyticsPeriod,request_vitals:RequestVitals,summary:Option<AnalyticsSummary>,connections:Vec<ConnectionAnalytics>,series:Vec<AnalyticsSeries>});
 #[derive(Clone, Debug, Default, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct AnalyticsParameters {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session_id: Option<String>,
+    pub connection_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub start: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -177,7 +177,7 @@ pub struct MetricsParameters {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub project_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session_id: Option<String>,
+    pub connection_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub window_hours: Option<u32>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -194,8 +194,8 @@ pub struct Analytics<'a> {
     pub(crate) project_id: Option<&'a str>,
 }
 impl Analytics<'_> {
-    fn filters(&self, project: Option<&str>, session: Option<&str>) -> Result<()> {
-        for v in [project, session].into_iter().flatten() {
+    fn filters(&self, project: Option<&str>, connection: Option<&str>) -> Result<()> {
+        for v in [project, connection].into_iter().flatten() {
             if crate::functions::identifier(&v.to_ascii_lowercase()).is_err() {
                 return Err(invalid(
                     "Analytics filters must be UUIDs",
@@ -247,7 +247,7 @@ impl Analytics<'_> {
         p: &AnalyticsParameters,
         o: RequestOptions,
     ) -> Result<ApiResponse<WhatsAppAnalytics>> {
-        self.filters(p.project_id.as_deref(), p.session_id.as_deref())?;
+        self.filters(p.project_id.as_deref(), p.connection_id.as_deref())?;
         if p.start.is_some_and(|v| v > 9_007_199_254_740_991)
             || p.end.is_some_and(|v| v > 9_007_199_254_740_991)
             || matches!((p.start,p.end),(Some(start),Some(end)) if end<start||end-start>366*86_400_000)
@@ -276,7 +276,7 @@ impl Analytics<'_> {
         p: &MetricsParameters,
         o: RequestOptions,
     ) -> Result<ApiResponse<String>> {
-        self.filters(p.project_id.as_deref(), p.session_id.as_deref())?;
+        self.filters(p.project_id.as_deref(), p.connection_id.as_deref())?;
         if p.window_hours.is_some_and(|v| !(1..=168).contains(&v)) {
             return Err(invalid(
                 "windowHours must be 1 to 168",

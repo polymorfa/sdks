@@ -20,7 +20,7 @@ function numericWire(Upsert $op): array
     }
     return $out;
 }
-$numericFixture = json_decode(file_get_contents(__DIR__.'/fixtures/numeric-storage/fixture.json'), true, flags:JSON_THROW_ON_ERROR);
+$numericFixture = json_decode(file_get_contents(__DIR__.'/fixtures/numeric-storage/fixture.v3.json'), true, flags:JSON_THROW_ON_ERROR);
 foreach ($numericFixture['strings'] as $v) {
     $batch = HistoryReducer::reduce('numeric', ['syncType' => 3,'chunkOrder' => 16,'progress' => $v['input']]);
     $value = null;
@@ -73,7 +73,7 @@ foreach (['memory','sqlite'] as $kind) {
         foreach ($h['cleanup'] as $i => $cleanup) {
             $ops = [];
             foreach ($cleanup['operations'] as $op) {
-                $ops[] = $op['kind'] === 'clearChat' ? new ClearChat($op['sessionId'], $op['chatId'], $op['upTo']) : new Upsert($op['entity'], $op['key'], array_map(fn ($v) => new FieldWrite($v['value'], $v['version']), $op['fields']));
+                $ops[] = $op['kind'] === 'clearChat' ? new ClearChat($op['connectionId'], $op['chatId'], $op['upTo']) : new Upsert($op['entity'], $op['key'], array_map(fn ($v) => new FieldWrite($v['value'], $v['version']), $op['fields']));
             }
             $engine->apply(new Batch('numeric', $ops));
             $engine->apply(new Batch('numeric', $batch->operations, 'late-'.$i));
@@ -86,7 +86,7 @@ foreach (['16',true,0,-1,1.5,9007199254740992,INF] as $revision) {
     numericCheck(!Schema::revision($revision), 'strict revision');
 }
 try {
-    Rows::merge('messages', Rows::empty('messages', ['sessionId' => 'numeric','messageId' => 'strict']), ['timestamp' => new FieldWrite('16', 1)]);
+    Rows::merge('messages', Rows::empty('messages', ['connectionId' => 'numeric','messageId' => 'strict']), ['timestamp' => new FieldWrite('16', 1)]);
     throw new RuntimeException('numeric string accepted as generic row');
 } catch (StorageException) {
 }

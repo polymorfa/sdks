@@ -10,7 +10,7 @@ use serde_json::{json, Value};
 #[serde(rename_all = "camelCase")]
 pub struct StorageEvent {
     pub id: String,
-    pub session: String,
+    pub connection: String,
     pub timestamp: String,
     pub event: String,
     #[serde(default)]
@@ -26,7 +26,7 @@ impl std::fmt::Debug for StorageEvent {
             };
         f.debug_struct("StorageEvent")
             .field("id", &self.id)
-            .field("session", &self.session)
+            .field("connection", &self.connection)
             .field("timestamp", &self.timestamp)
             .field("event", &self.event)
             .field("payload", payload)
@@ -56,17 +56,17 @@ pub const STORED_EVENT_TYPES: &[&str] = &[
     "message.update",
     "message.vote",
     "newsletter.update",
-    "session.connected",
-    "session.logged_out",
-    "session.status",
+    "connection.connected",
+    "connection.logged_out",
+    "connection.status",
 ];
 pub fn reduce_event(event: &StorageEvent) -> OperationBatch {
     OperationBatch {
-        session_id: event.session.clone(),
+        connection_id: event.connection.clone(),
         event_id: Some(event.id.clone()),
         event_type: Some(event.event.clone()),
         operations: event_operations(
-            &event.session,
+            &event.connection,
             &event.event,
             &event.payload,
             iso_millis(&event.timestamp),
@@ -482,7 +482,7 @@ fn event_operations(s: &str, event: &str, p: &Value, at: f64) -> Vec<StorageOper
                     return vec![
                         upsert(Entity::Chats, s, &[("chatId", chat)], f, None),
                         StorageOperation::ClearChat {
-                            session_id: s.into(),
+                            connection_id: s.into(),
                             chat_id: chat.into(),
                             up_to: at,
                         },
@@ -612,7 +612,7 @@ fn event_operations(s: &str, event: &str, p: &Value, at: f64) -> Vec<StorageOper
             copy(&mut f, "muted", p, "muted", at);
             vec![upsert(Entity::Chats, s, &[("chatId", id)], f, None)]
         }
-        "session.connected" => {
+        "connection.connected" => {
             set(&mut f, "connected", true, at);
             for (out, input) in [
                 ("phoneNumber", "phoneNumber"),
@@ -624,9 +624,9 @@ fn event_operations(s: &str, event: &str, p: &Value, at: f64) -> Vec<StorageOper
             ] {
                 str_field(&mut f, out, p, input, at);
             }
-            vec![upsert(Entity::Sessions, s, &[], f, None)]
+            vec![upsert(Entity::Connections, s, &[], f, None)]
         }
-        "session.status" => {
+        "connection.status" => {
             let Some(v) = p["status"].as_str() else {
                 return vec![];
             };
@@ -640,9 +640,9 @@ fn event_operations(s: &str, event: &str, p: &Value, at: f64) -> Vec<StorageOper
                     .unwrap_or(Value::Null),
                 at,
             );
-            vec![upsert(Entity::Sessions, s, &[], f, None)]
+            vec![upsert(Entity::Connections, s, &[], f, None)]
         }
-        "session.logged_out" => {
+        "connection.logged_out" => {
             set(&mut f, "connected", false, at);
             str_field(&mut f, "loggedOutReason", p, "reason", at);
             put(
@@ -651,7 +651,7 @@ fn event_operations(s: &str, event: &str, p: &Value, at: f64) -> Vec<StorageOper
                 number(&p["code"]).map(|n| json!(n)),
                 at,
             );
-            vec![upsert(Entity::Sessions, s, &[], f, None)]
+            vec![upsert(Entity::Connections, s, &[], f, None)]
         }
         "history.sync" => {
             if p["kind"] == "history" {

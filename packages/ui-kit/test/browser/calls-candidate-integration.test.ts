@@ -52,7 +52,7 @@ it("drains queued browser candidates after a lifecycle socket drop and reconnect
     });
   });
   calls = createInternalBrowserCalls({
-    session: "support",
+    connection: "support",
     getClientToken: async () => "pmfa_ct_test",
     baseUrl: "https://api.polymorfa.test",
     fetch,

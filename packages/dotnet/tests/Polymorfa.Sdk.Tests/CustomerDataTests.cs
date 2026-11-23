@@ -12,10 +12,10 @@ internal static class CustomerDataTests
     {
         internal int Calls;
         public string Name => "wrapped-" + inner.Name;
-        public Task<WhatsAppUploadLocation> UploadAsync(string session, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default)
+        public Task<WhatsAppUploadLocation> UploadAsync(string connection, WhatsAppEncryptedUploadBody body, CancellationToken cancellation = default)
         {
             Calls++;
-            return inner.UploadAsync(session, body, cancellation);
+            return inner.UploadAsync(connection, body, cancellation);
         }
     }
     internal static async Task RunAsync(string root)

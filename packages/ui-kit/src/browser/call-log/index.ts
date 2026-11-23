@@ -13,7 +13,7 @@ export type CallLogOutcome =
 /** One call. `peer` is the other party, as your records hold it. */
 export interface CallLogEntry {
   readonly id: string;
-  readonly session?: string;
+  readonly connection?: string;
   readonly direction: "inbound" | "outbound";
   readonly outcome: CallLogOutcome;
   readonly video: boolean;
@@ -271,7 +271,7 @@ function entry(record: BrowserCallRecord): CallLogEntry {
   const peer = record.peer ?? {};
   return {
     id: record.callId,
-    session: record.sessionId,
+    connection: record.connectionId,
     direction: record.direction,
     outcome,
     video: record.hasVideo,
@@ -291,14 +291,14 @@ function entry(record: BrowserCallRecord): CallLogEntry {
 }
 
 /**
- * The default call log source: `GET /messaging/{session}/calls` with the
+ * The default call log source: `GET /messaging/{connection}/calls` with the
  * client token (`read_calls`). Each page returns the callers' identities.
  * Pass `names` to show saved contact names instead of numbers.
  */
 export function createApiCallLogSource(
   client: PolymorfaClient,
   options: {
-    readonly session?: string;
+    readonly connection?: string;
     /** Calls per page, 1 to 100. Default 50. */
     readonly limit?: number;
     /** A display name for a caller, for example from the contacts directory. */
@@ -312,7 +312,7 @@ export function createApiCallLogSource(
     async list(cursor, signal) {
       if (!client.can("read_calls")) missingPermission("read_calls");
       const response = await withTokenRetry(client, () =>
-        client.messaging(options.session).calls.list(
+        client.messaging(options.connection).calls.list(
           {
             limit: options.limit ?? 50,
             ...(cursor === undefined ? {} : { cursor }),

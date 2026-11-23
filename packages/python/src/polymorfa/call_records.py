@@ -24,7 +24,7 @@ State = Literal["offered", "accepted", "rejected", "missed", "ended"]
 class Record(TypedDict):
     callId: str
     projectId: str | None
-    sessionId: str
+    connectionId: str
     direction: Direction
     upstream: Upstream
     outcome: Outcome
@@ -119,7 +119,7 @@ class AppReports(TypedDict):
 
 class RecordSummary(TypedDict):
     callId: str
-    sessionId: str
+    connectionId: str
     projectId: str | None
     direction: Direction
     state: State
@@ -149,7 +149,7 @@ class History(TypedDict):
 
 class Correlation(TypedDict):
     callId: str
-    sessionId: str
+    connectionId: str
 
 
 class Detail(TypedDict):
@@ -190,7 +190,7 @@ class Stats(TypedDict):
     since: str
     until: str
     timezone: str
-    groupBy: Literal["day", "hour", "session", "outcome"]
+    groupBy: Literal["day", "hour", "connection", "outcome"]
     totals: StatsMetrics
     groups: list[StatsGroup]
     groupsTruncated: bool
@@ -199,7 +199,7 @@ class Stats(TypedDict):
 
 class Filters(TypedDict, total=False):
     projectId: str
-    sessionId: str
+    connectionId: str
     direction: Direction
     upstream: Upstream
     outcome: Outcome
@@ -208,7 +208,7 @@ class Filters(TypedDict, total=False):
 
 
 class StatsParams(Filters, total=False):
-    groupBy: Literal["day", "hour", "session", "outcome"]
+    groupBy: Literal["day", "hour", "connection", "outcome"]
     timezone: str
 
 
@@ -278,8 +278,8 @@ class CallRecords(PlatformResource):
             query["projectId"] = self._project_id
         elif "projectId" in params:
             query["projectId"] = _text(params["projectId"], "projectId", 64)
-        if "sessionId" in params:
-            query["sessionId"] = _text(params["sessionId"], "sessionId", 128)
+        if "connectionId" in params:
+            query["connectionId"] = _text(params["connectionId"], "connectionId", 128)
         for key, allowed in [
             ("direction", {"inbound", "outbound"}),
             ("upstream", {"linked_device", "cloud_api"}),
@@ -312,7 +312,7 @@ class CallRecords(PlatformResource):
         params = {} if params is None else params
         query = self._filters(params)
         if "groupBy" in params:
-            if params["groupBy"] not in {"day", "hour", "session", "outcome"}:
+            if params["groupBy"] not in {"day", "hour", "connection", "outcome"}:
                 raise ConfigurationError("groupBy")
             query["groupBy"] = params["groupBy"]
         if "timezone" in params:

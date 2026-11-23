@@ -24,7 +24,7 @@ interface Step {
 }
 const fixture = JSON.parse(
   readFileSync(
-    new URL("../history-edit-guard-fixtures.json", import.meta.url),
+    new URL("../history-edit-guard-fixtures.v3.json", import.meta.url),
     "utf8",
   ),
 ) as {

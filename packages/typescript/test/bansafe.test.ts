@@ -15,7 +15,7 @@ import {
   type BanSafeTelemetryHistoryEnvelope,
   type DataEnvelope,
   type ProjectHealthPolicy,
-  type SessionSafeMode,
+  type ConnectionSafeMode,
   type SuccessEnvelope,
   MessagingBanSafeResource,
   MessagingClient,
@@ -68,15 +68,15 @@ describe("Client BanSafe resources", () => {
       cursor: "cursor/a",
       limit: 25,
     });
-    const detail = await client.banSafe.getHealth("session/a");
-    const history = await client.banSafe.listHealthHistory("session/a", {
+    const detail = await client.banSafe.getHealth("connection/a");
+    const history = await client.banSafe.listHealthHistory("connection/a", {
       since: "2026-09-07T00:00:00.000Z",
       limit: 12,
     });
     const signals = await client.banSafe.listSignals();
-    const telemetry = await client.banSafe.getTelemetry("session/a");
+    const telemetry = await client.banSafe.getTelemetry("connection/a");
     const telemetryHistory = await client.banSafe.listTelemetryHistory(
-      "session/a",
+      "connection/a",
       {
         since: "2026-09-07T00:00:00.000Z",
         until: "2026-09-08T00:00:00.000Z",
@@ -91,7 +91,7 @@ describe("Client BanSafe resources", () => {
     });
     const actions = await client.banSafe.listHealthActions({
       projectId: "project/a",
-      session: "session/a",
+      connection: "connection/a",
       status: "succeeded",
       cursor: "cursor/d",
       limit: 25,
@@ -122,13 +122,13 @@ describe("Client BanSafe resources", () => {
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/bansafe/health?projectId=project%2Fa&cursor=cursor%2Fa&limit=25",
-      "GET /platform/bansafe/health/session%2Fa",
-      "GET /platform/bansafe/health/session%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&limit=12",
+      "GET /platform/bansafe/health/connection%2Fa",
+      "GET /platform/bansafe/health/connection%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&limit=12",
       "GET /platform/bansafe/signals",
-      "GET /platform/bansafe/telemetry/session%2Fa",
-      "GET /platform/bansafe/telemetry/session%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&until=2026-09-08T00%3A00%3A00.000Z&cursor=cursor%2Fb&limit=10",
+      "GET /platform/bansafe/telemetry/connection%2Fa",
+      "GET /platform/bansafe/telemetry/connection%2Fa/history?since=2026-09-07T00%3A00%3A00.000Z&until=2026-09-08T00%3A00%3A00.000Z&cursor=cursor%2Fb&limit=10",
       "GET /platform/bansafe/collection?projectId=project%2Fa&cursor=cursor%2Fc&limit=25",
-      "GET /platform/bansafe/health-actions?projectId=project%2Fa&session=session%2Fa&status=succeeded&cursor=cursor%2Fd&limit=25",
+      "GET /platform/bansafe/health-actions?projectId=project%2Fa&connection=connection%2Fa&status=succeeded&cursor=cursor%2Fd&limit=25",
     ]);
   });
 
@@ -136,7 +136,7 @@ describe("Client BanSafe resources", () => {
     const { client, requests } = await testClient();
     await client.banSafe.listFindings({
       projectId: "project/a",
-      session: "session/a",
+      connection: "connection/a",
       status: "open",
       severity: "critical",
       limit: 5,
@@ -147,11 +147,11 @@ describe("Client BanSafe resources", () => {
     });
     await client.banSafe.listIncidents({
       projectId: "project/a",
-      session: "session/a",
+      connection: "connection/a",
     });
     await client.banSafe.createIncident(
       {
-        session: "session/a",
+        connection: "connection/a",
         occurredAt: "2026-09-08T00:00:00.000Z",
         note: "WhatsApp restricted sending",
       },
@@ -160,29 +160,29 @@ describe("Client BanSafe resources", () => {
     await client.banSafe.retractIncident("incident/a");
     await client.banSafe.listClaims({
       projectId: "project/a",
-      session: "session/a",
+      connection: "connection/a",
       status: "under_review",
     });
     await client.banSafe.getClaim("claim/a");
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "GET /platform/bansafe/findings?projectId=project%2Fa&session=session%2Fa&status=open&severity=critical&limit=5",
+      "GET /platform/bansafe/findings?projectId=project%2Fa&connection=connection%2Fa&status=open&severity=critical&limit=5",
       "GET /platform/bansafe/enforcement?projectId=project%2Fa&rung=throttle",
-      "GET /platform/bansafe/incidents?projectId=project%2Fa&session=session%2Fa",
+      "GET /platform/bansafe/incidents?projectId=project%2Fa&connection=connection%2Fa",
       "POST /platform/bansafe/incidents",
       "POST /platform/bansafe/incidents/incident%2Fa/retract",
-      "GET /platform/bansafe/claims?projectId=project%2Fa&session=session%2Fa&status=under_review",
+      "GET /platform/bansafe/claims?projectId=project%2Fa&connection=connection%2Fa&status=under_review",
       "GET /platform/bansafe/claims/claim%2Fa",
     ]);
     expect(requests[3]?.headers["idempotency-key"]).toBe("incident/a");
     expect(JSON.parse(requests[3]!.body)).toEqual({
-      session: "session/a",
+      connection: "connection/a",
       occurredAt: "2026-09-08T00:00:00.000Z",
       note: "WhatsApp restricted sending",
     });
   });
 
-  it("maps project and session safety settings to their typed owners", async () => {
+  it("maps project and connection safety settings to their typed owners", async () => {
     const { client, requests } = await testClient();
     await client.projects.getSafeMode("project/a");
     await client.projects.updateSafeMode("project/a", { pacing: "jittered" });
@@ -201,13 +201,15 @@ describe("Client BanSafe resources", () => {
       version: 4,
       enabled: true,
       threshold: 50,
-      sessionAction: "slow_down",
+      connectionAction: "slow_down",
       slowDownMps: 0.5,
       emailNotification: true,
       webhookNotification: true,
     });
-    await client.sessions.getSafeMode("session/a");
-    await client.sessions.updateSafeMode("session/a", { typing: "inherit" });
+    await client.connections.getSafeMode("connection/a");
+    await client.connections.updateSafeMode("connection/a", {
+      typing: "inherit",
+    });
 
     expectTypeOf(policy).toEqualTypeOf<
       ApiResponse<DataEnvelope<ProjectHealthPolicy>>
@@ -221,8 +223,8 @@ describe("Client BanSafe resources", () => {
       "PUT /platform/projects/project%2Fa/insurance-evidence",
       "GET /platform/projects/project%2Fa/health-policy",
       "PUT /platform/projects/project%2Fa/health-policy",
-      "GET /platform/sessions/session%2Fa/safe-mode",
-      "PUT /platform/sessions/session%2Fa/safe-mode",
+      "GET /platform/connections/connection%2Fa/safe-mode",
+      "PUT /platform/connections/connection%2Fa/safe-mode",
     ]);
   });
 });
@@ -269,18 +271,18 @@ describe("MessagingClient BanSafe settings", () => {
       version: 2,
       enabled: true,
       threshold: 40,
-      sessionAction: "stop",
+      connectionAction: "stop",
       slowDownMps: null,
       emailNotification: false,
       webhookNotification: true,
     });
-    const session = await client.banSafe.getSessionSafeMode("support/eu");
-    await client.banSafe.updateSessionSafeMode("support/eu", {
+    const connection = await client.banSafe.getConnectionSafeMode("support/eu");
+    await client.banSafe.updateConnectionSafeMode("support/eu", {
       reads: "off",
     });
 
-    expectTypeOf(session).toEqualTypeOf<
-      ApiResponse<SuccessEnvelope<SessionSafeMode>>
+    expectTypeOf(connection).toEqualTypeOf<
+      ApiResponse<SuccessEnvelope<ConnectionSafeMode>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /messaging/projects/project%2Fa/safe-mode",
@@ -312,7 +314,7 @@ describe("MessagingClient BanSafe settings", () => {
       PolymorfaConfigurationError,
     );
     expect(() =>
-      client.banSafe.updateSessionSafeMode("support", { pacing: "off" }),
+      client.banSafe.updateConnectionSafeMode("support", { pacing: "off" }),
     ).toThrow(PolymorfaConfigurationError);
     expect(requests).toEqual([]);
 

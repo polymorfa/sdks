@@ -9,13 +9,13 @@ export class IdentitiesResource {
   constructor(private readonly transport: HttpTransport) {}
 
   resolve(
-    session: string,
+    connection: string,
     params: ResolveIdentityParams,
     options: RequestOptions = {},
   ): Promise<ApiResponse<ResolveIdentityResponse>> {
     return this.transport.request({
       method: "GET",
-      path: `/messaging/${encodeURIComponent(session)}/identities/resolve`,
+      path: `/messaging/${encodeURIComponent(connection)}/identities/resolve`,
       query: {
         phoneNumber: params.phoneNumber,
         id: params.id,

@@ -1,7 +1,7 @@
 import { team } from "../../../../lib/polymorfa.js";
 import { action, route, text, unknownAction } from "../../../../lib/route.js";
 
-// Audit trail, leaked-credential incidents and session bans.
+// Audit trail, leaked-credential incidents and connection bans.
 export const GET = route("admin", async ({ url }) => {
   const client = team();
   const auditAction = url.searchParams.get("action") ?? undefined;
@@ -11,14 +11,14 @@ export const GET = route("admin", async ({ url }) => {
       ...(auditAction === undefined ? {} : { action: auditAction }),
     }),
     client.securityIncidents.list(),
-    client.sessionBans.list(),
-    client.sessionBans.listActive(),
+    client.connectionBans.list(),
+    client.connectionBans.listActive(),
   ]);
   return {
     auditLogs: auditLogs.data.data,
     securityIncidents: incidents.data.data,
-    sessionBans: bans.data.data,
-    activeSessionBans: activeBans.data.data,
+    connectionBans: bans.data.data,
+    activeConnectionBans: activeBans.data.data,
   };
 });
 

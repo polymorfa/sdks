@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 $mode = $argv[1] ?? 'valid';
-$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/d1-bridge-fixtures.json'), true, flags:JSON_THROW_ON_ERROR);
+$fixture = json_decode(file_get_contents(__DIR__.'/fixtures/d1-bridge-fixtures.v3.json'), true, flags:JSON_THROW_ON_ERROR);
 $server = stream_socket_server('tcp://127.0.0.1:0', $errno, $error);
 echo json_encode(['url' => 'http://'.stream_socket_get_name($server, false)])."\n";
 flush();
@@ -46,25 +46,25 @@ for (;;) {
         $data = ['ok' => true];
     }
     if ($path === '/get') {
-        $data = [['_id' => 'kother','_rev' => $mode === 'malformed-row' ? 0 : 1,'_v' => new stdClass(),'sessionId' => 'other']];
+        $data = [['_id' => 'kother','_rev' => $mode === 'malformed-row' ? 0 : 1,'_v' => new stdClass(),'connectionId' => 'other']];
     }
     if ($path === '/commit') {
         $data = ['ok' => false,'conflicts' => ['foreign']];
     }
     if ($path === '/query') {
-        $data = [['_id' => 'kother:m1','_rev' => 1,'_v' => new stdClass(),'sessionId' => 'other','messageId' => 'm1','chatId' => 'chat','timestamp' => 1]];
+        $data = [['_id' => 'kother:m1','_rev' => 1,'_v' => new stdClass(),'connectionId' => 'other','messageId' => 'm1','chatId' => 'chat','timestamp' => 1]];
         if ($mode === 'reordered-query') {
-            $data = [['_id' => 'kexpected:m2','_rev' => 1,'_v' => new stdClass(),'sessionId' => 'expected','messageId' => 'm2','chatId' => 'chat','timestamp' => 2],['_id' => 'kexpected:m1','_rev' => 1,'_v' => new stdClass(),'sessionId' => 'expected','messageId' => 'm1','chatId' => 'chat','timestamp' => 1]];
+            $data = [['_id' => 'kexpected:m2','_rev' => 1,'_v' => new stdClass(),'connectionId' => 'expected','messageId' => 'm2','chatId' => 'chat','timestamp' => 2],['_id' => 'kexpected:m1','_rev' => 1,'_v' => new stdClass(),'connectionId' => 'expected','messageId' => 'm1','chatId' => 'chat','timestamp' => 1]];
         }
     }
 
-    $envelope = ['contract' => 'polymorfa-d1-storage-v1','schemaVersion' => 2,'authority' => $fixture['authority'],'tablePrefix' => $fixture['tablePrefix'],'data' => $data];
+    $envelope = ['contract' => 'polymorfa-d1-storage-v1','schemaVersion' => 3,'authority' => $fixture['authority'],'tablePrefix' => $fixture['tablePrefix'],'data' => $data];
     if ($mode === 'authority') {
         $envelope['authority'] = 'other';
     }if ($mode === 'prefix') {
         $envelope['tablePrefix'] = 'other_';
     }if ($mode === 'schema') {
-        $envelope['schemaVersion'] = 3;
+        $envelope['schemaVersion'] = 4;
     }if ($mode === 'capabilities') {
         $envelope['data']['atomicCommit'] = false;
     }

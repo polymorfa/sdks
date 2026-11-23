@@ -61,7 +61,7 @@ final class CampaignFollowUpTypes
     private static function summary(array $summary): void
     {
         self::text($summary['id']);
-        self::text($summary['numberId']);
+        self::text($summary['connectionId']);
         self::text($summary['status']);
         self::nullableText($summary['anchorKind']);
         self::nullableText($summary['reason']);

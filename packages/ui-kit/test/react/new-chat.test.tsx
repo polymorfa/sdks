@@ -170,7 +170,7 @@ describe("<NewChat/>", () => {
             audience: "browser",
             expiresAt: Date.now() + 600_000,
             grant: {
-              session: "support",
+              connection: "support",
               conversations: "all",
               allow: ["read_contact", ...(manage ? ["groups_manage"] : [])],
             },
@@ -435,7 +435,7 @@ describe("<GroupDetails/>", () => {
           audience: "browser",
           expiresAt: Date.now() + 600_000,
           grant: {
-            session: "support",
+            connection: "support",
             conversations: "all",
             allow: ["groups_read", "groups_manage"],
           },
@@ -680,7 +680,7 @@ describe("public contact lists", () => {
           audience: "browser",
           expiresAt: Date.now() + 600_000,
           grant: {
-            session: "support",
+            connection: "support",
             conversations: "all",
             allow: ["read_contact"],
           },

@@ -28,7 +28,12 @@ file_put_contents($state, '[]');
 $socket = stream_socket_server('tcp://127.0.0.1:0', $errno, $message);
 $address = stream_socket_get_name($socket, false);
 fclose($socket);
-$server = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/raw-pagination-server.php'], [0 => ['pipe','r'],1 => ['pipe','w'],2 => ['pipe','w']], $pipes, null, ['POLYMORFA_RAW_PAGINATION_STATE' => $state] + getenv());
+$fixtureLogRoot = (getenv('POLYMORFA_TEST_WORK_DIR') ?: getenv('HOME').'/.polymorfa-agent-work').'/php-http-fixtures';
+if (!is_dir($fixtureLogRoot)) {
+    mkdir($fixtureLogRoot, 0700, true);
+}
+$fixtureLogPath = $fixtureLogRoot.'/raw_parity-'.getmypid().'.log';
+$server = proc_open([PHP_BINARY,'-S',$address,__DIR__.'/raw-pagination-server.php'], [0 => ['pipe','r'],1 => ['file',$fixtureLogPath,'a'],2 => ['file',$fixtureLogPath,'a']], $pipes, null, ['POLYMORFA_RAW_PAGINATION_STATE' => $state] + getenv());
 $http = new GuzzleHttp\Client(['timeout' => 3]);
 try {
     for ($i = 0;$i < 100;$i++) {

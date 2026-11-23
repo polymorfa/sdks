@@ -70,28 +70,28 @@ class ActionResult(TypedDict, Generic[Status]):
 
 class Channels(Resource):
     async def list(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[builtins.list[Channel]]]:
-        return await self._request("GET", self._path(session), options=options)
+        return await self._request("GET", self._path(connection), options=options)
 
     async def create(
-        self, session: str, body: CreateChannel, *, options: RequestOptions = O
+        self, connection: str, body: CreateChannel, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Channel] | Envelope[AsyncAccepted]]:
-        return await self._request("POST", self._path(session), body=body, options=options)
+        return await self._request("POST", self._path(connection), body=body, options=options)
 
     async def retrieve(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[Channel]]:
-        return await self._request("GET", self._path(session, channel_id), options=options)
+        return await self._request("GET", self._path(connection, channel_id), options=options)
 
     async def delete(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ActionResult[Literal["DELETED"]]] | Envelope[AsyncAccepted]]:
-        return await self._request("DELETE", self._path(session, channel_id), options=options)
+        return await self._request("DELETE", self._path(connection, channel_id), options=options)
 
     async def list_messages(
         self,
-        session: str,
+        connection: str,
         channel_id: str,
         params: MessagesParams | None = None,
         *,
@@ -99,14 +99,14 @@ class Channels(Resource):
     ) -> ApiResponse[Envelope[builtins.list[ChannelMessage]]]:
         return await self._request(
             "GET",
-            self._path(session, channel_id) + "/messages",
+            self._path(connection, channel_id) + "/messages",
             query=cast(Mapping[str, QueryValue], params or {}),
             options=options,
         )
 
     async def list_message_updates(
         self,
-        session: str,
+        connection: str,
         channel_id: str,
         params: UpdatesParams | None = None,
         *,
@@ -114,23 +114,23 @@ class Channels(Resource):
     ) -> ApiResponse[Envelope[builtins.list[ChannelMessage]]]:
         return await self._request(
             "GET",
-            self._path(session, channel_id) + "/message-updates",
+            self._path(connection, channel_id) + "/message-updates",
             query=cast(Mapping[str, QueryValue], params or {}),
             options=options,
         )
 
     async def mark_message_viewed(
-        self, session: str, channel_id: str, message_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, message_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success | Envelope[ActionResult[Literal["VIEWED"]]] | Envelope[AsyncAccepted]]:
         return await self._request(
             "POST",
-            self._path(session, channel_id) + "/messages/" + segment(message_id) + "/viewed",
+            self._path(connection, channel_id) + "/messages/" + segment(message_id) + "/viewed",
             options=options,
         )
 
     async def react_to_message(
         self,
-        session: str,
+        connection: str,
         channel_id: str,
         message_id: str,
         body: ChannelReaction,
@@ -141,53 +141,53 @@ class Channels(Resource):
     ]:
         return await self._request(
             "POST",
-            self._path(session, channel_id) + "/messages/" + segment(message_id) + "/reaction",
+            self._path(connection, channel_id) + "/messages/" + segment(message_id) + "/reaction",
             body=body,
             options=options.with_idempotency_key(),
         )
 
     async def subscribe_to_live_updates(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[LiveUpdates] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "POST", self._path(session, channel_id) + "/live-updates", options=options
+            "POST", self._path(connection, channel_id) + "/live-updates", options=options
         )
 
     async def follow(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[
         Success | Envelope[ActionResult[Literal["FOLLOWED"]]] | Envelope[AsyncAccepted]
     ]:
         return await self._request(
-            "POST", self._path(session, channel_id) + "/follow", options=options
+            "POST", self._path(connection, channel_id) + "/follow", options=options
         )
 
     async def unfollow(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[
         Success | Envelope[ActionResult[Literal["UNFOLLOWED"]]] | Envelope[AsyncAccepted]
     ]:
         return await self._request(
-            "POST", self._path(session, channel_id) + "/unfollow", options=options
+            "POST", self._path(connection, channel_id) + "/unfollow", options=options
         )
 
     async def mute(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success | Envelope[ActionResult[Literal["MUTED"]]] | Envelope[AsyncAccepted]]:
         return await self._request(
-            "POST", self._path(session, channel_id) + "/mute", options=options
+            "POST", self._path(connection, channel_id) + "/mute", options=options
         )
 
     async def unmute(
-        self, session: str, channel_id: str, *, options: RequestOptions = O
+        self, connection: str, channel_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[
         Success | Envelope[ActionResult[Literal["UNMUTED"]]] | Envelope[AsyncAccepted]
     ]:
         return await self._request(
-            "POST", self._path(session, channel_id) + "/unmute", options=options
+            "POST", self._path(connection, channel_id) + "/unmute", options=options
         )
 
     @staticmethod
-    def _path(session: str, channel_id: str | None = None) -> str:
-        root = f"/messaging/{segment(session)}/channels"
+    def _path(connection: str, channel_id: str | None = None) -> str:
+        root = f"/messaging/{segment(connection)}/channels"
         return root + "/" + segment(channel_id) if channel_id is not None else root

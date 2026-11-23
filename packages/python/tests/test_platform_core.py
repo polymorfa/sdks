@@ -18,8 +18,8 @@ PROJECT = {
 STATS = {k: v for k, v in PROJECT.items() if k != "id"} | {
     "_id": "project_1",
     "_creationTime": 1,
-    "activeSessions": 1,
-    "totalSessions": 2,
+    "activeConnections": 1,
+    "totalConnections": 2,
     "totalMessages": 3,
     "lastActivity": None,
     "iconUrl": None,
@@ -38,18 +38,18 @@ ENROLLED = {k: PROJECT[k] for k in ["id", "teamId", "name", "slug", "stage"]} | 
 }
 CANDIDATES = [
     {
-        "numbers": [
+        "connections": [
             {
                 "id": "number_1",
                 "name": "support",
-                "transport": "linked_devices",
+                "method": "linked_device",
                 "status": "CONNECTED",
                 "canBeAbsorbed": False,
             },
             {
                 "id": "number_2",
                 "name": "official",
-                "transport": "official_api",
+                "method": "cloud_api",
                 "status": "CONNECTED",
                 "canBeAbsorbed": True,
             },
@@ -72,8 +72,8 @@ TIER = {
         "replacesWindowId": None,
         "hybridTransition": {
             "action": "merge",
-            "absorbNumberId": "number_2",
-            "survivingNumberId": "number_1",
+            "absorbConnectionId": "number_2",
+            "survivingConnectionId": "number_1",
             "status": "running",
             "failureReason": None,
             "metaDisconnectRequired": False,
@@ -82,7 +82,7 @@ TIER = {
     },
 }
 CAPABILITIES = {
-    "session": "support",
+    "connection": "support",
     "projectId": "project_1",
     "status": "synced",
     "syncedAt": "2026-10-11T00:00:00Z",
@@ -100,8 +100,8 @@ CAPABILITIES = {
         {"key": "future.unknown", "source": None, "kind": "feature", "unit": None, "value": None},
     ],
 }
-SESSION = {
-    "sessionId": "support",
+CONNECTION = {
+    "connectionId": "support",
     "name": "support",
     "tenantId": "team_1",
     "type": "linked_device",
@@ -110,11 +110,11 @@ SESSION = {
     "createdAt": "2026-10-11T00:00:00Z",
     "updatedAt": "2026-10-11T00:00:00Z",
 }
-PLATFORM_SESSION = {
+PLATFORM_CONNECTION = {
     "_id": "number_1",
     "_creationTime": 1,
     "projectId": "project_1",
-    "sessionId": "support",
+    "connectionId": "support",
     "name": "support",
     "phone": None,
     "platform": None,
@@ -127,8 +127,8 @@ PLATFORM_SESSION = {
     "paidUntil": None,
 }
 UPDATE = {"configuration": {"reset": ["historySync.mode"]}, "revision": 1}
-BATCH = {"projectId": "project_1", "sessionIds": ["support", "sales"]}
-QUOTE = {"tierOverride": "pro", "hybridMerge": {"absorbNumberId": "number_2"}}
+BATCH = {"projectId": "project_1", "connectionIds": ["support", "sales"]}
+QUOTE = {"tierOverride": "pro", "hybridMerge": {"absorbConnectionId": "number_2"}}
 CASES = [
     ("GET", "/platform/projects", None, {}, {"data": [STATS]}, lambda c: c.projects.list()),
     (
@@ -175,99 +175,99 @@ CASES = [
     ),
     (
         "GET",
-        "/platform/sessions",
+        "/platform/connections",
         None,
         {"projectId": "project_1"},
-        {"data": [PLATFORM_SESSION]},
-        lambda c: c.sessions.list(project_id="project_1"),
+        {"data": [PLATFORM_CONNECTION]},
+        lambda c: c.connections.list(project_id="project_1"),
     ),
     (
         "GET",
-        "/platform/sessions/support",
+        "/platform/connections/support",
         None,
         {},
-        {"success": True, "data": SESSION},
-        lambda c: c.sessions.retrieve("support"),
+        {"success": True, "data": CONNECTION},
+        lambda c: c.connections.retrieve("support"),
     ),
     (
         "PUT",
-        "/platform/sessions/support",
+        "/platform/connections/support",
         UPDATE,
         {},
-        {"success": True, "data": SESSION},
-        lambda c: c.sessions.update("support", UPDATE),
+        {"success": True, "data": CONNECTION},
+        lambda c: c.connections.update("support", UPDATE),
     ),
     (
         "POST",
-        "/platform/sessions/support/start",
+        "/platform/connections/support/start",
         {"projectId": "project_1"},
         {},
-        {"data": {"starting": True, "sessionId": "support"}},
-        lambda c: c.sessions.start("support", project_id="project_1"),
+        {"data": {"starting": True, "connectionId": "support"}},
+        lambda c: c.connections.start("support", project_id="project_1"),
     ),
     (
         "POST",
-        "/platform/sessions/support/stop",
+        "/platform/connections/support/stop",
         {},
         {},
-        {"data": {"stopping": True, "sessionId": "support"}},
-        lambda c: c.sessions.stop("support"),
+        {"data": {"stopping": True, "connectionId": "support"}},
+        lambda c: c.connections.stop("support"),
     ),
     (
         "DELETE",
-        "/platform/sessions/support",
+        "/platform/connections/support",
         None,
         {},
-        {"data": {"removed": True, "sessionId": "support"}},
-        lambda c: c.sessions.delete("support"),
+        {"data": {"removed": True, "connectionId": "support"}},
+        lambda c: c.connections.delete("support"),
     ),
     (
         "POST",
-        "/platform/sessions/stop",
+        "/platform/connections/stop",
         BATCH,
         {},
         {"data": {"stopping": 2}},
-        lambda c: c.sessions.stop_many(BATCH),
+        lambda c: c.connections.stop_many(BATCH),
     ),
     (
         "POST",
-        "/platform/sessions/delete",
+        "/platform/connections/delete",
         BATCH,
         {},
         {"data": {"removed": 2}},
-        lambda c: c.sessions.delete_many(BATCH),
+        lambda c: c.connections.delete_many(BATCH),
     ),
     (
         "POST",
-        "/platform/sessions/support/tier-quotes",
+        "/platform/connections/support/tier-quotes",
         QUOTE,
         {},
         {"data": TIER},
-        lambda c: c.sessions.quote_tier_change("support", QUOTE),
+        lambda c: c.connections.quote_tier_change("support", QUOTE),
     ),
     (
         "GET",
-        "/platform/sessions/support/tier-quotes/quote_1",
+        "/platform/connections/support/tier-quotes/quote_1",
         None,
         {},
         {"data": TIER},
-        lambda c: c.sessions.retrieve_tier_change("support", "quote_1"),
+        lambda c: c.connections.retrieve_tier_change("support", "quote_1"),
     ),
     (
         "PATCH",
-        "/platform/sessions/support",
+        "/platform/connections/support",
         {"quoteId": "quote_1"},
         {},
         {"data": TIER},
-        lambda c: c.sessions.set_tier_override("support", {"quoteId": "quote_1"}),
+        lambda c: c.connections.set_tier_override("support", {"quoteId": "quote_1"}),
     ),
     (
         "GET",
-        "/platform/sessions/support/capabilities",
+        "/platform/connections/support/capabilities",
         None,
         {},
         {"data": CAPABILITIES},
-        lambda c: c.sessions.get_capabilities("support"),
+        lambda c: c.connections.get_capabilities("support"),
     ),
 ]
 
@@ -316,13 +316,13 @@ async def test_quote_confirm_guards_and_hybrid_variants():
         http_transport=httpx.MockTransport(handler),
     ) as client:
         with pytest.raises(ValidationError):
-            await client.sessions.set_tier_override("support", {"quoteId": " "})
+            await client.connections.set_tier_override("support", {"quoteId": " "})
         with pytest.raises(ValidationError):
-            await client.sessions.quote_tier_change(
+            await client.connections.quote_tier_change(
                 "support",
                 {
                     "tierOverride": "standard",
-                    "hybridMerge": {"absorbNumberId": "number_2"},
+                    "hybridMerge": {"absorbConnectionId": "number_2"},
                     "hybridResolution": {"action": "keep", "transport": "linked_devices"},
                 },
             )
@@ -330,11 +330,11 @@ async def test_quote_confirm_guards_and_hybrid_variants():
             {"action": "keep", "transport": "official_api"},
             {
                 "action": "split",
-                "existingNumberTransport": "linked_devices",
-                "newNumberName": "official",
+                "existingConnectionTransport": "linked_devices",
+                "newConnectionName": "official",
             },
         ]:
-            result = await client.sessions.quote_tier_change(
+            result = await client.connections.quote_tier_change(
                 "support", {"tierOverride": "standard", "hybridResolution": resolution}
             )
             assert result.data["data"]["quote"]["amountCents"] == 1.125

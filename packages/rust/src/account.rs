@@ -88,21 +88,21 @@ pub struct Contacts<'a>(pub(crate) &'a HttpTransport);
 impl Contacts<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<Contact>>>> {
-        self.0.get(&path(session, "contacts"), options).await
+        self.0.get(&path(connection, "contacts"), options).await
     }
     pub async fn check(
         &self,
-        session: &str,
+        connection: &str,
         phones: &[String],
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<CheckContactResult>>>> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &path(session, "contacts/check"),
+                &path(connection, "contacts/check"),
                 &[("phone", phones.join(","))],
                 None,
                 options,
@@ -111,85 +111,85 @@ impl Contacts<'_> {
     }
     pub async fn blocklist(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ContactBlocklist>>> {
         self.0
-            .get(&path(session, "contacts/blocked"), options)
+            .get(&path(connection, "contacts/blocked"), options)
             .await
     }
     pub async fn retrieve(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Contact>>> {
         self.0
-            .get(&contact_path(session, contact_id), options)
+            .get(&contact_path(connection, contact_id), options)
             .await
     }
     pub async fn picture(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ContactProfilePicture>>> {
         self.0
             .get(
-                &format!("{}/picture", contact_path(session, contact_id)),
+                &format!("{}/picture", contact_path(connection, contact_id)),
                 options,
             )
             .await
     }
     pub async fn info(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ContactUserInfo>>> {
         self.0
             .get(
-                &format!("{}/info", contact_path(session, contact_id)),
+                &format!("{}/info", contact_path(connection, contact_id)),
                 options,
             )
             .await
     }
     pub async fn devices(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Vec<String>>>> {
         self.0
             .get(
-                &format!("{}/devices", contact_path(session, contact_id)),
+                &format!("{}/devices", contact_path(connection, contact_id)),
                 options,
             )
             .await
     }
     pub async fn business_profile(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessProfile>>> {
         self.0
             .get(
-                &format!("{}/business-profile", contact_path(session, contact_id)),
+                &format!("{}/business-profile", contact_path(connection, contact_id)),
                 options,
             )
             .await
     }
     pub async fn block(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/block", contact_path(session, contact_id)),
+                &format!("{}/block", contact_path(connection, contact_id)),
                 &[],
                 None,
                 options,
@@ -198,14 +198,14 @@ impl Contacts<'_> {
     }
     pub async fn unblock(
         &self,
-        session: &str,
+        connection: &str,
         contact_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &format!("{}/unblock", contact_path(session, contact_id)),
+                &format!("{}/unblock", contact_path(connection, contact_id)),
                 &[],
                 None,
                 options,
@@ -213,11 +213,11 @@ impl Contacts<'_> {
             .await
     }
 }
-fn contact_path(session: &str, id: &str) -> String {
-    path(session, &format!("contacts/{}", encode(id)))
+fn contact_path(connection: &str, id: &str) -> String {
+    path(connection, &format!("contacts/{}", encode(id)))
 }
-fn path(session: &str, suffix: &str) -> String {
-    format!("/messaging/{}/{suffix}", encode(session))
+fn path(connection: &str, suffix: &str) -> String {
+    format!("/messaging/{}/{suffix}", encode(connection))
 }
 
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -248,21 +248,21 @@ pub struct Profile<'a>(pub(crate) &'a HttpTransport);
 impl Profile<'_> {
     pub async fn get(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ProfileData>>> {
-        self.0.get(&path(session, "profile"), options).await
+        self.0.get(&path(connection, "profile"), options).await
     }
     pub async fn set_name(
         &self,
-        session: &str,
+        connection: &str,
         body: &SetProfileNameRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, "profile/name"),
+                &path(connection, "profile/name"),
                 &[],
                 Some(body),
                 options,
@@ -271,14 +271,14 @@ impl Profile<'_> {
     }
     pub async fn set_status(
         &self,
-        session: &str,
+        connection: &str,
         body: &SetProfileStatusRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, "profile/status"),
+                &path(connection, "profile/status"),
                 &[],
                 Some(body),
                 options,
@@ -287,14 +287,14 @@ impl Profile<'_> {
     }
     pub async fn set_picture(
         &self,
-        session: &str,
+        connection: &str,
         body: &SetPictureRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, "profile/picture"),
+                &path(connection, "profile/picture"),
                 &[],
                 Some(body),
                 options,
@@ -303,13 +303,13 @@ impl Profile<'_> {
     }
     pub async fn delete_picture(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &path(session, "profile/picture"),
+                &path(connection, "profile/picture"),
                 &[],
                 None,
                 options,
@@ -399,14 +399,14 @@ pub struct Privacy<'a>(pub(crate) &'a HttpTransport);
 impl Privacy<'_> {
     pub async fn get(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PrivacySettings>>> {
-        self.0.get(&path(session, "privacy"), options).await
+        self.0.get(&path(connection, "privacy"), options).await
     }
     pub async fn set(
         &self,
-        session: &str,
+        connection: &str,
         mutation: &PrivacyMutation,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PrivacySettings>>> {
@@ -418,7 +418,7 @@ impl Privacy<'_> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, &format!("privacy/{setting}")),
+                &path(connection, &format!("privacy/{setting}")),
                 &[],
                 Some(&Value { value }),
                 options,
@@ -427,14 +427,14 @@ impl Privacy<'_> {
     }
     pub async fn set_default_disappearing_timer(
         &self,
-        session: &str,
+        connection: &str,
         body: &DisappearingTimerRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, "privacy/disappearing/default"),
+                &path(connection, "privacy/disappearing/default"),
                 &[],
                 Some(body),
                 options,
@@ -515,21 +515,21 @@ pub struct Presence<'a>(pub(crate) &'a HttpTransport);
 impl Presence<'_> {
     pub async fn get(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PresenceData>>> {
-        self.0.get(&path(session, "presence"), options).await
+        self.0.get(&path(connection, "presence"), options).await
     }
     pub async fn set(
         &self,
-        session: &str,
+        connection: &str,
         body: &SetPresenceRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<ActionResponse>> {
         self.0
             .request(
                 Method::POST,
-                &path(session, "presence"),
+                &path(connection, "presence"),
                 &[],
                 Some(body),
                 options,
@@ -538,27 +538,30 @@ impl Presence<'_> {
     }
     pub async fn get_for_chat(
         &self,
-        session: &str,
+        connection: &str,
         chat_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ChatPresenceData>>> {
         self.0
             .get(
-                &path(session, &format!("presence/{}", encode(chat_id))),
+                &path(connection, &format!("presence/{}", encode(chat_id))),
                 options,
             )
             .await
     }
     pub async fn subscribe(
         &self,
-        session: &str,
+        connection: &str,
         chat_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SubscribePresenceResponse>> {
         self.0
             .request::<_, ()>(
                 Method::POST,
-                &path(session, &format!("presence/{}/subscribe", encode(chat_id))),
+                &path(
+                    connection,
+                    &format!("presence/{}/subscribe", encode(chat_id)),
+                ),
                 &[],
                 None,
                 options,
@@ -588,7 +591,7 @@ pub struct Identities<'a>(pub(crate) &'a HttpTransport);
 impl Identities<'_> {
     pub async fn resolve(
         &self,
-        session: &str,
+        connection: &str,
         params: &ResolveIdentityParams,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<ResolveIdentityResult>>> {
@@ -606,7 +609,7 @@ impl Identities<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &path(session, "identities/resolve"),
+                &path(connection, "identities/resolve"),
                 &query,
                 None,
                 options,
@@ -627,13 +630,16 @@ pub struct Users<'a>(pub(crate) &'a HttpTransport);
 impl Users<'_> {
     pub async fn get_security_code(
         &self,
-        session: &str,
+        connection: &str,
         user_id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<UserSecurityCode>>> {
         self.0
             .get(
-                &path(session, &format!("users/{}/security-code", encode(user_id))),
+                &path(
+                    connection,
+                    &format!("users/{}/security-code", encode(user_id)),
+                ),
                 options,
             )
             .await
@@ -693,7 +699,7 @@ pub struct Labels<'a>(pub(crate) &'a HttpTransport);
 impl Labels<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         include_observation: Option<bool>,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<LabelReadData>>> {
@@ -701,19 +707,25 @@ impl Labels<'_> {
             .map(|v| vec![("includeObservation", v.to_string())])
             .unwrap_or_default();
         self.0
-            .request::<_, ()>(Method::GET, &path(session, "labels"), &query, None, options)
+            .request::<_, ()>(
+                Method::GET,
+                &path(connection, "labels"),
+                &query,
+                None,
+                options,
+            )
             .await
     }
     pub async fn create(
         &self,
-        session: &str,
+        connection: &str,
         body: &CreateLabelRequest,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<Label>>> {
         self.0
             .request(
                 Method::POST,
-                &path(session, "labels"),
+                &path(connection, "labels"),
                 &[],
                 Some(body),
                 options,
@@ -722,7 +734,7 @@ impl Labels<'_> {
     }
     pub async fn update(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &UpdateLabelRequest,
         options: RequestOptions,
@@ -730,7 +742,7 @@ impl Labels<'_> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, &format!("labels/{}", encode(id))),
+                &path(connection, &format!("labels/{}", encode(id))),
                 &[],
                 Some(body),
                 options,
@@ -739,14 +751,14 @@ impl Labels<'_> {
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessResponse>> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &path(session, &format!("labels/{}", encode(id))),
+                &path(connection, &format!("labels/{}", encode(id))),
                 &[],
                 None,
                 options,
@@ -755,7 +767,7 @@ impl Labels<'_> {
     }
     pub async fn list_for_chat(
         &self,
-        session: &str,
+        connection: &str,
         chat_id: &str,
         include_observation: Option<bool>,
         options: RequestOptions,
@@ -766,7 +778,7 @@ impl Labels<'_> {
         self.0
             .request::<_, ()>(
                 Method::GET,
-                &path(session, &format!("labels/chats/{}", encode(chat_id))),
+                &path(connection, &format!("labels/chats/{}", encode(chat_id))),
                 &query,
                 None,
                 options,
@@ -775,7 +787,7 @@ impl Labels<'_> {
     }
     pub async fn replace_for_chat(
         &self,
-        session: &str,
+        connection: &str,
         chat_id: &str,
         body: &ReplaceChatLabelsRequest,
         options: RequestOptions,
@@ -783,7 +795,7 @@ impl Labels<'_> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, &format!("labels/chats/{}", encode(chat_id))),
+                &path(connection, &format!("labels/chats/{}", encode(chat_id))),
                 &[],
                 Some(body),
                 options,
@@ -832,23 +844,23 @@ pub struct QuickReplies<'a>(pub(crate) &'a HttpTransport);
 impl QuickReplies<'_> {
     pub async fn list(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessQuickReplyCollection>>> {
         self.0
-            .get(&path(session, "business/quick-replies"), options)
+            .get(&path(connection, "business/quick-replies"), options)
             .await
     }
     pub async fn create(
         &self,
-        session: &str,
+        connection: &str,
         body: &BusinessQuickReplyMutation,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<BusinessQuickReply>>> {
         self.0
             .request(
                 Method::POST,
-                &path(session, "business/quick-replies"),
+                &path(connection, "business/quick-replies"),
                 &[],
                 Some(body),
                 options,
@@ -857,7 +869,7 @@ impl QuickReplies<'_> {
     }
     pub async fn replace(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         body: &BusinessQuickReplyMutation,
         options: RequestOptions,
@@ -865,7 +877,10 @@ impl QuickReplies<'_> {
         self.0
             .request(
                 Method::PUT,
-                &path(session, &format!("business/quick-replies/{}", encode(id))),
+                &path(
+                    connection,
+                    &format!("business/quick-replies/{}", encode(id)),
+                ),
                 &[],
                 Some(body),
                 options,
@@ -874,14 +889,17 @@ impl QuickReplies<'_> {
     }
     pub async fn delete(
         &self,
-        session: &str,
+        connection: &str,
         id: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<DeletedBusinessQuickReply>>> {
         self.0
             .request::<_, ()>(
                 Method::DELETE,
-                &path(session, &format!("business/quick-replies/{}", encode(id))),
+                &path(
+                    connection,
+                    &format!("business/quick-replies/{}", encode(id)),
+                ),
                 &[],
                 None,
                 options,

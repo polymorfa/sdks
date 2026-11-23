@@ -47,7 +47,7 @@ describe("MessagingClient media", () => {
   it("exports the exact metadata shape and a distinct Messaging resource", () => {
     expectTypeOf<MessagingMediaInfo>().toEqualTypeOf<{
       readonly id: string;
-      readonly session: string;
+      readonly connection: string;
       readonly messageId: string;
       readonly mimeType: string;
       readonly fileLength: number;
@@ -107,7 +107,7 @@ describe("MessagingClient media", () => {
               success: true,
               data: {
                 id: "media/id",
-                session: "support",
+                connection: "support",
                 messageId: "message-1",
                 mimeType: "image/jpeg",
                 fileLength: 5,
