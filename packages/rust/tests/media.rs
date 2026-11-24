@@ -107,7 +107,7 @@ async fn api_media_resource_wire_contracts() {
         "GET",
         "/messaging/media/media/info",
         None,
-        json!({"success":true,"data":{"id":"media","session":"s","messageId":"message","mimeType":"image/jpeg","fileLength":10,"persisted":true}}),
+        json!({"success":true,"data":{"id":"media","connection":"s","messageId":"message","mimeType":"image/jpeg","fileLength":10,"persisted":true}}),
         client.media().retrieve("media", RequestOptions::default())
     );
     wire_messaging!(

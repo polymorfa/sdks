@@ -29,7 +29,7 @@ from polymorfa.storage.supabase import supabase_preset
 from polymorfa.webhooks import WebhookEvent
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.json").read_text())
+FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.v3.json").read_text())
 ARTIFACTS = Path(
     os.environ.get(
         "SDK_TEST_ARTIFACT_DIR",
@@ -91,7 +91,7 @@ async def test_actual_native_sql_independent_schema2_conformance(native_sql, kin
         for value in FIXTURE["events"]:
             event = WebhookEvent(
                 value["id"],
-                value["session"],
+                value["connection"],
                 value["timestamp"],
                 value["event"],
                 value["payload"],
@@ -113,8 +113,8 @@ async def test_actual_native_sql_independent_schema2_conformance(native_sql, kin
 
 
 async def test_actual_native_sql_atomic_rollback_and_conditional_delete(native_sql):
-    one = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
-    two = replace(empty_row("messages", {"sessionId": "s", "messageId": "two"}), revision=1)
+    one = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
+    two = replace(empty_row("messages", {"connectionId": "s", "messageId": "two"}), revision=1)
     assert (await native_sql.commit([RowPut("messages", one, None)])).ok
     result = await native_sql.commit(
         [RowPut("messages", two, None), RowPut("messages", replace(one, revision=2), 8)]
@@ -132,13 +132,13 @@ async def test_actual_native_sql_atomic_rollback_and_conditional_delete(native_s
             [
                 Upsert(
                     "messages",
-                    {"sessionId": "s", "messageId": "one"},
+                    {"connectionId": "s", "messageId": "one"},
                     {"text": FieldWrite("edited", 2)},
                 )
             ],
         )
     )
-    assert (await storage.get("messages", {"sessionId": "s", "messageId": "one"}))[
+    assert (await storage.get("messages", {"connectionId": "s", "messageId": "one"}))[
         "text"
     ] == "edited"
 
@@ -159,7 +159,9 @@ async def test_actual_native_sql_history_2000(native_sql):
     for conversation in chunk["conversations"]:
         page = await storage.query(
             "messages",
-            IndexQuery("by_chat", {"sessionId": "s", "chatId": "wa:" + conversation["id"]}, 1000),
+            IndexQuery(
+                "by_chat", {"connectionId": "s", "chatId": "wa:" + conversation["id"]}, 1000
+            ),
         )
         total += len(page.rows)
     assert total == 2000
@@ -224,15 +226,15 @@ async def test_actual_postgres_supabase_live_rls_and_distinct_writer():
                 == 2
             )
             await connection.execute(
-                f'INSERT INTO "{schema}".polymorfa_storage_memberships(session_id,subject) VALUES($1,$2::uuid)',
+                f'INSERT INTO "{schema}".polymorfa_storage_memberships(connection_id,subject) VALUES($1,$2::uuid)',
                 "s",
                 subject,
             )
             await connection.execute("RESET ROLE")
         await native.setup()
-        one = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
+        one = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
         two = replace(
-            empty_row("messages", {"sessionId": "foreign", "messageId": "two"}), revision=1
+            empty_row("messages", {"connectionId": "foreign", "messageId": "two"}), revision=1
         )
         assert (
             await native.commit([RowPut("messages", one, None), RowPut("messages", two, None)])
@@ -251,7 +253,7 @@ async def test_actual_postgres_supabase_live_rls_and_distinct_writer():
                     await connection.execute(statement)
             await connection.execute("RESET ROLE")
             await connection.execute(
-                f'DELETE FROM "{schema}".polymorfa_storage_memberships WHERE session_id=$1', "s"
+                f'DELETE FROM "{schema}".polymorfa_storage_memberships WHERE connection_id=$1', "s"
             )
             await connection.execute(f'SET ROLE "{reader}"')
             assert not await connection.fetch(f'SELECT * FROM "{schema}".polymorfa_messages')

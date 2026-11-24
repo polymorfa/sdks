@@ -180,7 +180,7 @@ class TestWebhook(TypedDict, total=False):
 class TestWebhookPayload(TypedDict):
     eventType: NotRequired[str]
     body: EncodedPayload
-    sessionId: str
+    connectionId: str
 
 
 class WebhookCreated(TypedDict):
@@ -315,7 +315,7 @@ OperationStatus = Literal[
 ]
 OperationKind = Literal[
     "auth_projection_repair",
-    "session_lifecycle",
+    "connection_lifecycle",
     "auth_session_purge",
     "label_projection_purge",
     "billing_reconciliation",

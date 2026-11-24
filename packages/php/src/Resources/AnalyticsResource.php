@@ -73,7 +73,7 @@ final class AnalyticsResource extends PlatformResource
         if (isset($params['segments']) && !is_bool($params['segments'])) {
             throw new ValidationException('segments must be a boolean.', 'invalid_analytics_filter');
         }
-        foreach (['projectId','sessionId'] as $key) {
+        foreach (['projectId','connectionId'] as $key) {
             if (isset($params[$key]) && (!is_string($params[$key]) || !preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iD', $params[$key]))) {
                 throw new ValidationException('Analytics filters require UUIDs.', 'invalid_analytics_filter');
             }

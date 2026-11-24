@@ -308,8 +308,8 @@ internal static class CampaignContractValidation
     internal static JsonElement TestSend(object input, bool project = false)
     {
         var body = Capture(input);
-        Fields(body, project ? ["projectId", "sessionId", "to", "sampleRecipientId", "variables"] : ["sessionId", "to", "sampleRecipientId", "variables"], project ? ["projectId", "sessionId", "to"] : ["sessionId", "to"]);
-        Uuid(String(body.GetProperty("sessionId"), "sessionId"), "sessionId");
+        Fields(body, project ? ["projectId", "connectionId", "to", "sampleRecipientId", "variables"] : ["connectionId", "to", "sampleRecipientId", "variables"], project ? ["projectId", "connectionId", "to"] : ["connectionId", "to"]);
+        Uuid(String(body.GetProperty("connectionId"), "connectionId"), "connectionId");
         String(body.GetProperty("to"), "to", 1, 32);
         if (project) Uuid(String(body.GetProperty("projectId"), "projectId"), "projectId");
         if (Has(body, "sampleRecipientId")) Uuid(String(body.GetProperty("sampleRecipientId"), "sampleRecipientId"), "sampleRecipientId");
@@ -348,7 +348,7 @@ internal static class CampaignContractValidation
         var body = Capture(input ?? new());
         Fields(body, ["status", "reason", "cursor", "limit"], []);
         if (Has(body, "status")) One(body.GetProperty("status"), ["queued", "sending", "sent", "delivered", "read", "failed", "skipped"], "status");
-        if (Has(body, "reason")) One(body.GetProperty("reason"), ["opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other"], "reason");
+        if (Has(body, "reason")) One(body.GetProperty("reason"), ["opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "connection_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other"], "reason");
         if (Has(body, "cursor")) String(body.GetProperty("cursor"), "cursor", 1, 256);
         if (Has(body, "limit")) Integer(body.GetProperty("limit"), "limit", 1, 1000);
         if ((Has(body, "status") || Has(body, "reason")) && (Has(body, "cursor") || Has(body, "limit") && body.GetProperty("limit").GetInt32() != 1000)) Invalid("params");

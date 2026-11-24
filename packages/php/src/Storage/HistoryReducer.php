@@ -6,7 +6,7 @@ namespace Polymorfa\Storage;
 
 use Polymorfa\HistorySyncData;
 
-/** Pure complete decoded-history reduction, source SDK 3bacf46. */
+/** Pure complete decoded-history reduction, source SDK d80b581. */
 final class HistoryReducer
 {
     public const TYPES = ['INITIAL_BOOTSTRAP' => 0,'INITIAL_STATUS_V3' => 1,'FULL' => 2,'RECENT' => 3,'PUSH_NAME' => 4,'NON_BLOCKING_DATA' => 5,'ON_DEMAND' => 6];
@@ -31,19 +31,19 @@ final class HistoryReducer
     }
     /**
      * @return list<Upsert> */
-    public static function progress(string $session, string $type, int|float|null $order, int|float|null $progress, int|float|null $conversations = null, int|float|null $messages = null, int|float|null $pushnames = null): array
+    public static function progress(string $connection, string $type, int|float|null $order, int|float|null $progress, int|float|null $conversations = null, int|float|null $messages = null, int|float|null $pushnames = null): array
     {
         $ops = [];
         if ($order !== null) {
             $fields = [];
             foreach (['progress' => $progress,'conversationCount' => $conversations,'messageCount' => $messages,'pushnameCount' => $pushnames] as $name => $value) {
                 Reduction::present($fields, $name, $value, 0);
-            } $ops[] = new Upsert('history_chunks', ['sessionId' => $session,'syncType' => $type,'chunkOrder' => Rows::canonical($order)], $fields);
+            } $ops[] = new Upsert('history_chunks', ['connectionId' => $connection,'syncType' => $type,'chunkOrder' => Rows::canonical($order)], $fields);
         }
         $fields = [];
         Reduction::present($fields, 'progress', $progress, $progress ?? 0);
         Reduction::present($fields, 'lastChunkOrder', $order, $order ?? 0);
-        $ops[] = new Upsert('history_progress', ['sessionId' => $session,'syncType' => $type], $fields);
+        $ops[] = new Upsert('history_progress', ['connectionId' => $connection,'syncType' => $type], $fields);
         return $ops;
     }
     /**
@@ -133,7 +133,7 @@ final class HistoryReducer
     /**
      * @param array<string,mixed> $info
      * @return list<Upsert> */
-    public static function message(array $info, string $session, HistoryKeys $keys, string $chatJid = ''): array
+    public static function message(array $info, string $connection, HistoryKeys $keys, string $chatJid = ''): array
     {
         $key = Reduction::record($info['key'] ?? null);
         $jid = Reduction::text($key['remoteJid'] ?? null) ?? $chatJid;
@@ -149,15 +149,15 @@ final class HistoryReducer
         $senderJid = $mine ? null : (Reduction::text($key['participant'] ?? null) ?? Reduction::text($info['participant'] ?? null) ?? ($group ? null : $jid));
         $sender = $mine ? 'self' : ($senderJid === null ? null : $keys->contact($senderJid));
         $timestamp = Reduction::millis($info['messageTimestamp'] ?? null);
-        $guard = $timestamp === null ? null : new Watermark($session, $chat, $timestamp);
+        $guard = $timestamp === null ? null : new Watermark($connection, $chat, $timestamp);
         $content = self::unwrap(Reduction::record($info['message'] ?? null));
         $protocol = Reduction::record($content['protocolMessage'] ?? null);
-        $messageKey = ['sessionId' => $session,'messageId' => $id];
+        $messageKey = ['connectionId' => $connection,'messageId' => $id];
         if ($protocol !== []) {
             $target = $keys->message(Reduction::record($protocol['key'] ?? null), $jid);
             if ($target === null) {
                 return [];
-            } $targetKey = ['sessionId' => $session,'messageId' => $target];
+            } $targetKey = ['connectionId' => $connection,'messageId' => $target];
             $code = self::enum($protocol['type'] ?? null, ['REVOKE' => 0,'MESSAGE_EDIT' => 14]);
             if ($code === 0) {
                 $f = Reduction::cleared(Reduction::CONTENT);
@@ -182,7 +182,7 @@ final class HistoryReducer
             if ($target === null || $sender === null) {
                 return [];
             } $v = Reduction::millis($reaction['senderTimestampMs'] ?? null) ?? $timestamp ?? 0;
-            return [new Upsert('reactions', ['sessionId' => $session,'messageId' => $target,'senderId' => $sender], ['chatId' => new FieldWrite($chat, 0),'emoji' => new FieldWrite($reaction['text'] ?? '', $v),'timestamp' => new FieldWrite($v, $v)])];
+            return [new Upsert('reactions', ['connectionId' => $connection,'messageId' => $target,'senderId' => $sender], ['chatId' => new FieldWrite($chat, 0),'emoji' => new FieldWrite($reaction['text'] ?? '', $v),'timestamp' => new FieldWrite($v, $v)])];
         }
         $f = ['chatId' => new FieldWrite($chat, 0),'fromMe' => new FieldWrite($mine, 0),'timestamp' => new FieldWrite($timestamp ?? 0, 0)];
         Reduction::present($f, 'senderId', $sender, 0);
@@ -237,7 +237,7 @@ final class HistoryReducer
                 Reduction::status($rf, $state[0], $state[1]);
                 $rf['timestamp'] = $rf['statusAt'];
                 unset($rf['statusAt']);
-                $ops[] = new Upsert('receipts', ['sessionId' => $session,'messageId' => $id,'recipientId' => $keys->contact($user)], $rf, $guard);
+                $ops[] = new Upsert('receipts', ['connectionId' => $connection,'messageId' => $id,'recipientId' => $keys->contact($user)], $rf, $guard);
             }
         }
         foreach (Reduction::records($info['reactions'] ?? null) as $reaction) {
@@ -245,11 +245,11 @@ final class HistoryReducer
             $reactor = ($rk['fromMe'] ?? false) ? 'self' : (Reduction::text($rk['participant'] ?? null) ?? ($group ? null : $jid));
             if ($reactor !== null) {
                 $v = Reduction::millis($reaction['senderTimestampMs'] ?? null) ?? $timestamp ?? 0;
-                $ops[] = new Upsert('reactions', ['sessionId' => $session,'messageId' => $id,'senderId' => $reactor === 'self' ? 'self' : $keys->contact($reactor)], ['chatId' => new FieldWrite($chat, 0),'emoji' => new FieldWrite($reaction['text'] ?? '', $v),'timestamp' => new FieldWrite($v, $v)], $guard);
+                $ops[] = new Upsert('reactions', ['connectionId' => $connection,'messageId' => $id,'senderId' => $reactor === 'self' ? 'self' : $keys->contact($reactor)], ['chatId' => new FieldWrite($chat, 0),'emoji' => new FieldWrite($reaction['text'] ?? '', $v),'timestamp' => new FieldWrite($v, $v)], $guard);
             }
         }
         if (!$mine && $senderJid !== null && Reduction::text($info['pushName'] ?? null) !== null && $timestamp !== null) {
-            $ops[] = new Upsert('contacts', ['sessionId' => $session,'contactId' => $keys->contact($senderJid)], ['jid' => new FieldWrite(HistoryKeys::normalize($senderJid), 0),'pushName' => new FieldWrite($info['pushName'], $timestamp)]);
+            $ops[] = new Upsert('contacts', ['connectionId' => $connection,'contactId' => $keys->contact($senderJid)], ['jid' => new FieldWrite(HistoryKeys::normalize($senderJid), 0),'pushName' => new FieldWrite($info['pushName'], $timestamp)]);
         }
         return $ops;
     }
@@ -257,7 +257,7 @@ final class HistoryReducer
     /**
      * @param array<string,mixed> $c
      * @return list<Upsert> */
-    private static function conversation(string $session, array $c, HistoryKeys $keys): array
+    private static function conversation(string $connection, array $c, HistoryKeys $keys): array
     {
         $jid = Reduction::text($c['id'] ?? null);
         if ($jid === null) {
@@ -286,7 +286,7 @@ final class HistoryReducer
             $f['muted'] = new FieldWrite($mute != 0, $snapshot);
             $f['muteEndAt'] = new FieldWrite($mute > 0 ? Reduction::millis($mute) : null, $snapshot);
         } Reduction::present($f, 'lastMessageAt', $last, $last ?? 0);
-        $ops = [new Upsert('chats', ['sessionId' => $session,'chatId' => $chat], $f)];
+        $ops = [new Upsert('chats', ['connectionId' => $connection,'chatId' => $chat], $f)];
         if ($kind === 'group') {
             $gf = ['jid' => new FieldWrite($bare, 0)];
             Reduction::present($gf, 'subject', Reduction::text($c['name'] ?? null), $snapshot);
@@ -294,25 +294,25 @@ final class HistoryReducer
             Reduction::present($gf, 'createdAt', Reduction::millis($c['createdAt'] ?? null), 0);
             $creator = Reduction::text($c['createdBy'] ?? null);
             Reduction::present($gf, 'createdBy', $creator === null ? null : HistoryKeys::normalize($creator), 0);
-            $ops[] = new Upsert('groups', ['sessionId' => $session,'groupId' => $chat], $gf);
+            $ops[] = new Upsert('groups', ['connectionId' => $connection,'groupId' => $chat], $gf);
             foreach (Reduction::records($c['participant'] ?? null) as $person) {
                 $user = Reduction::text($person['userJid'] ?? null);
                 if ($user !== null) {
                     $role = [0 => 'member',1 => 'admin',2 => 'superadmin'][self::enum($person['rank'] ?? null, ['REGULAR' => 0,'ADMIN' => 1,'SUPERADMIN' => 2]) ?? 0] ?? 'member';
-                    $ops[] = new Upsert('group_participants', ['sessionId' => $session,'groupId' => $chat,'participantId' => $keys->contact($user)], ['jid' => new FieldWrite(HistoryKeys::normalize($user), 0),'role' => new FieldWrite($role, $snapshot),'active' => new FieldWrite(true, $snapshot),'changedAt' => new FieldWrite($snapshot, $snapshot)]);
+                    $ops[] = new Upsert('group_participants', ['connectionId' => $connection,'groupId' => $chat,'participantId' => $keys->contact($user)], ['jid' => new FieldWrite(HistoryKeys::normalize($user), 0),'role' => new FieldWrite($role, $snapshot),'active' => new FieldWrite(true, $snapshot),'changedAt' => new FieldWrite($snapshot, $snapshot)]);
                 }
             }
         }
         foreach (Reduction::records($c['messages'] ?? null) as $entry) {
             if (!empty($entry['message'])) {
-                array_push($ops, ...self::message(Reduction::record($entry['message']), $session, $keys, $bare));
+                array_push($ops, ...self::message(Reduction::record($entry['message']), $connection, $keys, $bare));
             }
         } return $ops;
     }
 
     /**
      * @param array<string,mixed>|HistorySyncData $chunk */
-    public static function reduce(string $session, array|HistorySyncData $chunk, ?HistoryIdentityIndex $identities = null, ?string $chunkId = null): Batch
+    public static function reduce(string $connection, array|HistorySyncData $chunk, ?HistoryIdentityIndex $identities = null, ?string $chunkId = null): Batch
     {
         if ($chunk instanceof HistorySyncData) {
             if (!is_array($chunk->decoded) && !$chunk->decoded instanceof \stdClass) {
@@ -324,13 +324,13 @@ final class HistoryReducer
         $ops = [];
         $conversations = Reduction::records($chunk['conversations'] ?? null);
         foreach ($conversations as $conversation) {
-            array_push($ops, ...self::conversation($session, $conversation, $keys));
+            array_push($ops, ...self::conversation($connection, $conversation, $keys));
         }
         foreach (Reduction::records($chunk['pushnames'] ?? null) as $entry) {
             $jid = Reduction::text($entry['id'] ?? null);
             $name = Reduction::text($entry['pushname'] ?? null);
             if ($jid !== null && $name !== null && Reduction::chatKind(HistoryKeys::normalize($jid)) === 'direct') {
-                $ops[] = new Upsert('contacts', ['sessionId' => $session,'contactId' => $keys->contact($jid)], ['jid' => new FieldWrite(HistoryKeys::normalize($jid), 0),'pushName' => new FieldWrite($name, 0)]);
+                $ops[] = new Upsert('contacts', ['connectionId' => $connection,'contactId' => $keys->contact($jid)], ['jid' => new FieldWrite(HistoryKeys::normalize($jid), 0),'pushName' => new FieldWrite($name, 0)]);
             }
         }
         foreach (Reduction::records($chunk['phoneNumberToLidMappings'] ?? null) as $mapping) {
@@ -338,7 +338,7 @@ final class HistoryReducer
             $lid = Reduction::text($mapping['lidJid'] ?? null);
             if ($pn !== null && $lid !== null) {
                 foreach ([$pn,$lid] as $jid) {
-                    $ops[] = new Upsert('contacts', ['sessionId' => $session,'contactId' => $keys->contact($jid)], ['phoneNumber' => new FieldWrite('+'.explode('@', HistoryKeys::normalize($pn), 2)[0], 0),'lidJid' => new FieldWrite(HistoryKeys::normalize($lid), 0)]);
+                    $ops[] = new Upsert('contacts', ['connectionId' => $connection,'contactId' => $keys->contact($jid)], ['phoneNumber' => new FieldWrite('+'.explode('@', HistoryKeys::normalize($pn), 2)[0], 0),'lidJid' => new FieldWrite(HistoryKeys::normalize($lid), 0)]);
                 }
             }
         }
@@ -351,7 +351,7 @@ final class HistoryReducer
                 if ($user !== null) {
                     $at = Reduction::millis($person['leaveTs'] ?? null) ?? 0;
                     $reason = self::enum($person['leaveReason'] ?? null, ['LEFT' => 0,'REMOVED' => 1]);
-                    $ops[] = new Upsert('group_participants', ['sessionId' => $session,'groupId' => $keys->chat($group),'participantId' => $keys->contact($user)], ['jid' => new FieldWrite(HistoryKeys::normalize($user), 0),'active' => new FieldWrite(false, $at),'leaveReason' => new FieldWrite($reason === 1 ? 'removed' : 'left', $at),'changedAt' => new FieldWrite($at, $at)]);
+                    $ops[] = new Upsert('group_participants', ['connectionId' => $connection,'groupId' => $keys->chat($group),'participantId' => $keys->contact($user)], ['jid' => new FieldWrite(HistoryKeys::normalize($user), 0),'active' => new FieldWrite(false, $at),'leaveReason' => new FieldWrite($reason === 1 ? 'removed' : 'left', $at),'changedAt' => new FieldWrite($at, $at)]);
                 }
             }
         }
@@ -359,7 +359,7 @@ final class HistoryReducer
         foreach ($conversations as $conversation) {
             $count += count(Reduction::records($conversation['messages'] ?? null));
         }
-        array_push($ops, ...self::progress($session, self::syncType($chunk['syncType'] ?? null), Reduction::number($chunk['chunkOrder'] ?? null), Reduction::number($chunk['progress'] ?? null), count($conversations), $count, count(Reduction::records($chunk['pushnames'] ?? null))));
-        return new Batch($session, $ops, $chunkId === null ? null : 'history:'.$chunkId, 'history.chunk');
+        array_push($ops, ...self::progress($connection, self::syncType($chunk['syncType'] ?? null), Reduction::number($chunk['chunkOrder'] ?? null), Reduction::number($chunk['progress'] ?? null), count($conversations), $count, count(Reduction::records($chunk['pushnames'] ?? null))));
+        return new Batch($connection, $ops, $chunkId === null ? null : 'history:'.$chunkId, 'history.chunk');
     }
 }

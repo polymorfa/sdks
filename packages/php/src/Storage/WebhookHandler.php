@@ -20,7 +20,7 @@ final readonly class WebhookHandler
         $payload = Reduction::record($event->payload);
         if ($event->event === 'history.sync' && array_key_exists('delivery', $payload)) {
             HistoryDescriptor::validate($payload);
-            if ($this->storage->hasEvent($event->session, $event->id)) {
+            if ($this->storage->hasEvent($event->connection, $event->id)) {
                 return new ApplyResult(false, 0);
             }
             $batch = EventReducer::reduce($event);
@@ -33,21 +33,21 @@ final readonly class WebhookHandler
             try {
                 $chunk = ($this->decodeHistoryDescriptor)($payload, $event);
                 HistoryDescriptor::validateChunk($chunk);
-                $history = HistoryReducer::reduce($event->session, $chunk, new HistoryIdentityIndex());
+                $history = HistoryReducer::reduce($event->connection, $chunk, new HistoryIdentityIndex());
             } catch (\Throwable) {
                 throw new StorageException('storage_history_descriptor_decode_failed');
             }
-            return $this->storage->apply(new Batch($batch->sessionId, [...$history->operations,...$batch->operations], $batch->eventId, $batch->eventType), $cancellation);
+            return $this->storage->apply(new Batch($batch->connectionId, [...$history->operations,...$batch->operations], $batch->eventId, $batch->eventType), $cancellation);
         }
         $batch = EventReducer::reduce($event);
         if ($event->event === 'history.sync' && ($payload['kind'] ?? null) !== 'history' && $this->decodeHistory !== null) {
-            if ($this->storage->hasEvent($event->session, $event->id)) {
+            if ($this->storage->hasEvent($event->connection, $event->id)) {
                 return new ApplyResult(false, 0);
             }
             $chunk = ($this->decodeHistory)($event);
             if ($chunk !== null) {
-                $history = HistoryReducer::reduce($event->session, $chunk, HistoryIdentityIndex::fromPayload($payload));
-                $batch = new Batch($batch->sessionId, [...$history->operations,...$batch->operations], $batch->eventId, $batch->eventType);
+                $history = HistoryReducer::reduce($event->connection, $chunk, HistoryIdentityIndex::fromPayload($payload));
+                $batch = new Batch($batch->connectionId, [...$history->operations,...$batch->operations], $batch->eventId, $batch->eventType);
             }
         }
         return $this->storage->apply($batch, $cancellation);

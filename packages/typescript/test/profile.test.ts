@@ -79,7 +79,7 @@ describe("MessagingClient profile", () => {
     expectTypeOf<MessagingClient["profile"]>().toEqualTypeOf<ProfileResource>();
   });
 
-  it("gets the session profile with metadata and an encoded session", async () => {
+  it("gets the connection profile with metadata and an encoded connection", async () => {
     const { client, requests } = await profileServer();
 
     const result = await client.profile.get("support/eu", {

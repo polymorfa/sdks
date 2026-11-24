@@ -129,8 +129,8 @@ Cursor pagination excludes filters; empty method/status lists send no filter.
 route evidence beyond the primary coverage manifest. Known privacy, testing,
 voice and Calls values are exported as immutable tuples and mappings.
 
-`client.client_tokens.mint` accepts either a session target or a Customer
-ID, and `retrieve_rules`, `update_rules`, and `delete_rules` manage session
+`client.client_tokens.mint` accepts either a connection target or a Customer
+ID, and `retrieve_rules`, `update_rules`, and `delete_rules` manage connection
 client rules. These methods require a server credential. Customer token
 access remains subject to the API's beta eligibility and ownership checks.
 
@@ -165,7 +165,7 @@ team-key authorization. `POLYMORFA_ERROR_CODES` and `is_known_error_code` expose
 documented codes while errors preserve unknown future codes.
 
 Install the `calls` extra to use `CallsClient`, `LifecycleSocket` or `MediaSocket`
-with native WebSockets. `CallsClient` follows one session, exposes incoming calls,
+with native WebSockets. `CallsClient` follows one connection, exposes incoming calls,
 and places direct, participant and group calls. A `Call` supports answer, join,
 reject, leave, end, roster controls, reactions, hand state and PCM/H.264 media.
 Its `sample_rate` comes from the media handshake. The client refreshes expiring
@@ -213,14 +213,14 @@ idempotency key. A browser client token cannot choose a server participant;
 server-only link, permission, check and settings operations reject it.
 
 `ban_safe` reads and changes project ceilings, warmup plans, insurance
-evidence, health policies and Number overrides with server credentials.
+evidence, health policies and Connection overrides with server credentials.
 Platform equivalents are under `AsyncClient.projects` and
-`AsyncClient.sessions`. Entitlement and applied-state fields remain in the
+`AsyncClient.connections`. Entitlement and applied-state fields remain in the
 response; configuring a setting does not grant access. Send the version
 from a recent health-policy read when updating it.
 
 Platform projects expose typed lists, creation, production enrollment and Hybrid
-Link merge candidates. Platform sessions expose typed lifecycle batches, reviewed
+Link merge candidates. Platform connections expose typed lifecycle batches, reviewed
 tier quotes and capability variants. A quote preserves fractional credit amounts
 and separates Hybrid Link transition progress from the tier change status.
 
@@ -242,7 +242,7 @@ reads, provide cursor pagination, and distinguish the initial pairing-link URL
 from the null URL returned after a replay.
 
 Observation and Hybrid Link policy reads preserve inheritance and revisions.
-Saved session and QuickLink defaults bind to the team or project client.
+Saved connection and QuickLink defaults bind to the team or project client.
 Official API groups expose typed join decisions and force every provider change
 to one attempt. Onboarding continuation and Testing methods require a server
 credential; Testing phone methods expose simulated device and message results.
@@ -277,7 +277,7 @@ campaigns. Recipient `followUp` summaries retain nullable receipt times;
 analytics `followUps` counts outcomes separately from the first message.
 
 Project clients expose `functions` with deployments, secrets and invocations,
-and `flows` with provider receipts, Number endpoints and encryption custody.
+and `flows` with provider receipts, Connection endpoints and encryption custody.
 These resources bind every request to their project; inputs cannot replace it.
 Writes and deletes send once. Function invocations require an explicit request
 key, and a replay never returns the initial executor response. Forward Flow
@@ -324,7 +324,7 @@ contract remains `2026-09-22`.
 an `info` future; consume the stream before awaiting that future. Encryption
 supports image, video, audio, voice note (`ptt`), document and sticker.
 
-`client.whatsapp_media.upload(session, source, media_type="image",
+`client.whatsapp_media.upload(connection, source, media_type="image",
 mimetype="image/jpeg")` uses relay egress by default. The relay upload receives
 ciphertext and its hash, without the key or plaintext. Choose `egress="direct"`
 to request a short-lived grant and upload from this process. Direct uploads
@@ -342,14 +342,14 @@ request. Zero-knowledge sends use the customer Signal service instead. Stickers
 require WebP, support dimensions and animation metadata, and exclude captions
 and thumbnails. Descriptor sends select `2026-10-14` unless explicitly overridden.
 
-`client.history_sync.request_chunk_retry(session, {"syncType": "FULL",
+`client.history_sync.request_chunk_retry(connection, {"syncType": "FULL",
 "chunkOrder": 0})` requests another history chunk. After storing a chunk,
 `history_sync.delete_chunk` accepts its `directPath`, standard base64
 `fileEncSha256` with its trailing `=` padding, and optional `encHandle` and
 `companionMetaNonce`. Encode the encrypted chunk's 32-byte SHA-256 with
 `base64.b64encode(digest).decode("ascii")`. The path is limited to 1,024
 characters; each optional handle is limited to 512 characters. Both commands
-require a server credential and remain subject to API scopes and Number support.
+require a server credential and remain subject to API scopes and Connection support.
 
 Install the `history` extra for `polymorfa.history`. Its
 `decode_history_sync_payload` accepts zlib, gzip or raw-deflate compressed
@@ -363,7 +363,7 @@ JSON names and lossless decimal strings for 64-bit integers.
 
 Verified `history.sync` envelopes accept archive, Official API and mutually
 exclusive direct `media` or `inline` payload variants. To select direct delivery
-in session or QuickLink configuration, set `historySync.delivery="descriptor"`
+in connection or QuickLink configuration, set `historySync.delivery="descriptor"`
 and explicitly request `RequestOptions(api_version="2026-10-14")`. Earlier
 contracts omit that optional field. Consent and runtime availability remain
 server decisions.
@@ -377,11 +377,11 @@ kind and plaintext hash, with no media key. The SDK never closes the supplied
 S3 client. Local protocol and filesystem checks do not establish hosted bucket
 or WhatsApp acceptance.
 
-`polymorfa.storage` provides customer-owned schema version 2 with 17 entities,
+`polymorfa.storage` provides customer-owned schema version 3 with 17 entities,
 per-field version merges, event deduplication, permanent content revocation,
 clear-chat watermarks and cleanup of media/reactions/receipts/poll votes.
 `Storage(adapter)` requires atomic conditional commits. A failed commit stops
-processing even when the adapter reports no conflicting row IDs. Durable session leases
+processing even when the adapter reports no conflicting row IDs. Durable connection leases
 fence every write chunk; a checkpoint can require its previous cursor. This
 stores customer chat data only in the database your application supplies.
 
@@ -443,7 +443,7 @@ Borrowed clients remain open unless that adapter's `close_client=True` option
 is selected. Cosmos and Convex always borrow their container/client.
 
 `supabase_preset()` returns customer-installed SQL with FORCE RLS, live
-session membership, a separate server writer and browser SELECT only. Review
+connection membership, a separate server writer and browser SELECT only. Review
 and install it through your own administrative connection. It grants no browser
 storage writes or membership management. Use `postgres_adapter` for the server
 writer. Convex applications install the owning TypeScript schema and handlers,
@@ -456,7 +456,7 @@ with native local drivers/servers; Firestore used its emulator, and D1 used a
 real Worker binding. Cosmos and Convex have adapter contract tests without a
 hosted service acceptance claim. JavaScript IndexedDB, Drizzle and Prisma exports
 remain integrations for their owning browser/ORM runtimes; Python uses its
-native database factories and the shared schema2 wire format.
+native database factories and the shared schema3 wire format.
 
 Native aioboto3/MinIO tests also verify two-pass S3 reads, ETag precondition
 failure when an object changes, and integrity-checked archive replacement.
@@ -475,9 +475,9 @@ and sends are attempted once because a lost response may follow a completed send
 from polymorfa import SignalNodeClient
 
 async with SignalNodeClient(application_secret) as signal:
-    sessions = await signal.list_sessions()
-    outcome = await signal.send_text("my-session", "15551234567@s.whatsapp.net", "Hello")
-    async with signal.events(session_id="my-session") as events:
+    connections = await signal.list_connections()
+    outcome = await signal.send_text("my-connection", "15551234567@s.whatsapp.net", "Hello")
+    async with signal.events(connection_id="my-connection") as events:
         async for event in events:
             await persist_and_deduplicate(event.id, event.message_bytes(), event.raw)
             await signal.acknowledge_event(event.id)
@@ -498,7 +498,7 @@ Image, video, audio, document and sticker kinds use the exact pinned service
 shape. The local application contract has no thumbnail, waveform or animation
 field; those descriptor options are not exposed by this client. The service
 constructs the encrypted message and retains its Signal keys. Send standard API
-media descriptors only when that Number's standard custody mode permits them.
+media descriptors only when that Connection's standard custody mode permits them.
 Metadata that the pinned service ignores for a media kind is refused before send.
 
 `SignalNodeEvent` retains the complete raw event and serialized message protobuf.
@@ -517,7 +517,7 @@ deduplicate before returning a successful webhook response. Its signing secret i
 separate from both the local application bearer and Polymorfa credentials.
 
 This consumer is pinned to Signal service
-`8aa191ef0d4c318229c91bcdf474bf2d79dac47c` and its application OpenAPI. Fixture and
+`61209057729b002a2122b898d744a8813a702fc7` and its application OpenAPI. Fixture and
 loopback HTTP tests establish the local boundary. An opt-in harness also uses the
 actual Rust service and Signal core with synthetic accounts to verify encrypted
 receive, decoded protobuf and persistence before manual acknowledgement. These
@@ -550,7 +550,7 @@ async with AsyncClient(credential) as client:
     await project.campaigns.set_reply_flow(campaign_id, {"replyFlowId": None})
     sent = await project.campaigns.test_send(
         campaign_id,
-        {"sessionId": session_id, "to": "+15551234567", "variables": {"count": 0}},
+        {"connectionId": connection_id, "to": "+15551234567", "variables": {"count": 0}},
         options=RequestOptions(idempotency_key="reviewed-test-1"),
     )
     page = await project.campaigns.export_recipients(campaign_id, {"limit": 1000})
@@ -591,7 +591,7 @@ Custody defaults are available through `client.projects.get_signal_custody` /
 `retrieve`, `update`, `retrieve_customer`, `update_customer`. Bound custody
 methods unwrap the `data` envelope. Updates require `expectedRevision`; only a
 Customer default accepts `None` to restore Project inheritance. Defaults apply
-to future reservations and never convert existing Numbers or export keys.
+to future reservations and never convert existing Connections or export keys.
 QuickLink and browser tunnel grants, Origins and consent remain server authority.
 
 Named request and result `TypedDict` models are exported from `polymorfa` and
@@ -624,11 +624,11 @@ History delivery reads accept `archive` or `descriptor`; writes accept only
 `descriptor`. Delivery edits and the exact `historySync.delivery` reset select
 `2026-10-14` only when `RequestOptions.api_version` is absent. Whole-history
 resets and ordinary GETs retain `2026-09-22`; pass an explicit version to read
-new delivery fields. An explicit caller version always wins. `Session.signalMode`
+new delivery fields. An explicit caller version always wins. `Connection.signalMode`
 is an optional immutable fact and is not a generic configuration write.
 
 Initial QuickLinks accept top-level `signalMode`. Supplementary QuickLinks
-require `session` and `addConnection`, exclude initial billing/customer/custody
+require `connection` and `addMethod`, exclude initial billing/customer/custody
 fields, and can only request the hybrid connection goal. Mode or descriptor
 intent selects the newer version only when absent. Recipient history consent,
 requested/effective settings, funding, beta access and tunnel grants remain
@@ -792,7 +792,7 @@ source behavior.
 
 ## Official API round-2 betas
 
-Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+Native Connection catalog-cache reads/sync, marketing status, Official group JPEG
 upload, identity changes, incoming carts and signed webhook batches have source
 counterparts. These additions remain unreleased betas and may return
 `feature_unavailable`. They grant no enrollment or provider authority. See
@@ -803,7 +803,7 @@ The following uses an existing server client. Preserve the API's opaque cursor;
 stop when the response omits it. Catalog prices remain exact strings.
 
 ```python
-page = await client.catalogs.list_products("number-id", "123", limit=100, cursor="opaque_-")
+page = await client.catalogs.list_products("connection-id", "123", limit=100, cursor="opaque_-")
 next_cursor = page.data["data"].get("nextCursor")
 ```
 
@@ -821,11 +821,17 @@ off-to-on transition. Project tokens may disable it. The SDK forwards values
 without guessing the stored state. Existing `invalid_parameter`,
 `permission_denied` and `state_conflict` errors remain authoritative.
 
-The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+The setting affects linked-device Connections. Cloud API Connections ignore it.
 Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
 when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
+
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
 
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
@@ -892,8 +898,8 @@ does not establish API deployment or package publication.
 
 ## Direct passkey relay (unreleased)
 
-Use server credentials with `sessions:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+Use server credentials with `connections:manage` for every operation, including reads.
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -918,17 +924,46 @@ The matching API source is accepted. Package qualification and publication are
 still required before using a released package.
 
 ```python
-ticket = await client.passkeys.issue_challenge(session)
-await client.passkeys.get_challenge(session, ticket.data["data"]["ticket"])
-await client.passkeys.submit_assertion(session, supplied_assertion)
-state = await client.passkeys.get_confirmation(session)
+ticket = await client.passkeys.issue_challenge(connection)
+await client.passkeys.get_challenge(connection, ticket.data["data"]["ticket"])
+await client.passkeys.submit_assertion(connection, supplied_assertion)
+state = await client.passkeys.get_confirmation(connection)
 
 
 async def confirm_explicitly():
     # Call only after an explicit decision based on the current state.
-    return await client.passkeys.confirm(session, supplied_confirmation)
+    return await client.passkeys.confirm(connection, supplied_confirmation)
 ```
 
+## Connection call history (unreleased source)
+
+Read one Connection's calls with the other party's identity through
+`GET /messaging/{connection}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```python
+page = await messaging.calls.list("support", {"limit": 25, "outcome": "missed"})
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
+## Connection-scoped Test operations
+
+The Test phone methods take a Connection ID, without a project argument:
+~~~python
+phone = await client.testing.get_phone("support")
+event = await client.testing.trigger_event(
+    "support", {"event": "call.missed", "fromConnection": "sales"}
+)
+fixtures = await client.testing.list_event_fixtures()
+~~~
+
+Send-phone-message and unlink-device helpers use the same Connection scope. The trigger body contains event, optional overrides and optional fromConnection; the target Connection is a separate method argument. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-Connection access checks; a helper does not grant access or make a real Connection a Test Connection.
 
 ## Guest participants and waiting rooms (unreleased)
 
@@ -963,13 +998,19 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.
 
 ## Audience profile list filters (source preparation)
 

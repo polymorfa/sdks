@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 import type {
+  ConnectionCallRecord,
   CreateCustomerPairingLinkRequest,
   CreateCustomerRequest,
   CreateQuickLinkRequest,
@@ -60,6 +61,30 @@ function keys<T>(record: { readonly [K in keyof Required<T>]: true }) {
 }
 
 describe("SDK types match the pinned contract snapshots", () => {
+  it("keeps call-history account identity aligned with the Connection contract", () => {
+    expect(
+      keys<ConnectionCallRecord>({
+        callId: true,
+        projectId: true,
+        connectionId: true,
+        direction: true,
+        upstream: true,
+        outcome: true,
+        state: true,
+        hasVideo: true,
+        peer: true,
+        startedAt: true,
+        connectedAt: true,
+        endedAt: true,
+        durationSeconds: true,
+        endReason: true,
+      }),
+    ).toEqual(properties(messaging, "ConnectionCallRecord"));
+    expect(messaging.ConnectionCallRecord?.required).toContain("connectionId");
+    expect(messaging.ConnectionCallRecord?.properties).not.toHaveProperty(
+      "sessionId",
+    );
+  });
   it("keeps HMS provider references transport-specific with a deprecated alias", () => {
     for (const name of ["HistoryMessageSummary", "HistoryMessage"]) {
       const schema = messaging[name];
@@ -155,8 +180,8 @@ describe("SDK types match the pinned contract snapshots", () => {
         status: true,
         isDefault: true,
         archivedAt: true,
-        numberCount: true,
-        connectedNumberCount: true,
+        connectionCount: true,
+        connectedConnectionCount: true,
         activePairingLinkState: true,
         lastActivityAt: true,
         needsAttention: true,
@@ -196,8 +221,8 @@ describe("SDK types match the pinned contract snapshots", () => {
         billingControls: true,
         purpose: true,
         connectionGoal: true,
-        session: true,
-        addConnection: true,
+        connection: true,
+        addMethod: true,
         projectId: true,
         customerId: true,
         externalId: true,
@@ -227,10 +252,10 @@ describe("SDK types match the pinned contract snapshots", () => {
       keys<QuickLink>({
         purpose: true,
         connectionGoal: true,
-        addConnection: true,
+        addMethod: true,
         id: true,
         url: true,
-        session: true,
+        connection: true,
         expiresAt: true,
       }),
     ).toEqual(properties(messaging, "QuickLink"));
@@ -238,12 +263,12 @@ describe("SDK types match the pinned contract snapshots", () => {
       keys<QuickLinkStatus>({
         purpose: true,
         connectionGoal: true,
-        addConnection: true,
+        addMethod: true,
         hybridPhase: true,
         onboarding: true,
         id: true,
         status: true,
-        session: true,
+        connection: true,
         expiresAt: true,
         openedAt: true,
         connectedAt: true,
@@ -285,8 +310,8 @@ describe("SDK types match the pinned contract snapshots", () => {
     expect(
       keys<HybridQuickLinkAvailability>({
         allowed: true,
-        addConnection: true,
-        connections: true,
+        addMethod: true,
+        methods: true,
         resumeQuickLinkId: true,
       }),
     ).toEqual(
@@ -314,7 +339,7 @@ describe("SDK types match the pinned contract snapshots", () => {
       template: true,
       target_reference: true,
       only_eligible_transport: true,
-      session_rule: true,
+      connection_rule: true,
       project_rule: true,
       team_rule: true,
       default_linked_devices: true,

@@ -2,7 +2,7 @@ import { afterEach, expect, it, vi } from "vitest";
 import { MessagingClient } from "../src/index.js";
 import { TEAM_API_KEY } from "./support/credentials.js";
 afterEach(() => vi.unstubAllGlobals());
-it("uploads fixture content separately and advances an existing QuickLink without session credentials", async () => {
+it("uploads fixture content separately and advances an existing QuickLink without connection credentials", async () => {
   const fetcher = vi.fn<typeof globalThis.fetch>(
     async () =>
       new Response(JSON.stringify({ fixtureId: "fixture" }), {
@@ -39,7 +39,7 @@ it("uploads fixture content separately and advances an existing QuickLink withou
   expect(JSON.parse(String(fetcher.mock.calls[0]?.[1]?.body))).toEqual(input);
   expect(JSON.parse(String(fetcher.mock.calls[1]?.[1]?.body))).toEqual(signup);
   expect(String(fetcher.mock.calls[0]?.[0])).toContain(
-    "/messaging/testing/project-a/history-fixtures",
+    "/messaging/projects/project-a/test-history-fixtures",
   );
   expect(String(fetcher.mock.calls[1]?.[0])).toContain(
     "/messaging/cloud-api/embedded-signup",

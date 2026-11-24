@@ -110,7 +110,7 @@ func TestMintedClientTokensRedactFormattingButPreserveExplicitJSON(t *testing.T)
 	}))
 	defer server.Close()
 	client, _ := NewMessagingClient(teamConfig(server.URL))
-	response, err := client.ClientTokens().Mint(context.Background(), MintClientTokenRequest{EphemeralID: "app", Session: "session"})
+	response, err := client.ClientTokens().Mint(context.Background(), MintClientTokenRequest{EphemeralID: "app", Connection: "connection"})
 	if err != nil {
 		t.Fatal(err)
 	}

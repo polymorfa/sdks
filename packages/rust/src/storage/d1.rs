@@ -9,7 +9,7 @@ use sha2::Sha256;
 use std::{sync::Arc, time::Duration};
 const CONTRACT: &str = "polymorfa-d1-storage-v1";
 const MAX_BODY: usize = 8 * 1024 * 1024;
-pub const SOURCE_BRIDGE_COMMIT: &str = "9ae35e671f7f4868a67c1562422c5af9284b95c1";
+pub const SOURCE_BRIDGE_COMMIT: &str = "d80b581c9df122411e9149a7e39a33700a51571c";
 #[derive(Clone)]
 pub struct D1BridgeOptions {
     pub base_url: String,
@@ -187,7 +187,7 @@ impl D1BridgeAdapter {
             }
             let envelope: Value = serde_json::from_slice(&bytes).map_err(|_| untrusted())?;
             if envelope.get("contract").and_then(Value::as_str) != Some(CONTRACT)
-                || envelope.get("schemaVersion").and_then(Value::as_u64) != Some(2)
+                || envelope.get("schemaVersion").and_then(Value::as_u64) != Some(3)
                 || envelope.get("authority").and_then(Value::as_str) != Some(&self.authority)
                 || envelope.get("tablePrefix").and_then(Value::as_str) != Some(&self.prefix)
             {

@@ -53,7 +53,7 @@ type BanSafeHealthProjection struct {
 	HealthExplanation       *BanSafeHealthExplanation    `json:"healthExplanation"`
 	ObservedAccountState    *BanSafeObservedAccountState `json:"observedAccountState"`
 }
-type BanSafeNumberEnforcement struct {
+type BanSafeConnectionEnforcement struct {
 	Rung                string   `json:"rung"`
 	PreviousRung        string   `json:"previousRung"`
 	TeamFloor           string   `json:"teamFloor"`
@@ -70,15 +70,15 @@ type BanSafeNumberEnforcement struct {
 	AppealState         string   `json:"appealState"`
 	State               string   `json:"state"`
 }
-type BanSafeNumber struct {
+type BanSafeConnection struct {
 	BanSafeHealthProjection
-	SessionID   string                    `json:"sessionId"`
-	Session     string                    `json:"session"`
-	PhoneNumber string                    `json:"phoneNumber"`
-	ProjectID   string                    `json:"projectId"`
-	Enforcement *BanSafeNumberEnforcement `json:"enforcement"`
+	ConnectionID string                        `json:"connectionId"`
+	Connection   string                        `json:"connection"`
+	PhoneNumber  string                        `json:"phoneNumber"`
+	ProjectID    string                        `json:"projectId"`
+	Enforcement  *BanSafeConnectionEnforcement `json:"enforcement"`
 }
-type BanSafeNumberWarmup struct {
+type BanSafeConnectionWarmup struct {
 	Enabled      bool               `json:"enabled"`
 	TenureSource *string            `json:"tenureSource"`
 	TenureDay    int                `json:"tenureDay"`
@@ -87,12 +87,12 @@ type BanSafeNumberWarmup struct {
 	ResetsAt     *string            `json:"resetsAt"`
 	Curve        []WarmupCurvePoint `json:"curve"`
 }
-type BanSafeNumberDetail struct {
-	BanSafeNumber
-	Warmup       BanSafeNumberWarmup `json:"warmup"`
-	Findings     []BanSafeFinding    `json:"findings"`
-	LiftRequires *string             `json:"liftRequires"`
-	AppealState  string              `json:"appealState"`
+type BanSafeConnectionDetail struct {
+	BanSafeConnection
+	Warmup       BanSafeConnectionWarmup `json:"warmup"`
+	Findings     []BanSafeFinding        `json:"findings"`
+	LiftRequires *string                 `json:"liftRequires"`
+	AppealState  string                  `json:"appealState"`
 }
 type BanSafeHealthPoint struct {
 	BanSafeHealthProjection
@@ -100,9 +100,9 @@ type BanSafeHealthPoint struct {
 	HealthEvaluatedAt string  `json:"healthEvaluatedAt"`
 }
 type BanSafeHealthHistory struct {
-	SessionID string               `json:"sessionId"`
-	Session   string               `json:"session"`
-	Points    []BanSafeHealthPoint `json:"points"`
+	ConnectionID string               `json:"connectionId"`
+	Connection   string               `json:"connection"`
+	Points       []BanSafeHealthPoint `json:"points"`
 }
 type BanSafeFinding struct {
 	ID                  *string            `json:"id"`
@@ -115,8 +115,8 @@ type BanSafeFinding struct {
 	Occurrences         int                `json:"occurrences"`
 	ReopenedCount       int                `json:"reopenedCount"`
 	Evidence            map[string]float64 `json:"evidence"`
-	SessionID           string             `json:"sessionId"`
-	Session             string             `json:"session"`
+	ConnectionID        string             `json:"connectionId"`
+	Connection          string             `json:"connection"`
 	PhoneNumber         string             `json:"phoneNumber"`
 	FirstSeenAt         *string            `json:"firstSeenAt"`
 	LastSeenAt          *string            `json:"lastSeenAt"`
@@ -129,74 +129,75 @@ type BanSafeFinding struct {
 }
 type BanSafeEnforcementSummary struct {
 	BanSafeHealthProjection
-	SessionID           string                    `json:"sessionId"`
-	Session             string                    `json:"session"`
-	PhoneNumber         string                    `json:"phoneNumber"`
-	ProjectID           string                    `json:"projectId"`
-	Rung                string                    `json:"rung"`
-	PreviousRung        string                    `json:"previousRung"`
-	TeamFloor           string                    `json:"teamFloor"`
-	Reason              string                    `json:"reason"`
-	Source              string                    `json:"source"`
-	ThroughputPerMinute *float64                  `json:"throughputPerMinute"`
-	BlocksUnsolicited   bool                      `json:"blocksUnsolicited"`
-	Suspended           bool                      `json:"suspended"`
-	Enforcement         *BanSafeNumberEnforcement `json:"enforcement,omitempty"`
-	BlockingFindings    []string                  `json:"blockingFindings"`
-	StartedAt           string                    `json:"startedAt"`
-	EligibleLiftAt      *string                   `json:"eligibleLiftAt"`
-	LiftRequires        string                    `json:"liftRequires"`
-	OperatorHold        bool                      `json:"operatorHold"`
-	AppealState         string                    `json:"appealState"`
-	State               string                    `json:"state"`
+	ConnectionID        string                        `json:"connectionId"`
+	Connection          string                        `json:"connection"`
+	PhoneNumber         string                        `json:"phoneNumber"`
+	ProjectID           string                        `json:"projectId"`
+	Rung                string                        `json:"rung"`
+	PreviousRung        string                        `json:"previousRung"`
+	TeamFloor           string                        `json:"teamFloor"`
+	Reason              string                        `json:"reason"`
+	Source              string                        `json:"source"`
+	ThroughputPerMinute *float64                      `json:"throughputPerMinute"`
+	BlocksUnsolicited   bool                          `json:"blocksUnsolicited"`
+	Suspended           bool                          `json:"suspended"`
+	Enforcement         *BanSafeConnectionEnforcement `json:"enforcement,omitempty"`
+	BlockingFindings    []string                      `json:"blockingFindings"`
+	StartedAt           string                        `json:"startedAt"`
+	EligibleLiftAt      *string                       `json:"eligibleLiftAt"`
+	LiftRequires        string                        `json:"liftRequires"`
+	OperatorHold        bool                          `json:"operatorHold"`
+	AppealState         string                        `json:"appealState"`
+	State               string                        `json:"state"`
 }
 type BanSafeIncident struct {
-	ID          string  `json:"id"`
-	SessionID   string  `json:"sessionId"`
-	Session     string  `json:"session"`
-	PhoneNumber string  `json:"phoneNumber"`
-	ProjectID   string  `json:"projectId"`
-	Kind        string  `json:"kind"`
-	Source      string  `json:"source"`
-	Ambiguous   bool    `json:"ambiguous"`
-	StartedAt   string  `json:"startedAt"`
-	EndsAt      *string `json:"endsAt"`
-	Resolution  string  `json:"resolution"`
-	ClosedAt    *string `json:"closedAt"`
-	ClosedBy    *string `json:"closedBy"`
-	ClaimID     *string `json:"claimId"`
-	Note        *string `json:"note"`
-	ReportedBy  *string `json:"reportedBy"`
-	CreatedAt   string  `json:"createdAt"`
+	ID           string  `json:"id"`
+	ConnectionID string  `json:"connectionId"`
+	Connection   string  `json:"connection"`
+	PhoneNumber  string  `json:"phoneNumber"`
+	ProjectID    string  `json:"projectId"`
+	Kind         string  `json:"kind"`
+	Source       string  `json:"source"`
+	Ambiguous    bool    `json:"ambiguous"`
+	StartedAt    string  `json:"startedAt"`
+	EndsAt       *string `json:"endsAt"`
+	Resolution   string  `json:"resolution"`
+	ClosedAt     *string `json:"closedAt"`
+	ClosedBy     *string `json:"closedBy"`
+	ClaimID      *string `json:"claimId"`
+	Note         *string `json:"note"`
+	ReportedBy   *string `json:"reportedBy"`
+	CreatedAt    string  `json:"createdAt"`
 }
 type ReportBanSafeIncidentRequest struct {
-	Session    string `json:"session"`
+	Connection string `json:"connection"`
 	OccurredAt string `json:"occurredAt,omitempty"`
 	Note       string `json:"note,omitempty"`
 }
 type BanSafeIncidentReceipt struct {
-	IncidentID string `json:"incidentId"`
-	Created    bool   `json:"created"`
-	SessionID  string `json:"sessionId"`
-	Session    string `json:"session"`
-	OccurredAt string `json:"occurredAt"`
+	IncidentID   string `json:"incidentId"`
+	Created      bool   `json:"created"`
+	ConnectionID string `json:"connectionId"`
+	Connection   string `json:"connection"`
+	OccurredAt   string `json:"occurredAt"`
 }
 type BanSafeClaimEvidence struct {
-	SimultaneousCalls      bool `json:"simultaneousCalls"`
-	AttributionRuleVersion *int `json:"attributionRuleVersion"`
-	WindowDays             int  `json:"windowDays"`
-	DeviceEvidence         bool `json:"deviceEvidence"`
-	OtherDevices           int  `json:"otherDevices"`
-	RestrictedInWindow     bool `json:"restrictedInWindow"`
-	CriticalFindingDays    int  `json:"criticalFindingDays"`
-	SharedConnection       bool `json:"sharedConnection"`
-	MeasuredHours          int  `json:"measuredHours"`
+	SimultaneousCalls       bool `json:"simultaneousCalls"`
+	LinkedDeviceInteractive bool `json:"linkedDeviceInteractive"`
+	AttributionRuleVersion  *int `json:"attributionRuleVersion"`
+	WindowDays              int  `json:"windowDays"`
+	DeviceEvidence          bool `json:"deviceEvidence"`
+	OtherDevices            int  `json:"otherDevices"`
+	RestrictedInWindow      bool `json:"restrictedInWindow"`
+	CriticalFindingDays     int  `json:"criticalFindingDays"`
+	SharedConnection        bool `json:"sharedConnection"`
+	MeasuredHours           int  `json:"measuredHours"`
 }
 type BanSafeClaim struct {
 	ID            string               `json:"id"`
 	IncidentID    string               `json:"incidentId"`
-	SessionID     string               `json:"sessionId"`
-	Session       string               `json:"session"`
+	ConnectionID  string               `json:"connectionId"`
+	Connection    string               `json:"connection"`
 	PhoneNumber   string               `json:"phoneNumber"`
 	ProjectID     string               `json:"projectId"`
 	Status        string               `json:"status"`
@@ -303,20 +304,20 @@ type BanSafeTelemetrySnapshot struct {
 	RecordVersion *int            `json:"recordVersion"`
 	Signals       []BanSafeSignal `json:"signals"`
 }
-type BanSafeCollectionSession struct {
-	SessionID  string                  `json:"sessionId"`
-	Session    string                  `json:"session"`
-	ProjectID  string                  `json:"projectId"`
-	Collection BanSafeCollectionStatus `json:"collection"`
+type BanSafeCollectionConnection struct {
+	ConnectionID string                  `json:"connectionId"`
+	Connection   string                  `json:"connection"`
+	ProjectID    string                  `json:"projectId"`
+	Collection   BanSafeCollectionStatus `json:"collection"`
 }
 type BanSafeTelemetryDetail struct {
-	BanSafeCollectionSession
+	BanSafeCollectionConnection
 	Snapshot *BanSafeTelemetrySnapshot `json:"snapshot"`
 }
 type BanSafeHealthAction struct {
 	ID               string   `json:"id"`
-	SessionID        string   `json:"sessionId"`
-	Session          string   `json:"session"`
+	ConnectionID     string   `json:"connectionId"`
+	Connection       string   `json:"connection"`
 	ProjectID        string   `json:"projectId"`
 	Mode             string   `json:"mode"`
 	Action           string   `json:"action"`
@@ -350,7 +351,7 @@ type ListBanSafeHealthHistoryParams struct {
 }
 type ListBanSafeFindingsParams struct {
 	ListBanSafeHealthParams
-	Session, Status, Severity string
+	Connection, Status, Severity string
 }
 type ListBanSafeEnforcementParams struct {
 	ListBanSafeHealthParams
@@ -358,11 +359,11 @@ type ListBanSafeEnforcementParams struct {
 }
 type ListBanSafeIncidentsParams struct {
 	ListBanSafeHealthParams
-	Session string
+	Connection string
 }
 type ListBanSafeClaimsParams struct {
 	ListBanSafeHealthParams
-	Session, Status string
+	Connection, Status string
 }
 type ListBanSafeCollectionParams = ListBanSafeHealthParams
 type ListBanSafeTelemetryHistoryParams struct {
@@ -371,47 +372,47 @@ type ListBanSafeTelemetryHistoryParams struct {
 }
 type ListBanSafeHealthActionsParams struct {
 	ListBanSafeHealthParams
-	Session, Status string
+	Connection, Status string
 }
 type BanSafe struct{ t *transport }
 
 func (c *TeamClient) BanSafe() *BanSafe { return &BanSafe{c.t} }
-func (r *BanSafe) ListHealth(ctx context.Context, p ListBanSafeHealthParams, o ...RequestOptions) (*CursorPage[BanSafeNumber], error) {
-	return page[BanSafeNumber](ctx, r.t, "/platform/bansafe/health", p.query(), options(o))
+func (r *BanSafe) ListHealth(ctx context.Context, p ListBanSafeHealthParams, o ...RequestOptions) (*CursorPage[BanSafeConnection], error) {
+	return page[BanSafeConnection](ctx, r.t, "/platform/bansafe/health", p.query(), options(o))
 }
-func (r *BanSafe) GetHealth(ctx context.Context, session string, o ...RequestOptions) (Response[Envelope[BanSafeNumberDetail]], error) {
-	return request[Envelope[BanSafeNumberDetail]](ctx, r.t, "GET", "/platform/bansafe/health/"+escaped(session), nil, nil, options(o))
+func (r *BanSafe) GetHealth(ctx context.Context, connection string, o ...RequestOptions) (Response[Envelope[BanSafeConnectionDetail]], error) {
+	return request[Envelope[BanSafeConnectionDetail]](ctx, r.t, "GET", "/platform/bansafe/health/"+escaped(connection), nil, nil, options(o))
 }
-func (r *BanSafe) ListHealthHistory(ctx context.Context, session string, p ListBanSafeHealthHistoryParams, o ...RequestOptions) (Response[Envelope[BanSafeHealthHistory]], error) {
+func (r *BanSafe) ListHealthHistory(ctx context.Context, connection string, p ListBanSafeHealthHistoryParams, o ...RequestOptions) (Response[Envelope[BanSafeHealthHistory]], error) {
 	q := url.Values{}
 	setString(q, "since", p.Since)
 	setInt(q, "limit", p.Limit)
-	return request[Envelope[BanSafeHealthHistory]](ctx, r.t, "GET", "/platform/bansafe/health/"+escaped(session)+"/history", q, nil, options(o))
+	return request[Envelope[BanSafeHealthHistory]](ctx, r.t, "GET", "/platform/bansafe/health/"+escaped(connection)+"/history", q, nil, options(o))
 }
 func (r *BanSafe) ListSignals(ctx context.Context, o ...RequestOptions) (Response[Envelope[[]BanSafeSignalDefinition]], error) {
 	return request[Envelope[[]BanSafeSignalDefinition]](ctx, r.t, "GET", "/platform/bansafe/signals", nil, nil, options(o))
 }
-func (r *BanSafe) GetTelemetry(ctx context.Context, session string, o ...RequestOptions) (Response[Envelope[BanSafeTelemetryDetail]], error) {
-	return request[Envelope[BanSafeTelemetryDetail]](ctx, r.t, "GET", "/platform/bansafe/telemetry/"+escaped(session), nil, nil, options(o))
+func (r *BanSafe) GetTelemetry(ctx context.Context, connection string, o ...RequestOptions) (Response[Envelope[BanSafeTelemetryDetail]], error) {
+	return request[Envelope[BanSafeTelemetryDetail]](ctx, r.t, "GET", "/platform/bansafe/telemetry/"+escaped(connection), nil, nil, options(o))
 }
-func (r *BanSafe) ListTelemetryHistory(ctx context.Context, session string, p ListBanSafeTelemetryHistoryParams, o ...RequestOptions) (*CursorPage[BanSafeTelemetrySnapshot], error) {
+func (r *BanSafe) ListTelemetryHistory(ctx context.Context, connection string, p ListBanSafeTelemetryHistoryParams, o ...RequestOptions) (*CursorPage[BanSafeTelemetrySnapshot], error) {
 	q := p.ListParams.query()
 	setString(q, "since", p.Since)
 	setString(q, "until", p.Until)
-	return page[BanSafeTelemetrySnapshot](ctx, r.t, "/platform/bansafe/telemetry/"+escaped(session)+"/history", q, options(o))
+	return page[BanSafeTelemetrySnapshot](ctx, r.t, "/platform/bansafe/telemetry/"+escaped(connection)+"/history", q, options(o))
 }
-func (r *BanSafe) ListCollection(ctx context.Context, p ListBanSafeCollectionParams, o ...RequestOptions) (*CursorPage[BanSafeCollectionSession], error) {
-	return page[BanSafeCollectionSession](ctx, r.t, "/platform/bansafe/collection", p.query(), options(o))
+func (r *BanSafe) ListCollection(ctx context.Context, p ListBanSafeCollectionParams, o ...RequestOptions) (*CursorPage[BanSafeCollectionConnection], error) {
+	return page[BanSafeCollectionConnection](ctx, r.t, "/platform/bansafe/collection", p.query(), options(o))
 }
 func (r *BanSafe) ListHealthActions(ctx context.Context, p ListBanSafeHealthActionsParams, o ...RequestOptions) (*CursorPage[BanSafeHealthAction], error) {
 	q := p.query()
-	setString(q, "session", p.Session)
+	setString(q, "connection", p.Connection)
 	setString(q, "status", p.Status)
 	return page[BanSafeHealthAction](ctx, r.t, "/platform/bansafe/health-actions", q, options(o))
 }
 func (r *BanSafe) ListFindings(ctx context.Context, p ListBanSafeFindingsParams, o ...RequestOptions) (*CursorPage[BanSafeFinding], error) {
 	q := p.query()
-	setString(q, "session", p.Session)
+	setString(q, "connection", p.Connection)
 	setString(q, "status", p.Status)
 	setString(q, "severity", p.Severity)
 	return page[BanSafeFinding](ctx, r.t, "/platform/bansafe/findings", q, options(o))
@@ -423,7 +424,7 @@ func (r *BanSafe) ListEnforcement(ctx context.Context, p ListBanSafeEnforcementP
 }
 func (r *BanSafe) ListIncidents(ctx context.Context, p ListBanSafeIncidentsParams, o ...RequestOptions) (*CursorPage[BanSafeIncident], error) {
 	q := p.query()
-	setString(q, "session", p.Session)
+	setString(q, "connection", p.Connection)
 	return page[BanSafeIncident](ctx, r.t, "/platform/bansafe/incidents", q, options(o))
 }
 func (r *BanSafe) CreateIncident(ctx context.Context, b ReportBanSafeIncidentRequest, o ...RequestOptions) (Response[Envelope[BanSafeIncidentReceipt]], error) {
@@ -434,7 +435,7 @@ func (r *BanSafe) RetractIncident(ctx context.Context, id string, o ...RequestOp
 }
 func (r *BanSafe) ListClaims(ctx context.Context, p ListBanSafeClaimsParams, o ...RequestOptions) (*CursorPage[BanSafeClaim], error) {
 	q := p.query()
-	setString(q, "session", p.Session)
+	setString(q, "connection", p.Connection)
 	setString(q, "status", p.Status)
 	return page[BanSafeClaim](ctx, r.t, "/platform/bansafe/claims", q, options(o))
 }

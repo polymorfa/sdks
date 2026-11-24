@@ -188,22 +188,22 @@ func (v *CampaignComposedButton) UnmarshalJSON(b []byte) error {
 type CampaignRecipientFailureReason string
 
 const (
-	CampaignFailureOptedOut            CampaignRecipientFailureReason = "opted_out"
-	CampaignFailureColdHeld            CampaignRecipientFailureReason = "cold_held"
-	CampaignFailureCancelled           CampaignRecipientFailureReason = "campaign_cancelled"
-	CampaignFailureInvalidRecipient    CampaignRecipientFailureReason = "invalid_recipient"
-	CampaignFailureSessionNotConnected CampaignRecipientFailureReason = "session_not_connected"
-	CampaignFailureAckTimeout          CampaignRecipientFailureReason = "ack_timeout"
-	CampaignFailureBlockedBySafety     CampaignRecipientFailureReason = "blocked_by_safety"
-	CampaignFailureSendFailed          CampaignRecipientFailureReason = "send_failed"
-	CampaignFailureMissingVariable     CampaignRecipientFailureReason = "missing_variable"
-	CampaignFailureFrequencyCap        CampaignRecipientFailureReason = "frequency_cap"
-	CampaignFailureOther               CampaignRecipientFailureReason = "other"
+	CampaignFailureOptedOut               CampaignRecipientFailureReason = "opted_out"
+	CampaignFailureColdHeld               CampaignRecipientFailureReason = "cold_held"
+	CampaignFailureCancelled              CampaignRecipientFailureReason = "campaign_cancelled"
+	CampaignFailureInvalidRecipient       CampaignRecipientFailureReason = "invalid_recipient"
+	CampaignFailureConnectionNotConnected CampaignRecipientFailureReason = "connection_not_connected"
+	CampaignFailureAckTimeout             CampaignRecipientFailureReason = "ack_timeout"
+	CampaignFailureBlockedBySafety        CampaignRecipientFailureReason = "blocked_by_safety"
+	CampaignFailureSendFailed             CampaignRecipientFailureReason = "send_failed"
+	CampaignFailureMissingVariable        CampaignRecipientFailureReason = "missing_variable"
+	CampaignFailureFrequencyCap           CampaignRecipientFailureReason = "frequency_cap"
+	CampaignFailureOther                  CampaignRecipientFailureReason = "other"
 )
 
 func validCampaignFailure(v string) bool {
 	switch CampaignRecipientFailureReason(v) {
-	case CampaignFailureOptedOut, CampaignFailureColdHeld, CampaignFailureCancelled, CampaignFailureInvalidRecipient, CampaignFailureSessionNotConnected, CampaignFailureAckTimeout, CampaignFailureBlockedBySafety, CampaignFailureSendFailed, CampaignFailureMissingVariable, CampaignFailureFrequencyCap, CampaignFailureOther:
+	case CampaignFailureOptedOut, CampaignFailureColdHeld, CampaignFailureCancelled, CampaignFailureInvalidRecipient, CampaignFailureConnectionNotConnected, CampaignFailureAckTimeout, CampaignFailureBlockedBySafety, CampaignFailureSendFailed, CampaignFailureMissingVariable, CampaignFailureFrequencyCap, CampaignFailureOther:
 		return true
 	}
 	return false

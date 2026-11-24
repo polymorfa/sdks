@@ -219,7 +219,6 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
               ?.setHandRaised(!snapshot.handRaised)
               .catch(() => undefined),
         );
-        hand.setAttribute("aria-pressed", String(snapshot.handRaised === true));
         panel.append(hand);
         for (const emoji of ["👍", "❤️", "😂", "😮", "😢", "🙏"] as const)
           panel.append(
@@ -267,7 +266,7 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
       // On a video call the button mutes the outgoing track; on an audio call
       // over a video-capable line it upgrades, as the React dock's does.
       // Without the second case an audio call could never reach video here.
-      // The upgrade needs a media session, which exists only once the call is
+      // The upgrade needs a media connection, which exists only once the call is
       // connected — offered earlier the button would do nothing at all. The
       // mute branch is unaffected, and `connectedAt` is no use as the test
       // because it survives `reconnecting`.
@@ -312,10 +311,6 @@ export class PolymorfaCallElement extends PolymorfaElement<CallsSnapshot> {
                 : controller.startScreenShare()
             ).catch(() => undefined);
           },
-        );
-        share.setAttribute(
-          "aria-pressed",
-          String(snapshot.screenSharing === true),
         );
         panel.append(share);
       }

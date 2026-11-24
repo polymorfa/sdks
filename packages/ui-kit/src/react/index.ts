@@ -80,7 +80,24 @@ export {
 } from "./dropin.js";
 export { CallButton, type CallButtonProps } from "./call-button.js";
 export {
-  CallNumberPicker,
-  type CallNumberOption,
-  type CallNumberPickerProps,
-} from "./call-number-picker.js";
+  CallConnectionPicker,
+  type CallConnectionOption,
+  type CallConnectionPickerProps,
+} from "./call-connection-picker.js";
+export {
+  ContactList,
+  ContactListView,
+  GroupDetails,
+  NewChat,
+  type ContactListProps,
+  type ContactListViewProps,
+  type GroupDetailsProps,
+  type NewChatProps,
+} from "./new-chat.js";
+export {
+  CallLog,
+  callPeerName,
+  callSummary,
+  conversationForCall,
+  type CallLogProps,
+} from "./call-log.js";

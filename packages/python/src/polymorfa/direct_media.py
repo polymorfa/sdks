@@ -212,12 +212,16 @@ class DirectMediaApi:
             raise ConfigurationError("credential")
 
     async def create_upload_grant(
-        self, session: str, info: EncryptedMediaInfo, *, options: RequestOptions = DEFAULT_OPTIONS
+        self,
+        connection: str,
+        info: EncryptedMediaInfo,
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
     ) -> UploadGrant:
         self.require_direct()
         response = await self._transport.request_json(
             "POST",
-            f"/messaging/{segment(session)}/media/upload-grants",
+            f"/messaging/{segment(connection)}/media/upload-grants",
             body=_upload_fields(info),
             options=submission_options(options),
         )
@@ -242,7 +246,11 @@ class DirectMediaApi:
         return UploadGrant(host, expiry, url)
 
     async def relay_upload(
-        self, session: str, body: EncryptedUploadBody, *, options: RequestOptions = DEFAULT_OPTIONS
+        self,
+        connection: str,
+        body: EncryptedUploadBody,
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
     ) -> UploadLocation:
         fields = _upload_fields(body.info)
         query = {
@@ -253,7 +261,7 @@ class DirectMediaApi:
         try:
             response = await self._transport.request_binary_json(
                 "POST",
-                f"/messaging/{segment(session)}/media/uploads",
+                f"/messaging/{segment(connection)}/media/uploads",
                 source,
                 body.info.encrypted_length,
                 query=query,
@@ -277,7 +285,7 @@ class HistorySync:
             raise ConfigurationError("credential")
 
     async def request_chunk_retry(
-        self, session: str, body: HistoryChunkRetry, *, options: RequestOptions = DEFAULT_OPTIONS
+        self, connection: str, body: HistoryChunkRetry, *, options: RequestOptions = DEFAULT_OPTIONS
     ) -> HistorySyncChunkRetryResult:
         self._server()
         if (
@@ -298,7 +306,7 @@ class HistorySync:
             raise ConfigurationError("regenerate")
         response = await self._transport.request_json(
             "POST",
-            f"/messaging/{segment(session)}/history/chunks/retry",
+            f"/messaging/{segment(connection)}/history/chunks/retry",
             body=V.capture(body),
             options=submission_options(options),
         )
@@ -312,7 +320,11 @@ class HistorySync:
         return cast(HistorySyncChunkRetryResult, data)
 
     async def delete_chunk(
-        self, session: str, body: HistoryChunkDelete, *, options: RequestOptions = DEFAULT_OPTIONS
+        self,
+        connection: str,
+        body: HistoryChunkDelete,
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
     ) -> None:
         self._server()
         path, digest = body.get("directPath"), body.get("fileEncSha256")
@@ -333,7 +345,7 @@ class HistorySync:
                 raise ConfigurationError(key)
         response = await self._transport.request_json(
             "POST",
-            f"/messaging/{segment(session)}/history/media/delete",
+            f"/messaging/{segment(connection)}/history/media/delete",
             body=V.capture(body),
             options=submission_options(options),
         )
@@ -347,7 +359,11 @@ class MediaUploadTransport(Protocol):
     @property
     def name(self) -> str: ...
     async def upload(
-        self, session: str, body: EncryptedUploadBody, *, options: RequestOptions = DEFAULT_OPTIONS
+        self,
+        connection: str,
+        body: EncryptedUploadBody,
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
     ) -> UploadLocation: ...
 
 
@@ -358,9 +374,13 @@ class RelayUploadTransport:
         self._api = api
 
     async def upload(
-        self, session: str, body: EncryptedUploadBody, *, options: RequestOptions = DEFAULT_OPTIONS
+        self,
+        connection: str,
+        body: EncryptedUploadBody,
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
     ) -> UploadLocation:
-        return await self._api.relay_upload(session, body, options=options)
+        return await self._api.relay_upload(connection, body, options=options)
 
 
 class _AttemptError(Exception):
@@ -423,7 +443,11 @@ class DirectUploadTransport:
         return urlunsplit((parsed.scheme, parsed.netloc, parsed.path, urlencode(params), ""))
 
     async def upload(
-        self, session: str, body: EncryptedUploadBody, *, options: RequestOptions = DEFAULT_OPTIONS
+        self,
+        connection: str,
+        body: EncryptedUploadBody,
+        *,
+        options: RequestOptions = DEFAULT_OPTIONS,
     ) -> UploadLocation:
         self.require_direct()
 
@@ -433,7 +457,7 @@ class DirectUploadTransport:
                 follow_redirects=False,
                 timeout=options.timeout or 30,
             ) as client:
-                grant = await self._api.create_upload_grant(session, body.info, options=options)
+                grant = await self._api.create_upload_grant(connection, body.info, options=options)
 
                 parts: _SequentialParts | None = None
 
@@ -479,7 +503,7 @@ class DirectUploadTransport:
                         try:
                             if last is not None and last.status == 401:
                                 grant = await self._api.create_upload_grant(
-                                    session, body.info, options=options
+                                    connection, body.info, options=options
                                 )
                             offset = start
                             actual_query = dict(query)
@@ -670,7 +694,7 @@ class WhatsAppMedia:
 
     async def upload(
         self,
-        session: str,
+        connection: str,
         source: MediaSource,
         *,
         media_type: UploadMediaType,
@@ -679,8 +703,8 @@ class WhatsAppMedia:
         max_bytes: int = MAX_BYTES,
         options: RequestOptions = DEFAULT_OPTIONS,
     ) -> MediaUploadResult:
-        if not isinstance(session, str) or not session:
-            raise ConfigurationError("session")
+        if not isinstance(connection, str) or not connection:
+            raise ConfigurationError("connection")
         selected = self.transport(egress) if isinstance(egress, str) else egress
         if not callable(getattr(selected, "upload", None)):
             raise ConfigurationError("egress")
@@ -690,7 +714,7 @@ class WhatsAppMedia:
         body = await prepare_whatsapp_upload(
             source, media_type=media_type, mimetype=mimetype, max_bytes=max_bytes
         )
-        location = await selected.upload(session, body, options=options)
+        location = await selected.upload(connection, body, options=options)
         info = body.info
         return MediaUploadResult(
             info.media_type,

@@ -15,7 +15,7 @@ use std::sync::{
     Arc, Mutex,
 };
 fn fixture() -> Value {
-    serde_json::from_str(include_str!("../../fixtures/storage-3bac.json")).unwrap()
+    serde_json::from_str(include_str!("../../fixtures/storage-connections-v3.json")).unwrap()
 }
 fn clean_snapshot(mut value: Value) -> Value {
     for rows in value.as_object_mut().unwrap().values_mut() {
@@ -38,7 +38,7 @@ pub async fn reducers(adapter: Arc<dyn StorageAdapter>) {
                 .collect::<Vec<_>>()
         } else {
             vec![reduce_history_chunk(&HistoryChunkInput {
-                session_id: "portable-fixture".into(),
+                connection_id: "portable-fixture".into(),
                 chunk: serde_json::from_value(f["history"].clone()).unwrap(),
                 identities: None,
                 chunk_id: None,
@@ -85,7 +85,7 @@ pub async fn reducers(adapter: Arc<dyn StorageAdapter>) {
         for batch in &batches {
             assert_eq!(storage.apply(batch).await.unwrap().writes, 0);
         }
-        // Use separate fixture sessions between modes so live events and native
+        // Use separate fixture connections between modes so live events and native
         // history never accidentally satisfy one another's row assertions.
         let deletes = ALL_ENTITIES
             .into_iter()
@@ -115,8 +115,10 @@ pub async fn reducers(adapter: Arc<dyn StorageAdapter>) {
         }
     }
     // Exact batch oracle checks also run through the same WASM/native parser.
-    let oracle: Value =
-        serde_json::from_str(include_str!("../../fixtures/reducer-batches-3bac.json")).unwrap();
+    let oracle: Value = serde_json::from_str(include_str!(
+        "../../fixtures/reducer-batches-connections-v3.json"
+    ))
+    .unwrap();
     for case in oracle["events"].as_array().unwrap() {
         assert_eq!(
             canonical_json(
@@ -144,7 +146,7 @@ pub async fn reducers(adapter: Arc<dyn StorageAdapter>) {
     let history:HistorySyncChunk=serde_json::from_value(json!({"syncType":"RECENT","chunkOrder":1,"progress":100,"conversations":[{"id":"111@s.whatsapp.net","messages":(0..2000).map(|i|json!({"message":{"key":{"id":i.to_string(),"fromMe":false},"messageTimestamp":1790856000+i,"message":{"conversation":format!("message {i}")}}})).collect::<Vec<_>>()}]})).unwrap();
     let storage = Storage::new(adapter.clone(), StorageOptions::default()).unwrap();
     let batch = reduce_history_chunk(&HistoryChunkInput {
-        session_id: s.clone(),
+        connection_id: s.clone(),
         chunk: history,
         identities: None,
         chunk_id: Some("big".into()),
@@ -157,7 +159,7 @@ pub async fn reducers(adapter: Arc<dyn StorageAdapter>) {
             &IndexQuery {
                 index: "by_chat".into(),
                 equals: RowKey::from([
-                    ("sessionId".into(), s),
+                    ("connectionId".into(), s),
                     ("chatId".into(), "wa:111@s.whatsapp.net".into()),
                 ]),
                 range: None,
@@ -200,7 +202,7 @@ impl StorageEventSource for Source {
     fn acknowledge<'a>(&'a self, item: &'a StorageStreamItem) -> StorageFuture<'a, ()> {
         Box::pin(async move {
             if let Some(event) = &item.webhook {
-                assert!(self.storage.has_event(&event.session, &event.id).await?);
+                assert!(self.storage.has_event(&event.connection, &event.id).await?);
             }
             assert_eq!(
                 self.storage
@@ -219,12 +221,12 @@ impl StorageEventSource for Source {
         })
     }
 }
-fn item(session: &str) -> StorageStreamItem {
+fn item(connection: &str) -> StorageStreamItem {
     StorageStreamItem {
         webhook: Some(StorageEvent {
-            id: format!("event-{session}"),
-            session: session.into(),
-            event: "session.connected".into(),
+            id: format!("event-{connection}"),
+            connection: connection.into(),
+            event: "connection.connected".into(),
             timestamp: "2026-10-01T12:00:00Z".into(),
             payload: json!({"pushName":"fixture"}),
         }),
@@ -253,11 +255,11 @@ impl StorageEventSource for Interrupted<'_> {
                     self.source
                         .storage
                         .apply(&OperationBatch {
-                            session_id: "*".into(),
+                            connection_id: "*".into(),
                             event_id: None,
                             event_type: None,
                             operations: vec![StorageOperation::Checkpoint {
-                                session_id: "*".into(),
+                                connection_id: "*".into(),
                                 stream: self.source.checkpoint.clone(),
                                 cursor: "competing-writer".into(),
                                 expected_cursor: Some(None),
@@ -328,7 +330,7 @@ impl StorageAdapter for Fault {
             if contains(Entity::Checkpoints) && self.checkpoint_failure.load(Ordering::SeqCst) {
                 return Err(StorageError::Provider("fixture checkpoint failure"));
             }
-            if contains(Entity::Sessions) {
+            if contains(Entity::Connections) {
                 if let Some(stop) = &self.stop {
                     stop.stop();
                 }

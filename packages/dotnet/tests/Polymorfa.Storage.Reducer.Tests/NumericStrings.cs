@@ -18,7 +18,7 @@ internal static class NumericStrings
     }
     internal static async Task Run()
     {
-        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/proto-number.json")));
+        using var fixture = JsonDocument.Parse(File.ReadAllText(Path.Combine(AppContext.BaseDirectory, "fixtures/proto-number.v3.json")));
         var vectors = 0;
         foreach (var vector in fixture.RootElement.GetProperty("strings").EnumerateArray())
         {
@@ -52,7 +52,7 @@ internal static class NumericStrings
             histories++;
         }
         var strict = new CustomerStorage(new MemoryStorageAdapter());
-        try { await strict.ApplyAsync(new("numeric", [new StorageUpsert(StorageEntity.Messages, new Dictionary<string, string> { ["sessionId"] = "numeric", ["messageId"] = "strict" }, new Dictionary<string, StorageFieldWrite> { ["timestamp"] = new(JsonSerializer.SerializeToElement("16"), 1) })])); throw new Exception("Generic numeric string accepted"); } catch (StorageValidationException) { }
+        try { await strict.ApplyAsync(new("numeric", [new StorageUpsert(StorageEntity.Messages, new Dictionary<string, string> { ["connectionId"] = "numeric", ["messageId"] = "strict" }, new Dictionary<string, StorageFieldWrite> { ["timestamp"] = new(JsonSerializer.SerializeToElement("16"), 1) })])); throw new Exception("Generic numeric string accepted"); } catch (StorageValidationException) { }
         try { JsonSerializer.Deserialize<StorageRow>("{\"_id\":\"strict\",\"_rev\":\"16\",\"_v\":{}}"); throw new Exception("String revision accepted"); } catch (JsonException) { }
         Console.WriteLine($"PASS numeric strings: {vectors} exact-bit public values/reductions and {histories} memory histories/replay/watermarks");
     }

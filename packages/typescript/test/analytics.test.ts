@@ -11,7 +11,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
     period: { start: 0, end: 1 },
     requestVitals: { requests: 0, failures: 0, errorRate: null },
     summary: null,
-    numbers: [],
+    connections: [],
     series: [],
     callSeries: [],
   };
@@ -31,11 +31,11 @@ it("reads enabled or disabled analytics and confines a project token without wid
     projectId: id,
     baseUrl: server.url,
   });
-  expect((await project.analytics.get({ sessionId: id })).data.enabled).toBe(
+  expect((await project.analytics.get({ connectionId: id })).data.enabled).toBe(
     false,
   );
   expect(server.requests[1]?.path).toBe(
-    `/platform/projects/${id}/analytics?sessionId=${id}`,
+    `/platform/projects/${id}/analytics?connectionId=${id}`,
   );
   expect(server.requests[1]?.headers.authorization).toContain(PROJECT_TOKEN);
   expect(
@@ -51,7 +51,7 @@ it("reads enabled or disabled analytics and confines a project token without wid
     root.analytics.get({ start: 10, end: 1 }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
   await expect(
-    root.analytics.get({ sessionId: "name" }),
+    root.analytics.get({ connectionId: "name" }),
   ).rejects.toBeInstanceOf(PolymorfaValidationError);
 });
 
@@ -79,9 +79,9 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
   const body = {
     enabled: true,
     summary: { calls, accountActivity },
-    numbers: [{ sessionId: "number", calls }],
+    connections: [{ connectionId: "number", calls }],
     series: [],
-    callSeries: [{ sessionId: "number", ts: 1, answered: 1, missed: 1 }],
+    callSeries: [{ connectionId: "number", ts: 1, answered: 1, missed: 1 }],
   };
   const server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
@@ -95,7 +95,7 @@ it("preserves nullable call quality, follow-up coverage and per-number call seri
   const result = (await client.analytics.get()).data;
   expect(result.summary?.accountActivity).toEqual(accountActivity);
   expect(result.summary?.calls.followUp).toEqual(calls.followUp);
-  expect(result.numbers[0]?.calls.mediaQuality.averageRttMs).toBeNull();
+  expect(result.connections[0]?.calls.mediaQuality.averageRttMs).toBeNull();
   expect(result.callSeries).toEqual(body.callSeries);
 });
 
@@ -121,7 +121,7 @@ it("returns collector text and metadata with validated project filters", async (
     windowHours: 6,
     segments: true,
     format: "openmetrics",
-    sessionId: id,
+    connectionId: id,
   });
   expect(response.data).toBe(body);
   expect(response.metadata.requestId).toBe("metrics-1");
@@ -136,7 +136,7 @@ it("returns collector text and metadata with validated project filters", async (
     { windowHours: 0 },
     { windowHours: 169 },
     { windowHours: 1.5 },
-    { sessionId: "phone" },
+    { connectionId: "phone" },
     { projectId: "22222222-2222-4333-8444-555555555555" },
   ])
     await expect(client.analytics.metrics(params)).rejects.toBeInstanceOf(
@@ -221,7 +221,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
   const body = {
     enabled: true,
     summary: { deviceAnalytics, conversationBreakdown },
-    numbers: [{ deviceAnalytics, conversationBreakdown }],
+    connections: [{ deviceAnalytics, conversationBreakdown }],
   };
   const server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
@@ -235,7 +235,7 @@ it("preserves joint country/message cohorts, unknown client families and stale d
   const result = await client.analytics.get({ start: 0, end: 1 });
   expect(result.data).toEqual(body);
   expect(
-    result.data.numbers[0]?.deviceAnalytics.inventory?.devices[0]?.listed,
+    result.data.connections[0]?.deviceAnalytics.inventory?.devices[0]?.listed,
   ).toBeNull();
 });
 
@@ -268,7 +268,7 @@ it("preserves country/count/device receipt activity without changing nullable co
   const body = {
     enabled: true,
     summary: { recipientActivity },
-    numbers: [{ sessionId: "number", recipientActivity }],
+    connections: [{ connectionId: "number", recipientActivity }],
     series: [],
     callSeries: [],
   };
@@ -284,6 +284,6 @@ it("preserves country/count/device receipt activity without changing nullable co
   const data = (await client.analytics.get()).data;
   expect(data.summary?.recipientActivity).toEqual(recipientActivity);
   expect(
-    data.numbers[0]?.recipientActivity?.rows[0]?.averageQuietGapMs,
+    data.connections[0]?.recipientActivity?.rows[0]?.averageQuietGapMs,
   ).toBeNull();
 });

@@ -17,7 +17,7 @@ dotnet build packages/dotnet/examples/maui/app/Polymorfa.Example.Maui.csproj -f 
 open "packages/dotnet/examples/maui/app/bin/Debug/net10.0-maccatalyst26.5/maccatalyst-arm64/Polymorfa MAUI.app"
 ```
 
-Start the [ASP.NET Core example](../README.md#aspnet-core) at `http://127.0.0.1:58284` with its Development demonstration identity configured before signing in. Its server owns `POLYMORFA_API_KEY`, `POLYMORFA_SESSION` and `POLYMORFA_EXAMPLE_PASSWORD`. Enter only the application password in MAUI. Keep API credentials in server configuration. Replace the demonstration identity with your application's authorization before deployment.
+Start the [ASP.NET Core example](../README.md#aspnet-core) at `http://127.0.0.1:58284` with its Development demonstration identity configured before signing in. Its server owns `POLYMORFA_API_KEY`, `POLYMORFA_CONNECTION` and `POLYMORFA_EXAMPLE_PASSWORD`. Enter only the application password in MAUI. Keep API credentials in server configuration. Replace the demonstration identity with your application's authorization before deployment.
 
 `app/MauiProgram.cs` sets the trusted application server at build time. Debug uses the loopback address above. Release uses `https://your-application.example/`; replace that placeholder with your application server's HTTPS address before building a release. JavaScript, request bodies and runtime environment variables cannot select another server. The local networking entitlement permits the development loopback host; it does not disable certificate verification or permit arbitrary insecure origins.
 

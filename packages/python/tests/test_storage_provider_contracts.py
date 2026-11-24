@@ -69,7 +69,7 @@ async def test_cosmos_partition_verification_fails_closed():
     assert not native.capabilities.atomic_commit
     with pytest.raises(ValueError):
         Storage(native)
-    provider.partition = ["/sessionId"]
+    provider.partition = ["/connectionId"]
     with pytest.raises(ValueError):
         await native.setup()
     assert not native.capabilities.atomic_commit
@@ -79,8 +79,8 @@ async def test_cosmos_tombstone_etag_race_rolls_back_and_can_recreate():
     provider = CosmosFixture()
     native = cosmos_adapter(provider, namespace="customer")
     await native.setup()
-    one = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
-    two = replace(empty_row("messages", {"sessionId": "s", "messageId": "two"}), revision=1)
+    one = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
+    two = replace(empty_row("messages", {"connectionId": "s", "messageId": "two"}), revision=1)
     assert (await native.commit([RowPut("messages", one, None)])).ok
     original = copy.deepcopy(provider.rows)
     provider.race = True
@@ -101,14 +101,16 @@ async def test_cosmos_missing_etag_and_foreign_query_refused():
     provider = CosmosFixture()
     native = cosmos_adapter(provider, namespace="customer")
     await native.setup()
-    row = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
+    row = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
     await native.commit([RowPut("messages", row, None)])
     provider.rows["messages:" + row.id].pop("_etag")
     with pytest.raises(ValueError, match="ETag"):
         await native.commit([RowDelete("messages", row.id, 1)])
     provider.rows["messages:" + row.id]["namespace"] = "foreign"
     with pytest.raises(ValueError, match="foreign"):
-        await native.query("messages", IndexQuery("by_chat", {"sessionId": "s", "chatId": "c"}, 10))
+        await native.query(
+            "messages", IndexQuery("by_chat", {"connectionId": "s", "chatId": "c"}, 10)
+        )
     assert provider.calls[-1][1]["partition_key"] == "customer"
 
 
@@ -132,7 +134,7 @@ async def test_convex_registered_handlers_receive_no_caller_namespace_and_exact_
     native = convex_adapter(
         provider, ConvexFunctionReferences("storage:get", "storage:commit", "storage:query")
     )
-    row = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
+    row = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
     assert (await native.commit([RowPut("messages", row, None)])).ok
     assert provider.calls == [
         (
@@ -151,7 +153,7 @@ async def test_convex_registered_handlers_receive_no_caller_namespace_and_exact_
         await native.get("messages", ["foreign"])
     with pytest.raises(ValueError, match="scope"):
         await native.query(
-            "messages", IndexQuery("by_chat", {"sessionId": "foreign", "chatId": "c"}, 1)
+            "messages", IndexQuery("by_chat", {"connectionId": "foreign", "chatId": "c"}, 1)
         )
     provider.receipt = {"ok": False, "conflicts": ["foreign"]}
     with pytest.raises(ValueError, match="conflict"):

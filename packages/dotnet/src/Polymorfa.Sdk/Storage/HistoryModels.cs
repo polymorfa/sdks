@@ -195,4 +195,4 @@ public sealed record StorageHistoryChunk
 }
 public sealed record StorageHistoryMessageIdentity(string NativeId, string Id, string ChatId, bool? FromMe = null);
 public sealed record StorageHistoryIdentityIndex(IReadOnlyDictionary<string, string>? Conversations = null, IReadOnlyDictionary<string, string>? Contacts = null, IReadOnlyList<StorageHistoryMessageIdentity>? Messages = null);
-public sealed record StorageHistoryInput(string SessionId, StorageHistoryChunk Chunk, StorageHistoryIdentityIndex? Identities = null, string? ChunkId = null);
+public sealed record StorageHistoryInput(string ConnectionId, StorageHistoryChunk Chunk, StorageHistoryIdentityIndex? Identities = null, string? ChunkId = null);

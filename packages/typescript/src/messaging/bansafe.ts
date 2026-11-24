@@ -5,12 +5,12 @@ import type {
   ProjectInsuranceEvidence,
   ProjectSafeMode,
   ProjectWarmupPlan,
-  SessionSafeMode,
+  ConnectionSafeMode,
   UpdateProjectHealthPolicyRequest,
   UpdateProjectInsuranceEvidenceRequest,
   UpdateProjectSafeModeRequest,
   UpdateProjectWarmupPlanRequest,
-  UpdateSessionSafeModeRequest,
+  UpdateConnectionSafeModeRequest,
 } from "../platform/types.js";
 import { HttpTransport } from "../transport/http.js";
 import type { ApiResponse, RequestOptions } from "../transport/types.js";
@@ -20,7 +20,7 @@ type ProjectSetting =
   "safe-mode" | "warmup-plan" | "insurance-evidence" | "health-policy";
 
 /**
- * BanSafe project settings and per-number Safe Mode on the Messaging API.
+ * BanSafe project settings and per-connection Safe Mode on the Messaging API.
  * Team keys and project tokens are accepted; browser client
  * tokens fail before transport.
  */
@@ -91,27 +91,27 @@ export class MessagingBanSafeResource {
     return this.updateSetting(projectId, "health-policy", body, options);
   }
 
-  getSessionSafeMode(
-    session: string,
+  getConnectionSafeMode(
+    connection: string,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SuccessEnvelope<SessionSafeMode>>> {
+  ): Promise<ApiResponse<SuccessEnvelope<ConnectionSafeMode>>> {
     this.assertServerCredential();
     return this.transport.request({
       method: "GET",
-      path: sessionSafeModePath(session),
+      path: connectionSafeModePath(connection),
       ...options,
     });
   }
 
-  updateSessionSafeMode(
-    session: string,
-    body: UpdateSessionSafeModeRequest,
+  updateConnectionSafeMode(
+    connection: string,
+    body: UpdateConnectionSafeModeRequest,
     options: RequestOptions = {},
-  ): Promise<ApiResponse<SuccessEnvelope<SessionSafeMode>>> {
+  ): Promise<ApiResponse<SuccessEnvelope<ConnectionSafeMode>>> {
     this.assertServerCredential();
     return this.transport.request({
       method: "PUT",
-      path: sessionSafeModePath(session),
+      path: connectionSafeModePath(connection),
       body,
       ...options,
     });
@@ -162,6 +162,6 @@ function projectSettingPath(
   return `/messaging/projects/${encodeURIComponent(projectId)}/${setting}`;
 }
 
-function sessionSafeModePath(session: string): string {
-  return `/messaging/${encodeURIComponent(session)}/safe-mode`;
+function connectionSafeModePath(connection: string): string {
+  return `/messaging/${encodeURIComponent(connection)}/safe-mode`;
 }

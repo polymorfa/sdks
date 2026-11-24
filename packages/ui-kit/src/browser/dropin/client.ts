@@ -183,18 +183,18 @@ export class PolymorfaClient extends ObservableController<PolymorfaClientSnapsho
     return this.#fetch;
   }
 
-  /** A browser Messaging client for `session`, sharing this client's tokens. */
-  messaging(session?: string): BrowserMessagingClient {
-    const resolved = session ?? this.getSnapshot().grant?.session;
+  /** A browser Messaging client for `connection`, sharing this client's tokens. */
+  messaging(connection?: string): BrowserMessagingClient {
+    const resolved = connection ?? this.getSnapshot().grant?.connection;
     if (resolved === undefined)
       throw new BrowserConfigurationError(
-        "The grant names no session. Pass the conversation's session.",
-        "missing_session",
+        "The grant names no connection. Pass the conversation's connection.",
+        "missing_connection",
       );
     let client = this.#messaging.get(resolved);
     if (client === undefined) {
       client = new BrowserMessagingClient({
-        session: resolved,
+        connection: resolved,
         getClientToken: this.getClientToken,
         fetch: this.#fetch,
         ...(this.baseUrl === undefined ? {} : { baseUrl: this.baseUrl }),

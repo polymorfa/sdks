@@ -127,20 +127,20 @@ QINPUT = {
 QLINK = {
     "id": "link_1",
     "url": "https://example.invalid/quicklink",
-    "session": "support",
+    "connection": "support",
     "purpose": "initial",
     "connectionGoal": "hybrid",
-    "addConnection": "official_api",
+    "addMethod": "official_api",
     "expiresAt": None,
 }
 STATUS = {
     "id": "link_1",
     "purpose": "initial",
     "connectionGoal": "hybrid",
-    "addConnection": "official_api",
+    "addMethod": "official_api",
     "hybridPhase": "cloud_setup",
     "status": "pending",
-    "session": "support",
+    "connection": "support",
     "expiresAt": None,
     "openedAt": None,
     "connectedAt": None,
@@ -162,15 +162,15 @@ STATUS = {
 }
 AVAILABILITY = {
     "allowed": True,
-    "addConnection": "linked_devices",
-    "connections": [{"kind": "official_api", "status": "CONNECTED", "enabled": True}],
+    "addMethod": "linked_devices",
+    "methods": [{"kind": "official_api", "status": "CONNECTED", "enabled": True}],
     "resumeQuickLinkId": None,
 }
 RETRIES = {"attempts": 3, "delaySeconds": 1.5, "policy": "exponential"}
 HOOK = {
     "id": "hook_1",
     "tenantId": "team_1",
-    "session": "support",
+    "connection": "support",
     "url": "https://example.invalid/webhook",
     "events": ["message.received"],
     "retries": RETRIES,
@@ -180,7 +180,7 @@ HOOK = {
     "createdAt": "2026-10-11T00:00:00Z",
 }
 HINPUT = {
-    key: HOOK[key] for key in ["session", "url", "events", "retries", "headers", "format"]
+    key: HOOK[key] for key in ["connection", "url", "events", "retries", "headers", "format"]
 } | {"hmacKey": "fixture_only_secret"}
 CASES = [
     (
@@ -197,7 +197,7 @@ CASES = [
         "GET",
         "/messaging/quicklinks/availability",
         None,
-        {"projectId": "project_1", "session": "support"},
+        {"projectId": "project_1", "connection": "support"},
         {"success": True, "data": AVAILABILITY},
         lambda c, o: c.quick_links.availability("project_1", "support", options=o),
     ),
@@ -279,7 +279,7 @@ CASES = [
 
 
 @pytest.mark.parametrize("case", CASES)
-async def test_full_quicklink_webhook_and_session_call_public_contract(case):
+async def test_full_quicklink_webhook_and_connection_call_public_contract(case):
     _, method, path, body, query, data, invoke = case
 
     def handler(request):
@@ -312,7 +312,7 @@ async def test_full_quicklink_webhook_and_session_call_public_contract(case):
         {"success": True, "data": {"requestId": "req_async"}},
     ],
 )
-async def test_reject_session_call_documented_response_variants(value):
+async def test_reject_connection_call_documented_response_variants(value):
     async with AsyncMessagingClient(
         Credential(
             "team_api_key",
@@ -330,7 +330,8 @@ async def test_quicklink_testing_configuration_shape():
                 "country": "US",
                 "configuration": {
                     "profile": {"name": "Ada", "status": "Available"},
-                    "accountType": "business",
+                    "accountType": "business_app",
+                    "primaryPlatform": "ios",
                     "replyBehavior": "echo",
                     "failureScenario": "none",
                     "historyFixtureId": "fixture_1",
@@ -352,3 +353,56 @@ async def test_quicklink_testing_configuration_shape():
         http_transport=httpx.MockTransport(handler),
     ) as client:
         assert (await client.quick_links.create(body)).data["data"]["id"] == "link_1"
+
+
+async def test_connection_calls_list_reads_the_connections_calls_with_identity():
+    seen: list[httpx.Request] = []
+    page = {
+        "success": True,
+        "data": [
+            {
+                "callId": "C1",
+                "projectId": "p",
+                "connectionId": "support line",
+                "direction": "inbound",
+                "upstream": "linked_device",
+                "outcome": "missed",
+                "state": "missed",
+                "hasVideo": False,
+                "peer": {"id": "15550100", "phoneNumber": "+15550100"},
+                "startedAt": "2026-10-27T10:00:00Z",
+                "connectedAt": None,
+                "endedAt": None,
+                "durationSeconds": None,
+                "endReason": None,
+            }
+        ],
+        "nextCursor": "next",
+    }
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        seen.append(request)
+        return httpx.Response(200, json=page)
+
+    async with AsyncMessagingClient(
+        Credential("team_api_key", "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"),
+        http_transport=httpx.MockTransport(handler),
+    ) as client:
+        result = await client.calls.list(
+            "support line",
+            {
+                "limit": 10,
+                "outcome": "missed",
+                "direction": "inbound",
+                "since": "2026-10-01T00:00:00Z",
+            },
+        )
+    assert result.data == page
+    assert seen[0].method == "GET"
+    assert seen[0].url.raw_path.decode().split("?")[0] == "/messaging/support%20line/calls"
+    assert dict(seen[0].url.params) == {
+        "limit": "10",
+        "outcome": "missed",
+        "direction": "inbound",
+        "since": "2026-10-01T00:00:00Z",
+    }

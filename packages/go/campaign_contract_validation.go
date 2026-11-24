@@ -437,7 +437,7 @@ func validateReplyGraph(v CreateCampaignReplyFlowRequest, checkMatch func(Campai
 	return nil
 }
 func validateTestSend(v CampaignTestSendRequest) error {
-	if err := contractUUID(v.SessionID, "sessionId"); err != nil {
+	if err := contractUUID(v.ConnectionID, "connectionId"); err != nil {
 		return err
 	}
 	if err := contractText(v.To, "to", 1, 32); err != nil {
@@ -481,7 +481,7 @@ func campaignExportQuery(v CampaignRecipientExportParams) (url.Values, error) {
 		q.Set("status", *v.Status)
 	}
 	if v.Reason != nil {
-		if err := contractOne(*v.Reason, "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "session_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other"); err != nil {
+		if err := contractOne(*v.Reason, "reason", "opted_out", "cold_held", "campaign_cancelled", "invalid_recipient", "connection_not_connected", "ack_timeout", "blocked_by_safety", "send_failed", "missing_variable", "frequency_cap", "other"); err != nil {
 			return nil, err
 		}
 		q.Set("reason", *v.Reason)

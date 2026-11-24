@@ -5,8 +5,8 @@ import type {
   BanSafeClaim,
   BanSafeClaimEvidence,
   BanSafeClaimVerdict,
-  SessionCallSettings,
-  UpdateSessionCallSettingsRequest,
+  ConnectionCallSettings,
+  UpdateConnectionCallSettingsRequest,
   WebhookPayloadMap,
 } from "../src/index.js";
 
@@ -43,8 +43,13 @@ const platform = contract.sources.platform.schemas;
 const keys = (schema: Schema | undefined) =>
   Object.keys(schema?.properties ?? {}).sort();
 
-// Every verdict must appear here; a missing or extra key fails to compile.
-const VERDICTS: Record<BanSafeClaimVerdict, true> = {
+// Every verdict at this supplement's API revision must appear here; a missing
+// or extra key fails to compile. Verdicts added later are pinned by their own
+// supplement (ban-credit-waivers.json).
+const VERDICTS: Record<
+  Exclude<BanSafeClaimVerdict, "linked_device_interactive">,
+  true
+> = {
   other_device: true,
   customer_conduct: true,
   shared_network: true,
@@ -80,7 +85,7 @@ describe("simultaneous calls contract supplement", () => {
           "simultaneousCalls",
           "revision",
           "updatedAt",
-        ] satisfies (keyof SessionCallSettings)[]
+        ] satisfies (keyof ConnectionCallSettings)[]
       ).sort(),
     );
     expect(platform.PlatformAccessCallSettings!.required).toContain(
@@ -98,17 +103,17 @@ describe("simultaneous calls contract supplement", () => {
           "simultaneousCalls",
           "acknowledgeRisk",
           "expectedRevision",
-        ] satisfies (keyof UpdateSessionCallSettingsRequest)[]
+        ] satisfies (keyof UpdateConnectionCallSettingsRequest)[]
       ).sort(),
     );
     expectTypeOf<
-      SessionCallSettings["simultaneousCalls"]
+      ConnectionCallSettings["simultaneousCalls"]
     >().toEqualTypeOf<boolean>();
     expectTypeOf<
-      UpdateSessionCallSettingsRequest["simultaneousCalls"]
+      UpdateConnectionCallSettingsRequest["simultaneousCalls"]
     >().toEqualTypeOf<boolean | undefined>();
     expectTypeOf<
-      UpdateSessionCallSettingsRequest["acknowledgeRisk"]
+      UpdateConnectionCallSettingsRequest["acknowledgeRisk"]
     >().toEqualTypeOf<boolean | undefined>();
   });
 

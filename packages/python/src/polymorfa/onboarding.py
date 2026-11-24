@@ -65,8 +65,8 @@ TestEvent = Literal[
     "call.received",
     "call.missed",
     "call.ended",
-    "session.status",
-    "session.restriction_updated",
+    "connection.status",
+    "connection.restriction_updated",
     "template.status",
 ]
 TEST_EVENT_FIXTURES: tuple[TestEvent, ...] = (
@@ -76,8 +76,8 @@ TEST_EVENT_FIXTURES: tuple[TestEvent, ...] = (
     "call.received",
     "call.missed",
     "call.ended",
-    "session.status",
-    "session.restriction_updated",
+    "connection.status",
+    "connection.restriction_updated",
     "template.status",
 )
 
@@ -92,7 +92,7 @@ class EventOverrides(TypedDict, total=False):
     messageId: str
     failureReason: Literal[
         "invalid_recipient",
-        "session_not_connected",
+        "connection_not_connected",
         "ack_timeout",
         "send_failed",
         "blocked_by_safety",
@@ -120,15 +120,14 @@ class EventOverrides(TypedDict, total=False):
 
 
 class TriggerEvent(TypedDict):
-    session: str
     event: TestEvent
     overrides: NotRequired[EventOverrides]
-    fromSession: NotRequired[str]
+    fromConnection: NotRequired[str]
 
 
 class TriggeredEvent(TypedDict):
     event: TestEvent
-    session: str
+    connection: str
     delivery: Literal["generated", "simulated"]
     eventId: str | None
     source: Literal["test", "runtime"]
@@ -170,7 +169,7 @@ class Device(TypedDict):
 
 
 class TestingPhone(TypedDict):
-    session: str
+    connection: str
     phone: str
     online: bool
     devices: list[Device]
@@ -182,13 +181,13 @@ class PhoneMessage(TypedDict):
 
 
 class PhoneMessageResult(TypedDict):
-    session: str
+    connection: str
     to: str
     messageId: str | None
 
 
 class UnlinkedDevice(TypedDict):
-    session: str
+    connection: str
     deviceId: int
     unlinked: Literal[True]
 
@@ -200,13 +199,13 @@ class Testing(Resource):
         self._server()
         return await self._request(
             "POST",
-            f"/messaging/testing/{segment(project_id)}/history-fixtures",
+            f"/messaging/projects/{segment(project_id)}/test-history-fixtures",
             body=body,
             options=options,
         )
 
     async def trigger_event(
-        self, project_id: str, body: TriggerEvent, *, options: RequestOptions = O
+        self, connection: str, body: TriggerEvent, *, options: RequestOptions = O
     ) -> ApiResponse[TriggeredEvent]:
         self._server()
         wire: dict[str, object] = dict(body)
@@ -216,31 +215,29 @@ class Testing(Resource):
                 overrides["from"] = overrides.pop("from_")
             wire["overrides"] = overrides
         return await self._request(
-            "POST", f"/messaging/testing/{segment(project_id)}/events", body=wire, options=options
+            "POST", f"/messaging/{segment(connection)}/test-events", body=wire, options=options
         )
 
     async def list_event_fixtures(
-        self, project_id: str, *, options: RequestOptions = O
+        self, *, options: RequestOptions = O
     ) -> ApiResponse[EventFixtures]:
         self._server()
-        return await self._request(
-            "GET", f"/messaging/testing/{segment(project_id)}/events/fixtures", options=options
-        )
+        return await self._request("GET", "/messaging/test-events/fixtures", options=options)
 
     @acknowledged()
     async def get_phone(
-        self, project_id: str, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[TestingPhone]:
         self._server()
         return await self._request(
             "GET",
-            f"/messaging/testing/{segment(project_id)}/numbers/{segment(session)}/phone",
+            f"/messaging/{segment(connection)}/phone",
             options=options,
         )
 
     @acknowledged(202)
     async def send_phone_message(
-        self, project_id: str, session: str, body: PhoneMessage, *, options: RequestOptions = O
+        self, connection: str, body: PhoneMessage, *, options: RequestOptions = O
     ) -> ApiResponse[PhoneMessageResult]:
         self._server()
         data = V.fields(body, ["to", "text"], ["to", "text"])
@@ -248,14 +245,14 @@ class Testing(Resource):
         V.text(data["text"], "text")
         return await self._request(
             "POST",
-            f"/messaging/testing/{segment(project_id)}/numbers/{segment(session)}/phone/messages",
+            f"/messaging/{segment(connection)}/phone/messages",
             body=V.capture(body),
             options=options,
         )
 
     @acknowledged()
     async def unlink_phone_device(
-        self, project_id: str, session: str, device_id: int, *, options: RequestOptions = O
+        self, connection: str, device_id: int, *, options: RequestOptions = O
     ) -> ApiResponse[UnlinkedDevice]:
         self._server()
         if (
@@ -266,6 +263,6 @@ class Testing(Resource):
             raise ValidationError("device_id must be a companion device ID from 1 to 99.")
         return await self._request(
             "POST",
-            f"/messaging/testing/{segment(project_id)}/numbers/{segment(session)}/phone/devices/{device_id}/unlink",
+            f"/messaging/{segment(connection)}/phone/devices/{device_id}/unlink",
             options=options,
         )

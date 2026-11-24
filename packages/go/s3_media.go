@@ -29,8 +29,8 @@ type S3MediaStore struct {
 	bucket, prefix string
 }
 type S3UploadToWhatsAppOptions struct {
-	Messaging    *WhatsAppMediaResource
-	Session, Key string
+	Messaging       *WhatsAppMediaResource
+	Connection, Key string
 	UploadWhatsAppMediaOptions
 }
 type S3ArchiveOptions struct {
@@ -109,7 +109,7 @@ func (s *S3MediaStore) UploadToWhatsApp(ctx context.Context, options S3UploadToW
 	if upload.MimeType == "" {
 		upload.MimeType = aws.ToString(head.ContentType)
 	}
-	return options.Messaging.Upload(ctx, options.Session, source, upload)
+	return options.Messaging.Upload(ctx, options.Connection, source, upload)
 }
 
 type s3ExactBody struct {

@@ -4,7 +4,7 @@ use futures_util::StreamExt;
 use polymorfa_sdk::{usage::*, ErrorKind, RequestOptions};
 use serde_json::json;
 fn record() -> serde_json::Value {
-    json!({"id":"usage","meter":"call.duration","quantity":6.5,"unit":"second","dimensions":{"direction":"outbound","participants":2.0,"video":false},"keySource":"none","sourceKind":"call","sourceId":"call","projectId":"project","session":"s","occurredAt":"2026-10-11T12:00:00Z","recordedAt":"2026-10-11T12:00:01Z","revision":2,"pricingState":"unpriced","rateCard":null,"pricedCredits":null})
+    json!({"id":"usage","meter":"call.duration","quantity":6.5,"unit":"second","dimensions":{"direction":"outbound","participants":2.0,"video":false},"keySource":"none","sourceKind":"call","sourceId":"call","projectId":"project","connection":"s","occurredAt":"2026-10-11T12:00:00Z","recordedAt":"2026-10-11T12:00:01Z","revision":2,"pricingState":"unpriced","rateCard":null,"pricedCredits":null})
 }
 #[tokio::test]
 async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
@@ -16,16 +16,16 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
         };
         let params = UsageSummaryParams {
             project_id: filter.clone(),
-            session: Some("s".into()),
+            connection: Some("s".into()),
             period: Some("2026-10".into()),
         };
         let path = if project {
-            "/platform/usage?period=2026-10&projectId=project&session=s"
+            "/platform/usage?connection=s&period=2026-10&projectId=project"
         } else {
-            "/platform/usage?period=2026-10&session=s"
+            "/platform/usage?connection=s&period=2026-10"
         };
         let total = json!({"meter":"call.duration","unit":"second","keySource":"none","quantity":6.5,"records":1});
-        let summary = json!({"period":"2026-10","start":"2026-10-01T00:00:00Z","end":"2026-11-01T00:00:00Z","projectId":if project {Some("project")} else {None},"session":"s","billingEnabled":false,"meters":[total],"numbers":[{"session":"s","projectId":"project","meters":[total]}],"numbersTruncated":false});
+        let summary = json!({"period":"2026-10","start":"2026-10-01T00:00:00Z","end":"2026-11-01T00:00:00Z","projectId":if project {Some("project")} else {None},"connection":"s","billingEnabled":false,"meters":[total],"connections":[{"connection":"s","projectId":"project","meters":[total]}],"connectionsTruncated":false});
         let (base, server) = support::wire("GET", path, None, json!({"data":summary})).await;
         let team = support::team(base);
         let view = team.project("project").unwrap();
@@ -48,9 +48,9 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
             cursor: Some("cursor".into()),
         };
         let path = if project {
-            "/platform/usage/records?callId=call&cursor=cursor&limit=1&meter=call.duration&period=2026-10&projectId=project&session=s"
+            "/platform/usage/records?callId=call&connection=s&cursor=cursor&limit=1&meter=call.duration&period=2026-10&projectId=project"
         } else {
-            "/platform/usage/records?callId=call&cursor=cursor&limit=1&meter=call.duration&period=2026-10&session=s"
+            "/platform/usage/records?callId=call&connection=s&cursor=cursor&limit=1&meter=call.duration&period=2026-10"
         };
         let (base, server) = support::wire(
             "GET",
@@ -73,11 +73,11 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
         assert_eq!(response.data.next_cursor.as_deref(), Some("next"));
         server.await.unwrap();
         let path = if project {
-            "/platform/gates?projectId=project&session=s"
+            "/platform/gates?connection=s&projectId=project"
         } else {
-            "/platform/gates?session=s"
+            "/platform/gates?connection=s"
         };
-        let gates = json!({"session":"s","gates":[{"key":"calls.outbound_monthly","kind":"quota","subject":"number","mode":"record","active":true,"limit":100.0,"used":6.5,"unit":"second","overLimit":false,"decisions":{"wouldBlock":1,"blocked":0,"evaluationError":0}},{"key":"voice.flows","kind":"capability","subject":"team","mode":"off","active":false,"limit":-1.0,"used":null,"unit":"count","overLimit":null,"decisions":{"wouldBlock":0,"blocked":0,"evaluationError":0}}]});
+        let gates = json!({"connection":"s","gates":[{"key":"calls.outbound_monthly","kind":"quota","subject":"connection","mode":"record","active":true,"limit":100.0,"used":6.5,"unit":"second","overLimit":false,"decisions":{"wouldBlock":1,"blocked":0,"evaluationError":0}},{"key":"voice.flows","kind":"capability","subject":"team","mode":"off","active":false,"limit":-1.0,"used":null,"unit":"count","overLimit":null,"decisions":{"wouldBlock":0,"blocked":0,"evaluationError":0}}]});
         let (base, server) = support::wire("GET", path, None, json!({"data":gates})).await;
         let team = support::team(base);
         let view = team.project("project").unwrap();
@@ -86,7 +86,7 @@ async fn metered_usage_records_and_gate_native_contracts_both_owner_scopes() {
             .list_gates(
                 &UsageGateParams {
                     project_id: filter,
-                    session: Some("s".into()),
+                    connection: Some("s".into()),
                 },
                 RequestOptions::default(),
             )

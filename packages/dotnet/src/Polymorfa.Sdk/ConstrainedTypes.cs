@@ -39,3 +39,12 @@ internal sealed class TemplateDefinitionVersionConverter : JsonConverter<Templat
     public override TemplateDefinitionVersion Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) => reader.TokenType == JsonTokenType.Number && reader.TryGetInt32(out var version) && version == 1 ? TemplateDefinitionVersion.V1 : throw new JsonException("Template definition version must be 1.");
     public override void Write(Utf8JsonWriter writer, TemplateDefinitionVersion value, JsonSerializerOptions options) { if (value != TemplateDefinitionVersion.V1) throw new JsonException("Template definition version must be 1."); writer.WriteNumberValue(1); }
 }
+
+[JsonConverter(typeof(ConnectionTypeConverter))] public enum ConnectionType { WhatsApp }
+internal sealed class ConnectionTypeConverter() : KnownStringEnumConverter<ConnectionType>(new Dictionary<ConnectionType, string> { [ConnectionType.WhatsApp] = "whatsapp" });
+[JsonConverter(typeof(ConnectionMethodConverter))] public enum ConnectionMethod { LinkedDevice, CloudApi, Hybrid }
+internal sealed class ConnectionMethodConverter() : KnownStringEnumConverter<ConnectionMethod>(new Dictionary<ConnectionMethod, string> { [ConnectionMethod.LinkedDevice] = "linked_device", [ConnectionMethod.CloudApi] = "cloud_api", [ConnectionMethod.Hybrid] = "hybrid" });
+[JsonConverter(typeof(TestingAccountTypeConverter))] public enum TestingAccountType { WhatsAppApp, BusinessApp, MetaCloud, MetaCoexistence }
+internal sealed class TestingAccountTypeConverter() : KnownStringEnumConverter<TestingAccountType>(new Dictionary<TestingAccountType, string> { [TestingAccountType.WhatsAppApp] = "whatsapp_app", [TestingAccountType.BusinessApp] = "business_app", [TestingAccountType.MetaCloud] = "meta_cloud", [TestingAccountType.MetaCoexistence] = "meta_coexistence" });
+[JsonConverter(typeof(TestingPrimaryPlatformConverter))] public enum TestingPrimaryPlatform { Android, Ios }
+internal sealed class TestingPrimaryPlatformConverter() : KnownStringEnumConverter<TestingPrimaryPlatform>(new Dictionary<TestingPrimaryPlatform, string> { [TestingPrimaryPlatform.Android] = "android", [TestingPrimaryPlatform.Ios] = "ios" });

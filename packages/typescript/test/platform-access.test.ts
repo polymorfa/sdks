@@ -8,7 +8,7 @@ import {
   Client,
   ProjectTokensResource,
   SecurityIncidentsResource,
-  SessionBansResource,
+  ConnectionBansResource,
   type ApiResponse,
   type ApiKey,
   type AuditLog,
@@ -17,7 +17,7 @@ import {
   type TeamMember,
   type ProjectToken,
   type SecurityIncident,
-  type SessionBan,
+  type ConnectionBan,
 } from "../src/index.js";
 import {
   startTestServer,
@@ -61,7 +61,9 @@ describe("Client team access and operations", () => {
     expectTypeOf<Client["apiKeys"]>().toEqualTypeOf<ApiKeysResource>();
     expectTypeOf<Client["members"]>().toEqualTypeOf<MembersResource>();
     expectTypeOf<Client["auditLogs"]>().toEqualTypeOf<AuditLogsResource>();
-    expectTypeOf<Client["sessionBans"]>().toEqualTypeOf<SessionBansResource>();
+    expectTypeOf<
+      Client["connectionBans"]
+    >().toEqualTypeOf<ConnectionBansResource>();
     expectTypeOf<
       Client["securityIncidents"]
     >().toEqualTypeOf<SecurityIncidentsResource>();
@@ -73,7 +75,7 @@ describe("Client team access and operations", () => {
     expectTypeOf<ApiKey>().toHaveProperty("lastUsed");
     expectTypeOf<TeamMember>().toHaveProperty("joinedAt");
     expectTypeOf<AuditLog>().toHaveProperty("metadata");
-    expectTypeOf<SessionBan>().toHaveProperty("banExpiresAt");
+    expectTypeOf<ConnectionBan>().toHaveProperty("banExpiresAt");
     expectTypeOf<SecurityIncident>().toHaveProperty("acknowledgedAt");
     expectTypeOf<ManagementOperation>().toHaveProperty("capabilities");
     expectTypeOf<ProjectToken>().toHaveProperty("revokedAt");
@@ -119,7 +121,7 @@ describe("Client team access and operations", () => {
   it("maps live audit filters without claiming cursor pagination", async () => {
     const { client, requests } = await platformAccessServer();
     const listed = await client.auditLogs.list(
-      { action: "session.stop", resource: "session/a", limit: 250 },
+      { action: "connection.stop", resource: "connection/a", limit: 250 },
       { apiVersion: "next" },
     );
 
@@ -128,21 +130,21 @@ describe("Client team access and operations", () => {
     >();
     expect(requests[0]).toMatchObject({
       method: "GET",
-      path: "/platform/audit?action=session.stop&resource=session%2Fa&limit=250",
+      path: "/platform/audit?action=connection.stop&resource=connection%2Fa&limit=250",
     });
     expect(requests[0]?.headers["polymorfa-version"]).toBe("next");
   });
 
-  it("lists all and active-only session bans", async () => {
+  it("lists all and active-only connection bans", async () => {
     const { client, requests } = await platformAccessServer();
-    const all = await client.sessionBans.list();
-    const active = await client.sessionBans.listActive();
+    const all = await client.connectionBans.list();
+    const active = await client.connectionBans.listActive();
 
     expectTypeOf(all).toEqualTypeOf<
-      ApiResponse<DataEnvelope<readonly SessionBan[]>>
+      ApiResponse<DataEnvelope<readonly ConnectionBan[]>>
     >();
     expectTypeOf(active).toEqualTypeOf<
-      ApiResponse<DataEnvelope<readonly SessionBan[]>>
+      ApiResponse<DataEnvelope<readonly ConnectionBan[]>>
     >();
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
       "GET /platform/bans",

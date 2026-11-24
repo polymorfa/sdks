@@ -15,7 +15,7 @@ export const { GET, POST } = createPolymorfaHandler({
   authenticate: currentUser,
   // The only place permissions are chosen: the smallest set this user needs.
   mint: () => ({
-    session: process.env.POLYMORFA_SESSION!,
+    connection: process.env.POLYMORFA_CONNECTION!,
     conversations: "all",
     allow: ["read_messages", "subscribe_events", "send_message"],
     ttlSeconds: 600,

@@ -63,7 +63,7 @@ expose server control methods and programmatic PCM/H.264 media sockets.
 
 The baseline Messaging and Platform operation mappings are recorded in
 `coverage.json`. Typed resources include
-sessions, all merged message content variants, hosted chat/message history with stored
+connections, all merged message content variants, hosted chat/message history with stored
 media streaming and service windows, Linked Devices groups and Channels, QuickLinks, webhooks, contacts, profile, privacy,
 presence, identities, labels, quick replies, core projects and project safety/warmup/insurance/health policies, events, media and
 VoIP controls, Official API credential health/pricing, Hybrid Link controls and
@@ -76,8 +76,8 @@ embedded signup continuation and simulated Test phone/events, resolved observati
 policies, team identity/credential metadata/audit/security reads and
 revision-guarded billing controls, Customer lifecycle and pairing links, audience
 imports/member pages, keyword suppression settings, media upload metadata and
-session bans, team call policy and do-not-call imports/pages, resolved session configuration and sparse revision
-patches, team Number batches/tier quotes/safety/capabilities, owner-bound
+connection bans, team call policy and do-not-call imports/pages, resolved connection configuration and sparse revision
+patches, team Connection batches/tier quotes/safety/capabilities, owner-bound
 QuickLink/default configuration and team call retention, and Platform webhook/delivery/operation resources in both owner scopes.
 All pinned known webhook event types expose typed payloads, with provider
 extensions and future event envelopes preserved. Metered usage includes cursor
@@ -88,7 +88,7 @@ release availability changes: the API continues enforcing permission, funding,
 enrollment and feature eligibility.
 
 The source also includes 30 campaign, customer-supplied audience profile and
-custody-default operations from API source `f97ad78b172e80788c33bdc0fcf28f75db9283ec`.
+custody-default operations from API source `15db8b1c9d88e2ceccb58c851e731feabb659a39`.
 These additions use `2026-10-14` when a call omits its API version; an explicit
 `RequestOptions::api_version` wins. Existing methods keep their baseline version.
 The supplement remains unpublished and does not establish deployed availability.
@@ -119,8 +119,8 @@ custody.update_customer(customer_id, &CustomerSignalCustodyUpdate {
 
 A Customer mode of `None` emits explicit JSON null to restore inheritance. A
 Project update requires a non-null `SignalCustodyMode`. These defaults affect
-future reservations; they do not convert existing Numbers, create keys, or prove
-Signal, ZK session, QuickLink or browser tunnel readiness. API authorization,
+future reservations; they do not convert existing Connections, create keys, or prove
+Signal, ZK connection, QuickLink or browser tunnel readiness. API authorization,
 revision guards and custody restrictions remain authoritative.
 
 `audience_profiles().list()` and `list_consent()` return one finite page; imports
@@ -143,7 +143,7 @@ checkpoint observed no numeric spelling counterexample.
 
 ### Campaign and descriptor contracts
 
-The existing campaign methods consume the same `f97ad78` API source. Named
+The existing campaign methods consume the same `8354399b82` API source. Named
 `CampaignVariableBinding`, `CampaignVariableMapping` and `CampaignTrackedLink`
 types preserve empty maps, numeric keys and `__proto__`. Create mappings omit
 `None`; PATCH mappings and template/link fields use `Option<Option<T>>` for
@@ -165,15 +165,15 @@ recipient `next_message_at` use `f64`; Platform recipient time must be integral.
 
 Read history delivery is `HistorySyncDelivery::{Archive, Descriptor}`. Writes
 use the descriptor-only `HistorySyncDeliveryWrite`. A delivery set or exact
-`SessionConfigurationReset::HistorySyncDelivery` selects `2026-10-14` only
+`ConnectionConfigurationReset::HistorySyncDelivery` selects `2026-10-14` only
 when the request has no explicit API version. Whole-history resets and existing
 GET methods retain their configured version. Use an explicit newer version to
-read versioned delivery fields. `Session::signal_mode` is an optional returned
+read versioned delivery fields. `Connection::signal_mode` is an optional returned
 custody fact, separate from writable configuration.
 
 QuickLink initial requests accept top-level `signal_mode` and nested descriptor
 delivery with the same absent-only version selection. Supplementary requests
-require `session` and `add_connection` and refuse initial owner, billing and
+require `connection` and `add_method` and refuse initial owner, billing and
 custody fields. These branch rules are checked before HTTP. The retained public
 request struct permits some invalid combinations at compile time; runtime
 checks refuse them. No client check grants consent, feature eligibility, funding
@@ -220,7 +220,7 @@ needed or performed by the test suite.
 Platform resources include typed BanSafe observations, project Functions and Flow drafts, Voice assets and provider credentials, call diagnostics/statistics/exports, and WhatsApp Analytics. Function and Flow writes are sent once; uncertain provider receipts are reconciled by reads. Project views preserve their identity and check team-key resource mutations before acting. Voice upload URLs and one-time signing secrets omit `Debug`. Credit quantities named `Cents` retain fractional values.
 
 
-Programmatic calls use `calls_runtime::CallsClient` and `calls_token::CallsTokenSource`. Native processes can use a short-lived client token for the granted Calls subset; placement omits session and participant identity, socket identity comes from the grant, and server-only resources remain refused. Server credentials and the Rust SDK stay outside browser/WASM builds.
+Programmatic calls use `calls_runtime::CallsClient` and `calls_token::CallsTokenSource`. Native processes can use a short-lived client token for the granted Calls subset; placement omits connection and participant identity, socket identity comes from the grant, and server-only resources remain refused. Server credentials and the Rust SDK stay outside browser/WASM builds.
 A token source shares cached credentials across HTTP, lifecycle and media requests,
 refreshes near expiry, and isolates cancellation among callers. Static server credentials
 and asynchronous providers are supported; credentials never appear in socket URLs or
@@ -270,7 +270,7 @@ when an intermediate page is empty.
 `cloud_graph::graph_transport_headers(models::MessageTransport)` returns the
 Graph route-choice header for raw requests. It does not grant access to a transport.
 
-Call placement accepts optional `session`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `session`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Team keys reject every reserved special-purpose token prefix, including padded values.
+Call placement accepts optional `connection`, `to` and `video`. Group/participant calls omit `to`; client-token calls omit `connection`. Omitting `video` preserves the server default. Streamed API downloads enforce the configured timeout while reading the response body. Team keys reject every reserved special-purpose token prefix, including padded values.
 
 ### Contact frequency caps, audience segments and drips (beta)
 
@@ -312,7 +312,7 @@ exhaustive struct literals need `segment_id: None` or `..Default::default()`.
 ## Customer-owned media, history and Signal service
 
 These development helpers follow TypeScript `254fc6a2d073e7fc79420cf95f9b03927d00c04a`
-and the Signal service application contract `8aa191ef0d4c318229c91bcdf474bf2d79dac47c`.
+and the Signal service application contract `61209057729b002a2122b898d744a8813a702fc7`.
 They are unpublished. Server availability and enrollment remain separate gates.
 New grant, relay, history retry/delete and descriptor-send requests select API
 revision `2026-10-14`; existing operations retain their previous default.
@@ -326,7 +326,7 @@ The default plaintext limit is 256 MiB. Cancellation stops local work; it does
 not roll back bytes already accepted by a provider.
 
 `client.whatsapp_media().upload_relay(...)` transfers ciphertext only through the
-session's connection. `upload_direct(...)` obtains a short-lived grant and uses
+connection's connection. `upload_direct(...)` obtains a short-lived grant and uses
 an independent HTTPS client restricted to WhatsApp media hosts. It preserves the
 exact grant URL parameters, refuses redirects, refreshes grants after 401,
 resumes interrupted uploads, and uploads documents above 50 MiB in parts.
@@ -336,7 +336,7 @@ A failed or changed source never reaches multipart finalization.
 `media_descriptor::media_send_descriptor` validates upload metadata and builds a
 standard descriptor. `MessageContent::DescriptorImage`, `DescriptorVideo`,
 `DescriptorFile`, `DescriptorVoice` and `Sticker` send that descriptor, including
-its media key, through the standard API. For a zero-knowledge session, use
+its media key, through the standard API. For a zero-knowledge connection, use
 `descriptor.signal_descriptor(...)` with `SignalSendRequest::Media` instead.
 The pinned service does not accept thumbnail, waveform or animation metadata;
 the conversion rejects those fields instead of dropping them.
@@ -402,7 +402,7 @@ wire protocol. Existing `upload_relay` and `upload_direct` methods remain availa
 use polymorfa_sdk::{media_encrypt::{MediaEncryptionOptions, UploadMediaType},
     media_upload::MediaSource, media_upload_transport::upload_with_transport};
 let transport = client.whatsapp_media().relay_transport(Default::default());
-let result = upload_with_transport("session", MediaSource::Bytes(bytes),
+let result = upload_with_transport("connection", MediaSource::Bytes(bytes),
     MediaEncryptionOptions::new(UploadMediaType::Image), &transport).await?;
 # let _ = result;
 # Ok(())
@@ -417,8 +417,8 @@ transport invocation. Cancellation drops an in-progress custom upload future.
 
 ### Customer-owned storage
 
-`polymorfa_sdk::storage` provides schema-2 operations, deterministic per-field
-merges, conditional checkpoints, durable session leases and an in-memory adapter.
+`polymorfa_sdk::storage` provides schema-3 operations, deterministic per-field
+merges, conditional checkpoints, durable connection leases and an in-memory adapter.
 `storage::d1::D1BridgeAdapter::connect` verifies the signed capabilities of a
 customer-hosted D1 Worker binding before returning an atomic adapter. Configure
 its expected authority and table prefix from trusted application configuration.
@@ -438,10 +438,10 @@ let storage = Storage::new(Arc::new(adapter), StorageOptions::default())?;
 # Ok(()) }
 ```
 
-The D1 adapter uses `polymorfa-d1-storage-v1`, schema 2, bridge source
-`9ae35e671f7f4868a67c1562422c5af9284b95c1`. It signs the exact request bytes
+The D1 adapter uses `polymorfa-d1-storage-v1`, schema 3, bridge source
+`d80b581c9df122411e9149a7e39a33700a51571c`. It signs the exact request bytes
 and authenticates each response's exact body, nonce, authority and table prefix.
-Commit limits are 50 writes, including the engine's session fence; reads and
+Commit limits are 50 writes, including the engine's connection fence; reads and
 queries are paged at 1,000 rows. Requests and responses are bounded at 8 MiB.
 Schema setup is disabled unless the customer explicitly enables it in the Worker.
 D1 administrative REST batches are not used or represented as atomic commits.
@@ -454,7 +454,7 @@ then its conditional checkpoint, then acknowledge the application event. Storage
 never enables hosted history or acknowledges Signal events automatically.
 
 The schema/merge baseline is storage source
-`3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
+`d80b581c9df122411e9149a7e39a33700a51571c`; the native engine additionally
 stops immediately after a failed CAS chunk to preserve marker ordering. Event/history reducers share the portable core described below; provider availability is listed separately.
 This package remains unpublished.
 
@@ -466,7 +466,7 @@ The client does not read Polymorfa database configuration. Configure transport
 security and database roles in that connection; a table prefix is naming, not
 tenant authorization. PostgreSQL supports an explicitly configured schema.
 `SqlStorageOptions::create_tables = false` leaves schema creation to your operator.
-`schema_statements` exports schema-2 DDL for that workflow.
+`schema_statements` exports schema-3 DDL for that workflow.
 
 ```rust,no_run
 # async fn sql_example() -> Result<(), Box<dyn std::error::Error>> {
@@ -480,7 +480,7 @@ let adapter = SqlStorageAdapter::connect(SqlDialect::Postgres,
 ```
 
 Every SQL commit runs in one database transaction and rolls back all its writes
-on a stale revision. The engine reserves a write for its session fence. Commit
+on a stale revision. The engine reserves a write for its connection fence. Commit
 capacities are 500 writes for SQLite and 1,000 for PostgreSQL/MySQL. Queries use
 schema-defined scope and cursor indexes. Invalid or oversized derived identifiers
 are refused before connecting, preventing PostgreSQL name truncation. Driver
@@ -505,7 +505,7 @@ SDK retains its WASM compilation prohibition. The separate
 timers and local futures, without importing the server HTTP clients.
 
 IndexedDB commits at most 1,000 writes in one native transaction, including the
-session fence. Its crate README describes namespace ownership, bounded queries,
+connection fence. Its crate README describes namespace ownership, bounded queries,
 cancellation and browser persistence. This adds no Signal acknowledgement, API
 browser credential or remote grant. The core must be published and verified
 before either dependent package can be installed from a registry. All three
@@ -514,7 +514,7 @@ packages remain unpublished.
 ### Event/history persistence and manual stream ACK
 
 `storage::reducer::events::reduce_event` handles all 24 stored event types from
-storage source `3bacf46f9c4213426314001586f5bae43aaa77de`.
+storage source `d80b581c9df122411e9149a7e39a33700a51571c`.
 `storage::reducer::history` exposes full typed inputs for the fields read by the
 owning decoded-history reducer, including PN/LID identity mapping. An explicit
 `storage::sync::HistoryChunkDecoder` supplies a complete decoded chunk. The
@@ -566,14 +566,14 @@ let adapter = LibsqlStorageAdapter::new(database.connect()?, LibsqlStorageOption
 # Ok(()) }
 ```
 
-The adapter shares all 17 schema-2 entities, JSON encoding and closed index
+The adapter shares all 17 schema-3 entities, JSON encoding and closed index
 queries with the SQL adapters. `schema_statements` exports DDL;
 `LibsqlStorageOptions::create_tables = false` leaves installation to the caller.
 Table prefixes select names and do not grant tenant access. Configure database
 permissions, TLS, retries and operation deadlines in the native client.
 
 Each commit uses one native `BEGIN IMMEDIATE` transaction with at most 500
-writes, including the engine's session fence. Every stale revision rolls back
+writes, including the engine's connection fence. Every stale revision rolls back
 earlier writes. Duplicate inserts and other provider failures also roll back;
 remote conflict classification reads the failed row after rollback rather than
 matching private driver error text. A lost response or cancelled future can
@@ -605,7 +605,7 @@ use polymorfa_sdk::media_encrypt::UploadMediaType;
 let store = S3MediaStore::new(customer_s3_client, "customer-media", "app/")?;
 let archived = store.archive(&descriptor,
     S3ArchiveOptions::new("incoming/photo", customer_private_spool_directory)).await?;
-let uploaded = store.upload_to_whatsapp(&messaging.whatsapp_media(), &session_id,
+let uploaded = store.upload_to_whatsapp(&messaging.whatsapp_media(), &connection_id,
     S3UploadOptions::new("incoming/photo", UploadMediaType::Image)).await?;
 ```
 
@@ -638,14 +638,19 @@ AWS/R2 credentials, IAM policies and deployment acceptance remain separate gates
 This SDK remains unpublished.
 
 
-`storage::sql::supabase_preset` exports the schema-2 customer database tables,
-live session memberships and forced-RLS policies from storage source
-`3bacf46f9c4213426314001586f5bae43aaa77de`. Review and install the SQL once in a
+`storage::sql::supabase_preset` exports the schema-3 customer database tables,
+live connection memberships and forced-RLS policies from storage source
+`d80b581c9df122411e9149a7e39a33700a51571c`. Review and install the SQL once in a
 customer-owned migration using `SupabasePresetOptions`; adapter setup never
 installs these policies. Pass the resulting schema and prefix to the server
 SQL adapter with `create_tables: false`.
 
-The separate reader role can select only sessions mapped to `auth.uid()` in
+The preset grants the writer SELECT on the schema-version marker for these
+checks. For an earlier schema-3 preset, grant SELECT on
+`<schema>.<prefix>storage_schema` to the configured writer. The writer does not
+need permission to update that marker.
+
+The separate reader role can select only connections mapped to `auth.uid()` in
 `storage_memberships`. It cannot write storage data or memberships. Configure
 trusted Supabase/PostgREST JWT enforcement; never expose a direct reader SQL
 credential or let a browser set the database subject. Keep reader and server
@@ -672,7 +677,7 @@ separate provisioning gate. Namespaces separate stored keys; configure customer
 IAM/table authority independently.
 
 Each conditional transaction contains at most 100 writes, including the
-engine's session fence. Reads are strongly consistent and queries page at
+engine's connection fence. Reads are strongly consistent and queries page at
 1,000 rows, scanning the entity partition before applying the schema index.
 `max_query_rows` defaults to 100,000 for the whole scanned partition, so bound
 customer retention or adjust it explicitly. DynamoDB item and transaction byte
@@ -680,7 +685,7 @@ limits still apply. A timeout or transport failure can leave a write outcome
 unknown; resume using saved event/checkpoint state and conditional revisions.
 
 The adapter follows storage source
-`3bacf46f9c4213426314001586f5bae43aaa77de`. Tests against DynamoDB Local use the
+`d80b581c9df122411e9149a7e39a33700a51571c`. Tests against DynamoDB Local use the
 official native driver and cover all 17 entities, nested/scalar JSON, atomic
 rollback, 2,000 messages, replay, cursor paging, checkpoint conflicts and expired
 writer fencing. Hosted AWS credentials, IAM and deployment acceptance remain
@@ -704,7 +709,7 @@ let adapter = MongoStorageAdapter::new(customer_database,
 
 Use a replica set or sharded deployment with transaction support. Setup checks
 topology and refuses standalone servers before creating indexes. It creates
-schema-2 indexes by default; set `create_indexes = false` when the operator owns
+schema-3 indexes by default; set `create_indexes = false` when the operator owns
 index creation. Each collection is `polymorfa_{namespace}_{entity}`. Namespace
 isolation complements customer database permissions; it does not replace them.
 
@@ -721,7 +726,7 @@ the customer workload. Stored values remain JSON, including literal objects
 with `$date`, `$binary` or `$numberLong` keys; BSON-specific stored types are
 refused.
 
-The schema source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+The schema source is `d80b581c9df122411e9149a7e39a33700a51571c`.
 Actual local replica-set tests cover all 17 entities, JSON scalars, conditional
 replacement, atomic rollback, 2,000-message history, checkpoints, expired-writer
 fencing, namespaces and read bounds. Standalone-server tests prove refusal
@@ -758,7 +763,7 @@ ordering rules. `setup()` does not provision collections or indexes. Configure
 required composite indexes and retention in the customer's Google project.
 Firestore document, nesting, field-name and transaction limits still apply.
 
-The source contract is `3bacf46f9c4213426314001586f5bae43aaa77de`. JSON mapping
+The source contract is `d80b581c9df122411e9149a7e39a33700a51571c`. JSON mapping
 preserves literal tag-shaped objects and refuses Firestore timestamps,
 references, blobs and other non-JSON native values in stored rows. Local emulator
 checks use the native driver for the shared 17-entity conformance suite, 2,000
@@ -824,7 +829,7 @@ row numbers and safe revisions remain strict. Native and physical-crate checks
 are local evidence; registry publication and matching environment acceptance
 remain separate release gates.
 
-HTTP API requests, media request bases and Calls sockets retain configured base-path prefixes. Raw pages reject repeated cursors before another request, including cycles across manual pages. Signal finite JSON requests share one header/body deadline; event streams retain their idle timeout, enforce a requested session and report incomplete frames at EOF. Signal acknowledgments require exactly HTTP 204 and never replay automatically. These are local SDK consumer guarantees against the pinned service contract, not evidence of a deployed service or package publication.
+HTTP API requests, media request bases and Calls sockets retain configured base-path prefixes. Raw pages reject repeated cursors before another request, including cycles across manual pages. Signal finite JSON requests share one header/body deadline; event streams retain their idle timeout, enforce a requested connection and report incomplete frames at EOF. Signal acknowledgments require exactly HTTP 204 and never replay automatically. These are local SDK consumer guarantees against the pinned service contract, not evidence of a deployed service or package publication.
 Usage record iteration preserves a supplied starting cursor and rejects a response that returns it again.
 
 ## Credential handling
@@ -853,7 +858,7 @@ it does not establish registry publication or service acceptance.
 
 ## Official API round-2 betas
 
-Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+Native Connection catalog-cache reads/sync, marketing status, Official group JPEG
 upload, identity changes, incoming carts and signed webhook batches have source
 counterparts. These additions remain unreleased betas and may return
 `feature_unavailable`. They grant no enrollment or provider authority. See
@@ -888,11 +893,17 @@ off-to-on transition. Project tokens may disable it. The SDK forwards values
 without guessing the stored state. Existing `invalid_parameter`,
 `permission_denied` and `state_conflict` errors remain authoritative.
 
-The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+The setting affects linked-device Connections. Cloud API Connections ignore it.
 Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
 when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
+
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
 
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
@@ -990,8 +1001,8 @@ Rust response struct literals must include
 
 ## Direct passkey relay (unreleased)
 
-Use server credentials with `sessions:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+Use server credentials with `connections:manage` for every operation, including reads.
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -1016,15 +1027,15 @@ The matching API source is accepted. Package qualification and publication are
 still required before using a released package.
 
 ```rust,no_run
-# async fn supplied_steps(client: &polymorfa_sdk::MessagingClient, session: &str, supplied_assertion: &polymorfa_sdk::passkeys::SubmitPasskeyAssertion, supplied_confirmation: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
+# async fn supplied_steps(client: &polymorfa_sdk::MessagingClient, connection: &str, supplied_assertion: &polymorfa_sdk::passkeys::SubmitPasskeyAssertion, supplied_confirmation: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
 use polymorfa_sdk::{passkeys::IssuePasskeyChallenge, RequestOptions};
-let ticket = client.passkeys().issue_challenge(session, &IssuePasskeyChallenge::default(), RequestOptions::default()).await?;
-client.passkeys().get_challenge(session, &ticket.data.data.ticket, RequestOptions::default()).await?;
-client.passkeys().submit_assertion(session, supplied_assertion, RequestOptions::default()).await?;
-let state = client.passkeys().get_confirmation(session, RequestOptions::default()).await?;
+let ticket = client.passkeys().issue_challenge(connection, &IssuePasskeyChallenge::default(), RequestOptions::default()).await?;
+client.passkeys().get_challenge(connection, &ticket.data.data.ticket, RequestOptions::default()).await?;
+client.passkeys().submit_assertion(connection, supplied_assertion, RequestOptions::default()).await?;
+let state = client.passkeys().get_confirmation(connection, RequestOptions::default()).await?;
 // This function is called only after the caller's explicit decision.
-async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &str, supplied: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
-    client.passkeys().confirm(session, supplied, RequestOptions::default()).await?;
+async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, connection: &str, supplied: &polymorfa_sdk::passkeys::ConfirmPasskey) -> polymorfa_sdk::Result<()> {
+    client.passkeys().confirm(connection, supplied, RequestOptions::default()).await?;
     Ok(())
 }
 # let _ = (state, supplied_confirmation);
@@ -1032,6 +1043,51 @@ async fn confirm_explicitly(client: &polymorfa_sdk::MessagingClient, session: &s
 # }
 ```
 
+## Connection call history (unreleased source)
+
+Read one Connection's calls with the other party's identity through
+`GET /messaging/{connection}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```rust,no_run
+# async fn read_call_history(messaging: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
+let page = messaging.calls().list("support",
+    &polymorfa_sdk::connection_calls::ListConnectionCallsParams {
+        limit: Some(25), outcome: Some("missed".into()), ..Default::default()
+    }, Default::default()).await?;
+# let _ = page;
+# Ok(())
+# }
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
+## Connection-scoped Test operations
+
+The Test phone methods take a Connection ID, without a project argument:
+```rust,no_run
+# async fn run(client: &polymorfa_sdk::MessagingClient) -> polymorfa_sdk::Result<()> {
+use polymorfa_sdk::onboarding::{TestEventFixture, TriggerTestEventRequest};
+use polymorfa_sdk::RequestOptions;
+
+let phone = client.testing().get_phone("support", RequestOptions::default()).await?;
+let event = client.testing().trigger_event("support", &TriggerTestEventRequest {
+    event: TestEventFixture::CallMissed,
+    overrides: None,
+    from_connection: Some("sales".into()),
+}, RequestOptions::default()).await?;
+let fixtures = client.testing().list_event_fixtures(RequestOptions::default()).await?;
+# let _ = (phone, event, fixtures);
+# Ok(())
+# }
+```
+
+Send-phone-message and unlink-device helpers use the same Connection scope. The trigger body contains event, optional overrides and optional fromConnection; the target Connection is a separate method argument. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-Connection access checks; a helper does not grant access or make a real Connection a Test Connection.
 
 ## Guest participants and waiting rooms (unreleased)
 
@@ -1067,13 +1123,19 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.
 
 ## Audience profile list filters (source preparation)
 

@@ -111,13 +111,13 @@ func sourceInfo(ctx context.Context, source WhatsAppMediaSource, options Encrypt
 	}
 	return info, err
 }
-func (r *WhatsAppMediaResource) UploadBytes(ctx context.Context, session string, plaintext []byte, options UploadWhatsAppMediaOptions) (WhatsAppMediaUploadResult, error) {
+func (r *WhatsAppMediaResource) UploadBytes(ctx context.Context, connection string, plaintext []byte, options UploadWhatsAppMediaOptions) (WhatsAppMediaUploadResult, error) {
 	owned := bytes.Clone(plaintext)
-	return r.Upload(ctx, session, func(context.Context) (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader(owned)), nil }, options)
+	return r.Upload(ctx, connection, func(context.Context) (io.ReadCloser, error) { return io.NopCloser(bytes.NewReader(owned)), nil }, options)
 }
-func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, source WhatsAppMediaSource, options UploadWhatsAppMediaOptions) (WhatsAppMediaUploadResult, error) {
-	if source == nil || session == "" {
-		return WhatsAppMediaUploadResult{}, configuration("source", "An immutable media source and session are required.")
+func (r *WhatsAppMediaResource) Upload(ctx context.Context, connection string, source WhatsAppMediaSource, options UploadWhatsAppMediaOptions) (WhatsAppMediaUploadResult, error) {
+	if source == nil || connection == "" {
+		return WhatsAppMediaUploadResult{}, configuration("source", "An immutable media source and connection are required.")
 	}
 	mode := options.Egress
 	if options.UploadTransport != nil {
@@ -156,10 +156,10 @@ func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, sour
 	}
 	var location WhatsAppUploadLocation
 	if options.UploadTransport != nil {
-		location, err = r.customUpload(ctx, session, source, info, settings.MaxBytes, options.UploadTransport)
+		location, err = r.customUpload(ctx, connection, source, info, settings.MaxBytes, options.UploadTransport)
 	} else if mode == "relay" {
 		var opened *encryptedUploadReader
-		location, err = r.RelayUpload(ctx, session, info, func(child context.Context) (io.ReadCloser, error) {
+		location, err = r.RelayUpload(ctx, connection, info, func(child context.Context) (io.ReadCloser, error) {
 			opened, err = openEncryptedUpload(child, source, info, settings.MaxBytes)
 			return opened, err
 		}, options.RequestOptions)
@@ -167,7 +167,7 @@ func (r *WhatsAppMediaResource) Upload(ctx context.Context, session string, sour
 			err = opened.complete()
 		}
 	} else {
-		location, err = r.directUpload(ctx, session, source, info, settings.MaxBytes, options)
+		location, err = r.directUpload(ctx, connection, source, info, settings.MaxBytes, options)
 	}
 	if err != nil {
 		return WhatsAppMediaUploadResult{}, err
@@ -242,7 +242,7 @@ func (r *WhatsAppMediaResource) directPost(ctx context.Context, target string, b
 	}
 	return value, nil
 }
-func (r *WhatsAppMediaResource) directUpload(ctx context.Context, session string, source WhatsAppMediaSource, info EncryptedMediaInfo, max int64, options UploadWhatsAppMediaOptions) (WhatsAppUploadLocation, error) {
+func (r *WhatsAppMediaResource) directUpload(ctx context.Context, connection string, source WhatsAppMediaSource, info EncryptedMediaInfo, max int64, options UploadWhatsAppMediaOptions) (WhatsAppUploadLocation, error) {
 	if err := serverOnly(r.t); err != nil {
 		return WhatsAppUploadLocation{}, err
 	}
@@ -263,7 +263,7 @@ func (r *WhatsAppMediaResource) directUpload(ctx context.Context, session string
 	}
 	active, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	grant, err := r.CreateUploadGrant(active, session, info.MediaType, info.FileEncSHA256, options.RequestOptions)
+	grant, err := r.CreateUploadGrant(active, connection, info.MediaType, info.FileEncSHA256, options.RequestOptions)
 	if err != nil {
 		return WhatsAppUploadLocation{}, err
 	}
@@ -274,7 +274,7 @@ func (r *WhatsAppMediaResource) directUpload(ctx context.Context, session string
 				return nil, contextError(active, nil)
 			}
 			if attempt > 0 && failure.status == 401 {
-				grant, err = r.CreateUploadGrant(active, session, info.MediaType, info.FileEncSHA256, options.RequestOptions)
+				grant, err = r.CreateUploadGrant(active, connection, info.MediaType, info.FileEncSHA256, options.RequestOptions)
 				if err != nil {
 					return nil, err
 				}

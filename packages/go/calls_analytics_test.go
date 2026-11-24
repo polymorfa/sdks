@@ -10,8 +10,8 @@ import (
 )
 
 var callAnalyticsFixtures = []operationFixture{
-	{"TeamClient.Calls.List", "GET", "/platform/calls", "direction=inbound&limit=2&projectId=p&sessionId=s&since=2026-10-01T00%3A00%3A00Z", "", `{"data":[{"callId":"c","peerRef":"opaque","durationSeconds":0.5}],"page":{"nextCursor":null}}`, "data.0.durationSeconds", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wirePage(o.Calls().List(ctx, ListCallRecordsParams{CallFilters: CallFilters{ProjectID: "p", SessionID: "s", Direction: "inbound", Since: "2026-10-01T00:00:00Z"}, ListParams: ListParams{Limit: 2}}))
+	{"TeamClient.Calls.List", "GET", "/platform/calls", "direction=inbound&limit=2&projectId=p&connectionId=s&since=2026-10-01T00%3A00%3A00Z", "", `{"data":[{"callId":"c","peerRef":"opaque","durationSeconds":0.5}],"page":{"nextCursor":null}}`, "data.0.durationSeconds", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wirePage(o.Calls().List(ctx, ListCallRecordsParams{CallFilters: CallFilters{ProjectID: "p", ConnectionID: "s", Direction: "inbound", Since: "2026-10-01T00:00:00Z"}, ListParams: ListParams{Limit: 2}}))
 	}},
 	{"TeamClient.Calls.Retrieve", "GET", "/platform/calls/c", "", "", `{"data":{"call":{"callId":"c","exclusive":false,"endReason":{"code":"future_reason","label":"Other"}},"telemetry":{"status":"reported","jitterMs":3.5},"appReports":{"status":"reported","connections":[{"connectionId":"connection","client":{"name":"polymorfa","version":"0.1","platform":"go"},"quality":{"packetsLost":0},"errors":[{"code":"media_failed","reportedAt":"2026-10-11"}]}]}}}`, "appReports.connections.0.quality.packetsLost", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Calls().Retrieve(ctx, "c", RetrieveCallRecordParams{}))
@@ -19,11 +19,11 @@ var callAnalyticsFixtures = []operationFixture{
 	{"TeamClient.Calls.Stats", "GET", "/platform/calls/stats", "groupBy=hour&timezone=Asia%2FBeirut", "", `{"data":{"groupBy":"hour","timezone":"Asia/Beirut","totals":{"calls":3,"answerRate":0.5},"groups":[{"key":"2026-10-11T14:00","averageDurationSeconds":2.5}],"heatmap":[{"dayOfWeek":1,"hour":0,"calls":2}]}}`, "groups.0.averageDurationSeconds", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Calls().Stats(ctx, CallStatsParams{GroupBy: "hour", Timezone: "Asia/Beirut"}))
 	}},
-	{"TeamClient.Analytics.Get", "GET", "/platform/analytics", "end=2000&sessionId=11111111-1111-4111-8111-111111111111&start=1000", "", `{"data":{"enabled":true,"period":{"start":1000,"end":2000},"summary":{"totalNumbers":1,"deviceAnalytics":{"detector":"message_id_prefix/v1","inventory":null},"engagement":{"readRate":0.2},"calls":{"followUp":{"rate":0.4}}},"numbers":[{"sessionId":"s","deviceAnalytics":{"inventory":{"devices":[{"deviceIndex":1,"estimatedPlatform":"iphone","listed":false}]}},"recipientActivity":{"rows":[{"averageQuietGapMs":10}]} }]}}`, "numbers.0.deviceAnalytics.inventory.devices.0.listed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"TeamClient.Analytics.Get", "GET", "/platform/analytics", "end=2000&connectionId=11111111-1111-4111-8111-111111111111&start=1000", "", `{"data":{"enabled":true,"period":{"start":1000,"end":2000},"summary":{"totalConnections":1,"deviceAnalytics":{"detector":"message_id_prefix/v1","inventory":null},"engagement":{"readRate":0.2},"calls":{"followUp":{"rate":0.4}}},"connections":[{"connectionId":"s","deviceAnalytics":{"inventory":{"devices":[{"deviceIndex":1,"estimatedPlatform":"iphone","listed":false}]}},"recipientActivity":{"rows":[{"averageQuietGapMs":10}]} }]}}`, "connections.0.deviceAnalytics.inventory.devices.0.listed", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		start, end := int64(1000), int64(2000)
-		return wireData(o.Analytics().Get(ctx, AnalyticsParams{Start: &start, End: &end, SessionID: "11111111-1111-4111-8111-111111111111"}))
+		return wireData(o.Analytics().Get(ctx, AnalyticsParams{Start: &start, End: &end, ConnectionID: "11111111-1111-4111-8111-111111111111"}))
 	}},
-	{"ProjectClient.Analytics.Get", "GET", "/platform/projects/p/analytics", "", "", `{"data":{"enabled":false,"summary":null,"numbers":[],"callSeries":[{"sessionId":"s","answerRate":null,"total":2}],"series":[]}}`, "callSeries.0.total", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"ProjectClient.Analytics.Get", "GET", "/platform/projects/p/analytics", "", "", `{"data":{"enabled":false,"summary":null,"connections":[],"callSeries":[{"connectionId":"s","answerRate":null,"total":2}],"series":[]}}`, "callSeries.0.total", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(p.Analytics().Get(ctx, AnalyticsParams{}))
 	}},
 }
@@ -125,7 +125,7 @@ func TestCallsAnalyticsValidationBeforeHTTP(t *testing.T) {
 		}, func() error { _, e := o.Calls().Stats(ctx, CallStatsParams{GroupBy: "minute"}); return e }, func() error { _, e := o.Calls().Export(ctx, ExportCallRecordsParams{Format: "json"}); return e }, func() error {
 			_, e := p.Analytics().Get(ctx, AnalyticsParams{ProjectID: "22222222-2222-4222-8222-222222222222"})
 			return e
-		}, func() error { _, e := o.Analytics().Get(ctx, AnalyticsParams{SessionID: "bad"}); return e }, func() error {
+		}, func() error { _, e := o.Analytics().Get(ctx, AnalyticsParams{ConnectionID: "bad"}); return e }, func() error {
 			a, b := int64(0), int64(367*86400000)
 			_, e := o.Analytics().Get(ctx, AnalyticsParams{Start: &a, End: &b})
 			return e

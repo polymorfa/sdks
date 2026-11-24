@@ -100,7 +100,7 @@ class Call:
     ) -> None:
         self._client = client
         self.id, self.direction, self.peer = call_id, direction, peer
-        self.session, self.connection_id = client.session, secrets.token_urlsafe(18)
+        self.connection, self.connection_id = client.connection, secrets.token_urlsafe(18)
         self.state: CallState = "incoming" if direction == "inbound" else "ringing"
         self.end_reason: CallEndReason | None = None
         self.capabilities = CallCapabilities()
@@ -770,7 +770,7 @@ class CallsClient:
     def __init__(
         self,
         token: str | TokenProvider,
-        session: str,
+        connection: str,
         *,
         participant: str | None = None,
         base_url: str = "https://api.polymorfa.com",
@@ -784,17 +784,17 @@ class CallsClient:
         create_idempotency_key: Callable[[], str] = lambda: str(uuid.uuid4()),
         diagnostics: bool = True,
     ) -> None:
-        if not session.strip() or isinstance(reconnect_attempts, bool) or reconnect_attempts < 0:
+        if not connection.strip() or isinstance(reconnect_attempts, bool) or reconnect_attempts < 0:
             raise ConfigurationError("calls_client")
         self.tokens = CallsTokenSource(token)
-        self.session, self.participant, self.base_url = session, participant, base_url
+        self.connection, self.participant, self.base_url = connection, participant, base_url
         self.reconnect_attempts, self.connect_timeout = reconnect_attempts, connect_timeout
         self.media_heartbeat_interval, self.media_backoff = media_heartbeat_interval, media_backoff
         self._create_key = create_idempotency_key
         self.diagnostics = diagnostics
         self.lifecycle = LifecycleSocket(
             self.tokens,
-            session=session,
+            connection=connection,
             participant=participant,
             base_url=base_url,
             connect_timeout=connect_timeout,
@@ -909,7 +909,7 @@ class CallsClient:
                 client._transport._credential is not None
                 and client._transport._credential.kind != "client_token"
             ):
-                body["session"] = self.session
+                body["connection"] = self.connection
             self._add_participant(body, client)
             if exclusive is not None:
                 body["exclusive"] = exclusive

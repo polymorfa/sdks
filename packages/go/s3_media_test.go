@@ -98,7 +98,7 @@ func TestS3NativeMinIOVerifiedArchiveAndETagUpload(t *testing.T) {
 	for _, mode := range []string{"relay", "direct"} {
 		gets.Store(0)
 		uploaded = nil
-		result, err := store.UploadToWhatsApp(ctx, S3UploadToWhatsAppOptions{Messaging: sdk.WhatsAppMedia(), Session: "session", Key: "source", UploadWhatsAppMediaOptions: UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, Egress: mode}})
+		result, err := store.UploadToWhatsApp(ctx, S3UploadToWhatsAppOptions{Messaging: sdk.WhatsAppMedia(), Connection: "connection", Key: "source", UploadWhatsAppMediaOptions: UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, Egress: mode}})
 		if err != nil || gets.Load() != 2 {
 			t.Fatal("MinIO two-pass upload", mode, gets.Load(), err)
 		}
@@ -112,7 +112,7 @@ func TestS3NativeMinIOVerifiedArchiveAndETagUpload(t *testing.T) {
 	change.Store(true)
 	before := grants.Load()
 	uploaded = nil
-	if _, err = store.UploadToWhatsApp(ctx, S3UploadToWhatsAppOptions{Messaging: sdk.WhatsAppMedia(), Session: "session", Key: "source", UploadWhatsAppMediaOptions: UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, Egress: "direct"}}); err == nil || gets.Load() != 2 || len(uploaded) != 0 || grants.Load() != before+1 {
+	if _, err = store.UploadToWhatsApp(ctx, S3UploadToWhatsAppOptions{Messaging: sdk.WhatsAppMedia(), Connection: "connection", Key: "source", UploadWhatsAppMediaOptions: UploadWhatsAppMediaOptions{EncryptMediaOptions: EncryptMediaOptions{MediaType: UploadImage}, Egress: "direct"}}); err == nil || gets.Load() != 2 || len(uploaded) != 0 || grants.Load() != before+1 {
 		t.Fatal("MinIO changed ETag finalized upload", err)
 	}
 	// Archive uses a private disk spool and snapshots caller-owned descriptor bytes

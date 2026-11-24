@@ -157,7 +157,7 @@ func TestCampaignCallerIdempotencyHeaderCasing(t *testing.T) {
 			team, _ := NewTeamClient(teamConfig(s.URL))
 			opts := RequestOptions{Headers: http.Header{casing: {"caller-original"}}}
 			for i := 0; i < 2; i++ {
-				_, err := team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
+				_, err := team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -174,7 +174,7 @@ func TestCampaignCallerIdempotencyHeaderCasing(t *testing.T) {
 	}))
 	defer s.Close()
 	team, _ := NewTeamClient(teamConfig(s.URL))
-	body := PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}
+	body := PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123"}, ProjectID: contractProject}
 	for _, headers := range []http.Header{
 		{"idempotency-key": {"first"}, "Idempotency-Key": {"second"}},
 		{"idempotency-key": {"first", "second"}},
@@ -216,7 +216,7 @@ func TestCampaignCallerKeyAcrossNetworkRetry(t *testing.T) {
 	opts := RequestOptions{Headers: http.Header{"idempotency-key": {"caller-original"}}}
 	done := make(chan error, 1)
 	go func() {
-		_, err := team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
+		_, err := team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123"}, ProjectID: contractProject}, opts)
 		done <- err
 	}()
 	<-received
@@ -247,7 +247,7 @@ func TestCampaignIdempotencyOptionPrecedenceAndLegacy(t *testing.T) {
 			writeContractFixture(w, contractWireRow{model: sendJSON})
 		}))
 		team, _ := NewTeamClient(teamConfig(s.URL))
-		_, err = team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{SessionID: contractID, To: "123"}, ProjectID: contractProject}, tc.opts)
+		_, err = team.Campaigns().TestSend(context.Background(), contractID, PlatformCampaignTestSendRequest{CampaignTestSendRequest: CampaignTestSendRequest{ConnectionID: contractID, To: "123"}, ProjectID: contractProject}, tc.opts)
 		s.Close()
 		if err != nil || got != tc.want {
 			t.Fatal("explicit option precedence changed", got, err)

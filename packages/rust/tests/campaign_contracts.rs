@@ -202,7 +202,7 @@ fn graph() -> CreateCampaignReplyFlowRequest {
 }
 fn test_body() -> CampaignTestSendRequest {
     CampaignTestSendRequest {
-        session_id: ID.into(),
+        connection_id: ID.into(),
         to: PHONE.into(),
         sample_recipient_id: None,
         variables: Some(BTreeMap::new()),
@@ -239,7 +239,7 @@ fn fixture(kind: &str) -> Value {
         }
         "links" => json!([{"key":"a","url":"https://example.com/","uniqueOpens":0,"totalOpens":1}]),
         "send" => {
-            json!({"id":ID,"campaignId":ID,"status":"sent","from":{"sessionId":ID,"phone":PHONE},"to":PHONE,"messageId":null,"variables":{},"createdAt":0})
+            json!({"id":ID,"campaignId":ID,"status":"sent","from":{"connectionId":ID,"phone":PHONE},"to":PHONE,"messageId":null,"variables":{},"createdAt":0})
         }
         "assignment" => json!({"campaignId":ID,"replyFlowId":null}),
         "profile" => {

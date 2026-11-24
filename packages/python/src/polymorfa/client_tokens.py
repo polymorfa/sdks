@@ -1,4 +1,4 @@
-"""Server-owned token minting and session client rules."""
+"""Server-owned token minting and connection client rules."""
 
 from __future__ import annotations
 
@@ -23,15 +23,32 @@ CustomerAction = Literal[
     "chats_manage",
     "contact_write",
     "contact_delete",
+    "voip_place",
+    "voip_answer",
+    "voip_signal",
+    "groups_read",
+    "groups_manage",
+    "read_calls",
+    "conversations_read",
+    "conversations_manage",
+    "labels_read",
+    "labels_manage",
+    "contacts_manage",
+    "profile_read",
+    "profile_manage",
+    "channels_read",
+    "channels_manage",
+    "business_read",
+    "presence_write",
 ]
-SessionAction = CustomerAction | Literal["mcp", "voip_place", "voip_answer", "voip_signal"]
+ConnectionAction = CustomerAction | Literal["mcp"]
 RecipientMode = Literal["conversation", "any", "none"]
 
 
-class MintSessionTokenRequest(TypedDict):
+class MintConnectionTokenRequest(TypedDict):
     ephemeralId: str
-    session: str
-    allow: NotRequired[list[SessionAction]]
+    connection: str
+    allow: NotRequired[list[ConnectionAction]]
     ttlSeconds: NotRequired[int]
 
 
@@ -76,16 +93,16 @@ class SetClientRulesRequest(TypedDict):
 class ClientTokens(Resource):
     async def mint(
         self,
-        body: MintSessionTokenRequest | MintCustomerTokenRequest,
+        body: MintConnectionTokenRequest | MintCustomerTokenRequest,
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Envelope[ClientTokenValue]]:
         self._server()
         payload = cast(JsonObject, body)
-        session = isinstance(payload.get("session"), str) and bool(payload.get("session"))
+        connection = isinstance(payload.get("connection"), str) and bool(payload.get("connection"))
         customer = isinstance(payload.get("customer"), str) and bool(payload.get("customer"))
-        if session == customer:
-            raise ConfigurationError("customer" if session else "session")
+        if connection == customer:
+            raise ConfigurationError("customer" if connection else "connection")
         return cast(
             ApiResponse[Envelope[ClientTokenValue]],
             await self._transport.request(
@@ -94,34 +111,34 @@ class ClientTokens(Resource):
         )
 
     async def retrieve_rules(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[ClientRules]]:
         self._server()
         return cast(
             ApiResponse[Envelope[ClientRules]],
-            await self._transport.request("GET", self._path(session), options=options),
+            await self._transport.request("GET", self._path(connection), options=options),
         )
 
     async def update_rules(
-        self, session: str, body: SetClientRulesRequest, *, options: RequestOptions = O
+        self, connection: str, body: SetClientRulesRequest, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         self._server()
         return cast(
             ApiResponse[Success],
             await self._transport.request(
-                "PUT", self._path(session), body=cast(JsonObject, body), options=options
+                "PUT", self._path(connection), body=cast(JsonObject, body), options=options
             ),
         )
 
     async def delete_rules(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Success]:
         self._server()
         return cast(
             ApiResponse[Success],
-            await self._transport.request("DELETE", self._path(session), options=options),
+            await self._transport.request("DELETE", self._path(connection), options=options),
         )
 
     @staticmethod
-    def _path(session: str) -> str:
-        return f"/platform/sessions/{segment(session)}/client-rules"
+    def _path(connection: str) -> str:
+        return f"/platform/connections/{segment(connection)}/client-rules"

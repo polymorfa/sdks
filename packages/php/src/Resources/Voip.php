@@ -43,13 +43,13 @@ final class Voip extends Resource
         }
     }
     /**
- * @param array{session?:string,to?:string,participants?:list<string>,groupId?:string,video?:bool,exclusive?:bool,participant?:string} $body
+ * @param array{connection?:string,to?:string,participants?:list<string>,groupId?:string,video?:bool,exclusive?:bool,participant?:string} $body
  *
- * @return ApiResponse<array{success:bool,data:array{callId:string,session:string,video:bool}}> */
+ * @return ApiResponse<array{success:bool,data:array{callId:string,connection:string,video:bool}}> */
     public function place(array $body, ?RequestOptions $options = null): ApiResponse
     {
-        if ($this->transport->credentialKind() !== 'client_token' && (!isset($body['session']) || trim($body['session']) === '')) {
-            throw new ValidationException('A server call requires session.');
+        if ($this->transport->credentialKind() !== 'client_token' && (!isset($body['connection']) || trim($body['connection']) === '')) {
+            throw new ValidationException('A server call requires connection.');
         }
         $this->participant($body['participant'] ?? null);
         $valid = static fn (string $value): bool => preg_match('/^(?:\+[1-9]\d{1,14}|[1-9][0-9]{0,18})$/D', $value) === 1;
@@ -65,7 +65,7 @@ final class Voip extends Resource
         } elseif (!isset($body['to']) || !$valid($body['to'])) {
             throw new ValidationException('Provide a valid call target.');
         }
-        /** @var ApiResponse<array{success:bool,data:array{callId:string,session:string,video:bool}}> */
+        /** @var ApiResponse<array{success:bool,data:array{callId:string,connection:string,video:bool}}> */
         return $this->request('POST', '/messaging/voip/calls', $body, options: $options);
     }
     /**
@@ -126,32 +126,32 @@ final class Voip extends Resource
     /**
  *
  * @return ApiResponse<array{success:bool,data:CallPermission}> */
-    public function retrieveCallPermission(string $session, string $to, ?RequestOptions $options = null): ApiResponse
+    public function retrieveCallPermission(string $connection, string $to, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        if (trim($session) === '') {
-            throw new ConfigurationException('session');
+        if (trim($connection) === '') {
+            throw new ConfigurationException('connection');
         }
         if (trim($to) === '') {
             throw new ConfigurationException('to');
         }
         /** @var ApiResponse<array{success:bool,data:CallPermission}> */
-        return $this->request('GET', '/messaging/' . self::segment($session) . '/call-permissions/' . self::segment($to), options: $options);
+        return $this->request('GET', '/messaging/' . self::segment($connection) . '/call-permissions/' . self::segment($to), options: $options);
     }
     /**
  *
  * @return ApiResponse<array{success:bool,data:CallSettings}> */
-    public function retrieveCallSettings(string $session, ?RequestOptions $options = null): ApiResponse
+    public function retrieveCallSettings(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         /** @var ApiResponse<array{success:bool,data:CallSettings}> */
-        return $this->request('GET', '/platform/sessions/' . self::segment($session) . '/call-settings', options: $options);
+        return $this->request('GET', '/platform/connections/' . self::segment($connection) . '/call-settings', options: $options);
     }
     /**
  * @param array{callsEnabled?:bool,conferenceMode?:bool,inboundRoute?:'clients'|'sip_trunk',sipTrunkId?:?string,sipClaim?:bool,hostCloudApiCalls?:bool,simultaneousCalls?:bool,acknowledgeRisk?:bool,expectedRevision?:int} $body
  *
  * @return ApiResponse<array{success:bool,data:CallSettings}> */
-    public function updateCallSettings(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function updateCallSettings(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
         if (array_intersect(array_keys($body), ['callsEnabled','conferenceMode','inboundRoute','sipTrunkId','sipClaim','hostCloudApiCalls','simultaneousCalls']) === []) {
@@ -159,7 +159,7 @@ final class Voip extends Resource
         }
         self::validateSettings($body);
         /** @var ApiResponse<array{success:bool,data:CallSettings}> */
-        return $this->request('PUT', '/platform/sessions/' . self::segment($session) . '/call-settings', $body, options: $options);
+        return $this->request('PUT', '/platform/connections/' . self::segment($connection) . '/call-settings', $body, options: $options);
     }
     /** @param CallLinkRequest $body
      * @return ApiResponse<array{success:bool,data:CreatedCallLink}> */
@@ -185,8 +185,8 @@ final class Voip extends Resource
     public function check(array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        if (trim($body['session']) === '' || trim($body['to']) === '') {
-            throw new ValidationException('Call checks require session and destination.');
+        if (trim($body['connection']) === '' || trim($body['to']) === '') {
+            throw new ValidationException('Call checks require connection and destination.');
         }
         /** @var ApiResponse<array{success:bool,data:CallCheck}> */
         return $this->request('POST', '/messaging/voip/calls/check', $body, options:$options);
@@ -267,8 +267,8 @@ final class Voip extends Resource
     private function callLink(array $body, ?RequestOptions $options): void
     {
         $this->server();
-        if (!is_string($body['session'] ?? null) || trim($body['session']) === '' || strlen($body['session']) > 128 || (array_key_exists('video', $body) && !is_bool($body['video']))) {
-            throw new ValidationException('Call links require a session and optional video flag.');
+        if (!is_string($body['connection'] ?? null) || trim($body['connection']) === '' || strlen($body['connection']) > 128 || (array_key_exists('video', $body) && !is_bool($body['video']))) {
+            throw new ValidationException('Call links require a connection and optional video flag.');
         }
         if ($options?->idempotencyKey !== null) {
             throw new ValidationException('Call links do not support Idempotency-Key.');

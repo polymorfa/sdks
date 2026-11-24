@@ -7,7 +7,7 @@ require dirname(__DIR__,2).'/packages/php/vendor/autoload.php';
 use Polymorfa\{Credential,MessagingClient,RequestOptions};
 
 $client=new MessagingClient(Credential::teamApiKey((string)getenv('POLYMORFA_API_KEY')));
-$response=$client->messages->send((string)getenv('POLYMORFA_SESSION'),[
+$response=$client->messages->send((string)getenv('POLYMORFA_CONNECTION'),[
     'conversation'=>['phoneNumber'=>(string)getenv('POLYMORFA_RECIPIENT')],
     'content'=>['text'=>'Hello from PHP'],
 ],new RequestOptions(idempotencyKey:(string)getenv('POLYMORFA_IDEMPOTENCY_KEY')));

@@ -1,6 +1,6 @@
 /**
  * Minimal QR code encoder (byte mode, error correction level L, mask 0),
- * enough to show a session pairing payload as a scannable code without a
+ * enough to show a connection pairing payload as a scannable code without a
  * dependency. Based on the structure of the QR Code Model 2 specification.
  */
 

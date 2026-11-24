@@ -54,9 +54,9 @@ export function createStoreInboxSource(
         conversationId: conversation.id,
         load: (cursor, signal) => remote.load(cursor, signal),
         send: (message, signal) => remote.send(message, signal),
-        ...(conversation.session === undefined
+        ...(conversation.connection === undefined
           ? {}
-          : { session: conversation.session }),
+          : { connection: conversation.connection }),
         ...(options.onError === undefined ? {} : { onError: options.onError }),
       });
     },
@@ -96,15 +96,19 @@ function toInboxConversation(
   row: StoredConversation,
   contact: StoredContact | undefined,
 ): InboxConversation {
-  const name =
-    row.name ??
-    contact?.fullName ??
-    contact?.businessName ??
-    contact?.pushName ??
-    undefined;
+  const group = row.isGroup === true;
+  // A group's name comes from the group, never from a member's contact row.
+  const name = group
+    ? row.name
+    : (row.name ??
+      contact?.fullName ??
+      contact?.businessName ??
+      contact?.pushName ??
+      undefined);
   return {
     id: row.id,
-    ...(row.session === undefined ? {} : { session: row.session }),
+    ...(group ? { kind: "group" as const } : {}),
+    ...(row.connection === undefined ? {} : { connection: row.connection }),
     ...(name === undefined ? {} : { name }),
     ...(contact?.phoneNumber === undefined
       ? {}

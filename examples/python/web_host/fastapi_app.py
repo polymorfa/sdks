@@ -78,7 +78,7 @@ async def browser_action(operation: str, request: Request):
         result = (
             await host.mint()
             if operation == "token"
-            else await host.connect_number()
+            else await host.connect_connection()
             if operation == "connect"
             else None
         )

@@ -195,7 +195,7 @@ const (
 // milliseconds; a nil anchor means that no delivery or read receipt timed it.
 type CampaignFollowUpSummary struct {
 	ID               string                 `json:"id"`
-	NumberID         string                 `json:"numberId"`
+	ConnectionID     string                 `json:"connectionId"`
 	Status           CampaignFollowUpStatus `json:"status"`
 	AnchorKind       *string                `json:"anchorKind"`
 	FirstDeliveredAt *int64                 `json:"firstDeliveredAt"`

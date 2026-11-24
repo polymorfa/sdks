@@ -205,7 +205,7 @@ try {
 }
 foreach ([false,true] as $bad) {
     $data = $strictStream('provider-gzip').($bad ? "\0" : '');
-    $raw = json_encode(['id' => 'signed-archive','session' => 'fixture-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'history.sync','payload' => ['mode' => 'deliver','messages' => [],'syncType' => 'RECENT','chunkOrder' => 7,'progress' => 92,'fileLength' => strlen($data),'conversationCount' => 1,'messageCount' => 0,'pushNameCount' => 0,'statusMessageCount' => 0,'whatsapp_ids' => ['linked_devices' => 'fixture-archive'],'whatsapp' => ['encoding' => 'gzip-base64-protobuf','data' => base64_encode($data)]]], JSON_THROW_ON_ERROR);
+    $raw = json_encode(['id' => 'signed-archive','connection' => 'fixture-session','timestamp' => '2026-10-17T00:00:00Z','event' => 'history.sync','payload' => ['mode' => 'deliver','messages' => [],'syncType' => 'RECENT','chunkOrder' => 7,'progress' => 92,'fileLength' => strlen($data),'conversationCount' => 1,'messageCount' => 0,'pushNameCount' => 0,'statusMessageCount' => 0,'whatsapp_ids' => ['linked_devices' => 'fixture-archive'],'whatsapp' => ['encoding' => 'gzip-base64-protobuf','data' => base64_encode($data)]]], JSON_THROW_ON_ERROR);
     $event = Webhooks::constructEvent($raw, hash_hmac('sha256', $raw, 'synthetic-archive-secret'), 'synthetic-archive-secret');
     $adapter = new StorageEngineMemory();
     $engine = new Engine($adapter);
@@ -234,10 +234,10 @@ foreach ([false,true] as $bad) {
     });
     if ($bad) {
         $error = raises(static fn () => $sync->pump(), MediaIntegrityException::class);
-        strictHistoryCheck($error->errorCode === 'media_invalid_ciphertext' && !$engine->hasEvent($event->session, $event->id) && $engine->getCheckpoint('*', 'events') === null && $source->acks === 0 && $adapter->rows === [] && $adapter->commits === [], 'Invalid archive cannot apply rows/progress/markers/checkpoint/ACK');
+        strictHistoryCheck($error->errorCode === 'media_invalid_ciphertext' && !$engine->hasEvent($event->connection, $event->id) && $engine->getCheckpoint('*', 'events') === null && $source->acks === 0 && $adapter->rows === [] && $adapter->commits === [], 'Invalid archive cannot apply rows/progress/markers/checkpoint/ACK');
     } else {
         $sync->pump();
-        strictHistoryCheck($engine->hasEvent($event->session, $event->id) && $engine->getCheckpoint('*', 'events')['cursor'] === 'after-archive' && $source->acks === 1 && count($adapter->rows['chats']) === 1, 'Valid projected archive applies and ACKs');
+        strictHistoryCheck($engine->hasEvent($event->connection, $event->id) && $engine->getCheckpoint('*', 'events')['cursor'] === 'after-archive' && $source->acks === 1 && count($adapter->rows['chats']) === 1, 'Valid projected archive applies and ACKs');
     }
 }
 echo "Strict signed archive: invalid compression leaves all state absent; valid projected control applies/ACKs\n";

@@ -26,8 +26,8 @@ export interface StoreConversationSourceOptions {
     message: OutgoingMessage,
     signal?: AbortSignal,
   ) => Promise<ConversationMessage>;
-  /** Session written on messages from `load` and `send`. */
-  readonly session?: string;
+  /** Connection written on messages from `load` and `send`. */
+  readonly connection?: string;
   /** Reports a failed background reconcile or change read. */
   readonly onError?: (error: unknown) => void;
 }
@@ -49,6 +49,17 @@ export function toConversationMessage(row: StoredMessage): ConversationMessage {
     ...(row.attachments === undefined || row.attachments.length === 0
       ? {}
       : { attachments: row.attachments }),
+    // Only group messages carry a sender distinct from the conversation.
+    ...(row.fromMe ||
+    row.senderId === undefined ||
+    row.senderId === row.conversationId
+      ? {}
+      : {
+          sender: {
+            id: row.senderId,
+            ...(row.pushName === undefined ? {} : { name: row.pushName }),
+          },
+        }),
   };
 }
 
@@ -68,6 +79,15 @@ function toInput(
     ...(message.attachments === undefined
       ? {}
       : { attachments: message.attachments }),
+    // Keep group authors so later local reads still name each message's sender.
+    ...(message.sender === undefined
+      ? {}
+      : {
+          senderId: message.sender.id,
+          ...(message.sender.name === undefined
+            ? {}
+            : { pushName: message.sender.name }),
+        }),
   };
 }
 
@@ -83,7 +103,7 @@ export function createStoreConversationSource(
   const { conversationId } = options;
   const pageSize = Math.max(1, options.pageSize ?? 50);
   const upsertOptions =
-    options.session === undefined ? {} : { session: options.session };
+    options.connection === undefined ? {} : { connection: options.connection };
   let reconcile: Promise<string | undefined> | undefined;
   const listeners = new Set<(event: ConversationEvent) => void>();
   let buffered: ConversationEvent[] = [];

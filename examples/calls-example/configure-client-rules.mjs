@@ -4,13 +4,13 @@ import { CallsExampleSetupError } from "./mint-client-token-core.mjs";
 import { configureCallsExampleRules } from "./configure-client-rules-core.mjs";
 
 const key = process.env.POLYMORFA_SERVER_KEY;
-const session = process.env.POLYMORFA_SESSION;
+const connection = process.env.POLYMORFA_CONNECTION;
 const testCallee = process.env.POLYMORFA_TEST_CALLEE;
 const credentialType = serverCredentialType(key);
 
-if (!key || !session || !testCallee) {
+if (!key || !connection || !testCallee) {
   process.stderr.write(
-    "Set POLYMORFA_SERVER_KEY, POLYMORFA_SESSION and POLYMORFA_TEST_CALLEE.\n",
+    "Set POLYMORFA_SERVER_KEY, POLYMORFA_CONNECTION and POLYMORFA_TEST_CALLEE.\n",
   );
   process.exitCode = 1;
 } else if (!credentialType) {
@@ -22,7 +22,7 @@ if (!key || !session || !testCallee) {
       credential: { type: credentialType, value: key },
       baseUrl: "https://api.polymorfastaging.com",
     });
-    await configureCallsExampleRules(messaging, session, testCallee);
+    await configureCallsExampleRules(messaging, connection, testCallee);
     process.stdout.write(
       "Configured bounded Calls client rules for this Number.\n",
     );

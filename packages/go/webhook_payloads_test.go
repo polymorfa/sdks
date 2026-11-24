@@ -28,7 +28,7 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 		{"call.participant_joined call.participant_state", "CallParticipantPayload", `{"participant":{"id":"p","handRaised":false,"audioMuted":false,"video":false,"state":"connected"}}`, "participant.handRaised"},
 		{"call.participant_left", "CallParticipantLeftPayload", `{"participantId":"p","reason":"left"}`, "participantId"},
 		{"call.permission_changed", "CallPermissionChangedPayload", `{"conversation":{"id":"p"},"status":"temporary","expiresAt":null}`, "status"},
-		{"call.received", "CallReceivedPayload", `{"hasVideo":true,"sessionConnection":"official_api"}`, "hasVideo"},
+		{"call.received", "CallReceivedPayload", `{"hasVideo":true,"connectionMethod":"cloud_api"}`, "connectionMethod"},
 		{"call.rejected", "CallRejectedPayload", `{"callId":"c","from":{"phoneNumber":"+15551234567","id":"x"}}`, "from.phoneNumber"},
 		{"call.telemetry", "CallTelemetryPayload", `{"recvKbps":2.5,"rttMs":3}`, "recvKbps"},
 		{"campaign.cap_reached", "CampaignCapReachedPayload", `{"capLimit":200,"windowResetsAt":42}`, "capLimit"},
@@ -56,13 +56,13 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 		{"contact.marketing_preference_updated", "ContactMarketingPreferencePayload", `{"waId":"opaque","preference":"stop","category":"marketing_messages"}`, "waId"},
 		{"contact.update", "ContactUpdatePayload", `{"bsuid":"b","pictureRemoved":false}`, "pictureRemoved"},
 		{"customer.created customer.archived customer.restored", "CustomerEventPayload", `{"customerId":"c","actorKind":"project_token"}`, "actorKind"},
-		{"customer.archiving", "CustomerArchivingPayload", `{"customerId":"c","blockingNumberCount":2}`, "blockingNumberCount"},
-		{"customer.enabled", "CustomerEnabledPayload", `{"customerId":"c","migratedNumberCount":2}`, "migratedNumberCount"},
+		{"customer.archiving", "CustomerArchivingPayload", `{"customerId":"c","blockingConnectionCount":2}`, "blockingConnectionCount"},
+		{"customer.enabled", "CustomerEnabledPayload", `{"customerId":"c","migratedConnectionCount":2}`, "migratedConnectionCount"},
 		{"customer.updated", "CustomerUpdatedPayload", `{"customerId":"c","fields":["phone"]}`, "fields"},
-		{"customer.number.attached", "CustomerNumberAttachedPayload", `{"sessionId":"s","pairingLinkId":"l"}`, "pairingLinkId"},
-		{"customer.number.disconnected", "CustomerNumberDisconnectedPayload", `{"sessionId":"s","reason":"removed"}`, "reason"},
-		{"customer.number.transferred", "CustomerNumberTransferredPayload", `{"sessionId":"s","sourceCustomerId":"c"}`, "sourceCustomerId"},
-		{"customer.pairing_link.connected", "CustomerPairingLinkConnectedPayload", `{"sessionId":"s","pairingLinkId":"l"}`, "sessionId"},
+		{"customer.connection.attached", "CustomerConnectionAttachedPayload", `{"connectionId":"s","pairingLinkId":"l"}`, "pairingLinkId"},
+		{"customer.connection.disconnected", "CustomerConnectionDisconnectedPayload", `{"connectionId":"s","reason":"removed"}`, "reason"},
+		{"customer.connection.transferred", "CustomerConnectionTransferredPayload", `{"connectionId":"s","sourceCustomerId":"c"}`, "sourceCustomerId"},
+		{"customer.pairing_link.connected", "CustomerPairingLinkConnectedPayload", `{"connectionId":"s","pairingLinkId":"l"}`, "connectionId"},
 		{"customer.pairing_link.created customer.pairing_link.opened customer.pairing_link.expired", "CustomerPairingLinkPayload", `{"pairingLinkId":"l","customerId":"c"}`, "pairingLinkId"},
 		{"customer.pairing_link.failed", "CustomerPairingLinkFailedPayload", `{"errorCode":"failed","pairingLinkId":"l"}`, "errorCode"},
 		{"customer.pairing_link.revoked", "CustomerPairingLinkRevokedPayload", `{"reason":"terminal_failure","pairingLinkId":"l"}`, "reason"},
@@ -80,12 +80,12 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 		{"newsletter.update", "NewsletterUpdatePayload", `{"id":"x","muted":false}`, "muted"},
 		{"order.payment_updated", "OrderPaymentStatusPayload", `{"kind":"payment_status","reportedBy":"whatsapp","amount":{"value":100,"offset":100},"transaction":{"errorCode":"future"}}`, "transaction.errorCode"},
 		{"presence.update", "PresenceUpdatePayload", `{"observedAt":42,"lastSeen":0,"unavailable":false}`, "lastSeen"},
-		{"session.capabilities_updated", "SessionCapabilitiesUpdatedPayload", `{"changedKeys":["calling"],"values":{"calling":true}}`, "changedKeys"},
-		{"session.connected", "SessionConnectedPayload", `{"phonePlatform":"iphone","accountType":"business_app"}`, "accountType"},
-		{"session.logged_out", "SessionLoggedOutPayload", `{"reason":"device_removed","code":401}`, "code"},
-		{"session.phone_offline", "SessionPhoneOfflinePayload", `{"daysRemaining":2,"lastSeen":"2026-10-01"}`, "daysRemaining"},
-		{"session.restriction_updated", "SessionRestrictionUpdatedPayload", `{"active":false,"expiresAt":null,"enforcementType":null}`, "active"},
-		{"session.status", "RuntimeSessionStatusPayload", `{"status":"banned","banCode":403}`, "banCode"},
+		{"connection.capabilities_updated", "ConnectionCapabilitiesUpdatedPayload", `{"changedKeys":["calling"],"values":{"calling":true}}`, "changedKeys"},
+		{"connection.connected", "ConnectionConnectedPayload", `{"phonePlatform":"iphone","accountType":"business_app"}`, "accountType"},
+		{"connection.logged_out", "ConnectionLoggedOutPayload", `{"reason":"device_removed","code":401}`, "code"},
+		{"connection.phone_offline", "ConnectionPhoneOfflinePayload", `{"daysRemaining":2,"lastSeen":"2026-10-01"}`, "daysRemaining"},
+		{"connection.restriction_updated", "ConnectionRestrictionUpdatedPayload", `{"active":false,"expiresAt":null,"enforcementType":null}`, "active"},
+		{"connection.status", "RuntimeConnectionStatusPayload", `{"status":"banned","banCode":403}`, "banCode"},
 		{"template.status", "RuntimeTemplateStatusPayload", `{"templateName":"hello","qualityRating":"GREEN"}`, "qualityRating"},
 		{"usage.recorded", "UsageRecordedPayload", `{"quantity":0.123456,"dimensions":{"enabled":false},"rateCard":null,"pricedCredits":null}`, "dimensions.enabled"},
 		{"voice.asset_failed", "VoiceAssetFailedPayload", `{"assetId":"a","failureReason":"invalid_audio"}`, "failureReason"},
@@ -93,7 +93,7 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 		// Additional native variants of the known families.
 		{"message.received message.reaction", "CloudMessagePayload", `{"id":"x","timestamp":"2026-10-11","referral":{"source_type":"ad","ctwa_clid":"c","future":false},"interactive":{"future":3},"future":{"v":3}}`, "referral.future"},
 		{"history.sync", "CloudHistorySyncPayload", `{"kind":"history","value":{"future":3}}`, "value.future"},
-		{"session.status", "CloudAccountStatusPayload", `{"source":"meta","kind":"account_alerts","value":{"future":3}}`, "value.future"},
+		{"connection.status", "CloudAccountStatusPayload", `{"source":"meta","kind":"account_alerts","value":{"future":3}}`, "value.future"},
 		{"template.status", "CloudTemplateStatusPayload", `{"kind":"message_template_quality_update","newQualityScore":"RED"}`, "newQualityScore"},
 		{"order.payment_updated", "OrderPaymentMethodSelectedPayload", `{"kind":"payment_method_selected","reportedBy":"whatsapp","paymentMethod":"pix","paymentTimestamp":42}`, "paymentTimestamp"},
 	}
@@ -101,7 +101,7 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 	for _, f := range families {
 		for _, name := range strings.Fields(f.events) {
 			t.Run(name+"/"+f.kind, func(t *testing.T) {
-				raw := []byte(`{"id":"event","session":"s","timestamp":"2026-10-11","event":"` + name + `","payload":` + f.body + `}`)
+				raw := []byte(`{"id":"event","connection":"s","timestamp":"2026-10-11","event":"` + name + `","payload":` + f.body + `}`)
 				mac := hmac.New(sha256.New, []byte("fixture-secret"))
 				mac.Write(raw)
 				event, err := ConstructWebhookEvent(raw, hex.EncodeToString(mac.Sum(nil)), "fixture-secret")
@@ -144,7 +144,7 @@ func TestKnownWebhookPayloadFamilies(t *testing.T) {
 	}
 }
 func TestLocalAndFlowForwardSignatures(t *testing.T) {
-	raw := []byte(`{"id":"e","session":"s","timestamp":"t","event":"future","payload":null}`)
+	raw := []byte(`{"id":"e","connection":"s","timestamp":"t","event":"future","payload":null}`)
 	secret := "flow-secret"
 	sign := func(key []byte, prefix string) string {
 		m := hmac.New(sha256.New, key)

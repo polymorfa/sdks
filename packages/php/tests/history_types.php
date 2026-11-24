@@ -18,8 +18,8 @@ final class HistoryTypes
                 self::text($message->protobuf);
             }
         }
-        self::text($client->historySync->requestChunkRetry('session', ['syncType' => 'FULL','chunkOrder' => 0])->data['data']['requestId']);
-        self::text($client->historySync->deleteChunk('session', '/fixture', str_repeat('x', 32))->data['data']['status']);
+        self::text($client->historySync->requestChunkRetry('connection', ['syncType' => 'FULL','chunkOrder' => 0])->data['data']['requestId']);
+        self::text($client->historySync->deleteChunk('connection', '/fixture', str_repeat('x', 32))->data['data']['status']);
     }
     private static function text(string $value): void
     {

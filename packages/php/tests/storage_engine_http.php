@@ -23,7 +23,7 @@ try {
     $sync->pump();
     $state = json_decode(fgets($pipes[1]), true, flags:JSON_THROW_ON_ERROR);
     storageCheck($state['valid'] && $state['calls'] === ['GET /platform/projects/project/events/stream','POST /platform/projects/project/events/stream/native-stream/ack'], 'actual native HTTP manual ACK and saved cursor');
-    storageCheck($engine->hasEvent('s', 'evt-0-message.received') && $engine->get('messages', ['sessionId' => 's','messageId' => '5001'])['text'] === 'original', 'native encoded webhook reduced into customer storage');
+    storageCheck($engine->hasEvent('s', 'evt-0-message.received') && $engine->get('messages', ['connectionId' => 's','messageId' => '5001'])['text'] === 'original', 'native encoded webhook reduced into customer storage');
 } finally {
     proc_terminate($process);
     foreach ($pipes as $pipe) {

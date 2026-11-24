@@ -138,7 +138,7 @@ function rowWrites(value: unknown): RowWrite[] {
         });
         if (!fenced)
           throw new TypeError(
-            "Remote deletes require a revision or an atomic session fence.",
+            "Remote deletes require a revision or an atomic connection fence.",
           );
       } else if (!positive(write.expectedRev))
         throw new TypeError("Invalid storage revision.");

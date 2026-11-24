@@ -16,15 +16,32 @@ export type CustomerClientTokenAction =
   | "chats_read"
   | "chats_manage"
   | "contact_write"
-  | "contact_delete";
+  | "contact_delete"
+  | "voip_place"
+  | "voip_answer"
+  | "voip_signal"
+  | "groups_read"
+  | "groups_manage"
+  | "read_calls"
+  | "conversations_read"
+  | "conversations_manage"
+  | "labels_read"
+  | "labels_manage"
+  | "contacts_manage"
+  | "profile_read"
+  | "profile_manage"
+  | "channels_read"
+  | "channels_manage"
+  | "business_read"
+  | "presence_write";
 
 /**
- * What `resolve` returns: a token for one `session`, or (beta) for the
+ * What `resolve` returns: a token for one `connection`, or (beta) for the
  * numbers one `customer` owns, optionally narrowed by `allow`.
  */
 export type MessagingClientTokenMintRequest =
   | {
-      readonly session: string;
+      readonly connection: string;
       readonly ephemeralId: string;
       readonly ttlSeconds?: number;
       readonly customer?: never;
@@ -42,7 +59,7 @@ export type MessagingClientTokenMintRequest =
       readonly allow?: readonly CustomerClientTokenAction[];
       readonly ephemeralId: string;
       readonly ttlSeconds?: number;
-      readonly session?: never;
+      readonly connection?: never;
     };
 
 export interface MessagingClientTokenMintResource {
@@ -109,12 +126,12 @@ export function createMessagingClientTokenMint(
 }
 
 function validateInput(input: MessagingClientTokenMintRequest): void {
-  const hasSession =
-    typeof input.session === "string" && input.session.length > 0;
+  const hasConnection =
+    typeof input.connection === "string" && input.connection.length > 0;
   const hasCustomer =
     typeof input.customer === "string" && input.customer.length > 0;
   if (input.allow !== undefined) {
-    const actions = hasCustomer ? CUSTOMER_ACTIONS : SESSION_ACTIONS;
+    const actions = hasCustomer ? CUSTOMER_ACTIONS : CONNECTION_ACTIONS;
     if (
       !Array.isArray(input.allow) ||
       (hasCustomer && input.allow.length === 0) ||
@@ -126,12 +143,12 @@ function validateInput(input: MessagingClientTokenMintRequest): void {
     }
   }
   if (
-    hasSession === hasCustomer ||
+    hasConnection === hasCustomer ||
     typeof input.ephemeralId !== "string" ||
     input.ephemeralId.length === 0
   ) {
     throw new TypeError(
-      "Exactly one of session or customer, and an ephemeralId, are required to mint a client token.",
+      "Exactly one of connection or customer, and an ephemeralId, are required to mint a client token.",
     );
   }
 }
@@ -148,11 +165,25 @@ const CUSTOMER_ACTIONS: ReadonlySet<string> = new Set([
   "chats_manage",
   "contact_write",
   "contact_delete",
-]);
-const SESSION_ACTIONS: ReadonlySet<string> = new Set([
-  ...CUSTOMER_ACTIONS,
-  "mcp",
   "voip_place",
   "voip_answer",
   "voip_signal",
+  "groups_read",
+  "groups_manage",
+  "read_calls",
+  "conversations_read",
+  "conversations_manage",
+  "labels_read",
+  "labels_manage",
+  "contacts_manage",
+  "profile_read",
+  "profile_manage",
+  "channels_read",
+  "channels_manage",
+  "business_read",
+  "presence_write",
+]);
+const CONNECTION_ACTIONS: ReadonlySet<string> = new Set([
+  ...CUSTOMER_ACTIONS,
+  "mcp",
 ]);

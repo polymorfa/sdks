@@ -22,11 +22,11 @@ func setBool(q url.Values, k string, v *bool) {
 	}
 }
 
-type PlatformSession struct {
+type PlatformConnection struct {
 	ID           string  `json:"_id"`
 	CreationTime int64   `json:"_creationTime"`
 	ProjectID    string  `json:"projectId"`
-	SessionID    string  `json:"sessionId"`
+	ConnectionID string  `json:"connectionId"`
 	Name         string  `json:"name"`
 	Phone        *string `json:"phone"`
 	Platform     *string `json:"platform"`
@@ -55,20 +55,20 @@ type Project struct {
 	Stage       string      `json:"stage"`
 }
 type ProjectWithStats struct {
-	ID             string      `json:"_id"`
-	CreationTime   int64       `json:"_creationTime"`
-	TeamID         string      `json:"teamId"`
-	Name           string      `json:"name"`
-	Slug           string      `json:"slug"`
-	Icon           ProjectIcon `json:"icon"`
-	DefaultTier    string      `json:"defaultTier"`
-	IsActive       bool        `json:"isActive"`
-	Stage          string      `json:"stage"`
-	ActiveSessions int64       `json:"activeSessions"`
-	TotalSessions  int64       `json:"totalSessions"`
-	TotalMessages  int64       `json:"totalMessages"`
-	LastActivity   *int64      `json:"lastActivity"`
-	IconURL        *string     `json:"iconUrl"`
+	ID                string      `json:"_id"`
+	CreationTime      int64       `json:"_creationTime"`
+	TeamID            string      `json:"teamId"`
+	Name              string      `json:"name"`
+	Slug              string      `json:"slug"`
+	Icon              ProjectIcon `json:"icon"`
+	DefaultTier       string      `json:"defaultTier"`
+	IsActive          bool        `json:"isActive"`
+	Stage             string      `json:"stage"`
+	ActiveConnections int64       `json:"activeConnections"`
+	TotalConnections  int64       `json:"totalConnections"`
+	TotalMessages     int64       `json:"totalMessages"`
+	LastActivity      *int64      `json:"lastActivity"`
+	IconURL           *string     `json:"iconUrl"`
 }
 type CreateProjectRequest struct {
 	Name        string       `json:"name"`
@@ -243,9 +243,9 @@ type WebhookRotationReceipt struct {
 	Idempotency     IdempotencyReceipt    `json:"idempotency"`
 }
 type TestWebhookRequest struct {
-	EventType string               `json:"eventType,omitempty"`
-	Body      *EncodedEventPayload `json:"body,omitempty"`
-	SessionID string               `json:"sessionId,omitempty"`
+	EventType    string               `json:"eventType,omitempty"`
+	Body         *EncodedEventPayload `json:"body,omitempty"`
+	ConnectionID string               `json:"connectionId,omitempty"`
 }
 type WebhookDelivery struct {
 	ID           string  `json:"id"`

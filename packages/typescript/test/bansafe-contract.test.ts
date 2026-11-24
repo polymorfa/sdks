@@ -93,7 +93,7 @@ describe("BanSafe canonical contract coverage", () => {
     ).toEqual([
       {
         method: "POST",
-        path: "/console/bansafe/enforcement/{session}/appeal",
+        path: "/console/bansafe/enforcement/{connection}/appeal",
         operationId: "appealBanSafeEnforcement",
       },
       {

@@ -12,9 +12,9 @@ type BillingCurrency string
 type BillingScope string
 
 const (
-	BillingProject  BillingScope = "project"
-	BillingCustomer BillingScope = "customer"
-	BillingNumber   BillingScope = "number"
+	BillingProject    BillingScope = "project"
+	BillingCustomer   BillingScope = "customer"
+	BillingConnection BillingScope = "connection"
 )
 
 type BillingBalance struct {
@@ -22,7 +22,7 @@ type BillingBalance struct {
 	PreferredCurrency BillingCurrency `json:"preferredCurrency"`
 }
 type BillingUsage struct {
-	ActiveNumbers     int64   `json:"activeNumbers"`
+	ActiveConnections int64   `json:"activeConnections"`
 	TotalChargedCents float64 `json:"totalChargedCents"`
 }
 type BillingTransaction struct {
@@ -31,7 +31,7 @@ type BillingTransaction struct {
 	BalanceAfterCents float64 `json:"balanceAfterCents"`
 	Type              string  `json:"type"`
 	Description       string  `json:"description"`
-	SessionID         *string `json:"sessionId"`
+	ConnectionID      *string `json:"connectionId"`
 	ProjectID         *string `json:"projectId"`
 	Tier              *string `json:"tier"`
 	Currency          *string `json:"currency"`
@@ -56,10 +56,10 @@ type BillingResourcePriority struct {
 	ProjectID string `json:"projectId"`
 }
 type BillingPriorities struct {
-	Revision  int64                     `json:"revision"`
-	Projects  []BillingPriority         `json:"projects"`
-	Customers []BillingResourcePriority `json:"customers"`
-	Numbers   []BillingResourcePriority `json:"numbers"`
+	Revision    int64                     `json:"revision"`
+	Projects    []BillingPriority         `json:"projects"`
+	Customers   []BillingResourcePriority `json:"customers"`
+	Connections []BillingResourcePriority `json:"connections"`
 }
 type BillingLimit struct {
 	Scope           BillingScope `json:"scope"`
@@ -135,7 +135,7 @@ func billingID(id string) (string, error) {
 	return id, nil
 }
 func billingResourcePath(prefix string, scope BillingScope, id string) (string, error) {
-	if scope != BillingProject && scope != BillingCustomer && scope != BillingNumber {
+	if scope != BillingProject && scope != BillingCustomer && scope != BillingConnection {
 		return "", billingInvalid("Scope must be project, customer or number.")
 	}
 	v, err := billingID(id)
@@ -267,7 +267,7 @@ func (r *Billing) ReorderPriorities(ctx context.Context, b ReorderBillingPriorit
 	if err := billingRevision(b.ExpectedRevision); err != nil {
 		return fail(err)
 	}
-	if b.Scope != "project" && b.Scope != "customer" && b.Scope != "number" && b.Scope != "resource" {
+	if b.Scope != "project" && b.Scope != "customer" && b.Scope != "connection" && b.Scope != "resource" {
 		return fail(billingInvalid("Invalid reorder scope."))
 	}
 	if b.Scope == "project" {
@@ -286,7 +286,7 @@ func (r *Billing) ReorderPriorities(ctx context.Context, b ReorderBillingPriorit
 		}
 		rows := append([]BillingReorderResource{}, (*b.Resources)...)
 		for i, row := range rows {
-			if row.Scope != BillingCustomer && row.Scope != BillingNumber {
+			if row.Scope != BillingCustomer && row.Scope != BillingConnection {
 				return fail(billingInvalid("Resource scope must be customer or number."))
 			}
 			v, err := billingID(row.ResourceID)

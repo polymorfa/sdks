@@ -9,7 +9,7 @@ function storageProviderTypedUsage(PDO $pdo, object $mongo, object $database, ob
 {
     $sql = SqlAdapter::pdo($pdo, tablePrefix:'customer_');
     $sql->setup();
-    $sql->get('messages', ['ksession:message']);
+    $sql->get('messages', ['kconnection:message']);
     $mongoAdapter = new MongodbAdapter($mongo, $database, 'customer');
     $mongoAdapter->setup();
     $dynamo = new DynamodbAdapter($aws, 'customer', 'customer_storage', createTable:false);

@@ -50,45 +50,48 @@ class UserSecurityCode(TypedDict):
 
 class QuickReplies(Resource):
     async def list(
-        self, session: str, *, options: RequestOptions = O
+        self, connection: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[QuickReplyCollection]]:
-        return await self._request("GET", self._path(session), options=options)
+        return await self._request("GET", self._path(connection), options=options)
 
     async def create(
-        self, session: str, body: QuickReplyMutation, *, options: RequestOptions = O
+        self, connection: str, body: QuickReplyMutation, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[QuickReply]]:
-        return await self._request("POST", self._path(session), body=body, options=options)
+        return await self._request("POST", self._path(connection), body=body, options=options)
 
     async def replace(
         self,
-        session: str,
+        connection: str,
         quick_reply_id: str,
         body: QuickReplyMutation,
         *,
         options: RequestOptions = O,
     ) -> ApiResponse[Envelope[QuickReply]]:
         return await self._request(
-            "PUT", self._path(session) + "/" + segment(quick_reply_id), body=body, options=options
+            "PUT",
+            self._path(connection) + "/" + segment(quick_reply_id),
+            body=body,
+            options=options,
         )
 
     async def delete(
-        self, session: str, quick_reply_id: str, *, options: RequestOptions = O
+        self, connection: str, quick_reply_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[DeletedQuickReply]]:
         return await self._request(
-            "DELETE", self._path(session) + "/" + segment(quick_reply_id), options=options
+            "DELETE", self._path(connection) + "/" + segment(quick_reply_id), options=options
         )
 
     @staticmethod
-    def _path(session: str) -> str:
-        return f"/messaging/{segment(session)}/business/quick-replies"
+    def _path(connection: str) -> str:
+        return f"/messaging/{segment(connection)}/business/quick-replies"
 
 
 class Users(Resource):
     async def get_security_code(
-        self, session: str, user_id: str, *, options: RequestOptions = O
+        self, connection: str, user_id: str, *, options: RequestOptions = O
     ) -> ApiResponse[Envelope[UserSecurityCode]]:
         return await self._request(
             "GET",
-            f"/messaging/{segment(session)}/users/{segment(user_id)}/security-code",
+            f"/messaging/{segment(connection)}/users/{segment(user_id)}/security-code",
             options=options,
         )

@@ -63,6 +63,13 @@ Nightlies require matching staging API acceptance; stable releases require
 matching production acceptance. Never publish or claim installability from a
 local package build alone.
 
+A manually dispatched `preview` release may publish without deployed API
+acceptance. Keep its versions and npm `preview` tag separate from accepted
+nightly and stable channels. Preserve held feature metadata and report coverage
+gaps in the preview provenance. Never fabricate an accepted API receipt or use a
+preview receipt to authorize nightly/stable publication. A preview package does
+not activate or establish deployed availability of its API features.
+
 ## Documentation snippet maintenance
 
 Public signature, request, export, package or coverage changes must revisit

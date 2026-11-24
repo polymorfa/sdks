@@ -63,7 +63,7 @@ describe("BrowserTransport", () => {
       }),
     );
     const client = new BrowserMessagingClient({
-      session: "number/1",
+      connection: "number/1",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch,
     });
@@ -98,7 +98,7 @@ describe("BrowserTransport", () => {
       ),
     );
     const client = new BrowserMessagingClient({
-      session: "number",
+      connection: "number",
       getClientToken: async () => "pmfa_ct_Zml4dHVyZQ",
       fetch,
       maxNetworkRetries: 2,
@@ -150,7 +150,7 @@ describe("BrowserTransport", () => {
       await expect(
         transport.request({
           method: "GET",
-          path: "/messaging/number/contacts",
+          path: "/messaging/connection/contacts",
         }),
       ).rejects.toBeInstanceOf(BrowserConfigurationError);
       expect(fetch).not.toHaveBeenCalled();
@@ -240,7 +240,7 @@ describe("BrowserTransport", () => {
     await expect(
       transport.request({
         method: "POST",
-        path: "/messaging/number/messages/send",
+        path: "/messaging/connection/messages/send",
         body: { text: "hello" },
         idempotencyKey: "send-accepted",
       }),
@@ -282,7 +282,7 @@ describe("BrowserTransport", () => {
     await expect(
       transport.request({
         method: "POST",
-        path: "/messaging/number/messages/send",
+        path: "/messaging/connection/messages/send",
         body: { text: "hello" },
         idempotencyKey: "send-accepted",
       }),
@@ -333,7 +333,7 @@ describe("BrowserTransport", () => {
     await expect(
       transport.request({
         method: "POST",
-        path: "/messaging/number/messages/send",
+        path: "/messaging/connection/messages/send",
         body: { text: "hello" },
         idempotencyKey: "send-stalled",
         timeoutMs: 10,

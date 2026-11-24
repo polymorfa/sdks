@@ -77,7 +77,7 @@ class FollowUpSummary(TypedDict):
     """One recipient's follow-up, with Unix millisecond timestamps."""
 
     id: str
-    numberId: str
+    connectionId: str
     status: FollowUpStatus
     anchorKind: Literal["delivered", "read"] | None
     firstDeliveredAt: int | None

@@ -15,7 +15,7 @@ async def test_actual_lifecycle_pending_roster_preserves_progress_capabilities_c
         await socket.prepare(request)
         assert await socket.receive_json() == {"type": "auth", "token": CLIENT}
         await socket.send_json(
-            {"type": "ready", "session": "support", "participant": "client:self"}
+            {"type": "ready", "connection": "support", "participant": "client:self"}
         )
 
         async def event(kind, payload):
@@ -96,7 +96,7 @@ async def test_actual_lifecycle_pending_roster_preserves_progress_capabilities_c
         try:
             await client.connect()
             ready = await asyncio.wait_for(client.lifecycle.ready.get(), 2)
-            assert ready.session == "support" and ready.participant == "client:self"
+            assert ready.connection == "support" and ready.participant == "client:self"
             call = await asyncio.wait_for(client.incoming.get(), 2)
             assert call.claim.answered and call.claim.answered_by == "client:other"
             assert not call.capabilities.video and not call.capabilities.invite

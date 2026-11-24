@@ -52,11 +52,11 @@ describe("MessagingClient business", () => {
   it("maps profile, compliance, linked-account, and eligibility operations", async () => {
     const { client, requests } = await businessServer();
     const business = client.business;
-    const session = "sales/eu";
+    const connection = "sales/eu";
 
-    const profile = await business.getProfile(session);
+    const profile = await business.getProfile(connection);
     await business.updateProfile(
-      session,
+      connection,
       {
         address: "12 Market Street",
         email: "care@example.com",
@@ -77,11 +77,11 @@ describe("MessagingClient business", () => {
       mutationOptions,
     );
     await business.setCoverPhoto(
-      session,
+      connection,
       { url: "https://cdn.example/cover.jpg" },
       mutationOptions,
     );
-    await business.deleteCoverPhoto(session, "cover/100", mutationOptions);
+    await business.deleteCoverPhoto(connection, "cover/100", mutationOptions);
     const compliance = {
       entityName: "Example Tea SARL",
       entityType: "PRIVATE_COMPANY",
@@ -99,10 +99,14 @@ describe("MessagingClient business", () => {
         mobileNumber: "+96170000000",
       },
     } as const;
-    await business.getMerchantCompliance(session);
-    await business.setMerchantCompliance(session, compliance, mutationOptions);
-    await business.getLinkedAccounts(session);
-    const eligibility = await business.getEligibility(session);
+    await business.getMerchantCompliance(connection);
+    await business.setMerchantCompliance(
+      connection,
+      compliance,
+      mutationOptions,
+    );
+    await business.getLinkedAccounts(connection);
+    const eligibility = await business.getEligibility(connection);
 
     expectTypeOf<
       MessagingClient["business"]
@@ -164,22 +168,26 @@ describe("MessagingClient business", () => {
   it("maps catalog and product reads and mutations without inventing uploads", async () => {
     const { client, requests } = await businessServer();
     const business = client.business;
-    const session = "sales/eu";
+    const connection = "sales/eu";
     const id = "15551234567@s.whatsapp.net";
     const productId = "tea/1";
 
-    await business.getCatalog(session, {
+    await business.getCatalog(connection, {
       id,
       after: "next page",
       limit: 25,
       width: 640,
       height: 480,
     });
-    await business.createCatalog(session, mutationOptions);
-    await business.setCartEnabled(session, { enabled: false }, mutationOptions);
-    await business.getProduct(session, productId, { id });
+    await business.createCatalog(connection, mutationOptions);
+    await business.setCartEnabled(
+      connection,
+      { enabled: false },
+      mutationOptions,
+    );
+    await business.getProduct(connection, productId, { id });
     await business.createProduct(
-      session,
+      connection,
       {
         name: "Mint tea",
         currency: "USD",
@@ -189,7 +197,7 @@ describe("MessagingClient business", () => {
       mutationOptions,
     );
     await business.updateProduct(
-      session,
+      connection,
       productId,
       {
         name: "Mint tea",
@@ -201,15 +209,15 @@ describe("MessagingClient business", () => {
       },
       mutationOptions,
     );
-    await business.deleteProduct(session, productId, mutationOptions);
+    await business.deleteProduct(connection, productId, mutationOptions);
     await business.setProductVisibility(
-      session,
+      connection,
       productId,
       { hidden: false },
       mutationOptions,
     );
     await business.appealProduct(
-      session,
+      connection,
       productId,
       { reason: "Incorrect rejection" },
       mutationOptions,
@@ -269,11 +277,11 @@ describe("MessagingClient business", () => {
   it("maps collection cursors, mutations, and authenticated order lookup", async () => {
     const { client, requests } = await businessServer();
     const business = client.business;
-    const session = "sales/eu";
+    const connection = "sales/eu";
     const id = "15551234567@lid";
     const collectionId = "summer/1";
 
-    await business.listCollections(session, {
+    await business.listCollections(connection, {
       id,
       after: "collections next",
       collectionLimit: 10,
@@ -281,7 +289,7 @@ describe("MessagingClient business", () => {
       width: 512,
       height: 512,
     });
-    await business.getCollection(session, collectionId, {
+    await business.getCollection(connection, collectionId, {
       id,
       after: "items next",
       limit: 20,
@@ -289,12 +297,12 @@ describe("MessagingClient business", () => {
       height: 240,
     });
     await business.createCollection(
-      session,
+      connection,
       { name: "Summer", productIds: ["tea/1"] },
       mutationOptions,
     );
     await business.updateCollection(
-      session,
+      connection,
       collectionId,
       {
         name: "Cold drinks",
@@ -303,22 +311,22 @@ describe("MessagingClient business", () => {
       },
       mutationOptions,
     );
-    await business.deleteCollection(session, collectionId, mutationOptions);
+    await business.deleteCollection(connection, collectionId, mutationOptions);
     await business.reorderCollections(
-      session,
+      connection,
       {
         moves: [{ collectionId, fromIndex: 2, toIndex: 0 }],
       },
       mutationOptions,
     );
     await business.appealCollection(
-      session,
+      connection,
       collectionId,
       { reason: "Products comply" },
       mutationOptions,
     );
     await business.getOrder(
-      session,
+      connection,
       "order/1",
       { token: "opaque order token" },
       mutationOptions,
@@ -373,72 +381,76 @@ describe("MessagingClient business", () => {
   it("preserves idempotency on every non-GET Business App operation", async () => {
     const { client, requests } = await businessServer();
     const business = client.business;
-    const session = "sales";
+    const connection = "sales";
 
-    await business.updateProfile(session, { address: "" }, mutationOptions);
+    await business.updateProfile(connection, { address: "" }, mutationOptions);
     await business.setCoverPhoto(
-      session,
+      connection,
       { base64: "aW1hZ2U=" },
       mutationOptions,
     );
-    await business.deleteCoverPhoto(session, "cover", mutationOptions);
-    await business.createCatalog(session, mutationOptions);
-    await business.setCartEnabled(session, { enabled: true }, mutationOptions);
+    await business.deleteCoverPhoto(connection, "cover", mutationOptions);
+    await business.createCatalog(connection, mutationOptions);
+    await business.setCartEnabled(
+      connection,
+      { enabled: true },
+      mutationOptions,
+    );
     await business.createProduct(
-      session,
+      connection,
       { name: "Tea", images: [{ base64: "aW1hZ2U=" }] },
       mutationOptions,
     );
     await business.updateProduct(
-      session,
+      connection,
       "tea",
       { name: "Tea", images: [{ base64: "aW1hZ2U=" }] },
       mutationOptions,
     );
-    await business.deleteProduct(session, "tea", mutationOptions);
+    await business.deleteProduct(connection, "tea", mutationOptions);
     await business.setProductVisibility(
-      session,
+      connection,
       "tea",
       { hidden: true },
       mutationOptions,
     );
     await business.appealProduct(
-      session,
+      connection,
       "tea",
       { reason: "Review" },
       mutationOptions,
     );
     await business.createCollection(
-      session,
+      connection,
       { name: "Tea", productIds: ["tea"] },
       mutationOptions,
     );
     await business.updateCollection(
-      session,
+      connection,
       "tea",
       { name: "Tea" },
       mutationOptions,
     );
-    await business.deleteCollection(session, "tea", mutationOptions);
+    await business.deleteCollection(connection, "tea", mutationOptions);
     await business.reorderCollections(
-      session,
+      connection,
       { moves: [{ collectionId: "tea", fromIndex: 0, toIndex: 1 }] },
       mutationOptions,
     );
     await business.appealCollection(
-      session,
+      connection,
       "tea",
       { reason: "Review" },
       mutationOptions,
     );
     await business.getOrder(
-      session,
+      connection,
       "order",
       { token: "token" },
       mutationOptions,
     );
     await business.setMerchantCompliance(
-      session,
+      connection,
       {
         entityName: "Tea",
         entityType: "SOLE_PROPRIETORSHIP",

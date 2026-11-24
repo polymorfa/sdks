@@ -33,9 +33,9 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
     assert re.fullmatch(r"[a-f0-9]{40}", receipt["sourceSha"])
     assert re.fullmatch(r"[a-f0-9]{64}", receipt["fingerprint"])
     version = receipt["versions"]["semver"]
-    assert re.fullmatch(r"\d+\.\d+\.\d+(?:-dev\.\d{14})?", version)
-    assert receipt["channel"] in ("stable", "nightly")
-    assert ("-dev." in version) == (receipt["channel"] == "nightly")
+    assert receipt["channel"] in ("preview", "stable", "nightly")
+    suffix = {"stable": "", "nightly": r"-dev\.\d{14}", "preview": r"-preview\.\d{14}"}[receipt["channel"]]
+    assert re.fullmatch(r"\d+\.\d+\.\d+" + suffix, version)
     assert not output.exists(), (
         "Mirror output must not exist; preserve previous preparations"
     )
@@ -50,7 +50,7 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
         "release-contract.json",
     }
     # Exact runtime resources the source loads; no other non-PHP file is mirrored.
-    allowed_resources = {"src/Storage/schema2.json"}
+    allowed_resources = {"src/Storage/schema2.json", "src/Storage/schema3.json"}
     files = {}
     with tarfile.open(archive_path) as archive:
         members = archive.getmembers()
@@ -70,13 +70,16 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
             stream = archive.extractfile(member)
             assert stream is not None
             files[member.name] = stream.read()
-    assert {
+    required_files = {
         "composer.json",
         "src/HttpTransport.php",
+        "src/Storage/schema3.json",
         "LICENSE",
         "README.md",
         "release-contract.json",
-    } <= files.keys()
+    }
+    missing = required_files - files.keys()
+    assert not missing, f"Missing required mirror files: {', '.join(sorted(missing))}"
     composer = json.loads(files["composer.json"])
     assert composer["name"] == "polymorfa/sdk"
     assert composer["autoload"]["psr-4"]["Polymorfa\\"] == "src/"
@@ -104,7 +107,7 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
     else:
         # Timestamped SDK prereleases remain in provenance. Composer discovers
         # nightly source through the approved mirror branch, not a made-up tag.
-        plan["composerBranchVersion"] = "dev-main"
+        plan["composerBranchVersion"] = "dev-preview" if receipt["channel"] == "preview" else "dev-main"
     output.parent.mkdir(parents=True, exist_ok=True)
     with TemporaryDirectory(prefix=".php-mirror-", dir=output.parent) as staging:
         staged = Path(staging) / "prepared"

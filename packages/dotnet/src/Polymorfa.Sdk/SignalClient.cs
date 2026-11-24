@@ -14,8 +14,8 @@ public sealed record SignalClientOptions(Uri BaseUrl, string ApplicationSecret)
     public Action<SocketsHttpHandler>? ConfigureHttpHandler { get; init; }
     public override string ToString() => "SignalClientOptions(redacted)";
 }
-public sealed record SignalSession(string Id, ulong LeaseGeneration, bool Claimed, bool HasDeviceKeys, string State, string? Pn, string? Lid);
-public sealed record SignalSessions(string NodeId, IReadOnlyList<SignalSession> Sessions);
+public sealed record SignalConnection(string Id, ulong LeaseGeneration, bool Claimed, bool HasDeviceKeys, string State, string? Pn, string? Lid);
+public sealed record SignalConnections(string NodeId, IReadOnlyList<SignalConnection> Connections);
 public sealed record SignalSendOutcome(string MessageId, long ServerTimestamp, bool Resent);
 public sealed record SignalSendRequest
 {
@@ -70,7 +70,7 @@ public sealed record SignalEvent
 {
     public required string Id { get; init; }
     public required string Type { get; init; }
-    public required string SessionId { get; init; }
+    public required string ConnectionId { get; init; }
     public required string Chat { get; init; }
     public required string Sender { get; init; }
     public required string MessageId { get; init; }
@@ -88,7 +88,7 @@ public sealed record SignalEvent
 }
 public sealed class SignalClient : IDisposable
 {
-    public const string ServiceContract = "8aa191ef0d4c318229c91bcdf474bf2d79dac47c";
+    public const string ServiceContract = "61209057729b002a2122b898d744a8813a702fc7";
     private const int BodyLimit = 4 * 1024 * 1024;
     internal static readonly JsonSerializerOptions Json = new() { PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull };
     private readonly HttpClient http;
@@ -142,11 +142,11 @@ public sealed class SignalClient : IDisposable
         catch (OperationCanceledException) { if (cancellation.IsCancellationRequested) throw new PolymorfaCancelledException(); throw new PolymorfaTimeoutException("Signal response timed out."); }
         catch (IOException) { throw new PolymorfaConnectionException("Signal response interrupted."); }
     }
-    public Task<SignalSessions> SessionsAsync(CancellationToken cancellation = default) => JsonAsync<SignalSessions>(HttpMethod.Get, "/v1/sessions", null, cancellation);
-    public Task<SignalSendOutcome> SendAsync(string session, SignalSendRequest request, CancellationToken cancellation = default)
+    public Task<SignalConnections> ConnectionsAsync(CancellationToken cancellation = default) => JsonAsync<SignalConnections>(HttpMethod.Get, "/v1/connections", null, cancellation);
+    public Task<SignalSendOutcome> SendAsync(string connection, SignalSendRequest request, CancellationToken cancellation = default)
     {
-        if (string.IsNullOrEmpty(session) || string.IsNullOrEmpty(request.To) || (request.Text is null) == (request.Media is null)) throw new PolymorfaValidationException("Invalid Signal send request.", "invalid_signal_request");
-        return JsonAsync<SignalSendOutcome>(HttpMethod.Post, $"/v1/sessions/{Uri.EscapeDataString(session)}/messages", request, cancellation);
+        if (string.IsNullOrEmpty(connection) || string.IsNullOrEmpty(request.To) || (request.Text is null) == (request.Media is null)) throw new PolymorfaValidationException("Invalid Signal send request.", "invalid_signal_request");
+        return JsonAsync<SignalSendOutcome>(HttpMethod.Post, $"/v1/connections/{Uri.EscapeDataString(connection)}/messages", request, cancellation);
     }
     /// <summary>Call only after durably processing/deduplicating the event. The stream never auto-ACKs.</summary>
     public async Task AcknowledgeAsync(string id, CancellationToken cancellation = default)
@@ -156,9 +156,9 @@ public sealed class SignalClient : IDisposable
         if (response.StatusCode != System.Net.HttpStatusCode.NoContent) throw new PolymorfaServerException("Signal service returned an invalid ACK status.", "invalid_response", new((int)response.StatusCode, null, null, 1, new Dictionary<string, string>(), null, null, null));
     }
     /// <summary>One native SSE connection. No cursor replay or automatic acknowledgment.</summary>
-    public async IAsyncEnumerable<SignalEvent> EventsAsync(string? session = null, [EnumeratorCancellation] CancellationToken cancellation = default)
+    public async IAsyncEnumerable<SignalEvent> EventsAsync(string? connection = null, [EnumeratorCancellation] CancellationToken cancellation = default)
     {
-        var path = "/v1/events" + (session is null ? "" : "?session_id=" + Uri.EscapeDataString(session));
+        var path = "/v1/events" + (connection is null ? "" : "?connection_id=" + Uri.EscapeDataString(connection));
         using var response = await OpenAsync(HttpMethod.Get, path, null, "text/event-stream", cancellation).ConfigureAwait(false);
         if (response.Content.Headers.ContentType?.MediaType != "text/event-stream") throw InvalidResponse();
         await using var stream = await response.Content.ReadAsStreamAsync(cancellation).ConfigureAwait(false);
@@ -184,7 +184,7 @@ public sealed class SignalClient : IDisposable
                 SignalEvent item;
                 try { item = JsonSerializer.Deserialize<SignalEvent>(data.ToString(), Json) ?? throw InvalidResponse(); }
                 catch (JsonException) { throw InvalidResponse(); }
-                if (string.IsNullOrEmpty(item.Id) || item.Id != eventId || item.Type != kind || session is not null && item.SessionId != session) throw InvalidResponse();
+                if (string.IsNullOrEmpty(item.Id) || item.Id != eventId || item.Type != kind || connection is not null && item.ConnectionId != connection) throw InvalidResponse();
                 yield return item;
             }
             data.Clear(); eventId = null; kind = null;

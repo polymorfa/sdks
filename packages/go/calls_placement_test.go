@@ -20,17 +20,17 @@ func TestCallsPlacementBindsOnlyServerPrincipal(t *testing.T) {
 					t.Error(err)
 				}
 				if clientToken {
-					if _, ok := body["session"]; ok {
-						t.Error("client session leaked")
+					if _, ok := body["connection"]; ok {
+						t.Error("client connection leaked")
 					}
 					if _, ok := body["participant"]; ok {
 						t.Error("client participant leaked")
 					}
-				} else if body["session"] != "bound" || body["participant"] != "worker" {
+				} else if body["connection"] != "bound" || body["participant"] != "worker" {
 					t.Error("server identity", body)
 				}
 				w.Header().Set("Content-Type", "application/json")
-				w.Write([]byte(`{"success":true,"data":{"callId":"call","session":"bound","video":false}}`))
+				w.Write([]byte(`{"success":true,"data":{"callId":"call","connection":"bound","video":false}}`))
 			}))
 			defer server.Close()
 			credential := Credential{Kind: TeamAPIKey, Value: "pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k"}
@@ -39,11 +39,11 @@ func TestCallsPlacementBindsOnlyServerPrincipal(t *testing.T) {
 				credential = Credential{Kind: ClientToken, Value: "pmfa_ct_Zml4dHVyZQ"}
 				participant = ""
 			}
-			calls, err := NewCallsClient(CallsClientConfig{Config: Config{Credential: credential, BaseURL: server.URL}, Session: "bound", Participant: participant})
+			calls, err := NewCallsClient(CallsClientConfig{Config: Config{Credential: credential, BaseURL: server.URL}, Connection: "bound", Participant: participant})
 			if err != nil {
 				t.Fatal(err)
 			}
-			response, err := calls.Place(context.Background(), PlaceCallRequest{To: "+15551234567", Session: "untrusted", Participant: "untrusted"})
+			response, err := calls.Place(context.Background(), PlaceCallRequest{To: "+15551234567", Connection: "untrusted", Participant: "untrusted"})
 			if err != nil || response.Data.Data.CallID != "call" {
 				t.Fatal(response, err)
 			}

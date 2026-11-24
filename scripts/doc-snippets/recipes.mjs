@@ -1,7 +1,7 @@
 // Requests come from the pinned OpenAPI and existing native wire fixtures.
 // Calls are handwritten in the language modules. Never derive arguments from
 // contracts/coverage.json's display-only method names.
-export const sourceCommit = "ccf3c87c91ebf1d112325df4548e1cf2c549cc42";
+export const sourceCommit = "63cca58d5bd8a8604047faa42569527527b217d3";
 export const apiVersion = "2026-09-22";
 export const languages = [
   "typescript",
@@ -31,14 +31,14 @@ export const recipes = {
   setTyping: messaging({ body: { conversation, state: "paused" } }),
   sendReaction: messaging({ body: { conversation, id: "43", reaction: "👍" } }),
   starMessage: messaging({ body: { conversation, id: "43", star: false } }),
-  listPlatformSessions: messaging(),
-  getSession: messaging(),
-  getSessionAccount: messaging(),
-  startPlatformSession: messaging(),
-  stopPlatformSession: messaging(),
-  restartSession: messaging(),
-  logoutSession: messaging(),
-  deletePlatformSession: messaging(),
+  listPlatformConnections: messaging(),
+  getConnection: messaging(),
+  getConnectionAccount: messaging(),
+  startPlatformConnection: messaging(),
+  stopPlatformConnection: messaging(),
+  restartConnection: messaging(),
+  logoutConnection: messaging(),
+  deletePlatformConnection: messaging(),
   getOwnBusinessProfile: messaging(),
   getBusinessMerchantCompliance: messaging(),
   getBusinessLinkedAccounts: messaging(),

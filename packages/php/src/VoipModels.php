@@ -6,17 +6,17 @@ namespace Polymorfa;
 
 /**
  * @phpstan-import-type Identity from HistoryModels
- * @phpstan-type CallLinkRequest array{session:string,video?:bool}
- * @phpstan-type PreviewCallLinkRequest array{session:string,video?:bool,token:string}
- * @phpstan-type CreatedCallLink array{session:string,token:string,url:string,video:bool}
- * @phpstan-type PreviewedCallLink array{session:string,video:bool,creator:Identity,approvalRequired:bool,isAdmin:bool}
+ * @phpstan-type CallLinkRequest array{connection:string,video?:bool}
+ * @phpstan-type PreviewCallLinkRequest array{connection:string,video?:bool,token:string}
+ * @phpstan-type CreatedCallLink array{connection:string,token:string,url:string,video:bool}
+ * @phpstan-type PreviewedCallLink array{connection:string,video:bool,creator:Identity,approvalRequired:bool,isAdmin:bool}
  * @phpstan-type Participant array{id:string,audioMuted:bool,video:bool,state:'invited'|'ringing'|'connected'|'left',handRaised?:bool,guest?:bool,name?:string,phoneNumber?:string,bsuid?:string,username?:string}
  * @phpstan-type CallSettings array{simultaneousCallsCoverageExcludedUntil:string|null,callsEnabled:bool,conferenceMode:bool,inboundRoute:'clients'|'sip_trunk',sipTrunkId:string|null,sipClaim:bool,hostCloudApiCalls:bool,simultaneousCalls:bool,revision:int,updatedAt:string|null}
  * @phpstan-type PermissionLimit array{period:string,maxAllowed:int,used:int,resetsAt:string|null}
  * @phpstan-type PermissionAction array{allowed:bool,limits:list<PermissionLimit>}
  * @phpstan-type PermissionState array{status:'none'|'temporary'|'permanent'|'revoked',expiresAt:string|null,source:'user_action'|'automatic'|'sync'|'call_refused'|null,updatedAt:string|null,checkedAt:string|null,fresh:bool,actions:array{requestPermission:PermissionAction|null,startCall:PermissionAction|null}|null}
  * @phpstan-type CallPermission array{conversation:Identity,status:'none'|'temporary'|'permanent'|'revoked',expiresAt:string|null,source:'user_action'|'automatic'|'sync'|'call_refused'|null,updatedAt:string|null,checkedAt:string|null,fresh:bool,actions:array{requestPermission:PermissionAction|null,startCall:PermissionAction|null}|null}
- * @phpstan-type CheckRequest array{session:string,to:string}
+ * @phpstan-type CheckRequest array{connection:string,to:string}
  * @phpstan-type CallCheck array{allowed:bool,refusal:'calls_disabled'|'call_recipient_opted_out'|'call_destination_blocked'|'call_permission_required'|'call_limit_reached'|null,permission:PermissionState|null}
  * @phpstan-type Reaction array{connectionId:string,participant?:string,emoji:''|'👍'|'❤️'|'😂'|'😮'|'😢'|'🙏'}
  * @phpstan-type WaitingRoomControl (array{type:'waiting_room_control',requestId:string,operation:'toggle',enabled:bool}|array{type:'waiting_room_control',requestId:string,operation:'admit'|'deny',participantId:string})

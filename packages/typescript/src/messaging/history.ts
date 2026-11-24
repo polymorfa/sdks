@@ -1,7 +1,7 @@
 import type { IncomingOrderCart } from "./order-cart.js";
 import type { ConversationIdentity, WhatsAppMessageIds } from "./types.js";
 
-/** Hosted message history is an enrolled beta and requires HMS on the Number. */
+/** Hosted message history is an enrolled beta and requires HMS on the Connection. */
 export interface HistoryChat {
   readonly conversation: ConversationIdentity;
   readonly kind: "direct" | "group" | "channel" | "broadcast";

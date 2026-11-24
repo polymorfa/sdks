@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Polymorfa;
 
 use GuzzleHttp\ClientInterface;
-use Polymorfa\Resources\{BanSafe, Channels, QuickReplies, Users, Business, ClientTokens, Groups, Chats, Contacts, Identities, Labels, Profile, Privacy, Presence, Media, Messages, QuickLinks, Sessions, Voip, Webhooks};
+use Polymorfa\Resources\{BanSafe, Channels, QuickReplies, Users, Business, ClientTokens, Groups, Chats, Contacts, Identities, Labels, Profile, Privacy, Presence, Media, Messages, QuickLinks, Connections, Voip, Webhooks};
 
 final readonly class MessagingClient
 {
@@ -37,7 +37,7 @@ final readonly class MessagingClient
     public Privacy $privacy;
     public Presence $presence;
     public Messages $messages;
-    public Sessions $sessions;
+    public Connections $connections;
     public QuickLinks $quickLinks;
     public Webhooks $webhooks;
     public Chats $chats;
@@ -85,7 +85,7 @@ final readonly class MessagingClient
         $this->privacy = new Privacy($transport);
         $this->presence = new Presence($transport);
         $this->messages = new Messages($transport);
-        $this->sessions = new Sessions($transport);
+        $this->connections = new Connections($transport);
         $this->quickLinks = new QuickLinks($transport);
         $this->webhooks = new Webhooks($transport);
         $this->chats = new Chats($transport);

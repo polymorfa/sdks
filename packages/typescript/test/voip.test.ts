@@ -11,7 +11,7 @@ import {
   VoipResource,
   type ApiResponse,
   type ClientRules,
-  type SessionCallSettingsResponse,
+  type ConnectionCallSettingsResponse,
   type SetClientRulesRequest,
   type SuccessResponse,
   type VoipAcceptCallResponse,
@@ -76,13 +76,13 @@ describe("VoipResource", () => {
   it("creates and previews call links with tokens confined to the POST body", async () => {
     const token = "private_link_test_token";
     const created = {
-      session: "support",
+      connection: "support",
       token,
       url: `https://call.whatsapp.com/voice/${token}`,
       video: false,
     };
     const previewed = {
-      session: "support",
+      connection: "support",
       creator: { id: "9007199254740993" },
       video: false,
       approvalRequired: true,
@@ -94,10 +94,11 @@ describe("VoipResource", () => {
     ]);
     const sdk = client(server);
     expect(
-      (await sdk.voip.createCallLink({ session: "support" })).data.data,
+      (await sdk.voip.createCallLink({ connection: "support" })).data.data,
     ).toEqual(created);
     expect(
-      (await sdk.voip.previewCallLink({ session: "support", token })).data.data,
+      (await sdk.voip.previewCallLink({ connection: "support", token })).data
+        .data,
     ).toEqual(previewed);
     expect(
       server.requests.map(({ method, path, body }) => ({
@@ -109,12 +110,12 @@ describe("VoipResource", () => {
       {
         method: "POST",
         path: "/messaging/voip/call-links",
-        body: { session: "support" },
+        body: { connection: "support" },
       },
       {
         method: "POST",
         path: "/messaging/voip/call-links/preview",
-        body: { session: "support", token },
+        body: { connection: "support", token },
       },
     ]);
   });
@@ -126,23 +127,23 @@ describe("VoipResource", () => {
       client(server, {
         type: "clientToken",
         value: "ct_test_token",
-      }).voip.createCallLink({ session: "support" }),
+      }).voip.createCallLink({ connection: "support" }),
     ).toThrow(PolymorfaConfigurationError);
-    expect(() => sdk.voip.createCallLink({ session: " " })).toThrow(
+    expect(() => sdk.voip.createCallLink({ connection: " " })).toThrow(
       PolymorfaValidationError,
     );
     expect(() =>
-      sdk.voip.previewCallLink({ session: "support", token: "bad/token" }),
+      sdk.voip.previewCallLink({ connection: "support", token: "bad/token" }),
     ).toThrow(PolymorfaValidationError);
     expect(() =>
       sdk.voip.createCallLink(
-        { session: "support" },
+        { connection: "support" },
         { idempotencyKey: "once" },
       ),
     ).toThrow(PolymorfaValidationError);
     expect(() =>
       sdk.voip.previewCallLink(
-        { session: "support", token: "test" },
+        { connection: "support", token: "test" },
         { headers: { "Idempotency-Key": "once" } },
       ),
     ).toThrow(PolymorfaValidationError);
@@ -158,7 +159,7 @@ describe("VoipResource", () => {
     ]);
     await expect(
       client(server).voip.createCallLink(
-        { session: "support" },
+        { connection: "support" },
         { maxNetworkRetries: 3 },
       ),
     ).rejects.toThrow();
@@ -170,7 +171,7 @@ describe("VoipResource", () => {
       json(
         {
           success: true,
-          data: { callId: "group/1", session: "support", video: false },
+          data: { callId: "group/1", connection: "support", video: false },
         },
         201,
       ),
@@ -178,7 +179,7 @@ describe("VoipResource", () => {
     ]);
     const sdk = client(server);
     await sdk.voip.place({
-      session: "support",
+      connection: "support",
       participants: ["+15550100", "+15550101"],
     });
     await sdk.voip.ringParticipant("group/1", { to: "+15550100" });
@@ -192,7 +193,10 @@ describe("VoipResource", () => {
       {
         method: "POST",
         path: "/messaging/voip/calls",
-        body: { session: "support", participants: ["+15550100", "+15550101"] },
+        body: {
+          connection: "support",
+          participants: ["+15550100", "+15550101"],
+        },
       },
       {
         method: "POST",
@@ -207,17 +211,17 @@ describe("VoipResource", () => {
       json(
         {
           success: true,
-          data: { callId: "stored-group", session: "support", video: false },
+          data: { callId: "stored-group", connection: "support", video: false },
         },
         201,
       ),
     ]);
     await client(server).voip.place({
-      session: "support",
+      connection: "support",
       groupId: "9007199254740996",
     });
     expect(JSON.parse(server.requests[0]!.body)).toEqual({
-      session: "support",
+      connection: "support",
       groupId: "9007199254740996",
     });
   });
@@ -233,7 +237,7 @@ describe("VoipResource", () => {
       { groupId: "9007199254740996", to: "+15550100" },
       { groupId: "9007199254740996", participants: ["+15550100", "+15550101"] },
     ])
-      expect(() => sdk.voip.place({ session: "support", ...body })).toThrow(
+      expect(() => sdk.voip.place({ connection: "support", ...body })).toThrow(
         PolymorfaValidationError,
       );
   });
@@ -244,7 +248,7 @@ describe("VoipResource", () => {
         ...json(
           {
             success: true,
-            data: { callId: "call/1", session: "support", video: true },
+            data: { callId: "call/1", connection: "support", video: true },
           },
           201,
         ),
@@ -276,7 +280,7 @@ describe("VoipResource", () => {
 
     const placed = await sdk.voip.place(
       {
-        session: "support",
+        connection: "support",
         to: "+15550100",
         video: true,
         exclusive: true,
@@ -331,7 +335,7 @@ describe("VoipResource", () => {
         method: "POST",
         path: "/messaging/voip/calls",
         body: {
-          session: "support",
+          connection: "support",
           to: "+15550100",
           video: true,
           exclusive: true,
@@ -430,7 +434,7 @@ describe("VoipResource", () => {
     });
   });
 
-  it("validates participant, connection, and session input before sending", async () => {
+  it("validates participant, connection, and connection input before sending", async () => {
     const server = await serve([]);
     const sdk = client(server);
     expect(() => sdk.voip.place({ to: "+15550100" })).toThrow(
@@ -551,7 +555,7 @@ describe("VoipResource", () => {
   it("lets a client token act only as itself", async () => {
     const server = await serve([
       json(
-        { success: true, data: { callId: "c", session: "s", video: false } },
+        { success: true, data: { callId: "c", connection: "s", video: false } },
         201,
       ),
     ]);
@@ -572,7 +576,7 @@ describe("VoipResource", () => {
     });
   });
 
-  it("reads and replaces session call settings with a project token", async () => {
+  it("reads and replaces connection call settings with a project token", async () => {
     const settings = {
       callsEnabled: true,
       conferenceMode: true,
@@ -589,7 +593,7 @@ describe("VoipResource", () => {
     const sdk = client(server, { type: "projectToken", value: PROJECT_TOKEN });
     const current = await sdk.voip.retrieveCallSettings("support/eu");
     expectTypeOf(current).toEqualTypeOf<
-      ApiResponse<SessionCallSettingsResponse>
+      ApiResponse<ConnectionCallSettingsResponse>
     >();
     expect(current.data.data.conferenceMode).toBe(false);
     const updated = await sdk.voip.updateCallSettings("support/eu", {
@@ -598,8 +602,8 @@ describe("VoipResource", () => {
     });
     expect(updated.data.data).toEqual(settings);
     expect(server.requests.map(({ method, path }) => [method, path])).toEqual([
-      ["GET", "/platform/sessions/support%2Feu/call-settings"],
-      ["PUT", "/platform/sessions/support%2Feu/call-settings"],
+      ["GET", "/platform/connections/support%2Feu/call-settings"],
+      ["PUT", "/platform/connections/support%2Feu/call-settings"],
     ]);
     expect(JSON.parse(server.requests[1]?.body ?? "null")).toEqual({
       conferenceMode: true,
@@ -811,7 +815,7 @@ describe("VoipResource", () => {
       callsEnabled: false,
     });
     const refused = await sdk.voip
-      .place({ session: "support", to: "+15550100" })
+      .place({ connection: "support", to: "+15550100" })
       .catch((error: unknown) => error);
     expect(refused).toBeInstanceOf(PolymorfaAuthorizationError);
     expect((refused as PolymorfaAuthorizationError).code).toBe(
@@ -833,7 +837,7 @@ describe("VoipResource", () => {
       ),
     ]);
     const refused = await client(server)
-      .voip.place({ session: "support", to: "+15550100" })
+      .voip.place({ connection: "support", to: "+15550100" })
       .catch((error: unknown) => error);
     expect(refused).toBeInstanceOf(PolymorfaPaymentRequiredError);
     expect((refused as PolymorfaPaymentRequiredError).code).toBe(
@@ -841,7 +845,7 @@ describe("VoipResource", () => {
     );
   });
 
-  it("no longer exposes session modes or calling tickets", () => {
+  it("no longer exposes connection modes or calling tickets", () => {
     const resource = VoipResource.prototype as unknown as Record<
       string,
       unknown

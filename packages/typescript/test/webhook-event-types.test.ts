@@ -47,9 +47,9 @@ import type {
   PollOption,
   PollVotePayload,
   PresenceUpdatePayload,
-  SessionLoggedOutPayload,
-  SessionPhoneOfflinePayload,
-  SessionRestrictionUpdatedPayload,
+  ConnectionLoggedOutPayload,
+  ConnectionPhoneOfflinePayload,
+  ConnectionRestrictionUpdatedPayload,
   KnownWebhookEvent,
   WebhookPayloadMap,
 } from "../src/index.js";
@@ -174,7 +174,7 @@ type ExpectedPayloads = {
     readonly callId: string;
     readonly answeredBy?: string;
     readonly exclusive?: boolean;
-    readonly sessionConnection?: "linked_device" | "cloud_api";
+    readonly connectionMethod?: "linked_device" | "cloud_api";
     readonly capabilities?: ExpectedCallCapabilities;
   };
   readonly "call.ended": {
@@ -184,7 +184,7 @@ type ExpectedPayloads = {
     readonly reason: string;
     readonly direction: "inbound" | "outbound";
     readonly hadVideo: boolean;
-    readonly sessionConnection?: "linked_device" | "cloud_api";
+    readonly connectionMethod?: "linked_device" | "cloud_api";
   };
   readonly "call.missed": {
     readonly from: ExpectedIdentityReference;
@@ -230,7 +230,7 @@ type ExpectedPayloads = {
     readonly from: ExpectedIdentityReference;
     readonly callId: string;
     readonly hasVideo: boolean;
-    readonly sessionConnection?: "linked_device" | "cloud_api";
+    readonly connectionMethod?: "linked_device" | "cloud_api";
     readonly capabilities?: ExpectedCallCapabilities;
   };
   readonly "call.rejected": {
@@ -440,7 +440,7 @@ type ExpectedPayloads = {
     readonly unavailable?: boolean;
     readonly lastSeen?: number;
   };
-  readonly "session.phone_offline": {
+  readonly "connection.phone_offline": {
     readonly daysSinceLastSeen: number;
     readonly daysRemaining: number;
     readonly lastSeen: string;
@@ -483,7 +483,7 @@ type ExportedPayloads = {
   readonly "message.vote": PollVotePayload;
   readonly "newsletter.update": NewsletterUpdatePayload;
   readonly "presence.update": PresenceUpdatePayload;
-  readonly "session.phone_offline": SessionPhoneOfflinePayload;
+  readonly "connection.phone_offline": ConnectionPhoneOfflinePayload;
 };
 
 describe("webhook event payload types", () => {
@@ -542,21 +542,21 @@ describe("webhook event payload types", () => {
 
   it("types the logout reason and the restriction event", () => {
     expectTypeOf<
-      WebhookPayloadMap["session.logged_out"]
-    >().toEqualTypeOf<SessionLoggedOutPayload>();
-    expectTypeOf<SessionLoggedOutPayload["reason"]>().toEqualTypeOf<
+      WebhookPayloadMap["connection.logged_out"]
+    >().toEqualTypeOf<ConnectionLoggedOutPayload>();
+    expectTypeOf<ConnectionLoggedOutPayload["reason"]>().toEqualTypeOf<
       "banned" | "device_removed" | "unknown"
     >();
-    expectTypeOf<SessionLoggedOutPayload["code"]>().toEqualTypeOf<number>();
+    expectTypeOf<ConnectionLoggedOutPayload["code"]>().toEqualTypeOf<number>();
     expectTypeOf<
-      WebhookPayloadMap["session.restriction_updated"]
-    >().toEqualTypeOf<SessionRestrictionUpdatedPayload>();
+      WebhookPayloadMap["connection.restriction_updated"]
+    >().toEqualTypeOf<ConnectionRestrictionUpdatedPayload>();
     expectTypeOf<
-      SessionRestrictionUpdatedPayload["type"]
+      ConnectionRestrictionUpdatedPayload["type"]
     >().toEqualTypeOf<"reachout_timelock">();
-    expectTypeOf<SessionRestrictionUpdatedPayload["expiresAt"]>().toEqualTypeOf<
-      string | null
-    >();
+    expectTypeOf<
+      ConnectionRestrictionUpdatedPayload["expiresAt"]
+    >().toEqualTypeOf<string | null>();
   });
 
   it("distinguishes Meta Cloud API synchronization events", () => {

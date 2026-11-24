@@ -1,4 +1,4 @@
-//! Team suppression, media upload metadata and session ban evidence.
+//! Team suppression, media upload metadata and connection ban evidence.
 use crate::{
     models::DataEnvelope,
     transport::{encode, HttpTransport},
@@ -26,24 +26,24 @@ pub struct UpdateOptOutSettingsRequest {
 }
 #[derive(Clone, Copy, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "lowercase")]
-pub enum SessionBanStatus {
+pub enum ConnectionBanStatus {
     Active,
     Lifted,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionBan {
+pub struct ConnectionBan {
     pub id: String,
-    pub session_name: String,
+    pub connection_name: String,
     pub ban_code: Option<u32>,
     pub ban_reason: Option<String>,
     pub ban_expires_at: Option<u64>,
     pub occurred_at: u64,
-    pub status: SessionBanStatus,
+    pub status: ConnectionBanStatus,
 }
 pub struct OptOuts<'a>(pub(crate) &'a HttpTransport);
 pub struct PlatformMedia<'a>(pub(crate) &'a HttpTransport);
-pub struct SessionBans<'a>(pub(crate) &'a HttpTransport);
+pub struct ConnectionBans<'a>(pub(crate) &'a HttpTransport);
 impl OptOuts<'_> {
     pub async fn list(
         &self,
@@ -141,17 +141,17 @@ impl PlatformMedia<'_> {
             .await
     }
 }
-impl SessionBans<'_> {
+impl ConnectionBans<'_> {
     pub async fn list(
         &self,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Vec<SessionBan>>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Vec<ConnectionBan>>>> {
         self.0.get("/platform/bans", options).await
     }
     pub async fn list_active(
         &self,
         options: RequestOptions,
-    ) -> Result<ApiResponse<DataEnvelope<Vec<SessionBan>>>> {
+    ) -> Result<ApiResponse<DataEnvelope<Vec<ConnectionBan>>>> {
         self.0.get("/platform/bans/active", options).await
     }
 }

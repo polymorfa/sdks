@@ -61,12 +61,12 @@ export interface WhatsAppUploadLocation {
 
 /**
  * Moves encrypted bytes to WhatsApp's media hosts. The SDK ships `relay`
- * (through the session's own connection) and `direct` (from your network).
+ * (through the connection's own connection) and `direct` (from your network).
  */
 export interface WhatsAppMediaUploadTransport {
   readonly name: string;
   upload(
-    session: string,
+    connection: string,
     body: WhatsAppEncryptedUploadBody,
     options: { readonly signal?: AbortSignal },
   ): Promise<WhatsAppUploadLocation>;
@@ -79,7 +79,7 @@ export interface UploadWhatsAppMediaOptions {
   readonly mimetype?: string;
   /**
    * `relay` (default) sends ciphertext to Polymorfa, which forwards it to
-   * WhatsApp over the session's connection. `direct` uploads from this
+   * WhatsApp over the connection's connection. `direct` uploads from this
    * process with a short-lived grant. Pass a transport to use your own.
    */
   readonly egress?: WhatsAppMediaEgress | WhatsAppMediaUploadTransport;
@@ -369,7 +369,7 @@ export function base64UrlUnpadded(bytes: Uint8Array): string {
 
 /**
  * Relay egress: streams ciphertext to Polymorfa, which uploads it through the
- * session's connection. Polymorfa receives ciphertext only, never the key.
+ * connection's connection. Polymorfa receives ciphertext only, never the key.
  */
 export function createRelayUploadTransport(
   api: DirectMediaApi,
@@ -378,12 +378,12 @@ export function createRelayUploadTransport(
   return Object.freeze({
     name: "relay",
     async upload(
-      session: string,
+      connection: string,
       body: WhatsAppEncryptedUploadBody,
       options: { readonly signal?: AbortSignal },
     ) {
       return api.relayUpload(
-        session,
+        connection,
         {
           mediaType: body.mediaType,
           fileEncSha256: base64UrlUnpadded(body.fileEncSha256),
@@ -556,7 +556,7 @@ export function createDirectUploadTransport(
   return Object.freeze({
     name: "direct",
     async upload(
-      session: string,
+      connection: string,
       body: WhatsAppEncryptedUploadBody,
       uploadOptions: { readonly signal?: AbortSignal },
     ) {
@@ -564,7 +564,7 @@ export function createDirectUploadTransport(
       const signal = uploadOptions.signal;
       const requestGrant = () =>
         api.createUploadGrant(
-          session,
+          connection,
           {
             mediaType: body.mediaType,
             fileEncSha256: base64UrlUnpadded(body.fileEncSha256),
@@ -774,14 +774,14 @@ export class WhatsAppMediaResource {
   }
 
   async upload(
-    session: string,
+    connection: string,
     source: WhatsAppMediaSource,
     options: UploadWhatsAppMediaOptions,
   ): Promise<WhatsAppMediaUploadResult> {
-    if (typeof session !== "string" || session.length === 0) {
+    if (typeof connection !== "string" || connection.length === 0) {
       throw new PolymorfaConfigurationError(
-        "session must be a non-empty string.",
-        "session",
+        "connection must be a non-empty string.",
+        "connection",
       );
     }
     const egress = options.egress ?? "relay";
@@ -805,7 +805,7 @@ export class WhatsAppMediaResource {
       );
     }
     const { info, body } = await prepareWhatsAppUpload(source, options);
-    const location = await transport.upload(session, body, {
+    const location = await transport.upload(connection, body, {
       ...(options.signal === undefined ? {} : { signal: options.signal }),
     });
     return Object.freeze({ ...info, ...location, egress: transport.name });

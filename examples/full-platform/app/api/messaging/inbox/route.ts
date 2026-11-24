@@ -24,7 +24,7 @@ export const POST = route("agent", async ({ body, request }) => {
   const clientId = text(body, "clientId");
   const replyTo = optionalText(body, "replyTo");
   const response = await messaging().messages.send(
-    env.session(),
+    env.connection(),
     {
       conversation: { phoneNumber: chat },
       content: { text: content },
@@ -41,6 +41,6 @@ export const POST = route("agent", async ({ body, request }) => {
     direction: "outbound" as const,
     status: "sent" as const,
   };
-  emit("inbox.message", env.session(), { chat, message });
+  emit("inbox.message", env.connection(), { chat, message });
   return message;
 });

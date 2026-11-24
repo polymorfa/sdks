@@ -120,7 +120,7 @@ async def test_established_send_and_get_retry(unused_tcp_port):
                 {"conversation": {"phoneNumber": "+15550001111"}, "content": {"text": "fixture"}},
                 options=RequestOptions(idempotency_key="send-key", max_network_retries=1),
             )
-            await sdk.sessions.retrieve("s", options=RequestOptions(max_network_retries=1))
+            await sdk.connections.retrieve("s", options=RequestOptions(max_network_retries=1))
         assert list(counts.values()) == [2, 2]
     finally:
         await runner.cleanup()

@@ -20,14 +20,14 @@ SCRATCH.mkdir(parents=True, exist_ok=True)
 
 
 class MirrorPreparation(unittest.TestCase):
-    def fixture(self, root, nightly=False, extra=None, tamper=False):
-        version = "0.2.3-dev.20261011120000" if nightly else "0.2.3"
+    def fixture(self, root, nightly=False, extra=None, tamper=False, preview=False, omit_schema=False):
+        version = "0.2.3-preview.20261116120000" if preview else "0.2.3-dev.20261011120000" if nightly else "0.2.3"
         receipt = {
             "schemaVersion": 1,
             "repository": "polymorfa/sdks",
             "sourceSha": "a" * 40,
             "fingerprint": "b" * 64,
-            "channel": "nightly" if nightly else "stable",
+            "channel": "preview" if preview else "nightly" if nightly else "stable",
             "versions": {"semver": version},
         }
         inner = dict(receipt, sourceSha="c" * 40) if tamper else receipt
@@ -39,12 +39,14 @@ class MirrorPreparation(unittest.TestCase):
                 }
             ).encode(),
             "src/HttpTransport.php": f"<?php const SDK_VERSION = '{version}';\n".encode(),
-            # The real archive carries the schema-2 resource the storage engine loads.
+            # Both storage schema resources ship in the real archive.
             "src/Storage/schema2.json": b'{"schemaVersion":2}\n',
             "README.md": b"SDK development source\n",
             "LICENSE": b"MIT\n",
             "release-contract.json": json.dumps(inner).encode(),
         }
+        if not omit_schema:
+            contents["src/Storage/schema3.json"] = b'{"schemaVersion":3}\n'
         packs = root / "packs"
         packs.mkdir()
         receipt_path = root / "receipt.json"
@@ -89,6 +91,23 @@ class MirrorPreparation(unittest.TestCase):
             with self.assertRaises(AssertionError):
                 module.prepare(packs, receipt, output)
             self.assertEqual((output / "operator-file").read_text(), "preserve")
+
+    def test_preview_records_its_own_composer_branch_without_stable_tag(self):
+        with TemporaryDirectory(dir=SCRATCH) as scratch:
+            root = Path(scratch)
+            packs, receipt, _ = self.fixture(root, preview=True)
+            plan = module.prepare(packs, receipt, root / "mirror")
+            self.assertEqual(plan["composerBranchVersion"], "dev-preview")
+            self.assertNotIn("proposedTag", plan)
+
+    def test_missing_runtime_storage_schema_never_creates_output(self):
+        with TemporaryDirectory(dir=SCRATCH) as scratch:
+            root = Path(scratch)
+            packs, receipt, _ = self.fixture(root, omit_schema=True)
+            output = root / "mirror"
+            with self.assertRaisesRegex(AssertionError, r"src/Storage/schema3\.json"):
+                module.prepare(packs, receipt, output)
+            self.assertFalse(output.exists())
 
     def test_mismatched_receipt_never_creates_output(self):
         with TemporaryDirectory(dir=SCRATCH) as scratch:

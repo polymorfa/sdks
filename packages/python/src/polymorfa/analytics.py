@@ -289,13 +289,13 @@ class Metrics(TypedDict):
 
 
 class Summary(Metrics):
-    totalNumbers: int
-    measuredNumbers: int
-    connectedNumbers: int
+    totalConnections: int
+    measuredConnections: int
+    connectedConnections: int
 
 
-class NumberMetrics(Metrics):
-    sessionId: str
+class ConnectionMetrics(Metrics):
+    connectionId: str
     projectId: str
     projectName: str
     name: str
@@ -304,7 +304,7 @@ class NumberMetrics(Metrics):
 
 
 class CallSeries(CallOutcomeMetrics):
-    sessionId: str
+    connectionId: str
     ts: int
 
 
@@ -330,7 +330,7 @@ class Series(TypedDict):
     phoneActivityMs: float
     phoneQuietGaps: int
     phoneQuietMs: float
-    sessionId: str
+    connectionId: str
     ts: int
     outgoingMessages: int
     incomingMessages: int
@@ -347,7 +347,7 @@ class WhatsAppAnalytics(TypedDict):
     period: Period
     requestVitals: RequestVitals
     summary: Summary | None
-    numbers: list[NumberMetrics]
+    connections: list[ConnectionMetrics]
     series: list[Series]
 
 
@@ -357,14 +357,14 @@ class AnalyticsSettings(TypedDict):
 
 class Params(TypedDict, total=False):
     projectId: str
-    sessionId: str
+    connectionId: str
     start: int
     end: int
 
 
 class MetricsParams(TypedDict, total=False):
     projectId: str
-    sessionId: str
+    connectionId: str
     windowHours: int
     segments: bool
     format: Literal["prometheus", "openmetrics"]
@@ -381,7 +381,7 @@ class Analytics(PlatformResource):
         self._project_id = project_id
 
     def _query(self, params: Mapping[str, object]) -> dict[str, QueryValue]:
-        for key in ["projectId", "sessionId"]:
+        for key in ["projectId", "connectionId"]:
             if key in params and (
                 not isinstance(params[key], str)
                 or re.fullmatch(

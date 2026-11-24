@@ -346,7 +346,7 @@ async fn live_source_pushes_retained_bodies_with_cursor_and_isolates_unsubscribe
             } else {
                 "last-event-id: second"
             }));
-            let envelope = json!({"id":"webhook","session":"support","timestamp":"now","event":"future.event","payload":{"preserved":true}});
+            let envelope = json!({"id":"webhook","connection":"support","timestamp":"now","event":"future.event","payload":{"preserved":true}});
             let mut retained = event("retained", Some("project"));
             retained["payloadAvailability"] = json!("retained");
             retained["payload"] = json!({"contentType":"application/json","encoding":"base64","data":STANDARD.encode(envelope.to_string())});

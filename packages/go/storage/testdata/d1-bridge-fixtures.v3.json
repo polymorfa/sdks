@@ -1,0 +1,19 @@
+{
+  "syntheticOnly": true,
+  "secret": "synthetic_D1_bridge_fixture_secret_only_20261015",
+  "nonce": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "authority": "fixture-customer-a",
+  "tablePrefix": "bridge_a_",
+  "request": {
+    "method": "GET",
+    "path": "/handshake",
+    "rawBody": "",
+    "signature": "v1=abbb8bd09e1eb2a2975e644742d06f4c27c282a223ad621df81985e3c4ff5cac"
+  },
+  "response": {
+    "status": 200,
+    "rawBody": "{\"contract\":\"polymorfa-d1-storage-v1\",\"schemaVersion\":3,\"authority\":\"fixture-customer-a\",\"tablePrefix\":\"bridge_a_\",\"data\":{\"atomicCommit\":true,\"maxCommitSize\":50,\"maxGetSize\":1000,\"maxQuerySize\":1000,\"maxBodyBytes\":8388608,\"conditionalDeletes\":true,\"setupAllowed\":true}}",
+    "signature": "v1=09eeb0559876fc42ab813508824a3ae4f05f04317b7ea51aa3b60677a05f39a3"
+  },
+  "derivedFrom": "d1-bridge-fixtures.json; new schema-3 response signature"
+}

@@ -1,4 +1,4 @@
-"""Server-owned hierarchical session configuration and patch wire types."""
+"""Server-owned hierarchical connection configuration and patch wire types."""
 
 from typing import Literal, TypedDict
 
@@ -6,7 +6,7 @@ from typing_extensions import NotRequired
 
 ObservationMode = Literal["off", "events", "cache"]
 LabelMode = Literal["off", "events", "cache", "project"]
-Source = Literal["platform", "team", "project", "session"]
+Source = Literal["platform", "team", "project", "connection"]
 ValueSource = Source | Literal["consent"]
 HistorySyncDelivery = Literal["archive", "descriptor"]
 
@@ -83,7 +83,7 @@ ConfigurationSources = TypedDict(
 class ConfigurationRevisions(TypedDict):
     team: int
     project: int
-    session: int
+    connection: int
 
 
 class ConfigurationApplication(TypedDict):

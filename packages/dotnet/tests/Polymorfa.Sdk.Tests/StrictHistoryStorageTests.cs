@@ -23,7 +23,7 @@ internal static class StrictHistoryStorageTests
         foreach (var tail in new[] { false, true })
         {
             var bytes = tail ? valid.Concat(new byte[] { 0 }).ToArray() : valid;
-            var body = JsonSerializer.SerializeToUtf8Bytes(new { id = "signed-archive", session = "fixture-session", timestamp = "2026-10-17T00:00:00Z", @event = "history.sync", payload = new { mode = "deliver", whatsapp_ids = new { linked_devices = "fixture-archive" }, messages = Array.Empty<object>(), syncType = "RECENT", chunkOrder = 7, progress = 92, fileLength = bytes.Length, conversationCount = 1, messageCount = 0, pushNameCount = 0, statusMessageCount = 0, whatsapp = new { encoding = "gzip-base64-protobuf", data = Convert.ToBase64String(bytes) } } });
+            var body = JsonSerializer.SerializeToUtf8Bytes(new { id = "signed-archive", connection = "fixture-session", timestamp = "2026-10-17T00:00:00Z", @event = "history.sync", payload = new { mode = "deliver", whatsapp_ids = new { linked_devices = "fixture-archive" }, messages = Array.Empty<object>(), syncType = "RECENT", chunkOrder = 7, progress = 92, fileLength = bytes.Length, conversationCount = 1, messageCount = 0, pushNameCount = 0, statusMessageCount = 0, whatsapp = new { encoding = "gzip-base64-protobuf", data = Convert.ToBase64String(bytes) } } });
             var signature = Convert.ToHexString(HMACSHA256.HashData("synthetic-archive-secret"u8, body)).ToLowerInvariant();
             var webhook = Webhooks.ConstructEvent(body, signature, "synthetic-archive-secret");
             var source = new Source(webhook); var adapter = new MemoryStorageAdapter(); var storage = new CustomerStorage(adapter); var applied = 0;

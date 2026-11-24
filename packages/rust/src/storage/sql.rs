@@ -51,6 +51,88 @@ impl SqlStorageAdapter {
             options,
         })
     }
+    async fn table_exists(&self, entity: &str) -> StorageResult<bool> {
+        let (statement, name) = match self.dialect {
+            SqlDialect::Postgres => ("SELECT to_regclass($1)::text AS name", table(self.dialect, &self.options, entity)?),
+            SqlDialect::MySql => ("SELECT table_name AS name FROM information_schema.tables WHERE table_schema=DATABASE() AND table_name=?", format!("{}{}", self.options.table_prefix, entity)),
+            SqlDialect::Sqlite => ("SELECT name FROM sqlite_master WHERE type='table' AND name=?", format!("{}{}", self.options.table_prefix, entity)),
+        };
+        let row = sqlx::query(statement)
+            .bind(name)
+            .fetch_optional(&self.pool)
+            .await
+            .map_err(|_| provider())?;
+        match row {
+            None => Ok(false),
+            Some(row) => Ok(row
+                .try_get::<Option<String>, _>("name")
+                .map_err(|_| provider())?
+                .is_some()),
+        }
+    }
+    async fn schema_version(&self) -> StorageResult<Option<u32>> {
+        let meta = table(self.dialect, &self.options, "storage_schema")?;
+        let statement = format!(
+            "SELECT {} FROM {meta} WHERE {}='storage'",
+            self.q("version")?,
+            self.q("id")?
+        );
+        let rows = sqlx::query(&statement)
+            .fetch_all(&self.pool)
+            .await
+            .map_err(|_| provider())?;
+        if rows.is_empty() {
+            return Ok(None);
+        }
+        if rows.len() != 1 {
+            return Err(StorageError::Invalid("Ambiguous storage schema marker."));
+        }
+        let version = rows[0]
+            .try_get::<i64, _>(0)
+            .or_else(|_| rows[0].try_get::<i32, _>(0).map(i64::from))
+            .map_err(|_| provider())?;
+        Ok(Some(u32::try_from(version).map_err(|_| provider())?))
+    }
+    async fn verify_schema(&self) -> StorageResult<()> {
+        if self.schema_version().await? != Some(schema::SCHEMA_VERSION) {
+            return Err(StorageError::Invalid(
+                "Customer storage requires an explicit schema-3 migration.",
+            ));
+        }
+        Ok(())
+    }
+    async fn preflight_setup(&self) -> StorageResult<bool> {
+        if self.table_exists("storage_schema").await? && self.schema_version().await?.is_some() {
+            self.verify_schema().await?;
+            for entity in ALL_ENTITIES {
+                sqlx::query(&format!(
+                    "SELECT connection_id FROM {} LIMIT 0",
+                    self.table(entity)?
+                ))
+                .fetch_all(&self.pool)
+                .await
+                .map_err(|_| provider())?;
+            }
+            return Ok(false);
+        }
+        if !self.options.create_tables {
+            return Err(StorageError::Invalid(
+                "Customer storage is not initialized.",
+            ));
+        }
+        for entity in ALL_ENTITIES
+            .iter()
+            .map(|entity| entity.definition().name)
+            .chain(std::iter::once("sessions"))
+        {
+            if self.table_exists(entity).await? {
+                return Err(StorageError::Invalid(
+                    "Existing storage requires an explicit migration.",
+                ));
+            }
+        }
+        Ok(true)
+    }
     pub async fn close(&self) {
         self.pool.close().await;
     }
@@ -204,7 +286,7 @@ impl StorageAdapter for SqlStorageAdapter {
     }
     fn setup(&self) -> StorageFuture<'_, ()> {
         Box::pin(async {
-            if self.options.create_tables {
+            if self.preflight_setup().await? {
                 for statement in schema_statements(self.dialect, &self.options)? {
                     sqlx::query(&statement)
                         .execute(&self.pool)
@@ -212,7 +294,7 @@ impl StorageAdapter for SqlStorageAdapter {
                         .map_err(|_| provider())?;
                 }
             }
-            Ok(())
+            self.verify_schema().await
         })
     }
     fn get<'a>(
@@ -221,6 +303,7 @@ impl StorageAdapter for SqlStorageAdapter {
         ids: &'a [String],
     ) -> StorageFuture<'a, BTreeMap<String, StoredRow>> {
         Box::pin(async move {
+            self.verify_schema().await?;
             let mut rows = BTreeMap::new();
             for group in ids.chunks(500) {
                 let marks = (1..=group.len())
@@ -248,6 +331,7 @@ impl StorageAdapter for SqlStorageAdapter {
     fn commit<'a>(&'a self, writes: &'a [RowWrite]) -> StorageFuture<'a, CommitResult> {
         Box::pin(async move {
             memory::validate_commit(writes, self.capabilities().max_commit_size)?;
+            self.verify_schema().await?;
             if writes.is_empty() {
                 return Ok(CommitResult {
                     ok: true,
@@ -349,8 +433,14 @@ impl StorageAdapter for SqlStorageAdapter {
                         (sql, values)
                     }
                 };
+                // SQLx Any 0.8.6 infers nullable argument types from each value,
+                // including swapped FLOAT4/FLOAT8 null metadata. PostgreSQL's
+                // cached statement would reuse that first type for later binary
+                // values. Prepare each row write afresh; keep read/delete caches.
+                let persistent =
+                    self.dialect != SqlDialect::Postgres || !matches!(write, RowWrite::Put { .. });
                 let result = self
-                    .bind(sqlx::query(&sql), values)?
+                    .bind(sqlx::query(&sql).persistent(persistent), values)?
                     .execute(&mut *transaction)
                     .await;
                 match result {
@@ -390,6 +480,7 @@ impl StorageAdapter for SqlStorageAdapter {
     ) -> StorageFuture<'a, Vec<StoredRow>> {
         Box::pin(async move {
             let index = memory::validate_query(entity, query)?;
+            self.verify_schema().await?;
             let mut values = Vec::new();
             let mut clauses = Vec::new();
             let add = |value: Value, values: &mut Vec<Value>| {
@@ -494,8 +585,12 @@ pub fn supabase_preset(options: &SupabasePresetOptions) -> StorageResult<String>
         q(&format!("{}storage_memberships", sql.table_prefix))?
     );
     let mut statements = schema_statements(SqlDialect::Postgres, &sql)?;
+    statements.push(format!(
+        "GRANT SELECT ON {} TO {writer}",
+        table(SqlDialect::Postgres, &sql, "storage_schema")?
+    ));
     statements.extend([
-        format!("CREATE TABLE IF NOT EXISTS {members} (session_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (session_id, subject))"),
+        format!("CREATE TABLE IF NOT EXISTS {members} (connection_id text NOT NULL, subject uuid NOT NULL, PRIMARY KEY (connection_id, subject))"),
         format!("ALTER TABLE {members} ENABLE ROW LEVEL SECURITY"),format!("ALTER TABLE {members} FORCE ROW LEVEL SECURITY"),format!("REVOKE ALL ON {members} FROM PUBLIC"),
         format!("GRANT USAGE ON SCHEMA {} TO {reader}, {writer}",q(&schema)?),format!("GRANT SELECT ON {members} TO {reader}"),format!("GRANT SELECT, INSERT, UPDATE, DELETE ON {members} TO {writer}"),
         format!("CREATE POLICY {} ON {members} FOR SELECT TO {reader} USING (subject = auth.uid())",q(&format!("{}members_self",sql.table_prefix))?),
@@ -505,7 +600,7 @@ pub fn supabase_preset(options: &SupabasePresetOptions) -> StorageResult<String>
         let d = entity.definition();
         let target = table(SqlDialect::Postgres, &sql, d.name)?;
         statements.extend([format!("ALTER TABLE {target} ENABLE ROW LEVEL SECURITY"),format!("ALTER TABLE {target} FORCE ROW LEVEL SECURITY"),format!("REVOKE ALL ON {target} FROM PUBLIC"),format!("GRANT SELECT ON {target} TO {reader}"),format!("GRANT SELECT, INSERT, UPDATE, DELETE ON {target} TO {writer}"),
-            format!("CREATE POLICY {} ON {target} FOR SELECT TO {reader} USING (EXISTS (SELECT 1 FROM {members} m WHERE m.session_id = {target}.session_id AND m.subject = auth.uid()))",q(&format!("{}{}_reader",sql.table_prefix,d.name))?),
+            format!("CREATE POLICY {} ON {target} FOR SELECT TO {reader} USING (EXISTS (SELECT 1 FROM {members} m WHERE m.connection_id = {target}.connection_id AND m.subject = auth.uid()))",q(&format!("{}{}_reader",sql.table_prefix,d.name))?),
             format!("CREATE POLICY {} ON {target} TO {writer} USING (true) WITH CHECK (true)",q(&format!("{}{}_writer",sql.table_prefix,d.name))?),
         ]);
     }

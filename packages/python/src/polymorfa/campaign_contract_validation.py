@@ -92,7 +92,7 @@ def choice(value: object, values: tuple[str, ...], field: str) -> None:
 
 
 def number_spelling(value: float) -> str:
-    # API JSON numbers are IEEE-754 doubles. Use shortest round-trip digits,
+    # API JSON connections are IEEE-754 doubles. Use shortest round-trip digits,
     # with the producer's fixed/exponent thresholds and positive-exponent sign.
     numeric = float(value)
     if not math.isfinite(numeric):
@@ -406,10 +406,11 @@ def reply_create(value: object, project: bool = False) -> None:
 def test_send(value: object, project: bool = False) -> None:
     data = fields(
         value,
-        ["sessionId", "to", "sampleRecipientId", "variables"] + (["projectId"] if project else []),
-        ["sessionId", "to"] + (["projectId"] if project else []),
+        ["connectionId", "to", "sampleRecipientId", "variables"]
+        + (["projectId"] if project else []),
+        ["connectionId", "to"] + (["projectId"] if project else []),
     )
-    uuid(data["sessionId"], "sessionId")
+    uuid(data["connectionId"], "connectionId")
     text(data["to"], "to", 1, 32)
     if project:
         uuid(data["projectId"], "projectId")
@@ -462,7 +463,7 @@ def export(value: object, project: bool = False) -> dict[str, object]:
                 "cold_held",
                 "campaign_cancelled",
                 "invalid_recipient",
-                "session_not_connected",
+                "connection_not_connected",
                 "ack_timeout",
                 "blocked_by_safety",
                 "send_failed",

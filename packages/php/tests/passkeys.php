@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 $passkeyCredential = \Polymorfa\Credential::teamApiKey('pmfa_AAECAwQFBgcICQoLDA0ODxAREhM73f-k');
-$f = json_decode(file_get_contents(dirname(__DIR__,3).'/contracts/fixtures/passkeys.candidate.json'),true,512,JSON_THROW_ON_ERROR);
+$f = json_decode(file_get_contents(dirname(__DIR__,3).'/contracts/fixtures/connections/passkeys.candidate.json'),true,512,JSON_THROW_ON_ERROR);
 $cases = [
- ['POST','/challenge',$f['issue'],'ticket',fn($c) => $c->passkeys->issueChallenge($f['session'],$f['issue'])],
- ['GET','/challenge/'.rawurlencode($f['ticketId']),null,'ticket',fn($c) => $c->passkeys->getChallenge($f['session'],$f['ticketId'])],
- ['POST','/assertion',$f['assertion'],'assertionResult',fn($c) => $c->passkeys->submitAssertion($f['session'],$f['assertion'])],
- ['GET','/confirmation',null,null,fn($c) => $c->passkeys->getConfirmation($f['session'])],
- ['POST','/confirmation',$f['confirm'],null,fn($c) => $c->passkeys->confirm($f['session'],$f['confirm'])],
+ ['POST','/challenge',$f['issue'],'ticket',fn($c) => $c->passkeys->issueChallenge($f['connection'],$f['issue'])],
+ ['GET','/challenge/'.rawurlencode($f['ticketId']),null,'ticket',fn($c) => $c->passkeys->getChallenge($f['connection'],$f['ticketId'])],
+ ['POST','/assertion',$f['assertion'],'assertionResult',fn($c) => $c->passkeys->submitAssertion($f['connection'],$f['assertion'])],
+ ['GET','/confirmation',null,null,fn($c) => $c->passkeys->getConfirmation($f['connection'])],
+ ['POST','/confirmation',$f['confirm'],null,fn($c) => $c->passkeys->confirm($f['connection'],$f['confirm'])],
 ];
 foreach ($cases as [$method,$suffix,$body,$key,$invoke]) {
  $reply = ['success'=>true,'data'=>$key === null ? ['status'=>'waiting_for_pairing','skipHandoffUX'=>false] : $f[$key]];

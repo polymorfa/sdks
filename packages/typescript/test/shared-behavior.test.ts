@@ -16,7 +16,10 @@ import { createFixtureServer } from "../../../scripts/sdk-fixture-server.mjs";
 
 const fixture = JSON.parse(
   readFileSync(
-    new URL("../../../contracts/fixtures/behavior.json", import.meta.url),
+    new URL(
+      "../../../contracts/fixtures/connections/behavior.json",
+      import.meta.url,
+    ),
     "utf8",
   ),
 );
@@ -141,8 +144,8 @@ describe("shared native wire behavior", () => {
       }
     });
   }
-  it("invokes the public Messaging sessions and messages methods", async () => {
-    for (const id of ["sessions-list", "message-send"]) {
+  it("invokes the public Messaging connections and messages methods", async () => {
+    for (const id of ["connections-list", "message-send"]) {
       await fetch(`${base}/__fixtures/${id}/reset`, { method: "POST" });
       const client = new MessagingClient({
         baseUrl: `${base}/__fixtures/${id}`,
@@ -150,8 +153,8 @@ describe("shared native wire behavior", () => {
       });
       const options = { headers: { "x-polymorfa-fixture": id } };
       const result =
-        id === "sessions-list"
-          ? await client.sessions.list(options)
+        id === "connections-list"
+          ? await client.connections.list(options)
           : await client.messages.send(
               "support",
               {

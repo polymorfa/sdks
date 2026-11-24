@@ -564,7 +564,7 @@ export interface ChatDetailsProps {
   readonly phoneNumber?: string;
   readonly observedName?: string;
   readonly labels?: readonly string[];
-  readonly sendingNumber?: string;
+  readonly sendingConnection?: string;
   readonly lastActivity?: number;
   readonly retentionDays?: number | null;
   readonly onClose?: () => void;
@@ -580,7 +580,7 @@ export function ChatDetails({
   phoneNumber,
   observedName,
   labels,
-  sendingNumber,
+  sendingConnection,
   lastActivity,
   retentionDays,
   onClose,
@@ -627,7 +627,7 @@ export function ChatDetails({
       )}
       <dl>
         {field("chat.observedName", observedName)}
-        {field("chat.sendingNumber", sendingNumber)}
+        {field("chat.sendingConnection", sendingConnection)}
         {field(
           "chat.lastActivity",
           lastActivity === undefined || !Number.isFinite(lastActivity)
@@ -689,10 +689,24 @@ function authorName(
   configuration: Configuration,
   message: ConversationMessage | undefined,
 ): string {
-  return text(
-    configuration,
-    message?.direction === "outbound" ? "chat.you" : "chat.contact",
-  );
+  if (message?.direction === "outbound") return text(configuration, "chat.you");
+  return senderLabel(message?.sender) ?? text(configuration, "chat.contact");
+}
+
+/** A group author's name, or their number when no name is known. */
+function senderLabel(
+  sender: ConversationMessage["sender"] | undefined,
+): string | undefined {
+  if (sender === undefined) return undefined;
+  return sender.name ?? sender.phoneNumber ?? sender.id;
+}
+
+/** A stable hue per author, so names stay recognisable in a group. */
+function senderHue(id: string): number {
+  let hash = 0;
+  for (const character of id)
+    hash = Math.imul(hash ^ character.charCodeAt(0), 2654435761);
+  return Math.abs(hash) % 360;
 }
 
 function snippet(
@@ -1227,6 +1241,7 @@ const MessageItem = memo(function MessageItem({
     message.status === "failed" &&
     message.clientId !== undefined;
   const custom = renderMessage?.(message);
+  const senderSlot = slots("messageSender", "pmfa-msg-sender");
   return (
     <li
       {...slots(
@@ -1246,6 +1261,19 @@ const MessageItem = memo(function MessageItem({
     >
       <div className="pmfa-row">
         <div {...slots("bubble", "pmfa-bubble")}>
+          {!outbound && groupStart && message.sender !== undefined && (
+            <span
+              {...senderSlot}
+              style={
+                {
+                  ...senderSlot.style,
+                  "--pmfa-sender-hue": String(senderHue(message.sender.id)),
+                } as CSSProperties
+              }
+            >
+              {senderLabel(message.sender)}
+            </span>
+          )}
           {quoted !== undefined && (
             <button
               type="button"

@@ -13,8 +13,8 @@ VALUES = {
     "quickReplyMode": "off",
 }
 PROJECT = {"projectId": "project_1"} | VALUES
-SESSION = {
-    "sessionName": "support",
+CONNECTION = {
+    "connectionName": "support",
     "projectId": "project_1",
     "project": VALUES,
     "override": {
@@ -26,7 +26,7 @@ SESSION = {
     "effective": VALUES | {"typingMode": "off"},
 }
 POLICY = {
-    "scope": "session",
+    "scope": "connection",
     "revision": "revision_1",
     "prefer": None,
     "allowedTransports": ["linked_devices", "official_api"],
@@ -61,7 +61,7 @@ CONFIG = {
         "observation.quickReplyMode": "project",
     },
     "requestedHistory": {"mode": "deliver", "requestFull": True},
-    "revisions": {"team": 1, "project": 2, "session": 3},
+    "revisions": {"team": 1, "project": 2, "connection": 3},
     "historyConsent": "pending",
     "application": {"desiredGeneration": 2, "appliedGeneration": 1, "status": "pending"},
 }
@@ -79,8 +79,8 @@ CASES = [
         "/messaging/support/observation-policy",
         None,
         {},
-        SESSION,
-        lambda c: c.observation_policies.retrieve_for_session("support"),
+        CONNECTION,
+        lambda c: c.observation_policies.retrieve_for_connection("support"),
     ),
     (
         "GET",
@@ -102,10 +102,11 @@ CASES = [
         "PUT",
         "/messaging/routing/hybrid",
         UPDATE_POLICY,
-        {"scope": "session", "projectId": "project_1", "session": "support"},
+        {"scope": "connection", "projectId": "project_1", "connection": "support"},
         POLICY,
         lambda c: c.hybrid_link.set_policy(
-            {"scope": "session", "projectId": "project_1", "session": "support"}, UPDATE_POLICY
+            {"scope": "connection", "projectId": "project_1", "connection": "support"},
+            UPDATE_POLICY,
         ),
     ),
     (
@@ -160,7 +161,7 @@ async def test_saved_configuration_owner_context(project_id, write):
     }
 
     def handler(request):
-        assert request.url.path == "/platform/session-configuration"
+        assert request.url.path == "/platform/connection-configuration"
         if write:
             assert request.method == "PUT" and dict(request.url.params) == {}
             expected = update | ({"projectId": project_id} if project_id else {})
@@ -177,7 +178,7 @@ async def test_saved_configuration_owner_context(project_id, write):
         ),
         http_transport=httpx.MockTransport(handler),
     ) as client:
-        resource = (client.project(project_id) if project_id else client).session_configuration
+        resource = (client.project(project_id) if project_id else client).connection_configuration
         result = await resource.update(update) if write else await resource.retrieve()
         assert result.data == CONFIG and result.metadata.request_id == "req_config"
 

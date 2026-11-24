@@ -24,7 +24,7 @@ async def native_s3():
     from botocore.config import Config
 
     bucket = "python-native-" + secrets.token_hex(8)
-    async with aioboto3.Session().client(
+    async with aioboto3.Connection().client(
         "s3",
         endpoint_url=endpoint,
         region_name="us-east-1",
@@ -53,8 +53,8 @@ async def test_actual_s3_two_pass_native_reads_and_borrowed_client_ownership(nat
     class Upload:
         name = "synthetic-egress"
 
-        async def upload(self, session, body, **kwargs):
-            assert session == "synthetic-session"
+        async def upload(self, connection, body, **kwargs):
+            assert connection == "synthetic-connection"
             ciphertext = b"".join([chunk async for chunk in body.open()])
             assert (
                 ciphertext != plaintext
@@ -70,7 +70,7 @@ async def test_actual_s3_two_pass_native_reads_and_borrowed_client_ownership(nat
     ) as messaging:
         result = await store.upload_to_whatsapp(
             messaging.whatsapp_media,
-            "synthetic-session",
+            "synthetic-connection",
             "source",
             media_type="image",
             egress=Upload(),
@@ -92,7 +92,7 @@ async def test_actual_s3_etag_change_refuses_second_pass(native_s3):
     class ChangedUpload:
         name = "synthetic-changed-egress"
 
-        async def upload(self, session, body, **kwargs):
+        async def upload(self, connection, body, **kwargs):
             await client.put_object(Bucket=bucket, Key="source", Body=b"changed")
             async for _ in body.open():
                 pytest.fail("stale ETag must fail before yielding ciphertext")
@@ -107,7 +107,7 @@ async def test_actual_s3_etag_change_refuses_second_pass(native_s3):
         with pytest.raises(ClientError) as failure:
             await store.upload_to_whatsapp(
                 messaging.whatsapp_media,
-                "synthetic-session",
+                "synthetic-connection",
                 "source",
                 media_type="image",
                 egress=ChangedUpload(),

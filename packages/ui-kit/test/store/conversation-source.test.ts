@@ -166,7 +166,7 @@ describe("createStoreConversationSource with ConversationController", () => {
       createStoreConversationSource(store, {
         conversationId: "chat_1",
         send,
-        session: "support",
+        connection: "support",
       }),
       { createClientId: () => "client_1" },
     );
@@ -183,7 +183,7 @@ describe("createStoreConversationSource with ConversationController", () => {
       fromMe: true,
       text: "hello",
       clientId: "client_1",
-      session: "support",
+      connection: "support",
     });
     // A later delivery receipt keeps the stored message current.
     await store.ingest(
@@ -230,6 +230,45 @@ describe("createStoreConversationSource with ConversationController", () => {
       { id: "srv_1", replyTo: "r2" },
       { id: "r2", replyTo: "r1" },
     ]);
+    store.close();
+  });
+
+  it("keeps group authors when backend history is cached and read back", async () => {
+    const store = await openStore();
+    const group = "120363000000000001@g.us";
+    const source = createStoreConversationSource(store, {
+      conversationId: group,
+      load: async () => ({
+        messages: [
+          { ...remote("g1", 1_000), sender: { id: "111@lid", name: "Ana" } },
+          { ...remote("g2", 2_000), sender: { id: "222@lid", name: "Bo" } },
+          { ...remote("g3", 3_000), direction: "outbound" as const },
+        ],
+      }),
+      send: vi.fn(),
+    });
+    await source.load();
+    const fresh = createStoreConversationSource(store, {
+      conversationId: group,
+      send: vi.fn(),
+    });
+    const page = await fresh.load();
+    expect(page.messages.map(({ id, sender }) => ({ id, sender }))).toEqual([
+      { id: "g3", sender: undefined },
+      { id: "g2", sender: { id: "222@lid", name: "Bo" } },
+      { id: "g1", sender: { id: "111@lid", name: "Ana" } },
+    ]);
+    // An author's name never becomes the group's name, even with no metadata.
+    expect((await store.conversations.get(group))?.name).toBeUndefined();
+    // A later live write for the same message without a display name must not
+    // promote the cached author name either.
+    const live = received("g2", "two", {
+      at: 2_000,
+      conversation: { id: group, phoneNumber: "" },
+    });
+    delete (live.payload as { pushName?: string }).pushName;
+    await store.ingest([live]);
+    expect((await store.conversations.get(group))?.name).toBeUndefined();
     store.close();
   });
 

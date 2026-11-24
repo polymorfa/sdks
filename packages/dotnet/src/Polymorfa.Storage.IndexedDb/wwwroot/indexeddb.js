@@ -1,7 +1,7 @@
-// Schema 2, source 3bacf46f9c4213426314001586f5bae43aaa77de.
+// Schema 3, source d80b581c9df122411e9149a7e39a33700a51571c.
 // One call owns every IndexedDB request and observes native transaction completion.
 const entities = new Set([
-  "sessions",
+  "connections",
   "chats",
   "messages",
   "reactions",
@@ -93,12 +93,12 @@ function open(state, operation) {
     let blocked = false;
     let request;
     try {
-      request = globalThis.indexedDB.open(state.name, 2);
+      request = globalThis.indexedDB.open(state.name, 3);
     } catch {
       reject(new Error("IndexedDB is unavailable."));
       return;
     }
-    request.onupgradeneeded = () => {
+    request.onupgradeneeded = (event) => {
       const tx = request.transaction;
       operation.transaction = tx;
       const clear = () => {
@@ -106,7 +106,7 @@ function open(state, operation) {
       };
       tx.addEventListener("complete", clear);
       tx.addEventListener("abort", clear);
-      if (blocked || state.closed || operation.cancelled) {
+      if (blocked || state.closed || operation.cancelled || event.oldVersion !== 0) {
         tx.abort();
         return;
       }
@@ -384,3 +384,66 @@ export async function close(handle) {
   state.database?.close();
   handles.delete(handle);
 }
+
+// Explicit schema-2 forward upgrade. Opaque row values and stable IDs are retained.
+const schema3Keys = {
+  connections: ["connectionId"], chats: ["connectionId", "chatId"],
+  messages: ["connectionId", "messageId"], reactions: ["connectionId", "messageId", "senderId"],
+  receipts: ["connectionId", "messageId", "recipientId"], poll_votes: ["connectionId", "messageId", "voterId"],
+  contacts: ["connectionId", "contactId"], groups: ["connectionId", "groupId"],
+  group_participants: ["connectionId", "groupId", "participantId"], media: ["connectionId", "messageId"],
+  labels: ["connectionId", "labelId"], label_associations: ["connectionId", "labelId", "targetKind", "targetId"],
+  history_chunks: ["connectionId", "syncType", "chunkOrder"], history_progress: ["connectionId", "syncType"],
+  checkpoints: ["connectionId", "stream"], events: ["connectionId", "eventId"], leases: ["connectionId"],
+};
+function migrateSchema2(owner, name, signal) {
+  if (!/^[A-Za-z][A-Za-z0-9_-]{0,63}$/.test(owner) || typeof name !== "string" || !name.length || name.length > 256 || /[\x00-\x1f\x7f]/.test(name))
+    return Promise.reject(new Error("Invalid IndexedDB upgrade target."));
+  return new Promise((resolve, reject) => {
+    let blocked = false, upgraded = false, failure;
+    const r = globalThis.indexedDB.open(name, 3);
+    const abort = () => { try { r.transaction?.abort(); } catch {} };
+    const fail = (message) => { failure = new Error(message); abort(); };
+    signal.addEventListener("abort", abort);
+    const finish = (error) => { signal.removeEventListener("abort", abort); if (error) reject(error); else resolve(true); };
+    r.onblocked = () => { blocked = true; finish(new Error("IndexedDB schema upgrade is blocked.")); };
+    r.onerror = () => finish(failure ?? new Error("IndexedDB schema-2 upgrade failed."));
+    r.onsuccess = () => { r.result.close(); finish(blocked || signal.aborted || !upgraded ? new Error("IndexedDB upgrade did not complete.") : null); };
+    r.onupgradeneeded = (event) => {
+      if (blocked || signal.aborted) { abort(); return; }
+      const db = r.result, tx = r.transaction;
+      const expected = Object.keys(schema3Keys).map(x => x === "connections" ? "sessions" : x).sort();
+      if (event.oldVersion !== 2 || JSON.stringify([...db.objectStoreNames].sort()) !== JSON.stringify(expected)) { fail("Expected a complete schema-2 database."); return; }
+      for (const name of expected) if (tx.objectStore(name).keyPath !== "_id") { fail("Invalid schema-2 object-store key."); return; }
+      const receipt = tx.objectStore("leases").get("__storage_namespace__");
+      receipt.onsuccess = () => {
+        if (receipt.result?.owner !== owner) { fail("IndexedDB storage namespace differs."); return; }
+        tx.objectStore("sessions").name = "connections";
+        for (const [entity, keys] of Object.entries(schema3Keys)) {
+          const request = tx.objectStore(entity).openCursor();
+          request.onsuccess = () => {
+            const cursor = request.result;
+            if (!cursor) return;
+            if (entity === "leases" && cursor.key === "__storage_namespace__") { cursor.continue(); return; }
+            const row = cursor.value;
+            if (!row || !Object.hasOwn(row, "sessionId") || Object.hasOwn(row, "connectionId") || !Number.isSafeInteger(row._rev) || row._rev < 1 || !row._v || typeof row._v !== "object" || Array.isArray(row._v)) { fail("Invalid or conflicting schema-2 row."); return; }
+            const { sessionId, ...values } = row, next = { ...values, connectionId: sessionId };
+            try {
+              if (keys.some(k => typeof next[k] !== "string" || !next[k].length) || "k" + keys.map(k => encodeURIComponent(next[k]).replace(/\./g, "%2E")).join(":") !== row._id || cursor.key !== row._id) { fail("Schema-2 row identity differs."); return; }
+              cursor.update(next); cursor.continue();
+            } catch { fail("Schema-2 row could not be upgraded."); }
+          };
+        }
+        upgraded = true;
+      };
+    };
+  });
+}
+
+const schemaUpgrades = new Map();
+export async function upgradeSchema2(owner, name, id) {
+  const controller = new AbortController(); schemaUpgrades.set(id, controller);
+  try { return await migrateSchema2(owner, name ?? `polymorfa_${owner}`, controller.signal); }
+  finally { schemaUpgrades.delete(id); }
+}
+export function abortSchemaUpgrade(id) { schemaUpgrades.get(id)?.abort(); }

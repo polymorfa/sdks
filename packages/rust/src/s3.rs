@@ -177,28 +177,29 @@ impl S3MediaStore {
     pub async fn upload_to_whatsapp(
         &self,
         messaging: &WhatsAppMediaResource<'_>,
-        session: &str,
+        connection: &str,
         options: S3UploadOptions,
     ) -> Result<MediaUploadResult> {
-        self.upload_using(messaging, session, options, None).await
+        self.upload_using(messaging, connection, options, None)
+            .await
     }
     pub async fn upload_to_whatsapp_with_transport(
         &self,
         messaging: &WhatsAppMediaResource<'_>,
-        session: &str,
+        connection: &str,
         options: S3UploadOptions,
         transport: &dyn MediaUploadTransport,
     ) -> Result<MediaUploadResult> {
-        if session.is_empty() || transport.name().is_empty() {
+        if connection.is_empty() || transport.name().is_empty() {
             return Err(configuration());
         }
-        self.upload_using(messaging, session, options, Some(transport))
+        self.upload_using(messaging, connection, options, Some(transport))
             .await
     }
     async fn upload_using(
         &self,
         messaging: &WhatsAppMediaResource<'_>,
-        session: &str,
+        connection: &str,
         mut options: S3UploadOptions,
         transport: Option<&dyn MediaUploadTransport>,
     ) -> Result<MediaUploadResult> {
@@ -254,7 +255,7 @@ impl S3MediaStore {
         let upload = async {
             if let Some(transport) = transport {
                 return upload_with_transport(
-                    session,
+                    connection,
                     MediaSource::Reopen(factory),
                     options.encryption,
                     transport,
@@ -265,7 +266,7 @@ impl S3MediaStore {
                 S3WhatsAppEgress::Relay => {
                     messaging
                         .upload_relay(
-                            session,
+                            connection,
                             MediaSource::Reopen(factory),
                             options.encryption,
                             options.request,
@@ -275,7 +276,7 @@ impl S3MediaStore {
                 S3WhatsAppEgress::Direct => {
                     messaging
                         .upload_direct(
-                            session,
+                            connection,
                             MediaSource::Reopen(factory),
                             options.encryption,
                             options.direct,

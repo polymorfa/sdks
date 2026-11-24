@@ -10,27 +10,27 @@ import (
 )
 
 var cloudAudienceFixtures = []operationFixture{
-	{"MessagingClient.Sessions.GetMetaPricing", "GET", "/messaging/s/meta-pricing", "since=yesterday&until=today", "", `{"data":{"source":"meta","since":"yesterday","until":"today","messages":2,"groups":[{"category":"utility","pricingModel":"PMP","pricingType":null,"billable":false,"messages":2}]}}`, "data.groups.0.billable", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().GetMetaPricing(ctx, "s", MetaPricingParams{Since: "yesterday", Until: "today"}))
+	{"MessagingClient.Connections.GetMetaPricing", "GET", "/messaging/s/meta-pricing", "since=yesterday&until=today", "", `{"data":{"source":"meta","since":"yesterday","until":"today","messages":2,"groups":[{"category":"utility","pricingModel":"PMP","pricingType":null,"billable":false,"messages":2}]}}`, "data.groups.0.billable", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().GetMetaPricing(ctx, "s", MetaPricingParams{Since: "yesterday", Until: "today"}))
 	}},
-	{"MessagingClient.Sessions.GetCloudCredentialHealth", "GET", "/messaging/s/cloud-credentials", "", "", `{"data":{"status":"action_required","checkedAt":"today","nextCheckAt":null,"token":{"status":"expired","expiresAt":"yesterday"},"missingPermissions":[],"phoneRegistration":"registered","webhookSubscription":"subscribed","failureCode":"token_expired"}}`, "data.failureCode", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().GetCloudCredentialHealth(ctx, "s"))
+	{"MessagingClient.Connections.GetCloudCredentialHealth", "GET", "/messaging/s/cloud-credentials", "", "", `{"data":{"status":"action_required","checkedAt":"today","nextCheckAt":null,"token":{"status":"expired","expiresAt":"yesterday"},"missingPermissions":[],"phoneRegistration":"registered","webhookSubscription":"subscribed","failureCode":"token_expired"}}`, "data.failureCode", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().GetCloudCredentialHealth(ctx, "s"))
 	}},
-	{"MessagingClient.Sessions.ReauthorizeCloudCredentials", "POST", "/messaging/s/cloud-credentials/reauthorize", "", "", `{"data":{"quicklinkId":"link","url":"https://connect.example/link","session":"s"}}`, "data.quicklinkId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Sessions().ReauthorizeCloudCredentials(ctx, "s"))
+	{"MessagingClient.Connections.ReauthorizeCloudCredentials", "POST", "/messaging/s/cloud-credentials/reauthorize", "", "", `{"data":{"quicklinkId":"link","url":"https://connect.example/link","connection":"s"}}`, "data.quicklinkId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Connections().ReauthorizeCloudCredentials(ctx, "s"))
 	}},
 	{"MessagingClient.CloudOnboarding.Advance", "POST", "/messaging/cloud-api/embedded-signup", "", `{"quicklinkId":"link","projectId":"p","result":{"code":"fixture-code","wabaId":"waba","phoneNumberId":"phone","coexistence":false}}`, `{"success":true,"data":{"stage":"connecting"}}`, "data.stage", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		v := false
 		return wireData(m.CloudOnboarding().Advance(ctx, EmbeddedSignupRequest{QuickLinkID: "link", ProjectID: "p", Result: &EmbeddedSignupResult{Code: "fixture-code", WABAID: "waba", PhoneNumberID: "phone", Coexistence: &v}}))
 	}},
-	{"MessagingClient.Testing.CreateHistoryFixture", "POST", "/messaging/testing/p/history-fixtures", "", `{"messages":[{"id":"message","senderPhone":"+15551234567","text":"Hello","timestamp":123,"fromMe":false}]}`, `{"fixtureId":"fixture"}`, "fixtureId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+	{"MessagingClient.Testing.CreateHistoryFixture", "POST", "/messaging/projects/p/test-history-fixtures", "", `{"messages":[{"id":"message","senderPhone":"+15551234567","text":"Hello","timestamp":123,"fromMe":false}]}`, `{"fixtureId":"fixture"}`, "fixtureId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(m.Testing().CreateHistoryFixture(ctx, "p", []TestingHistoryMessage{{ID: "message", SenderPhone: "+15551234567", Text: "Hello", Timestamp: 123}}))
 	}},
-	{"MessagingClient.Testing.TriggerEvent", "POST", "/messaging/testing/p/events", "", `{"session":"s","event":"message.received","overrides":{"text":"Hello"}}`, `{"event":"message.received","session":"s","delivery":"queued","eventId":"event","source":"test"}`, "eventId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().TriggerEvent(ctx, "p", TriggerTestEventRequest{Session: "s", Event: "message.received", Overrides: &TestEventOverrides{Text: "Hello"}}))
+	{"MessagingClient.Testing.TriggerEvent", "POST", "/messaging/s/test-events", "", `{"event":"message.received","overrides":{"text":"Hello"}}`, `{"event":"message.received","connection":"s","delivery":"queued","eventId":"event","source":"test"}`, "eventId", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().TriggerEvent(ctx, "s", TriggerTestEventRequest{Event: "message.received", Overrides: &TestEventOverrides{Text: "Hello"}}))
 	}},
-	{"MessagingClient.Testing.ListEventFixtures", "GET", "/messaging/testing/p/events/fixtures", "", "", `{"fixtures":[{"name":"message.received","description":"Incoming","overrides":["text"]}]}`, "fixtures.0.description", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
-		return wireData(m.Testing().ListEventFixtures(ctx, "p"))
+	{"MessagingClient.Testing.ListEventFixtures", "GET", "/messaging/test-events/fixtures", "", "", `{"fixtures":[{"name":"message.received","description":"Incoming","overrides":["text"]}]}`, "fixtures.0.description", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
+		return wireData(m.Testing().ListEventFixtures(ctx))
 	}},
 	{"TeamClient.Audiences.List", "GET", "/platform/audiences", "", "", `{"data":{"audiences":[{"id":"audience"}]}}`, "data.audiences.0.id", func(ctx context.Context, m *MessagingClient, o *TeamClient, p *ProjectClient) (any, error) {
 		return wireData(o.Audiences().List(ctx))
@@ -79,7 +79,7 @@ func TestAudienceAppendAndReauthorizationAreSentOnce(t *testing.T) {
 			if kind == "append" {
 				_, err = o.Audiences().AddMembers(context.Background(), "audience", AddAudienceMembersRequest{Members: []CampaignRecipientInput{}}, RequestOptions{IdempotencyKey: "stable"})
 			} else {
-				_, err = m.Sessions().ReauthorizeCloudCredentials(context.Background(), "s", RequestOptions{IdempotencyKey: "stable"})
+				_, err = m.Connections().ReauthorizeCloudCredentials(context.Background(), "s", RequestOptions{IdempotencyKey: "stable"})
 			}
 			if err == nil || count != 1 {
 				t.Fatal(err, count)

@@ -33,13 +33,13 @@ retry limits and replay behavior still apply.
 
 `Webhooks.ConstructEvent` verifies native HMAC signatures against the exact raw request bytes before parsing. `ConstructLocalEvent` separately verifies timestamped CLI forwarding signatures. Unknown event names retain their envelope and payload. Deduplicate processed event IDs in your application. `Webhooks.CreateFixture` signs exact JSON bytes for application tests.
 
-Typed resources include sessions, all 20 message content kinds, QuickLinks, webhooks, Business, Channels, contacts, groups, hosted history, profile, presence, labels, privacy, identities, client token rules, team metadata, billing, customer management, project settings, BanSafe, Flows, Functions, Voice, usage, SIP, and call controls. Native HTTP tests check the methods recorded in `coverage.json`.
+Typed resources include Connections, all 20 message content kinds, QuickLinks, webhooks, Business, Channels, contacts, groups, hosted history, profile, presence, labels, privacy, identities, client token rules, team metadata, billing, customer management, project settings, BanSafe, Flows, Functions, Voice, usage, SIP, and call controls. Native HTTP tests check the methods recorded in `coverage.json`.
 
 Known webhooks have typed payloads for all 84 names in the pinned TypeScript contract. Unknown events retain their envelope and payload. Event streams provide asynchronous enumeration and resume from a saved cursor. `MessagingMedia.SignedUrlExpiry` reads a previously received URL's expiry without a request. Media helpers verify SHA-256 and HMAC before releasing decrypted content; API downloads use a separate credential-free storage client. Voice upload sends bytes over that independent storage transport, then completes the asset through the API.
 
 `Events.LiveSource` and `EventStreamSource` feed decoded webhook bodies to an application-owned store. Each subscription resumes from its saved cursor and skips events whose body was not retained. Dispose the subscription to stop delivery; await `DisposeAsync` or `Completion` to wait for stream cleanup. `OnError` receives terminal stream or listener failures.
 
-The existing coverage ledger records 442 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
+The existing coverage ledger records 454 covered operations. The separate campaign/custody supplement adds 30 source implementations with TCP fixtures; its ledger adoption is pending. Graph and testing-phone supplements retain their separate fixtures. This is source-level contract coverage, not a registry release or hosted acceptance result.
 
 `CallsClient` tracks incoming and outgoing calls. `Call` provides answer, join, reject, leave, end, participant controls and typed media frames. Connections authenticate in the first WebSocket frame, refresh expiring credentials, detect missed heartbeats and reconnect within a bounded attempt budget. Media reconnect preserves connection identity and acknowledged preferences. `CallsTokenSource` shares concurrent provider requests while preserving each caller's cancellation. PCM uses the rate announced in `Call.SampleRate`; H.264 frames retain timestamps. Outgoing H.264 uses the protocol's reserved source zero; received source ownership is exposed separately.
 
@@ -54,7 +54,7 @@ Signal cryptography and key custody remain in the customer-operated Signal servi
 ### Campaign, audience profiles and custody defaults
 
 The 30-operation campaign/custody supplement follows API source
-`f97ad78b172e80788c33bdc0fcf28f75db9283ec`. These helpers use
+`15db8b1c9d88e2ceccb58c851e731feabb659a39`. These helpers use
 `Polymorfa-Version: 2026-10-14` when `RequestOptions.ApiVersion` is absent.
 An explicit override is preserved. Existing helpers retain their `2026-09-22`
 default. This is unpublished source; the supplement remains held for release.
@@ -98,7 +98,7 @@ Console.WriteLine(defaults.Data.EffectiveSignalMode);
 
 A null reply-flow ID detaches the flow. Customer custody null restores Project
 inheritance. Project updates require a concrete `SignalCustodyMode`; these
-settings affect future defaults and do not move existing Number keys. The four
+settings affect future defaults and do not move existing Connection keys. The four
 bound `SignalCustody` methods unwrap the data envelope once and retain metadata.
 The equivalent team `Projects` and `Customers` aliases retain
 `DataEnvelope<SignalCustodyDefault>`. Disposing a borrowed Project view does not
@@ -207,7 +207,7 @@ constructors are unchanged.
 ## Customer-owned media, history and Signal service
 
 These unpublished helpers follow TypeScript `254fc6a2d073e7fc79420cf95f9b03927d00c04a`
-and Signal service `8aa191ef0d4c318229c91bcdf474bf2d79dac47c`. Local implementation
+and Signal service `61209057729b002a2122b898d744a8813a702fc7`. Local implementation
 does not establish deployed access or enrollment. New media/history operations
 and descriptor sends select API revision `2026-10-14` per request; existing
 operations keep their previous default.
@@ -230,7 +230,7 @@ await client.Messages.SendAsync("support",
     new(new(PhoneNumber: "+15551234567"), new DescriptorImageContent(descriptor)));
 ```
 
-Relay sends ciphertext only through the session's connection. `UploadDirectAsync`
+Relay sends ciphertext only through the connection's connection. `UploadDirectAsync`
 uses a short-lived grant and a separate HTTPS client confined to WhatsApp media
 hosts. It preserves grant parameters, refuses redirects, refreshes unauthorized
 grants, resumes interrupted uploads and sends documents above 50 MiB in parts.
@@ -239,7 +239,7 @@ No changed source can reach multipart finalization.
 
 Standard `DescriptorImageContent`, `DescriptorVideoContent`,
 `DescriptorFileContent`, `DescriptorVoiceContent` and `StickerContent` send the
-media key through the API. For zero-knowledge sessions, pass
+media key through the API. For zero-knowledge connections, pass
 `descriptor.ToSignalDescriptor(...)` to the local `SignalClient` instead.
 That conversion rejects thumbnail, waveform and animation metadata because the
 pinned service does not accept them.
@@ -285,7 +285,7 @@ notifications into verified download inputs.
 ### Customer-owned storage
 
 Implement `IWhatsAppMediaUploadTransport` for application-owned uploads and pass
-it to `WhatsAppMedia.UploadAsync(session, prepared, transport, cancellation)`.
+it to `WhatsAppMedia.UploadAsync(connection, prepared, transport, cancellation)`.
 Its `WhatsAppEncryptedUploadBody` exposes media type, encrypted SHA-256, encrypted
 length and `OpenAsync(offset)`. It exposes no media key, plaintext or API
 credential. Hash getters return copies, and the returned upload information is
@@ -300,8 +300,8 @@ Changed-source integrity errors and caller transport errors remain unchanged.
 Pre-cancellation prevents transport invocation; in-progress cancellation returns
 control to the caller. Custom network code must observe its cancellation token.
 
-`Polymorfa.Sdk.Storage` provides schema-2 operations, deterministic per-field
-merges, conditional checkpoints, durable session leases and a memory adapter.
+`Polymorfa.Sdk.Storage` provides schema-3 operations, deterministic per-field
+merges, conditional checkpoints, durable connection leases and a memory adapter.
 `D1BridgeStorageAdapter.ConnectAsync` verifies a signed handshake with a
 customer-hosted D1 Worker binding before returning an atomic adapter. Read the
 expected authority and table prefix from trusted application configuration and
@@ -317,10 +317,10 @@ using var adapter = await D1BridgeStorageAdapter.ConnectAsync(new(
 var storage = new CustomerStorage(adapter);
 ```
 
-The bridge protocol is `polymorfa-d1-storage-v1`, schema 2, source
-`9ae35e671f7f4868a67c1562422c5af9284b95c1`. Every response must match the
+The bridge protocol is `polymorfa-d1-storage-v1`, schema 3, source
+`d80b581c9df122411e9149a7e39a33700a51571c`. Every response must match the
 request nonce, valid exact-body HMAC, expected authority, table prefix and schema.
-Commits contain at most 50 writes, including the engine's session fence; reads
+Commits contain at most 50 writes, including the engine's connection fence; reads
 and queries are paged at 1,000 rows. Request and response bodies are limited to
 8 MiB. Schema setup requires explicit operator enablement in the Worker.
 The adapter does not use D1 administrative REST or assume its batches are atomic.
@@ -333,7 +333,7 @@ then acknowledge the application event. Storage never enables hosted history or
 automatically acknowledges Signal events.
 
 The schema/merge baseline is storage source
-`3bacf46f9c4213426314001586f5bae43aaa77de`; the native engine additionally
+`d80b581c9df122411e9149a7e39a33700a51571c`; the native engine additionally
 stops after the first failed CAS chunk. Memory and the D1 bridge are included in
 the base SDK. Other provider adapters and full event/history reducers remain in
 progress. This package remains unpublished.
@@ -352,7 +352,7 @@ connection strings. They do not read Polymorfa database settings. Configure TLS
 and customer database roles explicitly; a table prefix is naming, not tenant
 authorization. PostgreSQL also accepts an explicit schema. Set
 `SqlStorageOptions.CreateTables = false` for operator-managed tables and export
-schema-2 DDL with `StorageSqlSchema.Statements`.
+schema-3 DDL with `StorageSqlSchema.Statements`.
 
 ```csharp
 using Polymorfa.Storage.Sql;
@@ -364,8 +364,8 @@ var storage = new Polymorfa.Sdk.Storage.CustomerStorage(adapter);
 
 Every SQL commit uses a database transaction and rolls back all writes after a
 stale revision. Commit capacities are 500 writes for SQLite and 1,000 for
-PostgreSQL/MySQL, including the engine's session fence. Scope and cursor indexes
-follow schema 2. Invalid or oversized derived identifiers fail before connecting,
+PostgreSQL/MySQL, including the engine's connection fence. Scope and cursor indexes
+follow schema 3. Invalid or oversized derived identifiers fail before connecting,
 preventing PostgreSQL name truncation. Driver errors omit connection strings, SQL
 and customer values. SQL adapters require a server application. Hosted
 Supabase/Neon/PlanetScale authority and deployment acceptance remain customer
@@ -386,7 +386,7 @@ var store = new S3MediaStore(new(customerS3Client, "customer-media", "app/"));
 var archived = await store.ArchiveAsync(descriptor,
     new("incoming/photo", customerPrivateSpoolDirectory));
 var uploaded = await store.UploadToWhatsAppAsync(
-    new(messaging.WhatsAppMedia, sessionId, "incoming/photo",
+    new(messaging.WhatsAppMedia, connectionId, "incoming/photo",
         Polymorfa.Sdk.WhatsAppUploadMediaType.Image));
 ```
 
@@ -418,14 +418,19 @@ credentials, IAM policies and deployment behavior remain separate acceptance
 gates. This package has not been published.
 
 
-`Polymorfa.Storage.Sql.SupabaseStoragePreset.Sql` exports the schema-2 customer
-tables, live session memberships and forced-RLS policies from storage source
-`3bacf46f9c4213426314001586f5bae43aaa77de`. Review and install it once in a
+`Polymorfa.Storage.Sql.SupabaseStoragePreset.Sql` exports the schema-3 customer
+tables, live connection memberships and forced-RLS policies from storage source
+`d80b581c9df122411e9149a7e39a33700a51571c`. Review and install it once in a
 customer-owned migration using `SupabasePresetOptions`. Adapter setup never
 installs these policies. Reuse the schema and prefix in `SqlStorageOptions` and
 set `CreateTables = false` for the server SQL adapter.
 
-The separate reader role can select only sessions mapped to `auth.uid()` in
+The preset grants the writer SELECT on the schema-version marker for these
+checks. For an earlier schema-3 preset, grant SELECT on
+`<schema>.<prefix>storage_schema` to the configured writer. The writer does not
+need permission to update that marker.
+
+The separate reader role can select only connections mapped to `auth.uid()` in
 `storage_memberships`. It cannot write storage data or memberships. Configure
 trusted Supabase/PostgREST JWT enforcement; never expose a direct reader SQL
 credential or let a browser set the database subject. Keep reader and server
@@ -448,14 +453,14 @@ these key names. Set `CreateTable = true` only for explicit table creation; AWS
 table activation is a separate provisioning gate. Namespaces separate stored
 keys; configure customer IAM/table authority independently.
 
-Conditional transactions contain at most 100 writes, including the session
+Conditional transactions contain at most 100 writes, including the connection
 fence. Strongly consistent queries page at 1,000 rows and scan the entity
 partition before applying its schema index. `MaxQueryRows` defaults to 100,000
 for the complete scanned partition. DynamoDB item and transaction byte limits
 still apply. Timeout and transport failures can leave a commit outcome unknown;
 resume with saved event/checkpoint state and conditional revisions.
 
-The storage source is `3bacf46f9c4213426314001586f5bae43aaa77de`. DynamoDB
+The storage source is `d80b581c9df122411e9149a7e39a33700a51571c`. DynamoDB
 Local tests use the official driver and cover all 17 entities, JSON scalars,
 atomic rollback, 2,000-message history, replay, cursor paging, checkpoints,
 expired-writer fences and caller-mutation capture. Hosted AWS credentials, IAM
@@ -467,7 +472,7 @@ The separate, unpublished `Polymorfa.Storage.MongoDb` package adds
 MongoDB driver. Pass a customer-owned `IMongoDatabase` and
 `new MongoDbStorageOptions(namespace)`. The caller configures credentials, TLS,
 server selection, connection and operation timeouts and owns client lifetime.
-The adapter derives sessions from that database's client, never reads Polymorfa
+The adapter derives connections from that database's client, never reads Polymorfa
 API credentials and requires a server app.
 
 ```csharp
@@ -477,13 +482,13 @@ var adapter = new MongoDbStorageAdapter(customerDatabase,
 ```
 
 Use a replica set or sharded deployment with transaction support. Setup refuses
-standalone servers before index changes and creates schema-2 indexes by
+standalone servers before index changes and creates schema-3 indexes by
 default. Set `CreateIndexes = false` for operator-managed indexes. Collections
 are named `polymorfa_{namespace}_{entity}`; configure database permissions
 separately from the namespace.
 
 Commits use native snapshot/majority transactions and at most 500 writes,
-including the session fence. Conditional revisions and the native driver's
+including the connection fence. Conditional revisions and the native driver's
 transaction retries preserve atomicity. MongoDB document and transaction
 lifetime limits still apply. A transport failure or timeout may leave a commit
 outcome unknown; recover using saved event/checkpoint state and conditional
@@ -495,7 +500,7 @@ retention or configure the limit for the workload. JSON remains JSON, including
 literal `$date`, `$binary` and `$numberLong` objects; BSON-specific stored types
 are refused. Caller row and query values are captured before asynchronous work.
 
-The storage source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+The storage source is `d80b581c9df122411e9149a7e39a33700a51571c`.
 Actual local replica-set tests cover all 17 entities, literal/scalar JSON,
 2,000-message history, atomic rollback, replay, checkpoints, expired-writer
 fences, namespaces, read bounds and mutation during a request. Actual standalone
@@ -526,7 +531,7 @@ Namespace keys complement customer account/container permissions and do not
 replace them.
 
 Conditional commits use native atomic batches with at most 100 writes,
-including the session fence. Each replacement carries the ETag from its point
+including the connection fence. Each replacement carries the ETag from its point
 read, so a concurrent writer rolls back the complete batch. Deletes replace
 payloads with tombstones to preserve conditional identity. Tombstones consume
 customer storage; this adapter does not silently purge them. Cosmos document,
@@ -540,7 +545,7 @@ before applying the schema index, range and cursor. `MaxQueryRows` defaults to
 retention and configure operation deadlines and lease duration for the workload.
 Caller rows and query scopes are captured before asynchronous work.
 
-The schema source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+The schema source is `d80b581c9df122411e9149a7e39a33700a51571c`.
 Actual local Cosmos DB emulator tests use the official driver and cover all
 17 entities, literal/scalar JSON, 2,000-message history, replay, checkpoints,
 expired-writer fences, tombstones, namespace/read bounds, incorrect partition
@@ -576,7 +581,7 @@ provision collections or indexes. The customer configures required composite
 indexes and retention. Firestore document, nesting, field-name and transaction
 limits still apply.
 
-This implements source `3bacf46f9c4213426314001586f5bae43aaa77de`. Literal
+This implements source `d80b581c9df122411e9149a7e39a33700a51571c`. Literal
 JSON tag-shaped objects remain ordinary objects; Firestore-native timestamps,
 references, blobs and other non-JSON values are refused. Actual emulator tests
 use the official driver for all 17 schema entities, JSON values, 2,000 history
@@ -589,10 +594,10 @@ production availability remain separate verification gates.
 The separate, unpublished `Polymorfa.Storage.LibSql` package adds
 `LibSqlStorageAdapter` using Turso's maintained
 `Turso.Data.Sqlite.Provider` 0.8.3. It reuses `Polymorfa.Storage.Sql` and its
-schema-2 DDL, typed rows and revision checks. Install the optional package only
+schema-3 DDL, typed rows and revision checks. Install the optional package only
 in server applications; the base SDK gains no database dependency. This package
 also includes the existing SQL package's SQLite, PostgreSQL and MySQL drivers.
-The storage source is `3bacf46f9c4213426314001586f5bae43aaa77de`.
+The storage source is `d80b581c9df122411e9149a7e39a33700a51571c`.
 
 ```csharp
 using Polymorfa.Storage.LibSql;
@@ -630,7 +635,7 @@ it open when disposed. Give each adapter an exclusive connection; application
 commands and another adapter must not share that connection while it is in use.
 Each commit uses an explicit database transaction, including conditional deletes
 and inserts. A revision or duplicate-key conflict rolls back the entire commit.
-The 500-write limit includes the engine's session fence. A provider batch alone
+The 500-write limit includes the engine's connection fence. A provider batch alone
 does not establish atomicity. Driver failures surfaced by adapter operations
 omit raw errors, inner exceptions, URLs, SQL and stored values. Cancellation
 retains a sanitized `OperationCanceledException`. Network failures during commit
@@ -640,7 +645,7 @@ rather than an assumed revision conflict. A fresh retry still checks the origina
 expected revision. The adapter does not silently retry an uncertain commit.
 
 `CreateTables = false` supports customer-managed schema installation. Export
-SQLite schema-2 statements with `StorageSqlSchema.Statements` and
+SQLite schema-3 statements with `StorageSqlSchema.Statements` and
 `StorageSqlDialect.Sqlite`. Direct remote Hrana connections are exercised by
 the adapter tests. Replica sync, failover and production Turso credentials are
 not acceptance-tested. This source package is not published and does not establish hosted service availability or a feature release.
@@ -666,15 +671,15 @@ mutation test fail.
 ### Entity Framework Core models
 
 The separate, unpublished `Polymorfa.Storage.EntityFrameworkCore` package exports
-schema-2 models for all 17 customer-owned SQL entities. It uses EF Core 8.0.32
+schema-3 models for all 17 customer-owned SQL entities. It uses EF Core 8.0.32
 and the SQL package's existing drivers. This configures models only; it does
 not connect to a database, install tables or change access policies.
 
 Use `PolymorfaStorageDbContext` with application-owned provider options and the
 same `StorageSqlDialect` and `SqlStorageOptions` as the native SQL adapter.
 Each entity is an EF shared-type property bag. Property names follow the
-portable schema (`sessionId`, `messageId`, `timestamp`); physical column names
-match the native adapter (`session_id`, `message_id`, `timestamp`). JSON
+portable schema (`connectionId`, `messageId`, `timestamp`); physical column names
+match the native adapter (`connection_id`, `message_id`, `timestamp`). JSON
 properties use `JsonElement?`, `_v` uses `JsonElement`, and `_rev` is a `long`
 concurrency token. Optional scalar properties are nullable.
 
@@ -688,7 +693,7 @@ await using var context = new PolymorfaStorageDbContext(
     customerEfOptions, StorageSqlDialect.Postgres,
     new SqlStorageOptions { TablePrefix = "app_" });
 var recent = await context.StorageRows(StorageEntity.Messages).AsNoTracking()
-    .Where(row => EF.Property<string>(row, "sessionId") == sessionId)
+    .Where(row => EF.Property<string>(row, "connectionId") == connectionId)
     .OrderByDescending(row => EF.Property<double?>(row, "timestamp"))
     .Take(50).ToListAsync();
 ```
@@ -710,7 +715,7 @@ rules. Model JSON converters preserve ordinary JSON, including literal
 `$date`/`$binary` objects, and snapshot parsed values independently of a
 `JsonDocument` lifetime.
 
-This follows source `3bacf46f9c4213426314001586f5bae43aaa77de`. Actual SQLite,
+This follows source `d80b581c9df122411e9149a7e39a33700a51571c`. Actual SQLite,
 PostgreSQL and MySQL checks prove all 17 native-table mappings, nullable values,
 JSON replacement, stale EF revisions and model-cache separation. An EF-created
 SQLite schema also passes the native engine's complete conformance suite,
@@ -719,7 +724,7 @@ application migrations remain customer acceptance gates.
 
 ### Store events and decoded history
 
-`StorageReducers.ReduceEvent` maps the 24 stored webhook event types to schema-2 operations. `ReduceHistoryChunk` accepts `StorageHistoryInput` and typed `StorageHistoryChunk` objects from a full WhatsApp protobuf decoder. It maps messages, media references, receipts, reactions, group membership, push names, PN/LID mappings and history progress. An explicit `StorageHistoryIdentityIndex` joins native identifiers to Polymorfa IDs; unmatched identifiers use stable `wa:` keys. Revokes and deletes permanently clear the contract's content and media secret fields. Other event types produce empty batches.
+`StorageReducers.ReduceEvent` maps the 24 stored webhook event types to schema-3 operations. `ReduceHistoryChunk` accepts `StorageHistoryInput` and typed `StorageHistoryChunk` objects from a full WhatsApp protobuf decoder. It maps messages, media references, receipts, reactions, group membership, push names, PN/LID mappings and history progress. An explicit `StorageHistoryIdentityIndex` joins native identifiers to Polymorfa IDs; unmatched identifiers use stable `wa:` keys. Revokes and deletes permanently clear the contract's content and media secret fields. Other event types produce empty batches.
 
 The HTTP history reader preserves raw protobuf bytes and decodes its documented subset. Supply a full-schema decoder to populate the storage history models. The storage reducer does not infer missing protobuf fields or download media bytes.
 
@@ -736,7 +741,7 @@ await sync.Completion;
 
 `ApplyEventAsync` also accepts `StorageApplyEventOptions.DecodeHistory` for linked `history.sync` notifications. The callback receives the typed notification and verified event, and returns a fully decoded `StorageHistoryChunk` or `null` for progress only. Replay checks the stored event ID before invoking the callback. Cloud inline history notifications do not invoke it. `storage.WebhookHandler(options)` returns the corresponding async webhook handler; verify the original body signature before calling it.
 
-`SyncToStorage` requests manual acknowledgement and resumes the saved cursor. It stores the reduced event and deduplication marker, saves the cursor with a compare-and-set guard, then acknowledges the stream. The default checkpoint is session `*`, stream `events`. Missing event bodies and retention gaps stop consumption without advancing the checkpoint or acknowledgement. Set `RequirePayload = false` only for intentional metadata-only consumption. `OnApplied` runs after acknowledgement; a failure there leaves the event and cursor stored.
+`SyncToStorage` requests manual acknowledgement and resumes the saved cursor. It stores the reduced event and deduplication marker, saves the cursor with a compare-and-set guard, then acknowledges the stream. The default checkpoint is connection `*`, stream `events`. Missing event bodies and retention gaps stop consumption without advancing the checkpoint or acknowledgement. Set `RequirePayload = false` only for intentional metadata-only consumption. `OnApplied` runs after acknowledgement; a failure there leaves the event and cursor stored.
 
 `Stop()`, disposal and cancellation stop admission of the next event. An event already admitted finishes storage, checkpoint and acknowledgement with independent operation lifetimes. Await `Completion` or `DisposeAsync` to observe its outcome. Stopping the stream does not hide failures from an admitted storage or acknowledgement operation. Adapter, decoder, checkpoint and acknowledgement failures propagate; an unacknowledged event can replay and deduplicate. `IStorageEventStreamSource` allows an application-owned stream with the same persistence ordering. These helpers acknowledge the Platform event stream; they do not change any local Signal service acknowledgement.
 
@@ -745,10 +750,10 @@ This source is unpublished. The SDK's existing server browser-credential restric
 ### Blazor WebAssembly IndexedDB storage
 
 The separate, unpublished `Polymorfa.Storage.IndexedDb` package adds
-`IndexedDbStorageAdapter` for browser-local schema-2 storage. It uses the
+`IndexedDbStorageAdapter` for browser-local schema-3 storage. Ordinary opens refuse schema 2. With other writers stopped, call `IndexedDbStorageAdapter.UpgradeSchema2Async(runtime, options, cancellation)` explicitly to preserve all 17 stores, stable row IDs, revisions, opaque fields and the namespace owner. Conflicts, blocking and cancellation abort the upgrade. It uses the
 application's `IJSRuntime` and a packaged JavaScript module with native
 IndexedDB transactions. The source contract is
-`3bacf46f9c4213426314001586f5bae43aaa77de`. The base SDK gains no browser runtime
+`d80b581c9df122411e9149a7e39a33700a51571c`. The base SDK gains no browser runtime
 or database dependency.
 
 Call it after Blazor's JavaScript runtime is available, such as from a
@@ -783,16 +788,17 @@ same origin. The application owns login/logout handling, account changes,
 retention and deletion of its device data. Browser storage can be denied,
 limited or evicted; do not treat it as a guaranteed permanent archive.
 
-All 17 entity stores use schema version 2. Setup upgrades an existing version-1
-database without discarding its existing rows. An upgrade blocked by an older
-open connection returns a safe provider error; close that connection and retry.
-Native version changes close the old connection. Unsupported newer database
-versions fail to open. Index names and scopes come from the SDK's closed schema.
+All 17 entity stores use schema version 3. Ordinary setup opens a fresh database
+or an existing version-3 database. For a version-2 database, stop other writers
+and call `UpgradeSchema2Async` explicitly. Version 1 and newer unsupported
+versions are refused. An upgrade blocked by an older open connection returns a
+provider error; close that connection and retry. Native version changes close
+the old connection. Index names and scopes come from the SDK's closed schema.
 Queries scan the selected entity within `MaxQueryRows` (1-100000, default
 100000); exceeding that count fails before loading its rows. This adapter does
 not create native secondary indexes or claim unbounded query performance.
 
-Each commit supports at most 1000 writes, including the engine's session fence.
+Each commit supports at most 1000 writes, including the engine's connection fence.
 The module reads every expected revision and queues every write in one native
 read/write transaction. It returns success only after the transaction's
 `complete` event. A conflict or confirmed abort leaves the entire commit
@@ -863,9 +869,9 @@ Writes use `HistorySyncDeliveryOverride.Descriptor`. Delivery-specific writes
 and resets, initial QuickLink custody, and QuickLink delivery select
 `2026-10-14` only when the request has no explicit `ApiVersion`. Existing GETs,
 whole-history resets and requests without new intent retain the client default.
-`Session.SignalMode` is an optional immutable fact, separate from configuration.
-Initial QuickLinks cannot select an existing session. Supplementary links require
-both session and connection, and cannot choose custody, Customer, external ID,
+`Connection.SignalMode` is an optional immutable fact, separate from configuration.
+Initial QuickLinks cannot select an existing connection. Supplementary links require
+both connection and addMethod, and cannot choose custody, Customer, external ID,
 billing controls or a single-connection goal.
 
 Direct grants and history retry/delete require server credentials. Prepared
@@ -936,7 +942,7 @@ environment acceptance remain separate release gates.
 
 Media downloads retain the successful API request deadline through body EOF. Each approved storage redirect hop has its own request deadline, retained through the final body. Async and synchronous body reads distinguish the request deadline from caller cancellation. Disposing a download releases its response, timer and owned storage transport; it does not dispose the API client. Body failures do not replay the download. Calls WebSockets retain the configured base-path prefix and authenticate in the first frame. Raw cursor pages reject repeated cursors before requesting them again, including cycles across manually requested pages.
 
-Signal finite JSON requests share one header/body deadline. Event streams enforce a requested session and report incomplete lines or frames at EOF; they retain their idle timeout and manual acknowledgment policy. ACK success requires exactly HTTP 204. Usage iteration preserves a starting cursor and rejects its repetition. Native HTTP fixtures verify these local consumer rules; they do not establish service deployment or registry availability.
+Signal finite JSON requests share one header/body deadline. Event streams enforce a requested connection and report incomplete lines or frames at EOF; they retain their idle timeout and manual acknowledgment policy. ACK success requires exactly HTTP 204. Usage iteration preserves a starting cursor and rejects its repetition. Native HTTP fixtures verify these local consumer rules; they do not establish service deployment or registry availability.
 
 ## Credential handling
 
@@ -968,7 +974,7 @@ order. These changes are unreleased source behavior.
 
 ## Official API round-2 betas
 
-Native Number catalog-cache reads/sync, marketing status, Official group JPEG
+Native Connection catalog-cache reads/sync, marketing status, Official group JPEG
 upload, identity changes, incoming carts and signed webhook batches have source
 counterparts. These additions remain unreleased betas and may return
 `feature_unavailable`. They grant no enrollment or provider authority. See
@@ -986,7 +992,7 @@ The following uses an existing server client. Preserve the API's opaque cursor;
 stop when the response omits it. Catalog prices remain exact strings.
 
 ```csharp
-var page = await client.Catalogs.ListProductsAsync("number-id", "123", new(100, "opaque_-"), new() { CancellationToken = cancellationToken });
+var page = await client.Catalogs.ListProductsAsync("connection-id", "123", new(100, "opaque_-"), new() { CancellationToken = cancellationToken });
 var nextCursor = page.Data.Data.NextCursor;
 ```
 
@@ -1004,11 +1010,17 @@ off-to-on transition. Project tokens may disable it. The SDK forwards values
 without guessing the stored state. Existing `invalid_parameter`,
 `permission_denied` and `state_conflict` errors remain authoritative.
 
-The setting affects linked-device Numbers. Cloud API Numbers ignore it.
+The setting affects linked-device Connections. Cloud API Connections ignore it.
 Unlimited concurrent calls differ from WhatsApp's apps and void Ban Insurance
 when the 30-day claim window overlaps an enabled period. Claim verdicts and
 `bansafe.claim` webhook verdicts recognize `simultaneous_calls`. Claim evidence
 includes `simultaneousCalls`; the webhook does not acquire an evidence object.
+
+Ban Credit claims also recognize `linked_device_interactive` (the Number sent
+an interactive message from a linked device in the 30 days before the ban), on
+claim reads and `bansafe.claim` webhooks. It opens `denied` with amount 0.
+Claim evidence includes `linkedDeviceInteractive`; claims filed before it was
+recorded report `false`.
 
 No browser/client-token authority, call media behavior, automatic state read,
 retry policy or feature availability is added by these SDK fields.
@@ -1079,8 +1091,8 @@ The new nullable response value is an init-only property.
 
 ## Direct passkey relay (unreleased)
 
-Use server credentials with `sessions:manage` for every operation, including reads.
-The API also checks live Number ownership, direct-pairing access, relay enrollment
+Use server credentials with `connections:manage` for every operation, including reads.
+The API also checks live Connection ownership, direct-pairing access, relay enrollment
 and the current attempt. These methods accept ceremony data supplied by an
 external participant. They do not run WebAuthn, store credentials, poll, or confirm
 a pairing automatically. Hosted QuickLink and extension relay endpoints are excluded.
@@ -1105,15 +1117,43 @@ The matching API source is accepted. Package qualification and publication are
 still required before using a released package.
 
 ```csharp
-var ticket = await client.Passkeys.IssueChallengeAsync(session);
-await client.Passkeys.GetChallengeAsync(session, ticket.Data.Data.Ticket);
-await client.Passkeys.SubmitAssertionAsync(session, suppliedAssertion);
-var state = await client.Passkeys.GetConfirmationAsync(session);
+var ticket = await client.Passkeys.IssueChallengeAsync(connection);
+await client.Passkeys.GetChallengeAsync(connection, ticket.Data.Data.Ticket);
+await client.Passkeys.SubmitAssertionAsync(connection, suppliedAssertion);
+var state = await client.Passkeys.GetConfirmationAsync(connection);
 // Invoke only after an explicit caller decision based on the current state.
 Task<ApiResponse<SuccessEnvelope<PasskeyConfirmation>>> ConfirmExplicitly() =>
-    client.Passkeys.ConfirmAsync(session, suppliedConfirmation);
+    client.Passkeys.ConfirmAsync(connection, suppliedConfirmation);
 ```
 
+## Connection call history (unreleased source)
+
+Read one Connection's calls with the other party's identity through
+`GET /messaging/{connection}/calls`. Client tokens need `read_calls`.
+The route requires the regional call-history API deployment; this source
+change does not make it available on a deployed API or package registry.
+
+```csharp
+var page = await messaging.Calls.ListAsync("support",
+    new ListConnectionCallsParameters(Limit: 25, Outcome: "missed"));
+```
+
+The response contains `data` and a nullable `nextCursor` (`Data` and
+`NextCursor` in .NET; `next_cursor` in Rust). Pass a returned cursor in the
+next request. Filters include direction, outcome and ISO 8601 start-time
+bounds `since`/`until`. `peer` may be null; its user ID, phone number and
+username may each be absent. Platform call records keep `peerRef`.
+
+## Connection-scoped Test operations
+
+The Test phone methods take a Connection ID, without a project argument:
+~~~csharp
+var phone = await client.Testing.GetPhoneAsync("support");
+var testEvent = await client.Testing.TriggerEventAsync("support", new("call.missed", FromConnection: "sales"));
+var fixtures = await client.Testing.ListEventFixturesAsync();
+~~~
+
+Send-phone-message and unlink-device helpers use the same Connection scope. The trigger body contains event, optional overrides and optional fromConnection; the target Connection is a separate method argument. The static fixture catalog has no project argument. History-fixture creation remains project-scoped. These operations require a server credential and the API’s Test-Connection access checks; a helper does not grant access or make a real Connection a Test Connection.
 
 ## Guest participants and waiting rooms (unreleased)
 
@@ -1147,13 +1187,19 @@ with `enabled`, or `admit`/`deny` with the pending participant's public ID.
 Server credentials may name their connection's participant; client tokens omit
 that field and need `voip_signal`.
 
-The API checks current credential and Number/project authority per request. Read
+The API checks current credential and Connection/project authority per request. Read
 `data.ok` and `data.code`; HTTP success alone does not confirm the provider action.
 The SDK disables automatic network retries for this operation. A missing reply
 or unknown outcome must not be replayed. Browser UI-kit controls use this HTTP
 path; programmatic media WebSocket controls retain their credential rechecks.
 This source requires the matching unreleased backend. It does not enable a
 customer environment or advance package/API availability.
+
+
+Event-stream items expose a decoded Connection view. A retained native body's
+old account selector becomes `connection` in that view. The event's encoded
+payload keeps the original bytes. Mixed selector generations are refused;
+active webhook verification and parsing keep the current envelope contract.
 
 ## Audience profile list filters (source preparation)
 

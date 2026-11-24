@@ -52,9 +52,9 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
             assert request.headers["polymorfa-version"] == "2026-09-22"
             body = await request.json()
             assert body == {
-                "purpose": "add_connection",
-                "session": "authorized-support",
-                "addConnection": "linked_devices",
+                "purpose": "add_method",
+                "connection": "authorized-support",
+                "addMethod": "linked_devices",
                 "connectionGoal": "hybrid",
             }
             links.append(body)
@@ -62,9 +62,9 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                 {
                     "success": True,
                     "data": {
-                        "purpose": "add_connection",
-                        "session": "authorized-support",
-                        "addConnection": "linked_devices",
+                        "purpose": "add_method",
+                        "connection": "authorized-support",
+                        "addMethod": "linked_devices",
                         "connectionGoal": "hybrid",
                         "id": "link",
                         "url": "https://quick.example.test/link",
@@ -78,7 +78,7 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
         body = await request.json()
         assert body == {
             "ephemeralId": "example:local-app-user",
-            "session": "authorized-support",
+            "connection": "authorized-support",
             "ttlSeconds": 600,
         }
         mints.append(body)
@@ -97,7 +97,7 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
             "EXAMPLE_APP_USERNAME": "local-user",
             "EXAMPLE_APP_PASSWORD": "local-password",
             "POLYMORFA_PROJECT_TOKEN": PROJECT_TOKEN,
-            "POLYMORFA_SESSION": "authorized-support",
+            "POLYMORFA_CONNECTION": "authorized-support",
             "POLYMORFA_RECIPIENT": "+15550001234",
             "POLYMORFA_WEBHOOK_SECRET": "local-test-signing-key",
             "POLYMORFA_API_BASE_URL": api,
@@ -147,17 +147,17 @@ async def test_native_framework_authenticated_token_host_guards_revocation(frame
                 )
                 grant = await client.post(
                     "/api/polymorfa/token",
-                    json={"session": "attacker", "ephemeralId": "attacker"},
+                    json={"connection": "attacker", "ephemeralId": "attacker"},
                     headers={"origin": origin},
                 )
                 assert grant.status_code == 200 and grant.headers["cache-control"] == "no-store"
                 assert grant.json()["value"] == "pmfa_ct_YnJvd3Nlcl9maXh0dXJl"
-                assert grant.json()["grant"]["session"] == "authorized-support"
+                assert grant.json()["grant"]["connection"] == "authorized-support"
                 assert PROJECT_TOKEN not in grant.text and len(mints) == 1
                 assert (await client.get("/api/polymorfa/conversation")).json()["messages"] == []
                 link = await client.post(
                     "/api/polymorfa/connect",
-                    json={"session": "attacker", "purpose": "initial"},
+                    json={"connection": "attacker", "purpose": "initial"},
                     headers={"origin": origin},
                 )
                 assert (
@@ -226,7 +226,7 @@ async def test_native_host_send_signed_reply_reload_and_revocation(framework, mo
             "EXAMPLE_APP_USERNAME": "local-user",
             "EXAMPLE_APP_PASSWORD": "local-password",
             "POLYMORFA_PROJECT_TOKEN": PROJECT_TOKEN,
-            "POLYMORFA_SESSION": "authorized-support",
+            "POLYMORFA_CONNECTION": "authorized-support",
             "POLYMORFA_RECIPIENT": "+15550001234",
             "POLYMORFA_WEBHOOK_SECRET": "local-test-signing-key",
             "POLYMORFA_API_BASE_URL": api,
@@ -280,7 +280,7 @@ async def test_native_host_send_signed_reply_reload_and_revocation(framework, mo
                 envelope = {
                     "id": "event-1",
                     "timestamp": "2026-10-18T10:00:01Z",
-                    "session": "authorized-support",
+                    "connection": "authorized-support",
                     "event": "message.received",
                     "payload": {
                         "id": "message-in",

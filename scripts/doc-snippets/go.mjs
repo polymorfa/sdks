@@ -2,8 +2,8 @@ import { key, p } from "./recipes.mjs";
 // Evidence: packages/go/{messaging,client,business,platform}.go and
 // operations_test.go, business_test.go, collection_wire_test.go.
 export function render(id, { client, request }) {
-  const s = p("session"),
-    sid = p("sessionId"),
+  const s = p("connection"),
+    sid = p("connectionId"),
     b = request.body;
   const quote = JSON.stringify;
   const conv = `sdk.ConversationReference{ID: ${quote(b?.conversation?.id)}}`;
@@ -15,14 +15,14 @@ export function render(id, { client, request }) {
     setTyping: `api.Messages().SetTyping(ctx, ${s}, sdk.TypingRequest{Conversation: ${conv}, State: ${quote(b?.state)}})`,
     sendReaction: `api.Messages().React(ctx, ${s}, sdk.ReactionRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}, Reaction: ${quote(b?.reaction)}})`,
     starMessage: `api.Messages().Star(ctx, ${s}, sdk.StarRequest{Conversation: ${conv}, ID: ${JSON.stringify(b?.id)}, Star: ${b?.star}})`,
-    listPlatformSessions: "api.Sessions().List(ctx)",
-    getSession: `api.Sessions().Retrieve(ctx, ${sid})`,
-    getSessionAccount: `api.Sessions().Account(ctx, ${sid})`,
-    startPlatformSession: `api.Sessions().Start(ctx, ${sid})`,
-    stopPlatformSession: `api.Sessions().Stop(ctx, ${sid})`,
-    restartSession: `api.Sessions().Restart(ctx, ${sid})`,
-    logoutSession: `api.Sessions().Logout(ctx, ${sid})`,
-    deletePlatformSession: `api.Sessions().Delete(ctx, ${sid})`,
+    listPlatformConnections: "api.Connections().List(ctx)",
+    getConnection: `api.Connections().Retrieve(ctx, ${sid})`,
+    getConnectionAccount: `api.Connections().Account(ctx, ${sid})`,
+    startPlatformConnection: `api.Connections().Start(ctx, ${sid})`,
+    stopPlatformConnection: `api.Connections().Stop(ctx, ${sid})`,
+    restartConnection: `api.Connections().Restart(ctx, ${sid})`,
+    logoutConnection: `api.Connections().Logout(ctx, ${sid})`,
+    deletePlatformConnection: `api.Connections().Delete(ctx, ${sid})`,
     getOwnBusinessProfile: `api.Business().GetProfile(ctx, ${s})`,
     getBusinessMerchantCompliance: `api.Business().GetMerchantCompliance(ctx, ${s})`,
     getBusinessLinkedAccounts: `api.Business().GetLinkedAccounts(ctx, ${s})`,

@@ -11,7 +11,7 @@ public sealed record DynamoDbStorageOptions(string Namespace, string TableName)
     public int MaxQueryRows { get; init; } = 100000;
     public override string ToString() => "DynamoDbStorageOptions(redacted)";
 }
-/// <summary>Schema-2 storage through a separate customer-owned official AWS client. The caller owns client lifetime.</summary>
+/// <summary>Schema-3 storage through a separate customer-owned official AWS client. The caller owns client lifetime.</summary>
 public sealed class DynamoDbStorageAdapter : IStorageAdapter
 {
     private readonly IAmazonDynamoDB client; private readonly DynamoDbStorageOptions options;

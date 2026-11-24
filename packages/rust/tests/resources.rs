@@ -4,74 +4,74 @@ use polymorfa_sdk::{models::*, RequestOptions};
 use serde_json::json;
 
 #[tokio::test]
-async fn session_resource_wire_contracts() {
-    let session = json!({"sessionId":"s","name":"Support","tenantId":"team","type":"linked_device","testMode":false,"status":"CONNECTED","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
-    let platform = json!({"_id":"number","_creationTime":1,"projectId":"project","sessionId":"s","name":"Support","isBusiness":true,"testMode":false,"status":"CONNECTED","messageCount":2});
+async fn connection_resource_wire_contracts() {
+    let connection = json!({"connectionId":"s","name":"Support","tenantId":"team","type":"whatsapp","method":"linked_device","testMode":false,"status":"CONNECTED","createdAt":"2026-10-11T12:00:00Z","updatedAt":"2026-10-11T12:00:00Z"});
+    let platform = json!({"_id":"number","_creationTime":1,"projectId":"project","connectionId":"s","name":"Support","isBusiness":true,"testMode":false,"status":"CONNECTED","messageCount":2});
     wire_messaging!(
         client,
         "GET",
-        "/platform/sessions",
+        "/platform/connections",
         None,
         json!({"data":[platform]}),
-        client.sessions().list(RequestOptions::default())
+        client.connections().list(RequestOptions::default())
     );
     wire_messaging!(
         client,
         "GET",
-        "/platform/sessions/s%2Fone",
+        "/platform/connections/s%2Fone",
         None,
-        json!({"success":true,"data":session}),
+        json!({"success":true,"data":connection}),
         client
-            .sessions()
+            .connections()
             .retrieve("s/one", RequestOptions::default())
     );
     wire_messaging!(
         client,
         "DELETE",
-        "/platform/sessions/s",
+        "/platform/connections/s",
         None,
-        json!({"data":{"removed":true,"sessionId":"s"}}),
-        client.sessions().delete("s", RequestOptions::default())
+        json!({"data":{"removed":true,"connectionId":"s"}}),
+        client.connections().delete("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
         "POST",
-        "/platform/sessions/s/start",
+        "/platform/connections/s/start",
         None,
-        json!({"data":{"starting":true,"sessionId":"s"}}),
-        client.sessions().start("s", RequestOptions::default())
+        json!({"data":{"starting":true,"connectionId":"s"}}),
+        client.connections().start("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
         "POST",
-        "/platform/sessions/s/stop",
+        "/platform/connections/s/stop",
         None,
-        json!({"data":{"stopping":true,"sessionId":"s"}}),
-        client.sessions().stop("s", RequestOptions::default())
+        json!({"data":{"stopping":true,"connectionId":"s"}}),
+        client.connections().stop("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
         "POST",
-        "/platform/sessions/s/restart",
+        "/platform/connections/s/restart",
         None,
         json!({"success":true,"message":"Restarting","operationId":"operation"}),
-        client.sessions().restart("s", RequestOptions::default())
+        client.connections().restart("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
         "POST",
-        "/platform/sessions/s/logout",
+        "/platform/connections/s/logout",
         None,
         json!({"success":true,"message":"Logging out","operationId":"operation"}),
-        client.sessions().logout("s", RequestOptions::default())
+        client.connections().logout("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
         "GET",
-        "/platform/sessions/s/me",
+        "/platform/connections/s/me",
         None,
         json!({"success":true,"data":{"id":"user","pushName":"Pat"}}),
-        client.sessions().account("s", RequestOptions::default())
+        client.connections().account("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
@@ -79,7 +79,7 @@ async fn session_resource_wire_contracts() {
         "/messaging/s/pair/qr?format=json",
         None,
         json!({"success":true,"data":{"qr":"qr-content"}}),
-        client.sessions().qr("s", RequestOptions::default())
+        client.connections().qr("s", RequestOptions::default())
     );
     wire_messaging!(
         client,
@@ -87,7 +87,7 @@ async fn session_resource_wire_contracts() {
         "/messaging/s/pair/code",
         Some(json!({"phone":"+1555"})),
         json!({"success":true,"data":{"code":"1234"}}),
-        client.sessions().request_pairing_code(
+        client.connections().request_pairing_code(
             "s",
             &PairCodeRequest {
                 phone: "+1555".into()
@@ -197,7 +197,7 @@ async fn quicklink_resource_wire_contracts() {
         "POST",
         "/messaging/quicklinks",
         Some(json!({"projectId":"project"})),
-        json!({"success":true,"data":{"id":"link","url":"https://link.polymorfa.com/link","session":"s","purpose":"initial","connectionGoal":"single","expiresAt":null}}),
+        json!({"success":true,"data":{"id":"link","url":"https://link.polymorfa.com/link","connection":"s","purpose":"initial","connectionGoal":"single","expiresAt":null}}),
         client.quick_links().create(
             &CreateQuickLinkRequest {
                 project_id: Some("project".into()),
@@ -211,7 +211,7 @@ async fn quicklink_resource_wire_contracts() {
         "GET",
         "/messaging/quicklinks/link%2Fone",
         None,
-        json!({"success":true,"data":{"id":"link","session":"s","purpose":"initial","connectionGoal":"single","status":"pending"}}),
+        json!({"success":true,"data":{"id":"link","connection":"s","purpose":"initial","connectionGoal":"single","status":"pending"}}),
         client
             .quick_links()
             .retrieve("link/one", RequestOptions::default())
@@ -229,9 +229,9 @@ async fn quicklink_resource_wire_contracts() {
     wire_messaging!(
         client,
         "GET",
-        "/messaging/quicklinks/availability?projectId=project&session=s",
+        "/messaging/quicklinks/availability?projectId=project&connection=s",
         None,
-        json!({"success":true,"data":{"allowed":true,"addConnection":"official_api","connections":[{"kind":"linked_devices","status":"connected","enabled":true}],"resumeQuickLinkId":null}}),
+        json!({"success":true,"data":{"allowed":true,"addMethod":"official_api","methods":[{"kind":"linked_devices","status":"connected","enabled":true}],"resumeQuickLinkId":null}}),
         client
             .quick_links()
             .availability("project", "s", RequestOptions::default())
@@ -250,7 +250,7 @@ async fn webhook_resource_wire_contracts() {
     );
     let body = CreateWebhookRequest {
         url: "https://example.test/webhook".into(),
-        session: None,
+        connection: None,
         events: Some(vec!["message.received".into()]),
         hmac_key: None,
         retries: None,
@@ -306,8 +306,8 @@ async fn project_resource_wire_contracts() {
     stats.as_object_mut().unwrap().remove("id");
     stats["_id"] = json!("project");
     stats["_creationTime"] = json!(1);
-    stats["activeSessions"] = json!(1);
-    stats["totalSessions"] = json!(2);
+    stats["activeConnections"] = json!(1);
+    stats["totalConnections"] = json!(2);
     stats["totalMessages"] = json!(3);
     wire_team!(
         client,

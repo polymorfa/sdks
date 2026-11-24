@@ -9,7 +9,7 @@ public sealed record IndexedDbStorageOptions(string Namespace)
     public int MaxQueryRows { get; init; } = 100000;
 }
 
-/// <summary>Browser-local schema-2 storage. Each conditional commit completes in one native IndexedDB transaction.</summary>
+/// <summary>Browser-local schema-3 storage. Each conditional commit completes in one native IndexedDB transaction.</summary>
 public sealed class IndexedDbStorageAdapter : IStorageAdapter, IAsyncDisposable
 {
     private readonly IJSObjectReference module;
@@ -50,6 +50,22 @@ public sealed class IndexedDbStorageAdapter : IStorageAdapter, IAsyncDisposable
             if (error is StorageException) throw;
             throw Provider();
         }
+    }
+
+    /// <summary>Upgrade a quiesced schema-2 database in one versionchange transaction. Ordinary connections never upgrade retained data.</summary>
+    public static async Task UpgradeSchema2Async(IJSRuntime runtime, IndexedDbStorageOptions options, CancellationToken cancellation = default)
+    {
+        if (!OperatingSystem.IsBrowser()) throw new StorageValidationException("IndexedDB storage requires Blazor WebAssembly in a browser.");
+        ArgumentNullException.ThrowIfNull(runtime); ArgumentNullException.ThrowIfNull(options);
+        _ = StorageSchema.ValidateNamespace(options.Namespace);
+        if (options.DatabaseName is { Length: 0 or > 256 } || options.DatabaseName?.Any(char.IsControl) == true) throw new StorageValidationException("Invalid IndexedDB upgrade target.");
+        cancellation.ThrowIfCancellationRequested();
+        await using var module = await runtime.InvokeAsync<IJSObjectReference>("import", CancellationToken.None, "./_content/Polymorfa.Storage.IndexedDb/indexeddb.js");
+        cancellation.ThrowIfCancellationRequested();
+        var id = Guid.NewGuid().ToString("N");
+        var pending = module.InvokeVoidAsync("upgradeSchema2", CancellationToken.None, options.Namespace, options.DatabaseName, id).AsTask();
+        using var registration = cancellation.Register(() => _ = module.InvokeVoidAsync("abortSchemaUpgrade", CancellationToken.None, id));
+        try { await pending; } catch (Exception) { if (cancellation.IsCancellationRequested) throw Cancelled(cancellation); throw Provider(); }
     }
 
     private async Task<Receipt> Execute(string action, object? payload, CancellationToken cancellation)

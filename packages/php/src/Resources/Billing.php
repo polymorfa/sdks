@@ -129,14 +129,14 @@ final class Billing extends Resource
     }
     private static function resourceScope(string $scope): void
     {
-        if (!in_array($scope, ['customer','number'], true)) {
-            self::invalid('Resource scope must be customer or number.');
+        if (!in_array($scope, ['customer','connection'], true)) {
+            self::invalid('Resource scope must be customer or connection.');
         }
     }
     private static function scope(string $scope): void
     {
-        if (!in_array($scope, ['project','customer','number'], true)) {
-            self::invalid('Scope must be project, customer or number.');
+        if (!in_array($scope, ['project','customer','connection'], true)) {
+            self::invalid('Scope must be project, customer or connection.');
         }
     }
     private static function resource(string $name, string $scope, string $id): string

@@ -34,7 +34,7 @@ export interface ListCloudCatalogProductsResponse {
   };
 }
 
-/** Reads catalog links visible to the authenticated WABA. Requires sessions:read. */
+/** Reads catalog links visible to the authenticated WABA. Requires connections:read. */
 export class CloudCatalogsResource {
   constructor(
     private readonly transport: HttpTransport,

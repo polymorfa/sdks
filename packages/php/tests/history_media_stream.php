@@ -65,8 +65,8 @@ foreach ([Polymorfa\Credential::clientToken('pmfa_ct_Zml4dHVyZQ'), $credential] 
         $token = new Polymorfa\CancellationToken();
         $token->cancel();
         raises(fn () => $client->chats->downloadMessageMediaStream('support', 'chat', 'message', new Polymorfa\RequestOptions(cancellation: $token)), Polymorfa\CancelledException::class);
-        foreach ([['', 'chat', 'message'], ['support', '', 'message'], ['support', 'chat', '']] as [$session, $chat, $message]) {
-            raises(fn () => $client->chats->downloadMessageMediaStream($session, $chat, $message), Polymorfa\ConfigurationException::class);
+        foreach ([['', 'chat', 'message'], ['support', '', 'message'], ['support', 'chat', '']] as [$connection, $chat, $message]) {
+            raises(fn () => $client->chats->downloadMessageMediaStream($connection, $chat, $message), Polymorfa\ConfigurationException::class);
         }
     }
     check($history === [], 'History stream credential, identifier and cancellation guards precede HTTP');

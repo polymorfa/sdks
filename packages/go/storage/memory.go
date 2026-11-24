@@ -70,9 +70,9 @@ func (a *MemoryAdapter) Commit(ctx context.Context, writes []Write) (CommitResul
 			conflicts = append(conflicts, id)
 		} else if w.Kind == "delete" {
 			fenced := false
-			session := strings.Split(id, ":")[0]
+			connection := strings.Split(id, ":")[0]
 			for _, f := range writes {
-				if f.Kind == "put" && f.Entity == "leases" && f.ExpectedRev != nil && f.Row["_id"] == session {
+				if f.Kind == "put" && f.Entity == "leases" && f.ExpectedRev != nil && f.Row["_id"] == connection {
 					rev, ok := revision(f.Row["_rev"])
 					if ok && rev == *f.ExpectedRev+1 {
 						fenced = true

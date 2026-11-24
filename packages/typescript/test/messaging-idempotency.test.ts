@@ -113,7 +113,7 @@ describe("Idempotency-Key on messaging writes", () => {
                     campaignId: "018f0000-0000-7000-8000-000000000002",
                     status: "sent",
                     from: {
-                      sessionId: "018f0000-0000-7000-8000-000000000003",
+                      connectionId: "018f0000-0000-7000-8000-000000000003",
                       phone: "+15550001111",
                     },
                     to: "+15550001112",
@@ -132,7 +132,7 @@ describe("Idempotency-Key on messaging writes", () => {
       const projectId = "018f0000-0000-7000-8000-000000000004";
       const campaignId = "018f0000-0000-7000-8000-000000000002";
       const body = {
-        sessionId: "018f0000-0000-7000-8000-000000000003",
+        connectionId: "018f0000-0000-7000-8000-000000000003",
         to: "+15550001112",
         variables: {},
       };
@@ -274,7 +274,7 @@ describe("Idempotency-Key on messaging writes", () => {
                 "content-type": "application/json",
                 "retry-after": "0",
               },
-              body: '{"error":{"code":"session_not_ready"}}',
+              body: '{"error":{"code":"connection_not_ready"}}',
             }
           : ok,
       2,

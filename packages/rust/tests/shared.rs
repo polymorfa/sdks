@@ -14,7 +14,7 @@ use tokio_util::sync::CancellationToken;
 async fn language_neutral_behavior_fixtures() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../..");
     let fixtures: Value = serde_json::from_slice(
-        &std::fs::read(root.join("contracts/fixtures/behavior.json")).unwrap(),
+        &std::fs::read(root.join("contracts/fixtures/connections/behavior.json")).unwrap(),
     )
     .unwrap();
     let mut process = Command::new("node")
@@ -103,7 +103,7 @@ async fn language_neutral_behavior_fixtures() {
             })
             .unwrap_or_default();
         let result = match id {
-            "sessions-list" => client.sessions().list(options).await.map(|r| {
+            "connections-list" => client.connections().list(options).await.map(|r| {
                 assert_eq!(r.data.data[0].name, "support");
                 (r.metadata.attempts, json!(r.data))
             }),

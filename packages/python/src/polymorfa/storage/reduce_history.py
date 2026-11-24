@@ -83,7 +83,7 @@ def _binary_text(value: object) -> str | None:
 
 
 def history_progress_operations(
-    session: str,
+    connection: str,
     sync_type: str,
     chunk_order: float | None,
     progress: float | None,
@@ -106,7 +106,7 @@ def history_progress_operations(
             Upsert(
                 "history_chunks",
                 {
-                    "sessionId": session,
+                    "connectionId": connection,
                     "syncType": sync_type,
                     "chunkOrder": str(int(chunk_order))
                     if float(chunk_order).is_integer()
@@ -119,7 +119,7 @@ def history_progress_operations(
     put_present(fields, "progress", progress, progress or 0)
     put_present(fields, "lastChunkOrder", chunk_order, chunk_order or 0)
     operations.append(
-        Upsert("history_progress", {"sessionId": session, "syncType": sync_type}, fields)
+        Upsert("history_progress", {"connectionId": connection, "syncType": sync_type}, fields)
     )
     return operations
 
@@ -334,7 +334,7 @@ def _content(
 
 
 def reduce_web_message_info(
-    info: Mapping[str, Json], *, session_id: str, keys: HistoryKeys, chat_jid: str = ""
+    info: Mapping[str, Json], *, connection_id: str, keys: HistoryKeys, chat_jid: str = ""
 ) -> list[StorageOperation]:
     key = record(info.get("key"))
     jid = text(key.get("remoteJid")) or chat_jid
@@ -355,15 +355,15 @@ def reduce_web_message_info(
     )
     sender = SELF_ID if mine else keys.contact_id(sender_jid) if sender_jid else None
     timestamp = to_millis(info.get("messageTimestamp"))
-    guard = ChatWatermarkGuard(session_id, chat, timestamp) if timestamp is not None else None
+    guard = ChatWatermarkGuard(connection_id, chat, timestamp) if timestamp is not None else None
     content = _unwrap(record(info.get("message")))
     protocol = record(content.get("protocolMessage"))
-    message_key = {"sessionId": session_id, "messageId": identity}
+    message_key = {"connectionId": connection_id, "messageId": identity}
     if protocol:
         target = keys.message_id(record(protocol.get("key")), jid)
         if not target:
             return []
-        target_key = {"sessionId": session_id, "messageId": target}
+        target_key = {"connectionId": connection_id, "messageId": target}
         code = _enum(protocol.get("type"), {"REVOKE": 0, "MESSAGE_EDIT": 14})
         if code == 0:
             fields = cleared_content()
@@ -391,7 +391,7 @@ def reduce_web_message_info(
         return [
             Upsert(
                 "reactions",
-                {"sessionId": session_id, "messageId": target, "senderId": sender},
+                {"connectionId": connection_id, "messageId": target, "senderId": sender},
                 {
                     "chatId": FieldWrite(chat, 0),
                     "emoji": FieldWrite(reaction.get("text") or "", version),
@@ -483,7 +483,7 @@ def reduce_web_message_info(
                 Upsert(
                     "receipts",
                     {
-                        "sessionId": session_id,
+                        "connectionId": connection_id,
                         "messageId": identity,
                         "recipientId": keys.contact_id(user),
                     },
@@ -504,7 +504,7 @@ def reduce_web_message_info(
                 Upsert(
                     "reactions",
                     {
-                        "sessionId": session_id,
+                        "connectionId": connection_id,
                         "messageId": identity,
                         "senderId": SELF_ID if reactor == SELF_ID else keys.contact_id(reactor),
                     },
@@ -520,7 +520,7 @@ def reduce_web_message_info(
         operations.append(
             Upsert(
                 "contacts",
-                {"sessionId": session_id, "contactId": keys.contact_id(sender_jid)},
+                {"connectionId": connection_id, "contactId": keys.contact_id(sender_jid)},
                 {
                     "jid": FieldWrite(normalize_jid(sender_jid), 0),
                     "pushName": FieldWrite(info["pushName"], timestamp),
@@ -531,7 +531,7 @@ def reduce_web_message_info(
 
 
 def _conversation(
-    session: str, conversation: dict[str, Json], keys: HistoryKeys
+    connection: str, conversation: dict[str, Json], keys: HistoryKeys
 ) -> list[StorageOperation]:
     jid = text(conversation.get("id"))
     if not jid:
@@ -573,7 +573,7 @@ def _conversation(
         put(fields, "muteEndAt", to_millis(mute) if mute > 0 else None, snapshot)
     put_present(fields, "lastMessageAt", last, last or 0)
     operations: list[StorageOperation] = [
-        Upsert("chats", {"sessionId": session, "chatId": chat}, fields)
+        Upsert("chats", {"connectionId": connection, "chatId": chat}, fields)
     ]
     if kind == "group":
         group: Fields = {"jid": FieldWrite(bare, 0)}
@@ -582,7 +582,7 @@ def _conversation(
         put_present(group, "createdAt", to_millis(conversation.get("createdAt")), 0)
         creator = text(conversation.get("createdBy"))
         put_present(group, "createdBy", normalize_jid(creator) if creator else None, 0)
-        operations.append(Upsert("groups", {"sessionId": session, "groupId": chat}, group))
+        operations.append(Upsert("groups", {"connectionId": connection, "groupId": chat}, group))
         for participant in records(conversation.get("participant")):
             user = text(participant.get("userJid"))
             if user:
@@ -595,7 +595,7 @@ def _conversation(
                     Upsert(
                         "group_participants",
                         {
-                            "sessionId": session,
+                            "connectionId": connection,
                             "groupId": chat,
                             "participantId": keys.contact_id(user),
                         },
@@ -611,14 +611,14 @@ def _conversation(
         if entry.get("message"):
             operations.extend(
                 reduce_web_message_info(
-                    record(entry["message"]), session_id=session, keys=keys, chat_jid=bare
+                    record(entry["message"]), connection_id=connection, keys=keys, chat_jid=bare
                 )
             )
     return operations
 
 
 def reduce_history_chunk(
-    session_id: str,
+    connection_id: str,
     chunk: object,
     *,
     identities: HistoryIdentityIndex | None = None,
@@ -635,14 +635,14 @@ def reduce_history_chunk(
     keys = HistoryKeys(identities, data)
     operations: list[StorageOperation] = []
     for conversation in records(data.get("conversations")):
-        operations.extend(_conversation(session_id, conversation, keys))
+        operations.extend(_conversation(connection_id, conversation, keys))
     for pushname in records(data.get("pushnames")):
         jid, name = text(pushname.get("id")), text(pushname.get("pushname"))
         if jid and name and chat_kind(normalize_jid(jid)) == "direct":
             operations.append(
                 Upsert(
                     "contacts",
-                    {"sessionId": session_id, "contactId": keys.contact_id(jid)},
+                    {"connectionId": connection_id, "contactId": keys.contact_id(jid)},
                     {"jid": FieldWrite(normalize_jid(jid), 0), "pushName": FieldWrite(name, 0)},
                 )
             )
@@ -653,7 +653,7 @@ def reduce_history_chunk(
                 operations.append(
                     Upsert(
                         "contacts",
-                        {"sessionId": session_id, "contactId": keys.contact_id(jid)},
+                        {"connectionId": connection_id, "contactId": keys.contact_id(jid)},
                         {
                             "phoneNumber": FieldWrite("+" + normalize_jid(pn).split("@")[0], 0),
                             "lidJid": FieldWrite(normalize_jid(lid), 0),
@@ -672,7 +672,7 @@ def reduce_history_chunk(
                         Upsert(
                             "group_participants",
                             {
-                                "sessionId": session_id,
+                                "connectionId": connection_id,
                                 "groupId": keys.chat_id(group),
                                 "participantId": keys.contact_id(user),
                             },
@@ -687,7 +687,7 @@ def reduce_history_chunk(
     conversations = records(data.get("conversations"))
     operations.extend(
         history_progress_operations(
-            session_id,
+            connection_id,
             history_sync_type_name(data.get("syncType")),
             number(data.get("chunkOrder")),
             number(data.get("progress")),
@@ -697,7 +697,7 @@ def reduce_history_chunk(
         )
     )
     return OperationBatch(
-        session_id,
+        connection_id,
         operations,
         "history:" + chunk_id if chunk_id is not None else None,
         "history.chunk",

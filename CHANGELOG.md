@@ -2,7 +2,85 @@
 
 ## Unreleased
 
-- UI Kit: give `CallNumberPicker` built-in themes, appearance variables and
+- Client tokens cover a messaging frontend. All six SDKs, the drop-in handler
+  and the UI Kit accept the new Connection actions `conversations_read`,
+  `conversations_manage`, `labels_read`, `labels_manage`, `contacts_manage`,
+  `profile_read`, `profile_manage`, `channels_read`, `channels_manage`,
+  `business_read` and `presence_write`. Customer-scoped tokens accept every
+  action except `mcp`, including Calls, groups and call records. Requires the
+  matching API change.
+- UI Kit: `client.messaging()` gains `chats` (history, archive, disappearing
+  messages, edit and delete), `labels`, `profile` (profile and privacy),
+  `channels`, `catalog`, `presence.set`, contact block, unblock and info, and
+  `groups.setPicture` (base64). Browser Calls take `clientTokenConnection` so a
+  Customer token names the Connection it calls from.
+
+- A Connection's call history with the other party's identity: `GET
+/messaging/{connection}/calls` in all six SDKs (`calls.list`,
+  `ConnectionCalls().List` in Go, `Calls.ListAsync` in .NET). `peer` carries the
+  user ID, phone number and username. Records are served from the number's
+  data region; client tokens need the new `read_calls` action. Platform call
+  records are unchanged and keep `peerRef`. Requires the matching API change.
+- UI Kit call log: `<CallLog/>`, `<pmfa-call-log>` and an Inbox Chats/Calls
+  switch read the Connection's calls from the API, merge repeat calls as WhatsApp
+  does and offer call back. `ContactListView` now takes `className` and
+  `classNames`; `ContactList` and `<pmfa-contact-list>` show the Contacts list
+  on their own.
+- Drop-in handler: call events without a known peer are no longer relayed to
+  grants limited to conversations.
+
+- UI Kit: New chat and a contacts directory. `<NewChat/>` and
+  `<pmfa-new-chat>` list the WhatsApp account's contacts (`read_contact`),
+  search names without regard to case or accents, check unsaved numbers and
+  open the chosen chat as a draft until its first message. The Inbox shows
+  them from its New chat button.
+- UI Kit: groups. `<GroupDetails/>` and `<pmfa-group-details>` show a group's
+  info and members and make the changes client tokens allow: create, rename,
+  describe, add and remove members, promote and demote admins, read and reset
+  the invite link, the four settings and exit. Group threads name each
+  message's author. Framework-neutral `ContactDirectoryController`,
+  `NewChatController`, `GroupController` and `client.messaging().groups`
+  back both. Relayed group messages no longer rename the chat after their
+  sender.
+- Client tokens: `groups_read` and `groups_manage` in all six server SDKs,
+  the drop-in handler and the UI Kit, for Connection and Customer tokens. Requires the
+  matching API change; until it is accepted the API refuses these actions.
+- UI Kit calls: toggle buttons no longer report `aria-pressed` alongside an
+  action label ("Turn camera on", pressed).
+- UI Kit Inbox: with a custom `source` and no provider client, opening a
+  conversation with a phone number no longer throws from the call button.
+- UI Kit: `<ContactList/>` without a custom source waits for the token's
+  first grant before loading, as `<NewChat/>` does, instead of failing with a
+  permission error. The browser store keeps a group message's author when it
+  caches backend history, so later local reads still name each sender, without
+  ever using an author's name as the group's name.
+  `MessageInput` gains optional `senderId` and `pushName`.
+- UI Kit: `<CallLog/>` and `<GroupDetails/>` also wait for the first grant
+  before loading, so manage controls appear once `groups_manage` arrives.
+  `<GroupDetails/>` follows a new `groupId` instead of changing the first
+  group. The call log keeps calls with different outcomes on separate rows,
+  keeps live updates that arrive during a reload, shows a failed page beside
+  the loaded calls, and `<pmfa-call-log>` reads with a replacement client.
+  The Inbox keeps a chat opened while its list loads, keeps a direct message
+  with `isGroup: false` direct, opens chats from cached panels in the current
+  controller, gives open panels a new configuration and resets the group-info
+  toggle when the panel closes. `<pmfa-new-chat>` offers New group once a
+  later grant allows it and honours `no-groups` for host controllers.
+  `<pmfa-group-details>` keeps an unsaved edit across renders, loads
+  replacement contacts at once and can be moved in the document. A group read
+  that finishes after leaving no longer marks the group ready again.
+
+- Breaking: Test Connection phone and event methods use the Connection-scoped routes
+  in API contract revision `f180dc1ee2`. `testing.getPhone`, `sendPhoneMessage`
+  and `unlinkPhoneDevice` take a Connection ID and no project argument, and
+  `testing.triggerEvent(connectionId, body)` omits body `connection` and accepts
+  `fromConnection`. `listEventFixtures()` has no project argument. History fixtures
+  keep their project argument and use
+  `/messaging/projects/{projectId}/test-history-fixtures`. Real Connections return
+  `404 resource_not_found`. Scope names remain `sandbox:read` / `sandbox:write`.
+  Applies to all six SDKs. Source-only and unpublished.
+
+- UI Kit: give `CallConnectionPicker` built-in themes, appearance variables and
   styling slots. It supports `classNames` and unstyled mode without a host
   stylesheet.
 - UI Kit: remove `TemplateManager`, `SessionStatus`, `ConnectWhatsAppButton`,
@@ -48,16 +126,16 @@
   Contract snapshots, coverage fingerprints, the machine-credential fixture and
   the documentation snippet catalog are re-pinned to that revision. The
   revision also carries later API dev changes. The coverage ledger now holds 671
-  operations: 451 covered, 2 partial, 58 missing and 160 excluded in TypeScript.
+  operations: 457 covered, 2 partial, 52 missing and 160 excluded in TypeScript.
   The TypeScript error-code list adds the new `billing_credit_required`,
   `safe_mode_not_entitled`, `warmup_plan_not_entitled`, `team_deletion_scheduled`,
   `terms_acceptance_required`, `terms_activation_blocked` and
   `idempotency_replay_unavailable` codes, and the campaign recipient sent and
-  failed webhook payloads type the optional `messageIndex`. The Test number
-  routes (`/messaging/testing/...`), `/platform/keys` and `/platform/tokens` left
-  the specification, so `projectTokens.list`, `apiKeys.list` and
-  `apiKeys.deactivate` and the older Test-event helpers target retired paths
-  until a removal or update decision lands. Publish
+  failed webhook payloads type the optional `messageIndex`. The
+  `/platform/keys` and `/platform/tokens` routes left the specification, so
+  `projectTokens.list`, `apiKeys.list` and `apiKeys.deactivate` target retired
+  paths until a removal or update decision lands. The Test number helpers use
+  the Number-scoped routes (see the entry above). Publish
   these SDKs only after the API change is deployed: a build from this source
   cannot call an API that still uses the old names. Source-only and
   unpublished.
@@ -72,6 +150,16 @@
   implied. Rust participant struct literals need the new optional fields; prefer
   defaults where available. Go callers should use keyed struct literals. Appended
   .NET record fields also change the positional deconstruction shape.
+
+- All six server SDKs recognize the Ban Credit claim verdict
+  `linked_device_interactive` on claim reads and `bansafe.claim` webhooks, and
+  type claim evidence `linkedDeviceInteractive`. Rust's closed verdict enums
+  previously rejected this value. Source compatibility: Rust exhaustive
+  `match` on the verdict enums and `ClaimEvidence` struct literals, Go unkeyed `BanSafeClaimEvidence`
+  literals and the C# `BanSafeClaimEvidence` constructor/Deconstruct need the
+  added members. Pinned to API contract revision `f180dc1ee2` (merged to API `dev` as
+  `a3db53e74c`), which contains merged API #845. Package publication follows the existing release
+  process.
 
 - UI Kit: keep a 320px thread beside the Inbox list in narrow two-pane layouts, and include the linked guides in the package.
 
@@ -103,7 +191,6 @@
 - Add the read-only nullable call-settings exclusion-end response field across all six SDKs. Rust response struct literals require the new optional field; C# positional construction remains compatible. Bound to accepted API source `77e9ce31`, which also clarifies when a ban is excluded; unreleased.
 
 - TypeScript, Python and PHP call-settings updates now refuse keys the API does not accept, including the response-only `simultaneousCallsCoverageExcludedUntil`, before sending. Go, Rust and .NET requests already serialize only writable fields.
-
 - All six server SDKs expose optional automatic-pause `reason`/`code` and
   optional recipient-skip `messageIndex`/`followUpId` from accepted API source
   `9bb1e2ed`. Future reason/code strings and raw envelope fields are retained;

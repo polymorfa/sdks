@@ -117,8 +117,8 @@ impl Storage {
             Ok(now)
         }
     }
-    async fn acquire(&self, session: &str) -> StorageResult<Lease> {
-        let id = encode_key(Entity::Leases, &key(&[("sessionId", session)]))?;
+    async fn acquire(&self, connection: &str) -> StorageResult<Lease> {
+        let id = encode_key(Entity::Leases, &key(&[("connectionId", connection)]))?;
         let owner = uuid::Uuid::new_v4().to_string();
         let start = Instant::now();
         loop {
@@ -138,9 +138,10 @@ impl Storage {
                         .unwrap_or(0.)
                         <= now
             }) {
-                let mut row = existing
-                    .clone()
-                    .unwrap_or(empty_row(Entity::Leases, &key(&[("sessionId", session)]))?);
+                let mut row = existing.clone().unwrap_or(empty_row(
+                    Entity::Leases,
+                    &key(&[("connectionId", connection)]),
+                )?);
                 row.fields.insert("owner".into(), owner.clone().into());
                 row.fields.insert(
                     "expiresAt".into(),
@@ -283,7 +284,7 @@ impl Storage {
                     deleted.insert(slot);
                 }
                 StorageOperation::Checkpoint {
-                    session_id,
+                    connection_id,
                     stream,
                     cursor,
                     expected_cursor,
@@ -303,7 +304,7 @@ impl Storage {
                     }
                     let mut row = current.unwrap_or(empty_row(
                         Entity::Checkpoints,
-                        &key(&[("sessionId", session_id), ("stream", stream)]),
+                        &key(&[("connectionId", connection_id), ("stream", stream)]),
                     )?);
                     row.fields.insert("cursor".into(), cursor.clone().into());
                     row.fields
@@ -428,7 +429,7 @@ impl Storage {
     }
     async fn clear_chat(
         &self,
-        session: &str,
+        connection: &str,
         chat: &str,
         up_to: f64,
         lease: &mut Lease,
@@ -442,7 +443,7 @@ impl Storage {
                     Entity::Messages,
                     &IndexQuery {
                         index: "by_chat".into(),
-                        equals: key(&[("sessionId", session), ("chatId", chat)]),
+                        equals: key(&[("connectionId", connection), ("chatId", chat)]),
                         range: Some(IndexRange {
                             lte: Some(up_to),
                             ..Default::default()
@@ -463,7 +464,7 @@ impl Storage {
                     .get("messageId")
                     .and_then(Value::as_str)
                     .ok_or(StorageError::Invalid("Invalid stored message ID"))?;
-                let message_key = key(&[("sessionId", session), ("messageId", id)]);
+                let message_key = key(&[("connectionId", connection), ("messageId", id)]);
                 deletes.push(StorageOperation::Delete {
                     entity: Entity::Media,
                     key: message_key.clone(),
@@ -526,7 +527,10 @@ impl Storage {
             if let Some(guard) = guard(op) {
                 keys.insert(encode_key(
                     Entity::Chats,
-                    &key(&[("sessionId", &guard.session_id), ("chatId", &guard.chat_id)]),
+                    &key(&[
+                        ("connectionId", &guard.connection_id),
+                        ("chatId", &guard.chat_id),
+                    ]),
                 )?);
             }
         }
@@ -540,7 +544,7 @@ impl Storage {
                     .map(|g| {
                         let id = encode_key(
                             Entity::Chats,
-                            &key(&[("sessionId", &g.session_id), ("chatId", &g.chat_id)]),
+                            &key(&[("connectionId", &g.connection_id), ("chatId", &g.chat_id)]),
                         )?;
                         let mark = chats
                             .get(&id)
@@ -569,31 +573,33 @@ impl Storage {
             .collect()
     }
     pub async fn apply(&self, batch: &OperationBatch) -> StorageResult<ApplyResult> {
-        if batch.session_id.is_empty() {
-            return Err(StorageError::Invalid("Storage session is required"));
+        if batch.connection_id.is_empty() {
+            return Err(StorageError::Invalid("Storage connection is required"));
         }
         for operation in &batch.operations {
-            let session = match operation {
-                StorageOperation::ClearChat { session_id, .. }
-                | StorageOperation::Checkpoint { session_id, .. } => Some(session_id.as_str()),
+            let connection = match operation {
+                StorageOperation::ClearChat { connection_id, .. }
+                | StorageOperation::Checkpoint { connection_id, .. } => {
+                    Some(connection_id.as_str())
+                }
                 StorageOperation::Upsert { entity, key, .. }
                 | StorageOperation::Patch { entity, key, .. }
                 | StorageOperation::Delete { entity, key } => {
                     if *entity == Entity::Leases {
                         return Err(StorageError::Invalid("Lease rows are owned by the engine"));
                     }
-                    key.get("sessionId").map(String::as_str)
+                    key.get("connectionId").map(String::as_str)
                 }
             };
-            if session != Some(batch.session_id.as_str())
-                || guard(operation).is_some_and(|g| g.session_id != batch.session_id)
+            if connection != Some(batch.connection_id.as_str())
+                || guard(operation).is_some_and(|g| g.connection_id != batch.connection_id)
             {
                 return Err(StorageError::Invalid(
-                    "Storage batch cannot write a foreign session",
+                    "Storage batch cannot write a foreign connection",
                 ));
             }
         }
-        let mut lease = self.acquire(&batch.session_id).await?;
+        let mut lease = self.acquire(&batch.connection_id).await?;
         let result = self.apply_leased(batch, &mut lease).await;
         let release = self.release(&lease).await;
         match (result, release) {
@@ -612,7 +618,7 @@ impl Storage {
             self.renew_if_needed(lease).await?;
             let mut row = empty_row(
                 Entity::Events,
-                &key(&[("sessionId", &batch.session_id), ("eventId", id)]),
+                &key(&[("connectionId", &batch.connection_id), ("eventId", id)]),
             )?;
             if self
                 .adapter
@@ -655,12 +661,14 @@ impl Storage {
         let mut writes = self.apply_rows(&plain, &[], lease).await?;
         for op in clears {
             if let StorageOperation::ClearChat {
-                session_id,
+                connection_id,
                 chat_id,
                 up_to,
             } = op
             {
-                writes += self.clear_chat(session_id, chat_id, *up_to, lease).await?;
+                writes += self
+                    .clear_chat(connection_id, chat_id, *up_to, lease)
+                    .await?;
             }
         }
         let kept = self.watermarks(guarded, lease).await?;
@@ -716,13 +724,13 @@ impl Storage {
     }
     pub async fn checkpoint(
         &self,
-        session: &str,
+        connection: &str,
         stream: &str,
     ) -> StorageResult<Option<Checkpoint>> {
         Ok(self
             .get(
                 Entity::Checkpoints,
-                &key(&[("sessionId", session), ("stream", stream)]),
+                &key(&[("connectionId", connection), ("stream", stream)]),
             )
             .await?
             .and_then(|row| {
@@ -735,11 +743,11 @@ impl Storage {
                     })
             }))
     }
-    pub async fn has_event(&self, session: &str, id: &str) -> StorageResult<bool> {
+    pub async fn has_event(&self, connection: &str, id: &str) -> StorageResult<bool> {
         Ok(self
             .get(
                 Entity::Events,
-                &key(&[("sessionId", session), ("eventId", id)]),
+                &key(&[("connectionId", connection), ("eventId", id)]),
             )
             .await?
             .is_some())
@@ -751,12 +759,14 @@ fn operation_slot(op: &StorageOperation) -> StorageResult<(Entity, String)> {
         | StorageOperation::Patch { entity, key, .. }
         | StorageOperation::Delete { entity, key } => Ok((*entity, encode_key(*entity, key)?)),
         StorageOperation::Checkpoint {
-            session_id, stream, ..
+            connection_id,
+            stream,
+            ..
         } => Ok((
             Entity::Checkpoints,
             encode_key(
                 Entity::Checkpoints,
-                &key(&[("sessionId", session_id), ("stream", stream)]),
+                &key(&[("connectionId", connection_id), ("stream", stream)]),
             )?,
         )),
         _ => Err(StorageError::Invalid("Unexpected clear operation")),

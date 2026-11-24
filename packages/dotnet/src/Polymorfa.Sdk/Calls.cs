@@ -2,8 +2,8 @@ using System.Text.RegularExpressions;
 
 namespace Polymorfa.Sdk;
 
-public sealed record PlaceCallRequest(string? Session = null, string? To = null, IReadOnlyList<string>? Participants = null, string? GroupId = null, bool? Video = null, bool? Exclusive = null, string? Participant = null);
-public sealed record PlacedCall(string CallId, string Session, bool Video);
+public sealed record PlaceCallRequest(string? Connection = null, string? To = null, IReadOnlyList<string>? Participants = null, string? GroupId = null, bool? Video = null, bool? Exclusive = null, string? Participant = null);
+public sealed record PlacedCall(string CallId, string Connection, bool Video);
 public sealed record AcceptCallRequest(bool? Exclusive = null, bool? Video = null, string? Participant = null);
 public sealed record AcceptedCall(bool Answered, string AnsweredBy, bool Exclusive);
 public sealed record RejectIncomingCallRequest(string From);
@@ -12,10 +12,10 @@ public sealed record RejectCallRequest(string? Participant = null);
 public sealed record LeaveCallRequest(string ConnectionId, string? Participant = null);
 public sealed record AddCallParticipantRequest(string To);
 public sealed record CallParticipant(string Id, bool AudioMuted, bool Video, string State, string? PhoneNumber = null, string? Bsuid = null, string? Username = null, bool? HandRaised = null, bool? Guest = null, string? Name = null);
-public sealed record CreateCallLinkRequest(string Session, bool? Video = null);
-public sealed record PreviewCallLinkRequest(string Session, string Token, bool? Video = null);
-public sealed record CreatedCallLink(string Session, string Token, string Url, bool Video);
-public sealed record PreviewedCallLink(string Session, bool Video, ConversationReference CreatorConversationIdentity, bool ApprovalRequired, bool IsAdmin);
+public sealed record CreateCallLinkRequest(string Connection, bool? Video = null);
+public sealed record PreviewCallLinkRequest(string Connection, string Token, bool? Video = null);
+public sealed record CreatedCallLink(string Connection, string Token, string Url, bool Video);
+public sealed record PreviewedCallLink(string Connection, bool Video, ConversationReference CreatorConversationIdentity, bool ApprovalRequired, bool IsAdmin);
 public sealed record WaitingRoomControl(string RequestId, string Operation, bool? Enabled = null, string? ParticipantId = null)
 {
     public string Type => "waiting_room_control";
@@ -24,14 +24,14 @@ public sealed record WaitingRoomControlRequest(string ConnectionId, WaitingRoomC
 public sealed record WaitingRoomControlResult(string Type, string RequestId, bool Ok, string? Code = null);
 public sealed record CallReactionRequest(string ConnectionId, string Emoji, string? Participant = null);
 public sealed record CallHandRequest(string ConnectionId, bool Raised, string? Participant = null);
-public sealed record CheckCallRequest(string Session, string To);
+public sealed record CheckCallRequest(string Connection, string To);
 public sealed record CallPermissionLimit(string Period, long MaxAllowed, long Used, string? ResetsAt);
 public sealed record CallPermissionAction(bool Allowed, IReadOnlyList<CallPermissionLimit> Limits);
 public sealed record CallPermissionActions(CallPermissionAction? RequestPermission, CallPermissionAction? StartCall);
 public record CallPermissionState(string Status, string? ExpiresAt, string? Source, string? UpdatedAt, string? CheckedAt, bool Fresh, CallPermissionActions? Actions);
 public sealed record CallPermission(string Status, string? ExpiresAt, string? Source, string? UpdatedAt, string? CheckedAt, bool Fresh, CallPermissionActions? Actions, ConversationReference Conversation) : CallPermissionState(Status, ExpiresAt, Source, UpdatedAt, CheckedAt, Fresh, Actions);
 public sealed record CallCheck(bool Allowed, string? Refusal, CallPermissionState? Permission);
-public sealed record SessionCallSettings(bool CallsEnabled, bool ConferenceMode, string InboundRoute, string? SipTrunkId, bool SipClaim, bool HostCloudApiCalls, long Revision, string? UpdatedAt, bool SimultaneousCalls)
+public sealed record ConnectionCallSettings(bool CallsEnabled, bool ConferenceMode, string InboundRoute, string? SipTrunkId, bool SipClaim, bool HostCloudApiCalls, long Revision, string? UpdatedAt, bool SimultaneousCalls)
 {
     /// <summary>Read-only RFC3339 exclusion end. Null is not a coverage guarantee.</summary>
     public string? SimultaneousCallsCoverageExcludedUntil { get; init; }
@@ -54,29 +54,31 @@ public sealed class Calls
         if (http.Credential.Kind == CredentialKind.ClientToken || !Regex.IsMatch(value, "^[A-Za-z0-9._:@-]{1,128}$")) throw new PolymorfaValidationException("Invalid server participant.", "invalid_parameter");
     }
     private static void Connection(string value) { if (!Regex.IsMatch(value, "^[A-Za-z0-9_-]{8,64}$")) throw new PolymorfaValidationException("Invalid connectionId.", "invalid_parameter"); }
-    private void Link(string session, RequestOptions? options)
+    private void Link(string connection, RequestOptions? options)
     {
-        http.Credential.RequireServer(); NonEmpty(session, "session");
-        if (session.Length > 128 || options?.IdempotencyKey is not null || options?.Headers?.Keys.Any(key => key.Equals("idempotency-key", StringComparison.OrdinalIgnoreCase)) == true) throw new PolymorfaValidationException("Call links require a session and do not support idempotency keys.", "invalid_parameter");
+        http.Credential.RequireServer(); NonEmpty(connection, "connection");
+        if (connection.Length > 128 || options?.IdempotencyKey is not null || options?.Headers?.Keys.Any(key => key.Equals("idempotency-key", StringComparison.OrdinalIgnoreCase)) == true) throw new PolymorfaValidationException("Call links require a connection and do not support idempotency keys.", "invalid_parameter");
     }
     public Task<ApiResponse<SuccessEnvelope<CreatedCallLink>>> CreateCallLinkAsync(CreateCallLinkRequest body, RequestOptions? options = null)
     {
-        Link(body.Session, options); return http.RequestAsync<SuccessEnvelope<CreatedCallLink>>(HttpMethod.Post, "/messaging/voip/call-links", body, (options ?? new()) with { MaxNetworkRetries = 0 });
+        Link(body.Connection, options); return http.RequestAsync<SuccessEnvelope<CreatedCallLink>>(HttpMethod.Post, "/messaging/voip/call-links", body, (options ?? new()) with { MaxNetworkRetries = 0 });
     }
     public Task<ApiResponse<SuccessEnvelope<PreviewedCallLink>>> PreviewCallLinkAsync(PreviewCallLinkRequest body, RequestOptions? options = null)
     {
-        Link(body.Session, options); if (!Regex.IsMatch(body.Token, "^[A-Za-z0-9_-]{1,256}$")) throw new PolymorfaValidationException("Invalid call-link token.", "invalid_parameter");
+        Link(body.Connection, options); if (!Regex.IsMatch(body.Token, "^[A-Za-z0-9_-]{1,256}$")) throw new PolymorfaValidationException("Invalid call-link token.", "invalid_parameter");
         return http.RequestAsync<SuccessEnvelope<PreviewedCallLink>>(HttpMethod.Post, "/messaging/voip/call-links/preview", body, (options ?? new()) with { MaxNetworkRetries = 0 });
     }
     public Task<ApiResponse<SuccessEnvelope<PlacedCall>>> PlaceAsync(PlaceCallRequest body, RequestOptions? options = null)
     {
-        if (http.Credential.Kind != CredentialKind.ClientToken) NonEmpty(body.Session, "session");
+        if (http.Credential.Kind != CredentialKind.ClientToken) NonEmpty(body.Connection, "connection");
         var count = (body.To is not null ? 1 : 0) + (body.Participants is not null ? 1 : 0) + (body.GroupId is not null ? 1 : 0);
         if (count != 1 || body.To is not null && string.IsNullOrWhiteSpace(body.To) || body.GroupId is not null && string.IsNullOrWhiteSpace(body.GroupId) || body.Participants is { } people && (people.Count is < 2 or > 31 || people.Any(string.IsNullOrWhiteSpace) || people.Distinct().Count() != people.Count)) throw new PolymorfaValidationException("Provide one valid to, participants, or groupId target.", "invalid_parameter");
         Participant(body.Participant); return http.RequestAsync<SuccessEnvelope<PlacedCall>>(HttpMethod.Post, "/messaging/voip/calls", body, options);
     }
     public Task<ApiResponse<SuccessEnvelope<AcceptedCall>>> AcceptAsync(string callId, AcceptCallRequest? body = null, RequestOptions? options = null) { body ??= new(); Participant(body.Participant); return http.RequestAsync<SuccessEnvelope<AcceptedCall>>(HttpMethod.Post, Path(callId) + "/accept", body, options); }
-    public Task<ApiResponse<RejectIncomingCallResponse>> RejectIncomingAsync(string session, string callId, RejectIncomingCallRequest body, RequestOptions? options = null) => http.RequestAsync<RejectIncomingCallResponse>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(session)}/calls/{Uri.EscapeDataString(callId)}/reject", body, options);
+    /// <summary>One page of the Connection's calls, newest first, with the other party's identity. Records are served from the number's data region; client tokens need the read_calls action.</summary>
+    public Task<ApiResponse<ConnectionCallsPage>> ListAsync(string connection, ListConnectionCallsParameters? parameters = null, RequestOptions? options = null) => http.RequestAsync<ConnectionCallsPage>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(connection)}/calls", null, options, Resource.Query(parameters ?? new()));
+    public Task<ApiResponse<RejectIncomingCallResponse>> RejectIncomingAsync(string connection, string callId, RejectIncomingCallRequest body, RequestOptions? options = null) => http.RequestAsync<RejectIncomingCallResponse>(HttpMethod.Post, $"/messaging/{Uri.EscapeDataString(connection)}/calls/{Uri.EscapeDataString(callId)}/reject", body, options);
     public Task<ApiResponse<SuccessResponse>> RejectAsync(string callId, RejectCallRequest? body = null, RequestOptions? options = null) { Participant(body?.Participant); return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/reject", body?.Participant is null ? null : body, options); }
     public Task<ApiResponse<SuccessResponse>> LeaveAsync(string callId, LeaveCallRequest body, RequestOptions? options = null) { Connection(body.ConnectionId); Participant(body.Participant); return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/leave", body, options); }
     public Task<ApiResponse<SuccessResponse>> EndAsync(string callId, RequestOptions? options = null) => http.RequestAsync<SuccessResponse>(HttpMethod.Delete, Path(callId), null, options);
@@ -97,14 +99,14 @@ public sealed class Calls
         return http.RequestAsync<SuccessEnvelope<WaitingRoomControlResult>>(HttpMethod.Post, Path(callId) + "/waiting-room", body, (options ?? new()) with { MaxNetworkRetries = 0 });
     }
     public Task<ApiResponse<SuccessResponse>> SetHandRaisedAsync(string callId, CallHandRequest body, RequestOptions? options = null) { Participant(body.Participant); Connection(body.ConnectionId); return http.RequestAsync<SuccessResponse>(HttpMethod.Post, Path(callId) + "/hand", body, (options ?? new()) with { MaxNetworkRetries = 0 }); }
-    public Task<ApiResponse<SuccessEnvelope<CallPermission>>> RetrieveCallPermissionAsync(string session, string to, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(session, "session"); NonEmpty(to, "to"); return http.RequestAsync<SuccessEnvelope<CallPermission>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(session)}/call-permissions/{Uri.EscapeDataString(to)}", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<CallCheck>>> CheckAsync(CheckCallRequest body, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(body.Session, "session"); NonEmpty(body.To, "to"); return http.RequestAsync<SuccessEnvelope<CallCheck>>(HttpMethod.Post, "/messaging/voip/calls/check", body, options); }
-    public Task<ApiResponse<SuccessEnvelope<SessionCallSettings>>> RetrieveCallSettingsAsync(string session, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(session, "session"); return http.RequestAsync<SuccessEnvelope<SessionCallSettings>>(HttpMethod.Get, $"/platform/sessions/{Uri.EscapeDataString(session)}/call-settings", null, options); }
-    public Task<ApiResponse<SuccessEnvelope<SessionCallSettings>>> UpdateCallSettingsAsync(string session, UpdateCallSettingsRequest body, RequestOptions? options = null)
+    public Task<ApiResponse<SuccessEnvelope<CallPermission>>> RetrieveCallPermissionAsync(string connection, string to, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(connection, "connection"); NonEmpty(to, "to"); return http.RequestAsync<SuccessEnvelope<CallPermission>>(HttpMethod.Get, $"/messaging/{Uri.EscapeDataString(connection)}/call-permissions/{Uri.EscapeDataString(to)}", null, options); }
+    public Task<ApiResponse<SuccessEnvelope<CallCheck>>> CheckAsync(CheckCallRequest body, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(body.Connection, "connection"); NonEmpty(body.To, "to"); return http.RequestAsync<SuccessEnvelope<CallCheck>>(HttpMethod.Post, "/messaging/voip/calls/check", body, options); }
+    public Task<ApiResponse<SuccessEnvelope<ConnectionCallSettings>>> RetrieveCallSettingsAsync(string connection, RequestOptions? options = null) { http.Credential.RequireServer(); NonEmpty(connection, "connection"); return http.RequestAsync<SuccessEnvelope<ConnectionCallSettings>>(HttpMethod.Get, $"/platform/connections/{Uri.EscapeDataString(connection)}/call-settings", null, options); }
+    public Task<ApiResponse<SuccessEnvelope<ConnectionCallSettings>>> UpdateCallSettingsAsync(string connection, UpdateCallSettingsRequest body, RequestOptions? options = null)
     {
-        http.Credential.RequireServer(); NonEmpty(session, "session");
+        http.Credential.RequireServer(); NonEmpty(connection, "connection");
         if (body.CallsEnabled is null && body.ConferenceMode is null && body.InboundRoute is null && !body.SipTrunkId.IsSpecified && body.SipClaim is null && body.HostCloudApiCalls is null && body.SimultaneousCalls is null || body.ExpectedRevision < 0 || body.InboundRoute is not null && body.InboundRoute is not ("clients" or "sip_trunk")) throw new PolymorfaValidationException("Invalid call settings update.", "invalid_parameter");
-        return http.RequestAsync<SuccessEnvelope<SessionCallSettings>>(HttpMethod.Put, $"/platform/sessions/{Uri.EscapeDataString(session)}/call-settings", body, options);
+        return http.RequestAsync<SuccessEnvelope<ConnectionCallSettings>>(HttpMethod.Put, $"/platform/connections/{Uri.EscapeDataString(connection)}/call-settings", body, options);
     }
     public Task<ApiResponse<SuccessResponse>> ReportAsync(string callId, CallReportRequest body, RequestOptions? options = null)
     {

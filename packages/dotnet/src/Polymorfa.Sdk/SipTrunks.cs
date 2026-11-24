@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 namespace Polymorfa.Sdk;
 
 public sealed record SipTrunkOutbound(string TargetUri, string Transport, string? AuthUsername, bool HasPassword, string? FromUser);
-public sealed record SipTrunkInbound(string Username, string Realm, string? Session, IReadOnlyList<string> AllowedAddresses, IReadOnlyList<string> AllowedDestinations);
+public sealed record SipTrunkInbound(string Username, string Realm, string? Connection, IReadOnlyList<string> AllowedAddresses, IReadOnlyList<string> AllowedDestinations);
 public sealed record SipTrunk(string Id, string ProjectId, string Name, bool Enabled, string Direction, SipTrunkOutbound? Outbound, SipTrunkInbound? Inbound, IReadOnlyList<string> Codecs, int MaxConcurrentCalls, long Revision, string CreatedAt, string UpdatedAt);
 public sealed record SipTrunkCredentials(string Username, string Password, string Realm)
 {
@@ -22,7 +22,7 @@ public sealed record SipTrunkOutboundInput(string? TargetUri = null, string? Tra
     public override string ToString() => "SipTrunkOutboundInput(redacted)";
 }
 public sealed record SipTrunkInboundInput(IReadOnlyList<string>? AllowedAddresses = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> Session = default,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] PatchValue<string> Connection = default,
     IReadOnlyList<string>? AllowedDestinations = null);
 public sealed record CreateSipTrunkRequest(string Name, string Direction, SipTrunkOutboundInput? Outbound = null, SipTrunkInboundInput? Inbound = null, bool? Enabled = null, IReadOnlyList<string>? Codecs = null, int? MaxConcurrentCalls = null);
 public sealed record UpdateSipTrunkRequest(long? ExpectedRevision = null, string? Name = null, bool? Enabled = null, string? Direction = null, SipTrunkOutboundInput? Outbound = null, SipTrunkInboundInput? Inbound = null, IReadOnlyList<string>? Codecs = null, int? MaxConcurrentCalls = null);

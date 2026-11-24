@@ -16,7 +16,7 @@ export interface IssuePasskeyChallengeRequest {
 export interface PasskeyTicket {
   readonly version: 2;
   readonly ticket: string;
-  readonly session: string;
+  readonly connection: string;
   readonly rpId: string;
   readonly challengeB64Url: string;
   readonly userVerification: "required" | "preferred" | "discouraged";
@@ -41,7 +41,7 @@ export interface SubmitPasskeyAssertionRequest {
 export interface PasskeyAssertionResult {
   readonly ok: true;
   readonly ticket: string;
-  readonly session: string;
+  readonly connection: string;
 }
 export interface ConfirmPasskeyRequest {
   readonly ticketId: string;
@@ -74,20 +74,20 @@ function invalid(): never {
 function nonempty(s: unknown): s is string {
   return typeof s === "string" && s.length > 0;
 }
-/** Direct customer relay. All five operations require sessions:manage server credentials. */
+/** Direct customer relay. All five operations require connections:manage server credentials. */
 export class PasskeysResource {
   constructor(
     private readonly transport: HttpTransport,
     private readonly credentialType: MessagingCredential["type"],
   ) {}
-  private path(session: string): string {
+  private path(connection: string): string {
     if (this.credentialType === "clientToken")
       throw new PolymorfaConfigurationError(
         "Passkeys require a server credential.",
         "credential",
       );
-    if (!nonempty(session)) invalid();
-    return `/messaging/${encodeURIComponent(session)}/passkey`;
+    if (!nonempty(connection)) invalid();
+    return `/messaging/${encodeURIComponent(connection)}/passkey`;
   }
   private write<T>(
     path: string,
@@ -110,11 +110,11 @@ export class PasskeysResource {
     });
   }
   issueChallenge(
-    session: string,
+    connection: string,
     body: IssuePasskeyChallengeRequest = {},
     options: RequestOptions = {},
   ): Promise<ApiResponse<PasskeyResponse<PasskeyTicket>>> {
-    const path = this.path(session);
+    const path = this.path(connection);
     if (!body || typeof body !== "object") invalid();
     if (
       (body.challengeB64Url !== undefined && !nonempty(body.challengeB64Url)) ||
@@ -131,11 +131,11 @@ export class PasskeysResource {
     return this.write(path + "/challenge", body, options);
   }
   getChallenge(
-    session: string,
+    connection: string,
     ticketId: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<PasskeyResponse<PasskeyTicket>>> {
-    const path = this.path(session);
+    const path = this.path(connection);
     if (!nonempty(ticketId)) invalid();
     return this.transport.request({
       method: "GET",
@@ -144,11 +144,11 @@ export class PasskeysResource {
     });
   }
   submitAssertion(
-    session: string,
+    connection: string,
     body: SubmitPasskeyAssertionRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<PasskeyResponse<PasskeyAssertionResult>>> {
-    const path = this.path(session);
+    const path = this.path(connection);
     const a = body?.assertion;
     const v = a?.response;
     if (
@@ -168,22 +168,22 @@ export class PasskeysResource {
     return this.write(path + "/assertion", body, options);
   }
   getConfirmation(
-    session: string,
+    connection: string,
     options: RequestOptions = {},
   ): Promise<ApiResponse<PasskeyResponse<PasskeyConfirmation>>> {
     return this.transport.request({
       method: "GET",
-      path: this.path(session) + "/confirmation",
+      path: this.path(connection) + "/confirmation",
       ...options,
     });
   }
   /** Confirm only after comparison; an accepted receipt is not pairing completion. */
   confirm(
-    session: string,
+    connection: string,
     body: ConfirmPasskeyRequest,
     options: RequestOptions = {},
   ): Promise<ApiResponse<PasskeyResponse<PasskeyConfirmation>>> {
-    const path = this.path(session);
+    const path = this.path(connection);
     if (
       !nonempty(body?.ticketId) ||
       (body.code !== undefined &&

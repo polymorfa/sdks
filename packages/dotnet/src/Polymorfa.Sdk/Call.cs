@@ -27,7 +27,7 @@ public sealed class Call
     private bool reportsStopped;
     private int reportsQueued;
     public string Id { get; }
-    public string Session => owner.Options.Session;
+    public string Connection => owner.Options.Connection;
     public string Direction { get; }
     public string Peer { get; }
     private readonly bool offeredVideo;

@@ -13,7 +13,7 @@ final class CallsClient
     private int $generation = 0;
     private ?PollingCallSocket $socket = null;
     private ?CallsToken $token = null;
-    private ?string $boundSession = null;
+    private ?string $boundConnection = null;
     private bool $refreshNext = false;
     private int $attempt = 0;
     private float $retryAt = 0;
@@ -37,9 +37,9 @@ final class CallsClient
         $this->connector = \Closure::fromCallable($connector ?? static fn (string $url, ?string $protocol, float $timeout): CallSocket => new NativeCallSocket($url, $protocol, $timeout));
         $this->clientFactory = \Closure::fromCallable($clientFactory ?? fn (Credential $credential): MessagingClient => new MessagingClient($credential, baseUrl:$options->baseUrl, timeout:$options->connectTimeout));
     }
-    public function session(): ?string
+    public function connection(): ?string
     {
-        return $this->options->session ?? $this->boundSession;
+        return $this->options->connection ?? $this->boundConnection;
     }
     /** @return list<Call> */ public function activeCalls(): array
     {
@@ -86,10 +86,10 @@ final class CallsClient
         $credential = $this->token->credential;
         $url = preg_replace('/^http/', 'ws', rtrim($this->options->baseUrl, '/')).'/voip/ws';
         if ($credential->kind !== 'client_token') {
-            if ($this->options->session === null) {
-                throw new ConfigurationException('session');
+            if ($this->options->connection === null) {
+                throw new ConfigurationException('connection');
             }
-            $query = ['session' => $this->options->session];
+            $query = ['connection' => $this->options->connection];
             if ($this->options->participant !== null) {
                 $query['participant'] = $this->options->participant;
             }
@@ -110,8 +110,8 @@ final class CallsClient
                 continue;
             }
             if (($frame['type'] ?? null) === 'ready') {
-                if (is_string($frame['session'] ?? null)) {
-                    $this->boundSession = $frame['session'];
+                if (is_string($frame['connection'] ?? null)) {
+                    $this->boundConnection = $frame['connection'];
                 }
                 $this->participant = is_string($frame['participant'] ?? null) ? $frame['participant'] : $this->options->participant;
                 $this->connected = true;
@@ -311,7 +311,7 @@ final class CallsClient
             $body['exclusive'] = $exclusive;
         }
         if ($credential->kind !== 'client_token') {
-            $body['session'] = $this->options->session ?? throw new ConfigurationException('session');
+            $body['connection'] = $this->options->connection ?? throw new ConfigurationException('connection');
             if ($this->options->participant !== null) {
                 $body['participant'] = $this->options->participant;
             }

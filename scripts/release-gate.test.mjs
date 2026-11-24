@@ -1,11 +1,15 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
+import { createHash } from "node:crypto";
 import {
   readFileSync,
   writeFileSync,
   copyFileSync,
   mkdirSync,
   mkdtempSync,
+  readdirSync,
+  rmSync,
 } from "node:fs";
 import { join } from "node:path";
 import { homedir } from "node:os";
@@ -18,6 +22,7 @@ import {
   multiSourcePins,
   campaignSupplementPins,
   expectedContract,
+  publishedProvenance,
 } from "./release-gate.mjs";
 const expected = {
   sourceSha: "a".repeat(40),
@@ -215,7 +220,7 @@ test("Messaging feature pins cannot borrow Platform acceptance or bypass a publi
       validateFeatureContractPins(source, [{ ...pin, ...delta }]),
     );
 });
-test("integrated frequency-cap and segment/drip supplements are gate pins that block until reconciled", () => {
+test("source-aligned frequency-cap and segment/drip supplements retain their publication hold", () => {
   const source = JSON.parse(
     readFileSync(new URL("../contracts/source.json", import.meta.url), "utf8"),
   );
@@ -231,12 +236,21 @@ test("integrated frequency-cap and segment/drip supplements are gate pins that b
       "messaging",
       "platform",
     ]);
-    assert.notEqual(supplement.commit, source.commit);
+    assert.equal(supplement.commit, source.commit);
+    assert.equal(supplement.published, false);
     assert.throws(
       () => validateFeatureContractPins(source, pins),
+      /held from publication/,
+    );
+    assert.throws(
+      () =>
+        validateFeatureContractPins(
+          source,
+          pins.map((pin) => ({ ...pin, sourceCommit: "0".repeat(40) })),
+        ),
       /not been reconciled/,
     );
-    // Reconciled to its own source, the supplement passes; nothing flips a hold.
+    // Matching source and hashes cannot remove an explicit publication hold.
     const reconciled = {
       repository: supplement.repository,
       commit: supplement.commit,
@@ -247,7 +261,15 @@ test("integrated frequency-cap and segment/drip supplements are gate pins that b
         ]),
       ),
     };
-    validateFeatureContractPins(reconciled, pins);
+    assert.throws(
+      () => validateFeatureContractPins(reconciled, pins),
+      /held from publication/,
+    );
+    // Only synthetic accepted pins exercise the positive metadata path.
+    validateFeatureContractPins(
+      reconciled,
+      pins.map((pin) => ({ ...pin, published: true })),
+    );
   }
   // The current release contract therefore fails closed.
   assert.throws(() => expectedContract(), /reconciled|held from publication/);
@@ -307,7 +329,7 @@ test("A two-audience supplement is checked per family and honours its hold", () 
   );
 });
 
-test("guest-call hold blocks the real publisher after other supplements are reconciled", async () => {
+test("preview records held source while nightly and stable feature gates remain enforced", async () => {
   const parent = join(
     homedir(),
     ".polymorfa-agent-work",
@@ -323,6 +345,16 @@ test("guest-call hold blocks the real publisher after other supplements are reco
     new URL("./release-gate.mjs", import.meta.url),
     join(fixture, "scripts/release-gate.mjs"),
   );
+  for (const name of [
+    "release-policy.mjs",
+    "check-coverage.mjs",
+    "interactive-supplement.mjs",
+    "native-supplements.mjs",
+  ])
+    copyFileSync(
+      new URL(`./${name}`, import.meta.url),
+      join(fixture, "scripts", name),
+    );
   copyFileSync(
     new URL("../packages/typescript/src/version.ts", import.meta.url),
     join(fixture, "packages/typescript/src/version.ts"),
@@ -378,10 +410,27 @@ test("guest-call hold blocks the real publisher after other supplements are reco
   const publisher = await import(
     pathToFileURL(join(fixture, "scripts/release-gate.mjs")).href
   );
+  assert.equal(publisher.expectedContract("preview").sourceSha, source.commit);
   assert.throws(
-    () => publisher.expectedContract(),
+    () => publisher.expectedContract("nightly"),
     /Guest calls.*held from publication/,
   );
+  assert.throws(
+    () => publisher.expectedContract("stable"),
+    /Guest calls.*held from publication/,
+  );
+  // The guest-call exception does not waive any other feature hold.
+  const heldPath = join(fixture, "contracts/request-logs.json");
+  const held = JSON.parse(readFileSync(heldPath));
+  writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /Guest calls.*held from publication/,
+  );
+  writeFileSync(heldPath, JSON.stringify(held));
+  assert.equal(candidate.sourceAccepted, false);
+  assert.equal(candidate.published, false);
+  assert.deepEqual(JSON.parse(readFileSync(candidatePath)), candidate);
   candidate.sourceAccepted = candidate.published = true;
   candidate.httpControl.sourceAccepted = candidate.httpControl.published = true;
   candidate.candidateSource.repository = source.repository;
@@ -393,7 +442,14 @@ test("guest-call hold blocks the real publisher after other supplements are reco
     },
   ];
   writeFileSync(candidatePath, JSON.stringify(candidate));
-  assert.equal(publisher.expectedContract().sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("stable").sourceSha, source.commit);
+  assert.equal(publisher.expectedContract("nightly").sourceSha, source.commit);
+  writeFileSync(heldPath, JSON.stringify({ ...held, published: false }));
+  assert.equal(publisher.expectedContract("preview").sourceSha, source.commit);
+  assert.throws(
+    () => publisher.expectedContract("nightly"),
+    /held from publication/,
+  );
 });
 
 test("guest-call publication binds both holds, version, repository, commit and Messaging hash", () => {
@@ -480,4 +536,40 @@ test("guest-call publication binds both holds, version, repository, commit and M
         expected.apiVersion,
       ),
     );
+});
+
+test("published npm provenance leaves the release output untouched", async (t) => {
+  const scratch = join(homedir(), ".polymorfa-agent-work", "npm-release-tests");
+  mkdirSync(scratch, { recursive: true });
+  const fixture = mkdtempSync(join(scratch, "published-provenance-"));
+  t.after(() => rmSync(fixture, { recursive: true, force: true }));
+
+  const output = join(fixture, "release");
+  mkdirSync(output);
+  mkdirSync(join(fixture, "package", "dist"), { recursive: true });
+  const provenance = {
+    packageVersion: "0.1.0-preview.20261116213644",
+    repository: "polymorfa/sdks",
+  };
+  writeFileSync(
+    join(fixture, "package", "dist", "release-contract.json"),
+    JSON.stringify(provenance),
+  );
+  const archive = execFileSync("tar", ["-czf", "-", "-C", fixture, "package"]);
+  const tarball = "https://registry.npmjs.org/@polymorfa/sdk/-/sdk.tgz";
+  const metadata = "https://registry.npmjs.org/@polymorfa%2fsdk/preview";
+  t.mock.method(globalThis, "fetch", async (url) => {
+    if (String(url) === tarball) return new Response(archive);
+    assert.equal(String(url), metadata);
+    return Response.json({
+      version: provenance.packageVersion,
+      dist: {
+        tarball,
+        integrity: `sha512-${createHash("sha512").update(archive).digest("base64")}`,
+      },
+    });
+  });
+
+  assert.deepEqual(await publishedProvenance("preview", output), provenance);
+  assert.deepEqual(readdirSync(output), []);
 });

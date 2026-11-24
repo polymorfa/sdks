@@ -48,8 +48,8 @@ from polymorfa.storage.sync import (
 from polymorfa.webhooks import WebhookEvent
 
 ROOT = Path(__file__).resolve().parents[3]
-FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.json").read_text())
-BRIDGE = json.loads((Path(__file__).parent / "fixtures/d1-bridge.json").read_text())
+FIXTURE = json.loads((ROOT / "packages/storage/conformance-fixtures.v3.json").read_text())
+BRIDGE = json.loads((Path(__file__).parent / "fixtures/d1-bridge.v3.json").read_text())
 ARTIFACTS = Path(
     os.environ.get(
         "SDK_TEST_ARTIFACT_DIR",
@@ -71,7 +71,7 @@ async def test_native_worker_d1_history_atomicity_replay_and_checkpoint():
         authority=BRIDGE["authority"],
         table_prefix=BRIDGE["tablePrefix"],
     )
-    session = "python-native-" + secrets.token_hex(16)
+    connection = "python-native-" + secrets.token_hex(16)
     try:
         await native.setup()
         storage = Storage(native)
@@ -84,7 +84,7 @@ async def test_native_worker_d1_history_atomicity_replay_and_checkpoint():
                 message["message"]["key"]["id"] = f"large-{chat_index}-{index}"
                 message["message"]["key"]["remoteJid"] = conversation["id"]
                 conversation["messages"].append(message)
-        batch = reduce_history_chunk(session, chunk, chunk_id="large")
+        batch = reduce_history_chunk(connection, chunk, chunk_id="large")
         assert (await storage.apply(batch)).applied
         assert not (await storage.apply(batch)).applied
         total = 0
@@ -92,28 +92,36 @@ async def test_native_worker_d1_history_atomicity_replay_and_checkpoint():
             page = await storage.query(
                 "messages",
                 IndexQuery(
-                    "by_chat", {"sessionId": session, "chatId": "wa:" + conversation["id"]}, 1000
+                    "by_chat",
+                    {"connectionId": connection, "chatId": "wa:" + conversation["id"]},
+                    1000,
                 ),
             )
             total += len(page.rows)
         assert total == 2000
-        one = replace(empty_row("messages", {"sessionId": session, "messageId": "one"}), revision=1)
-        two = replace(empty_row("messages", {"sessionId": session, "messageId": "two"}), revision=1)
+        one = replace(
+            empty_row("messages", {"connectionId": connection, "messageId": "one"}), revision=1
+        )
+        two = replace(
+            empty_row("messages", {"connectionId": connection, "messageId": "two"}), revision=1
+        )
         assert (await native.commit([RowPut("messages", one, None)])).ok
         result = await native.commit(
             [RowPut("messages", two, None), RowPut("messages", replace(one, revision=2), 8)]
         )
         assert not result.ok and not await native.get("messages", [two.id])
         await storage.apply(
-            OperationBatch(session, [Checkpoint(session, "events", "one", expected_cursor=None)])
+            OperationBatch(
+                connection, [Checkpoint(connection, "events", "one", expected_cursor=None)]
+            )
         )
         with pytest.raises(StorageCheckpointConflictError):
             await storage.apply(
                 OperationBatch(
-                    session, [Checkpoint(session, "events", "two", expected_cursor=None)]
+                    connection, [Checkpoint(connection, "events", "two", expected_cursor=None)]
                 )
             )
-        assert (await storage.get_checkpoint(session, "events")).cursor == "one"
+        assert (await storage.get_checkpoint(connection, "events")).cursor == "one"
     finally:
         # Shared fixture: retain only this test's namespaced data; never truncate it.
         await native.close()
@@ -122,7 +130,7 @@ async def test_native_worker_d1_history_atomicity_replay_and_checkpoint():
 def envelope(value):
     return WebhookEvent(
         value["id"],
-        value["session"],
+        value["connection"],
         value["timestamp"],
         value["event"],
         value["payload"],
@@ -174,8 +182,8 @@ async def test_independent_typescript_schema2_conformance_fixture(adapter, kind)
 
 
 async def test_atomic_revision_conflict_rolls_back_every_row(adapter):
-    one = replace(empty_row("messages", {"sessionId": "s", "messageId": "one"}), revision=1)
-    two = replace(empty_row("messages", {"sessionId": "s", "messageId": "two"}), revision=1)
+    one = replace(empty_row("messages", {"connectionId": "s", "messageId": "one"}), revision=1)
+    two = replace(empty_row("messages", {"connectionId": "s", "messageId": "two"}), revision=1)
     assert (await adapter.commit([RowPut("messages", one, None)])).ok
     result = await adapter.commit(
         [RowPut("messages", two, None), RowPut("messages", replace(one, revision=2), 8)]
@@ -185,21 +193,21 @@ async def test_atomic_revision_conflict_rolls_back_every_row(adapter):
     assert (await adapter.get("messages", [one.id]))[one.id].revision == 1
 
 
-async def test_foreign_session_and_engine_lease_writes_refused_before_effects(adapter):
+async def test_foreign_connection_and_engine_lease_writes_refused_before_effects(adapter):
     storage = Storage(adapter)
     for op in (
-        Upsert("messages", {"sessionId": "foreign", "messageId": "m"}, {}),
-        Upsert("leases", {"sessionId": "s"}, {}),
+        Upsert("messages", {"connectionId": "foreign", "messageId": "m"}, {}),
+        Upsert("leases", {"connectionId": "s"}, {}),
         Upsert(
             "messages",
-            {"sessionId": "s", "messageId": "m"},
+            {"connectionId": "s", "messageId": "m"},
             {},
             ChatWatermarkGuard("foreign", "c", 1),
         ),
     ):
         with pytest.raises(ValueError):
             await storage.apply(OperationBatch("s", [op]))
-    assert not await adapter.get("leases", [encode_key("leases", {"sessionId": "s"})])
+    assert not await adapter.get("leases", [encode_key("leases", {"connectionId": "s"})])
 
 
 async def test_clear_watermark_removes_media_and_all_children_and_blocks_late_copy(adapter):
@@ -211,31 +219,31 @@ async def test_clear_watermark_removes_media_and_all_children_and_blocks_late_co
             [
                 Upsert(
                     "messages",
-                    {"sessionId": "s", "messageId": "m"},
+                    {"connectionId": "s", "messageId": "m"},
                     {"chatId": FieldWrite("chat", 0), "timestamp": FieldWrite(5, 0)},
                     guard,
                 ),
                 Upsert(
                     "media",
-                    {"sessionId": "s", "messageId": "m"},
+                    {"connectionId": "s", "messageId": "m"},
                     {"mediaKey": FieldWrite("synthetic", 0)},
                     guard,
                 ),
                 Upsert(
                     "reactions",
-                    {"sessionId": "s", "messageId": "m", "senderId": "sender"},
+                    {"connectionId": "s", "messageId": "m", "senderId": "sender"},
                     {"timestamp": FieldWrite(5, 0)},
                     guard,
                 ),
                 Upsert(
                     "receipts",
-                    {"sessionId": "s", "messageId": "m", "recipientId": "recipient"},
+                    {"connectionId": "s", "messageId": "m", "recipientId": "recipient"},
                     {"timestamp": FieldWrite(5, 0)},
                     guard,
                 ),
                 Upsert(
                     "poll_votes",
-                    {"sessionId": "s", "messageId": "m", "voterId": "voter"},
+                    {"connectionId": "s", "messageId": "m", "voterId": "voter"},
                     {"timestamp": FieldWrite(5, 0)},
                     guard,
                 ),
@@ -247,18 +255,20 @@ async def test_clear_watermark_removes_media_and_all_children_and_blocks_late_co
             "s",
             [
                 Upsert(
-                    "chats", {"sessionId": "s", "chatId": "chat"}, {"clearedAt": FieldWrite(10, 10)}
+                    "chats",
+                    {"connectionId": "s", "chatId": "chat"},
+                    {"clearedAt": FieldWrite(10, 10)},
                 ),
                 ClearChat("s", "chat", 10),
             ],
         )
     )
-    assert await storage.get("messages", {"sessionId": "s", "messageId": "m"}) is None
-    assert await storage.get("media", {"sessionId": "s", "messageId": "m"}) is None
+    assert await storage.get("messages", {"connectionId": "s", "messageId": "m"}) is None
+    assert await storage.get("media", {"connectionId": "s", "messageId": "m"}) is None
     for entity in ("reactions", "receipts", "poll_votes"):
         assert not (
             await storage.query(
-                entity, IndexQuery("by_message", {"sessionId": "s", "messageId": "m"}, 100)
+                entity, IndexQuery("by_message", {"connectionId": "s", "messageId": "m"}, 100)
             )
         ).rows
     await storage.apply(
@@ -267,14 +277,14 @@ async def test_clear_watermark_removes_media_and_all_children_and_blocks_late_co
             [
                 Upsert(
                     "messages",
-                    {"sessionId": "s", "messageId": "m"},
+                    {"connectionId": "s", "messageId": "m"},
                     {"text": FieldWrite("late", 0)},
                     guard,
                 )
             ],
         )
     )
-    assert await storage.get("messages", {"sessionId": "s", "messageId": "m"}) is None
+    assert await storage.get("messages", {"connectionId": "s", "messageId": "m"}) is None
 
 
 async def test_checkpoint_expected_cursor_is_atomic_and_no_lease_generation_reuse(adapter):
@@ -282,7 +292,9 @@ async def test_checkpoint_expected_cursor_is_atomic_and_no_lease_generation_reus
     await storage.apply(
         OperationBatch("s", [Checkpoint("s", "events", "one", expected_cursor=None)])
     )
-    first = (await adapter.get("leases", [encode_key("leases", {"sessionId": "s"})])).popitem()[1]
+    first = (await adapter.get("leases", [encode_key("leases", {"connectionId": "s"})])).popitem()[
+        1
+    ]
     with pytest.raises(StorageCheckpointConflictError):
         await storage.apply(
             OperationBatch("s", [Checkpoint("s", "events", "two", expected_cursor=None)])
@@ -309,7 +321,9 @@ async def test_history_2000_messages_remain_bounded_and_queryable(adapter):
     for conversation in chunk["conversations"]:
         page = await storage.query(
             "messages",
-            IndexQuery("by_chat", {"sessionId": "s", "chatId": "wa:" + conversation["id"]}, 1000),
+            IndexQuery(
+                "by_chat", {"connectionId": "s", "chatId": "wa:" + conversation["id"]}, 1000
+            ),
         )
         total += len(page.rows)
     assert total == 2000
@@ -363,7 +377,7 @@ async def test_failed_earlier_chunk_cannot_write_later_event_marker(reported_con
         [
             Upsert(
                 "messages",
-                {"sessionId": "s", "messageId": message},
+                {"connectionId": "s", "messageId": message},
                 {"text": FieldWrite("body", 0)},
                 ChatWatermarkGuard("s", "chat", 1),
             )
@@ -376,7 +390,7 @@ async def test_failed_earlier_chunk_cannot_write_later_event_marker(reported_con
     assert not await storage.has_event("s", "event")
     native.failing = False
     assert (await storage.apply(batch)).applied
-    assert await storage.get("messages", {"sessionId": "s", "messageId": "bad"}) is not None
+    assert await storage.get("messages", {"connectionId": "s", "messageId": "bad"}) is not None
 
 
 class StreamFixture:
@@ -406,7 +420,7 @@ class StreamFixture:
         checkpoint = await self.storage.get_checkpoint("*", "events")
         assert checkpoint.cursor == cursor
         assert await self.storage.has_event(
-            FIXTURE["events"][0]["session"], FIXTURE["events"][0]["id"]
+            FIXTURE["events"][0]["connection"], FIXTURE["events"][0]["id"]
         )
         self.acks.append((stream_id, cursor, sequence))
 
@@ -621,7 +635,7 @@ def test_canonical_numbers_and_utf16_order_match_ecmascript():
 
 
 def test_merge_ties_are_commutative_and_revocation_fields_are_final():
-    initial = empty_row("messages", {"sessionId": "s", "messageId": "m"})
+    initial = empty_row("messages", {"connectionId": "s", "messageId": "m"})
     a = {"text": FieldWrite("a", 1)}
     b = {"text": FieldWrite("b", 1)}
     assert merge_fields("messages", merge_fields("messages", initial, a), b) == merge_fields(

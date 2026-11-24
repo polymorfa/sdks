@@ -3,11 +3,19 @@ using System.Text;
 using System.Text.Json;
 using Polymorfa.Sdk;
 
+if (args.Contains("--connection-call-history-only")) { await ProjectPairingTests.ConnectionCallHistoryAsync(); return; }
+
 if (args.Contains("--cloud-order-quantity-only")) { await CloudOrderQuantityTests.RunAsync(); return; }
 
 if (args.Contains("--simultaneous-calls-only")) { await CallsTests.RunAsync(); return; }
 
+if (args.Contains("--bansafe-only")) { await BanSafeTests.RunAsync(); Console.WriteLine("PASS BanSafe routes and Ban Credit waiver claims"); return; }
+
 if (args.Contains("--official-round2-only")) { await OfficialRound2Tests.RunAsync(); return; }
+
+await ConnectionContractsTests.RunAsync();
+if (args.Contains("--connection-contracts-only")) return;
+if (args.Contains("--connection-wire-only")) { await UsageTests.RunAsync(); await OnboardingTests.RunAsync(); await ConnectionTests.RunAsync(); return; }
 
 OpaqueCredentialTests.Run();
 await OpaqueCredentialTests.WireAsync();
@@ -19,7 +27,7 @@ if (args.Contains("--consumer-media-only")) { await ConsumerRepairTests.MediaAsy
 if (args.Contains("--consumer-calls-only")) { await ConsumerRepairTests.CallsAsync(); return; }
 if (args.Contains("--consumer-cursor-only")) { await ConsumerRepairTests.CursorAsync(); return; }
 if (args.Contains("--consumer-usage-only")) { await ConsumerRepairTests.UsageAsync(); return; }
-if (args.Contains("--consumer-signal-session-only")) { await ConsumerRepairTests.SignalSessionAsync(); return; }
+if (args.Contains("--consumer-signal-connection-only")) { await ConsumerRepairTests.SignalConnectionAsync(); return; }
 if (args.Contains("--consumer-signal-truncation-only")) { await ConsumerRepairTests.SignalTruncationAsync(); return; }
 if (args.Contains("--consumer-signal-ack-only")) { await ConsumerRepairTests.SignalAckAsync(); return; }
 if (args.Contains("--consumer-signal-deadline-only")) { await ConsumerRepairTests.SignalDeadlineAsync(); return; }
@@ -47,10 +55,10 @@ if (args.Contains("--campaign-contract-only")) { await CampaignContractTests.Run
 if (args.Contains("--idempotency-only")) { await IdempotencyHeaderTests.RunAsync(); return; }
 
 var directory = new DirectoryInfo(AppContext.BaseDirectory);
-while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "contracts/fixtures/behavior.json"))) directory = directory.Parent;
+while (directory is not null && !File.Exists(Path.Combine(directory.FullName, "contracts/fixtures/connections/behavior.json"))) directory = directory.Parent;
 var root = directory?.FullName ?? throw new Exception("SDK repository root not found.");
 if (args.Contains("--aspnet-example-only")) { await AspNetExampleTests.RunAsync(root); return; }
-using var fixtures = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "contracts/fixtures/behavior.json")));
+using var fixtures = JsonDocument.Parse(File.ReadAllText(Path.Combine(root, "contracts/fixtures/connections/behavior.json")));
 var start = new ProcessStartInfo(Environment.GetEnvironmentVariable("SDK_NODE") ?? "node") { WorkingDirectory = root, RedirectStandardOutput = true, RedirectStandardError = true, UseShellExecute = false };
 start.ArgumentList.Add("scripts/sdk-fixture-server.mjs"); start.ArgumentList.Add("--port"); start.ArgumentList.Add("0");
 using var server = Process.Start(start) ?? throw new Exception("Cannot start fixture server.");
@@ -81,9 +89,9 @@ try
         ResponseMetadata? metadata = null;
         try
         {
-            if (id == "sessions-list")
+            if (id == "connections-list")
             {
-                var response = await client.Sessions.ListAsync(options); metadata = response.Metadata;
+                var response = await client.Connections.ListAsync(options); metadata = response.Metadata;
                 Equal(response.Data.Data[0].Name, "support", id);
             }
             else if (id == "message-send")
@@ -195,7 +203,7 @@ try
     await CustomerTests.RunAsync();
     await PlatformWebhookTests.RunAsync();
     await CallConsentTests.RunAsync();
-    await SessionTests.RunAsync();
+    await ConnectionTests.RunAsync();
     await ProjectSettingsTests.RunAsync();
     await FlowTests.RunAsync();
     await SipTests.RunAsync();

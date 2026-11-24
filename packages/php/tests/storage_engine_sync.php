@@ -25,7 +25,7 @@ final class StorageEngineSource implements SyncSource
     }
     public function acknowledge(string $streamId, string $cursor, int $sequence, CancellationToken $cancellation): void
     {
-        storageCheck($this->storage->hasEvent($this->event->session, $this->event->id), 'data marker exists before ACK');
+        storageCheck($this->storage->hasEvent($this->event->connection, $this->event->id), 'data marker exists before ACK');
         storageCheck($this->storage->getCheckpoint('*', 'events')['cursor'] === 'new', 'checkpoint committed before ACK');
         $this->acks[] = [$streamId,$cursor,$sequence];
     }
@@ -78,16 +78,16 @@ $replaced = false;
 $adapter->beforeCommit = static function (array $writes, StorageEngineMemory $adapter) use (&$replaced): ?array {
     foreach ($writes as $write) {
         if (!$replaced && $write['entity'] === 'messages') {
-            $leaseId = Schema::encodeKey('leases', ['sessionId' => 's']);
+            $leaseId = Schema::encodeKey('leases', ['connectionId' => 's']);
             $adapter->rows['leases'][$leaseId]['_rev']++;
             $adapter->rows['leases'][$leaseId]['owner'] = 'replacement';
             $replaced = true;
         }
     } return null;
 };
-storageRaises(fn () => $engine->apply(new Batch('s', [new Upsert('messages', ['sessionId' => 's','messageId' => 'm'], ['text' => new FieldWrite('body', 0)])], 'event')), 'storage_lease_lost');
-storageCheck($engine->get('messages', ['sessionId' => 's','messageId' => 'm']) === null && !$engine->hasEvent('s', 'event'), 'old holder has no message/marker effects');
-storageCheck($adapter->rows['leases'][Schema::encodeKey('leases', ['sessionId' => 's'])]['owner'] === 'replacement', 'old finally release cannot clear replacement lease');
+storageRaises(fn () => $engine->apply(new Batch('s', [new Upsert('messages', ['connectionId' => 's','messageId' => 'm'], ['text' => new FieldWrite('body', 0)])], 'event')), 'storage_lease_lost');
+storageCheck($engine->get('messages', ['connectionId' => 's','messageId' => 'm']) === null && !$engine->hasEvent('s', 'event'), 'old holder has no message/marker effects');
+storageCheck($adapter->rows['leases'][Schema::encodeKey('leases', ['connectionId' => 's'])]['owner'] === 'replacement', 'old finally release cannot clear replacement lease');
 
 $clock = 100;
 $adapter = new StorageEngineMemory();
@@ -101,8 +101,8 @@ $adapter->beforeCommit = static function (array $writes) use (&$advanced, &$cloc
         $clock = 1000;
     } return null;
 };
-storageRaises(fn () => $engine->apply(new Batch('s', [new Upsert('messages', ['sessionId' => 's','messageId' => 'm'], ['text' => new FieldWrite('expired', 0)])])), 'storage_lease_lost');
-storageCheck($engine->get('messages', ['sessionId' => 's','messageId' => 'm']) === null, 'expired lease fails before payload effects');
+storageRaises(fn () => $engine->apply(new Batch('s', [new Upsert('messages', ['connectionId' => 's','messageId' => 'm'], ['text' => new FieldWrite('expired', 0)])])), 'storage_lease_lost');
+storageCheck($engine->get('messages', ['connectionId' => 's','messageId' => 'm']) === null, 'expired lease fails before payload effects');
 
 $token = new CancellationToken();
 $token->cancel();
@@ -144,7 +144,7 @@ foreach (['%%%', base64_encode('{}')] as $invalidPayload) {
     $http->getConfig('handler')->push(GuzzleHttp\Middleware::mapRequest(function ($request) use ($engine, $envelope, &$requestCount) {
         ++$requestCount;
         if ($request->getMethod() === 'POST') {
-            storageCheck($engine->hasEvent($envelope['session'], $envelope['id']) && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Payload committed and checkpoint saved before native ACK');
+            storageCheck($engine->hasEvent($envelope['connection'], $envelope['id']) && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Payload committed and checkpoint saved before native ACK');
             storageCheck(json_decode((string)$request->getBody(), true) === ['cursor' => 'good', 'sequence' => 1], 'Only valid event is acknowledged');
         } elseif ($requestCount > 1) {
             storageCheck($request->getHeaderLine('Last-Event-ID') === 'good' && $engine->getCheckpoint('*', 'events')['cursor'] === 'good', 'Bad cursor never reaches storage or reconnect header');

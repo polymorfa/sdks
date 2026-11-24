@@ -22,7 +22,7 @@ import (
 
 func signalGolden(t *testing.T) map[string]string {
 	t.Helper()
-	data, err := os.ReadFile("testdata/signal-sidecar.json")
+	data, err := os.ReadFile("../../contracts/fixtures/connections/signal-sidecar.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -67,9 +67,9 @@ func TestNativeSignalHTTPAndExplicitSSEAck(t *testing.T) {
 			t.Error("application bearer")
 		}
 		switch r.URL.Path {
-		case "/v1/sessions":
-			io.WriteString(w, `{"node_id":"node-fixture","sessions":[{"id":"session-fixture","lease_generation":7,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}`)
-		case "/v1/sessions/session-fixture/messages":
+		case "/v1/connections":
+			io.WriteString(w, `{"node_id":"node-fixture","connections":[{"id":"session-fixture","lease_generation":7,"claimed":true,"has_device_keys":true,"state":"connected","pn":null,"lid":null}]}`)
+		case "/v1/connections/session-fixture/messages":
 			var body map[string]any
 			json.NewDecoder(r.Body).Decode(&body)
 			if body["to"] != "target@lid" {
@@ -84,7 +84,7 @@ func TestNativeSignalHTTPAndExplicitSSEAck(t *testing.T) {
 			}
 			io.WriteString(w, `{"message_id":"sent-fixture","server_timestamp":1720000000,"resent":false}`)
 		case "/v1/events":
-			if r.URL.Query().Get("session_id") != "session-fixture" {
+			if r.URL.Query().Get("connection_id") != "session-fixture" {
 				t.Error("SSE filter")
 			}
 			w.Header().Set("Content-Type", "text/event-stream")
@@ -111,9 +111,9 @@ func TestNativeSignalHTTPAndExplicitSSEAck(t *testing.T) {
 	if err := client.Health(ctx); err != nil {
 		t.Fatal(err)
 	}
-	sessions, err := client.Sessions(ctx)
-	if err != nil || sessions.Sessions[0].LeaseGeneration != 7 {
-		t.Fatal("typed sessions", err)
+	connections, err := client.Connections(ctx)
+	if err != nil || connections.Connections[0].LeaseGeneration != 7 {
+		t.Fatal("typed connections", err)
 	}
 	text := "fixture"
 	if outcome, err := client.Send(ctx, "session-fixture", SignalSendRequest{To: "target@lid", Text: &text}); err != nil || outcome.ServerTimestamp != 1720000000 {
@@ -194,7 +194,7 @@ func TestSignalRedirectAndBodyTimeoutFailSafely(t *testing.T) {
 			if mode == "headers" {
 				_, err = client.OpenEvents(context.Background(), "")
 			} else {
-				_, err = client.Sessions(context.Background())
+				_, err = client.Connections(context.Background())
 			}
 			var typed *Error
 			if !errors.As(err, &typed) || typed.Cause != nil && typed.Kind != TimeoutError || strings.Contains(err.Error(), "capability=") || strings.Contains(err.Error(), v["secret"]) {
@@ -270,11 +270,11 @@ func TestActualSignalServiceNativeReceivePersistenceAck(t *testing.T) {
 		t.Fatal(err)
 	}
 	var metadata struct {
-		URL       string `json:"url"`
-		Secret    string `json:"applicationSecret"`
-		SessionID string `json:"sessionId"`
-		Source    string `json:"sourceCommit"`
-		Synthetic bool   `json:"syntheticOnly"`
+		URL          string `json:"url"`
+		Secret       string `json:"applicationSecret"`
+		ConnectionID string `json:"connectionId"`
+		Source       string `json:"sourceCommit"`
+		Synthetic    bool   `json:"syntheticOnly"`
 	}
 	if json.Unmarshal(data, &metadata) != nil || metadata.Source != SignalSidecarSourceCommit || !metadata.Synthetic {
 		t.Fatal("actual service fixture source identity")
@@ -288,17 +288,17 @@ func TestActualSignalServiceNativeReceivePersistenceAck(t *testing.T) {
 	if err := client.Health(ctx); err != nil {
 		t.Fatal("actual health", err)
 	}
-	sessions, err := client.Sessions(ctx)
-	if err != nil || len(sessions.Sessions) != 1 || sessions.Sessions[0].ID != metadata.SessionID || !sessions.Sessions[0].Claimed || !sessions.Sessions[0].HasDeviceKeys {
-		t.Fatal("actual sessions", err)
+	connections, err := client.Connections(ctx)
+	if err != nil || len(connections.Connections) != 1 || connections.Connections[0].ID != metadata.ConnectionID || !connections.Connections[0].Claimed || !connections.Connections[0].HasDeviceKeys {
+		t.Fatal("actual connections", err)
 	}
 	wrong, _ := NewSignalSidecarClient(SignalSidecarOptions{URL: metadata.URL, Secret: "synthetic_wrong_application_secret"})
-	_, err = wrong.Sessions(ctx)
+	_, err = wrong.Connections(ctx)
 	var typed *Error
 	if !errors.As(err, &typed) || typed.Status != 401 {
 		t.Fatal("actual service bearer refusal", err)
 	}
-	req, _ := http.NewRequestWithContext(ctx, "GET", metadata.URL+"/v1/sessions", nil)
+	req, _ := http.NewRequestWithContext(ctx, "GET", metadata.URL+"/v1/connections", nil)
 	req.Header.Set("Authorization", "Bearer "+metadata.Secret)
 	req.Header.Set("Origin", "null")
 	response, err := http.DefaultClient.Do(req)
@@ -310,7 +310,7 @@ func TestActualSignalServiceNativeReceivePersistenceAck(t *testing.T) {
 		t.Fatal("actual Origin refusal")
 	}
 	textSend := "synthetic Go native send fixture"
-	if outcome, err := client.Send(ctx, metadata.SessionID, SignalSendRequest{To: "111@s.whatsapp.net", Text: &textSend}); err != nil || outcome.MessageID == "" {
+	if outcome, err := client.Send(ctx, metadata.ConnectionID, SignalSendRequest{To: "111@s.whatsapp.net", Text: &textSend}); err != nil || outcome.MessageID == "" {
 		t.Fatal("actual synthetic text send", err)
 	}
 	encrypted, err := EncryptWhatsAppMedia(ctx, []byte("synthetic app media"), EncryptMediaOptions{MediaType: UploadVoiceNote, MimeType: "audio/ogg"})
@@ -321,7 +321,7 @@ func TestActualSignalServiceNativeReceivePersistenceAck(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if outcome, err := client.Send(ctx, metadata.SessionID, SignalSendRequest{To: "111@s.whatsapp.net", Media: &media}); err != nil || outcome.MessageID == "" {
+	if outcome, err := client.Send(ctx, metadata.ConnectionID, SignalSendRequest{To: "111@s.whatsapp.net", Media: &media}); err != nil || outcome.MessageID == "" {
 		t.Fatal("actual synthetic media send", err)
 	}
 	before := time.Time{}
@@ -341,7 +341,7 @@ func TestActualSignalServiceNativeReceivePersistenceAck(t *testing.T) {
 		raw, _ := json.Marshal(map[string]string{"messageId": messageID, "text": text})
 		injected <- os.WriteFile(path, raw, 0600)
 	}()
-	stream, err := client.OpenEvents(ctx, metadata.SessionID)
+	stream, err := client.OpenEvents(ctx, metadata.ConnectionID)
 	if err != nil {
 		t.Fatal("actual SSE open", err)
 	}
@@ -414,7 +414,7 @@ func TestActualSignalServiceNativeReceivePersistenceAck(t *testing.T) {
 
 func TestSignalSSEBodyCancellationAndFrameIdentity(t *testing.T) {
 	v := signalGolden(t)
-	for _, mode := range []string{"cancel", "id", "type", "session"} {
+	for _, mode := range []string{"cancel", "id", "type", "connection"} {
 		t.Run(mode, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "text/event-stream")
@@ -432,8 +432,8 @@ func TestSignalSSEBodyCancellationAndFrameIdentity(t *testing.T) {
 				if mode == "type" {
 					kind = "history.sync"
 				}
-				if mode == "session" {
-					body = strings.Replace(body, "session-fixture", "foreign-session", 1)
+				if mode == "connection" {
+					body = strings.Replace(body, "session-fixture", "foreign-connection", 1)
 				}
 				fmt.Fprintf(w, "id: %s\nevent: %s\ndata: %s\n\n", id, kind, body)
 				w.(http.Flusher).Flush()

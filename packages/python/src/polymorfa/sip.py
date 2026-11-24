@@ -30,7 +30,7 @@ class Outbound(TypedDict):
 class Inbound(TypedDict):
     username: str
     realm: str
-    session: str | None
+    connection: str | None
     allowedAddresses: list[str]
     allowedDestinations: list[str]
 
@@ -101,7 +101,7 @@ class OutboundInput(TypedDict):
 
 
 class InboundInput(TypedDict):
-    session: NotRequired[str | None]
+    connection: NotRequired[str | None]
     allowedAddresses: list[str]
     allowedDestinations: NotRequired[list[str]]
 
@@ -138,7 +138,7 @@ class OutboundPatch(TypedDict, total=False):
 
 
 class InboundPatch(TypedDict, total=False):
-    session: str | None
+    connection: str | None
     allowedAddresses: list[str]
     allowedDestinations: list[str]
 

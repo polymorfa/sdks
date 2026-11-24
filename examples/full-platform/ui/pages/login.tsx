@@ -42,7 +42,7 @@ export function LoginPage({ error }: { readonly error?: string }) {
                 <input type="radio" name="role" value="admin" defaultChecked />
                 <span>
                   <strong>Admin</strong>
-                  <small>Everything, including sessions and billing</small>
+                  <small>Everything, including connections and billing</small>
                 </span>
               </label>
               <label className="radio-card">

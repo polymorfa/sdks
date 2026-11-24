@@ -38,7 +38,7 @@ const LOCALES = [
   { value: "he", label: "עברית (right to left)" },
 ];
 
-function SessionSettings() {
+function ConnectionSettings() {
   const { bootstrap } = useDesk();
   const settings = useResource<Record<string, unknown>>("/api/admin/settings");
   const [mode, setMode] = useState<"metadata_only" | "deliver">(
@@ -46,25 +46,26 @@ function SessionSettings() {
   );
   const [busy, setBusy] = useState(false);
   const project = ((
-    settings.data?.sessionConfiguration as Record<string, unknown> | undefined
+    settings.data?.connectionConfiguration as
+      Record<string, unknown> | undefined
   )?.project ?? {}) as { revision?: number; data?: { revision?: number } };
   const revision = project.revision ?? project.data?.revision ?? 0;
 
   const save = async () => {
-    const session = bootstrap.connections[0]?.id;
-    if (session === undefined) {
-      toast("Connect a WhatsApp session first", "danger");
+    const connection = bootstrap.connections[0]?.id;
+    if (connection === undefined) {
+      toast("Connect a WhatsApp connection first", "danger");
       return;
     }
     setBusy(true);
     try {
-      await callApi("/api/messaging/sessions", {
+      await callApi("/api/messaging/connections", {
         action: "configure",
-        session,
+        connection,
         historySync: { mode },
         revision,
       });
-      toast("Session configuration saved", "success");
+      toast("Connection configuration saved", "success");
     } catch (error) {
       toast(errorMessage(error), "danger");
     } finally {
@@ -73,11 +74,11 @@ function SessionSettings() {
   };
 
   return (
-    <Card title="Session configuration">
+    <Card title="Connection configuration">
       <div className="form-stack">
         <p className="muted">
-          Controls what WhatsApp history the session shares with this app when a
-          phone links.
+          Controls what WhatsApp history the connection shares with this app
+          when a phone links.
         </p>
         <Segmented
           label="History sync"
@@ -90,8 +91,9 @@ function SessionSettings() {
         />
         <div className="row-between">
           <span className="muted small">
-            Applies to {bootstrap.connections[0]?.name ?? "the default session"}{" "}
-            · revision {revision}
+            Applies to{" "}
+            {bootstrap.connections[0]?.name ?? "the default connection"} ·
+            revision {revision}
           </span>
           <Button variant="primary" loading={busy} onClick={() => void save()}>
             Save
@@ -245,7 +247,7 @@ export function SettingsPage() {
           }}
         />
       </Card>
-      {isAdmin && <SessionSettings />}
+      {isAdmin && <ConnectionSettings />}
       <Card title="Developer">
         <div className="setting">
           <div>

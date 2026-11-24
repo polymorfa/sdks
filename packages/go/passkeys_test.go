@@ -14,7 +14,7 @@ import (
 )
 
 func TestPasskeyFiveWire(t *testing.T) {
-	data, err := os.ReadFile("../../contracts/fixtures/passkeys.candidate.json")
+	data, err := os.ReadFile("../../contracts/fixtures/connections/passkeys.candidate.json")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,7 +115,7 @@ func TestPasskeyFiveWire(t *testing.T) {
 }
 
 func TestPasskeyBoundaries(t *testing.T) {
-	data, _ := os.ReadFile("../../contracts/fixtures/passkeys.candidate.json")
+	data, _ := os.ReadFile("../../contracts/fixtures/connections/passkeys.candidate.json")
 	var f struct {
 		Issue     IssuePasskeyChallengeRequest
 		Assertion SubmitPasskeyAssertionRequest
@@ -228,7 +228,7 @@ func TestPasskeyMaximumWire(t *testing.T) {
 			t.Error("maximum wire fields changed")
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"success":true,"data":{"ok":true,"ticket":"t","session":"s"}}`))
+		_, _ = w.Write([]byte(`{"success":true,"data":{"ok":true,"ticket":"t","connection":"s"}}`))
 	}))
 	defer server.Close()
 	if _, e := mustMessaging(t, server.URL).Passkeys().SubmitAssertion(context.Background(), "s", body); e != nil {
@@ -252,7 +252,7 @@ func TestPasskeyWritesOfferNoBodyRewind(t *testing.T) {
 		}
 		data := `{"success":true,"data":{"status":"none"}}`
 		if strings.HasSuffix(req.URL.Path, "/assertion") {
-			data = `{"success":true,"data":{"ok":true,"ticket":"t","session":"s"}}`
+			data = `{"success":true,"data":{"ok":true,"ticket":"t","connection":"s"}}`
 		}
 		return &http.Response{StatusCode: 200, Header: http.Header{"Content-Type": []string{"application/json"}}, Body: io.NopCloser(strings.NewReader(data)), Request: req}, nil
 	})}

@@ -42,8 +42,8 @@ async fn request(socket: &mut TcpStream) -> (String, Value) {
     )
 }
 fn event_frame() -> String {
-    let envelope = json!({"id":"webhook-one","session":"wire-session","timestamp":"2026-10-01T12:00:00Z","event":"session.connected","payload":{"pushName":"fixture"}});
-    let record = json!({"id":"retained","teamId":"team","projectId":"project","type":"session.connected","source":"runtime","environment":"development","createdAt":"2026-10-01T12:00:00Z","payloadAvailability":"retained","payload":{"contentType":"application/json","encoding":"base64","data":STANDARD.encode(envelope.to_string())},"metadataExpiresAt":"2026-11-01T12:00:00Z"});
+    let envelope = json!({"id":"webhook-one","connection":"wire-connection","timestamp":"2026-10-01T12:00:00Z","event":"connection.connected","payload":{"pushName":"fixture"}});
+    let record = json!({"id":"retained","teamId":"team","projectId":"project","type":"connection.connected","source":"runtime","environment":"development","createdAt":"2026-10-01T12:00:00Z","payloadAvailability":"retained","payload":{"contentType":"application/json","encoding":"base64","data":STANDARD.encode(envelope.to_string())},"metadataExpiresAt":"2026-11-01T12:00:00Z"});
     format!(
         "data: {}\n\n",
         json!({"type":"event","streamId":"stream/one","sequence":7,"cursor":"cursor-new","event":record})
@@ -55,11 +55,11 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
     let storage = Arc::new(Storage::new(adapter.clone(), StorageOptions::default()).unwrap());
     storage
         .apply(&OperationBatch {
-            session_id: "*".into(),
+            connection_id: "*".into(),
             event_id: None,
             event_type: None,
             operations: vec![StorageOperation::Checkpoint {
-                session_id: "*".into(),
+                connection_id: "*".into(),
                 stream: "events".into(),
                 cursor: "cursor-old".into(),
                 expected_cursor: None,
@@ -75,7 +75,7 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
     let server = tokio::spawn(async move {
         let (mut stream, _) = listener.accept().await.unwrap();
         let (head, _) = request(&mut stream).await;
-        assert_eq!(head.lines().next().unwrap(),"GET /platform/projects/project/events/stream?types=session.connected&ack=manual HTTP/1.1");
+        assert_eq!(head.lines().next().unwrap(),"GET /platform/projects/project/events/stream?types=connection.connected&ack=manual HTTP/1.1");
         assert!(head.to_lowercase().contains("last-event-id: cursor-old"));
         assert!(!head.contains("ignored"));
         let body = event_frame();
@@ -91,7 +91,7 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
         );
         assert_eq!(body, json!({"cursor":"cursor-new","sequence":7}));
         assert!(durable
-            .has_event("wire-session", "webhook-one")
+            .has_event("wire-connection", "webhook-one")
             .await
             .unwrap());
         assert_eq!(
@@ -104,12 +104,12 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
             "cursor-new"
         );
         let id = schema::encode_key(
-            Entity::Sessions,
-            &RowKey::from([("sessionId".into(), "wire-session".into())]),
+            Entity::Connections,
+            &RowKey::from([("connectionId".into(), "wire-connection".into())]),
         )
         .unwrap();
         assert!(adapter
-            .get(Entity::Sessions, std::slice::from_ref(&id))
+            .get(Entity::Connections, std::slice::from_ref(&id))
             .await
             .unwrap()[&id]
             .fields
@@ -146,7 +146,7 @@ async fn native_manual_ack_observes_durable_content_marker_and_saved_cursor() {
         &source,
         &storage,
         StorageSyncOptions {
-            types: vec!["session.connected".into()],
+            types: vec!["connection.connected".into()],
             on_applied: Some(&callback),
             ..Default::default()
         },
@@ -203,7 +203,7 @@ async fn native_retention_gap_in_same_packet_prevents_content_checkpoint_and_ack
     .await;
     assert!(result.is_err());
     assert!(!storage
-        .has_event("wire-session", "webhook-one")
+        .has_event("wire-connection", "webhook-one")
         .await
         .unwrap());
     assert!(storage.checkpoint("*", "events").await.unwrap().is_none());
@@ -236,7 +236,7 @@ async fn malformed_project_payload_never_advances_storage_or_explicit_resume() {
             assert!(head.starts_with("POST "));
             assert_eq!(body, json!({"cursor":"cursor-new","sequence":7}));
             assert!(durable
-                .has_event("wire-session", "webhook-one")
+                .has_event("wire-connection", "webhook-one")
                 .await
                 .unwrap());
             assert_eq!(

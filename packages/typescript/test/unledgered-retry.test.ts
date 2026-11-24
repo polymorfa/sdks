@@ -148,7 +148,7 @@ describe("unledgered API submissions", () => {
         },
         { idempotencyKey: "send-key", maxNetworkRetries: 1 },
       );
-      await sdk.sessions.retrieve("s", { maxNetworkRetries: 1 });
+      await sdk.connections.retrieve("s", { maxNetworkRetries: 1 });
       expect([...counts.values()]).toEqual([2, 2]);
     } finally {
       server.closeAllConnections();

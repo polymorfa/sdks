@@ -21,7 +21,7 @@ final class EloquentSchema
         }
         return SqlAdapter::pdo($pdo, $tablePrefix, $schema, $createTables);
     }
-    /** Export application-owned Eloquent query models for all schema2 entities.
+    /** Export application-owned Eloquent query models for all schema3 entities.
      * Generated source imports Illuminate only in the consuming application.
      * Instance save/delete guards do not authorize or constrain query-builder SQL;
      * use a customer-owned read-only database role for these models.

@@ -5,7 +5,7 @@ namespace Polymorfa.Sdk;
 internal static class ConfigurationContract
 {
     private static void Invalid(string field) => throw new PolymorfaConfigurationException("Invalid configuration field: " + field + ".");
-    internal static JsonElement Capture(object body, SessionConfigurationPatch patch, out bool intent)
+    internal static JsonElement Capture(object body, ConnectionConfigurationPatch patch, out bool intent)
     {
         var value = CampaignContractValidation.Capture(body);
         var configuration = value.GetProperty("configuration");
@@ -37,14 +37,14 @@ internal static class ConfigurationContract
     internal static JsonElement QuickLink(CreateQuickLinkRequest body, out bool intent)
     {
         var value = CampaignContractValidation.Capture(body);
-        CampaignContractValidation.Fields(value, ["purpose", "session", "projectId", "customerId", "externalId", "connectionGoal", "addConnection", "configuration", "billingControls", "signalMode"], []);
+        CampaignContractValidation.Fields(value, ["purpose", "connection", "projectId", "customerId", "externalId", "connectionGoal", "addMethod", "configuration", "billingControls", "signalMode"], []);
         var purpose = body.Purpose ?? "initial";
-        if (purpose is not ("initial" or "add_connection")) Invalid("purpose");
-        if (purpose == "add_connection")
+        if (purpose is not ("initial" or "add_method")) Invalid("purpose");
+        if (purpose == "add_method")
         {
-            if (string.IsNullOrEmpty(body.Session) || body.AddConnection is not ("linked_devices" or "official_api") || body.CustomerId is not null || body.ExternalId is not null || body.BillingControls is not null || body.SignalMode.IsSpecified || body.ConnectionGoal is not (null or "hybrid")) Invalid("add_connection");
+            if (string.IsNullOrEmpty(body.Connection) || body.AddMethod is not ("linked_devices" or "official_api") || body.CustomerId is not null || body.ExternalId is not null || body.BillingControls is not null || body.SignalMode.IsSpecified || body.ConnectionGoal is not (null or "hybrid")) Invalid("add_method");
         }
-        else if (body.Session is not null || body.AddConnection is not null) Invalid("initial");
+        else if (body.Connection is not null || body.AddMethod is not null) Invalid("initial");
         intent = false;
         if (value.TryGetProperty("signalMode", out var mode))
         {

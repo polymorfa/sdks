@@ -153,14 +153,14 @@ function ackStatus(type: string): StoredMessageStatus | undefined {
 
 function emptyMessage(
   id: string,
-  session: string,
+  connection: string,
   conversationId: string,
   time: number,
 ): StoredMessage {
   return {
     id,
     _t: time,
-    session,
+    connection,
     conversationId,
     createdAt: time,
     fromMe: false,
@@ -183,10 +183,18 @@ export async function upsertMessage(
   patch: Partial<StoredMessage> & {
     readonly id: string;
     readonly conversationId: string;
-    readonly session: string;
+    readonly connection: string;
   },
   time: number,
-  options: { readonly content: boolean; readonly status?: StoredMessageStatus },
+  options: {
+    readonly content: boolean;
+    readonly status?: StoredMessageStatus;
+    /**
+     * Whether the message's `pushName` may name the conversation. History
+     * writes pass `false`: their author name belongs to a group message.
+     */
+    readonly nameConversation?: boolean;
+  },
 ): Promise<void> {
   const conversation =
     (await context.get("conversations", patch.conversationId)) ??
@@ -201,7 +209,7 @@ export async function upsertMessage(
   if (existing?.deleted === true) return;
   const base =
     existing ??
-    emptyMessage(patch.id, patch.session, patch.conversationId, createdAt);
+    emptyMessage(patch.id, patch.connection, patch.conversationId, createdAt);
   // `createdAt` and `conversationId` are identity, not state: always accept.
   let next = applyFields(base, patch, time);
   if (patch.createdAt !== undefined) next = { ...next, createdAt };
@@ -240,13 +248,22 @@ export async function upsertMessage(
     createdAt > (conversation.readAt ?? -Infinity);
   if (isNewInbound)
     summary = { ...summary, unreadCount: summary.unreadCount + 1 };
-  if (!next.fromMe && next.pushName !== undefined && summary.isGroup !== true)
-    summary = applyFields(summary, { name: next.pushName }, time);
+  // Only a display name carried by this write may name the conversation: a
+  // name merged from an earlier history write belongs to a group author.
+  if (
+    options.nameConversation !== false &&
+    !next.fromMe &&
+    patch.pushName !== undefined &&
+    summary.isGroup !== true
+  )
+    summary = applyFields(summary, { name: patch.pushName }, time);
   if (summary !== conversation || existing === undefined)
     context.put("conversations", {
       ...summary,
       _t: Math.max(summary._t, time),
-      ...(conversation.session === undefined ? { session: patch.session } : {}),
+      ...(conversation.connection === undefined
+        ? { connection: patch.connection }
+        : {}),
     });
 }
 
@@ -261,7 +278,8 @@ async function tombstone(
   const existing = await context.get("messages", id);
   const conversation = existing?.conversationId ?? conversationId;
   if (conversation === undefined) return;
-  const base = existing ?? emptyMessage(id, event.session, conversation, time);
+  const base =
+    existing ?? emptyMessage(id, event.connection, conversation, time);
   const row: Mutable<StoredMessage> = {
     ...base,
     _t: Math.max(base._t, time),
@@ -284,7 +302,7 @@ function messageFromPayload(
   | (Partial<StoredMessage> & {
       id: string;
       conversationId: string;
-      session: string;
+      connection: string;
     })
   | undefined {
   const id = str(payload.id);
@@ -296,7 +314,7 @@ function messageFromPayload(
   const type = str(payload.type);
   return pick({
     id,
-    session: event.session,
+    connection: event.connection,
     conversationId: conversation.id,
     createdAt: payloadTime(payload.timestamp) ?? time,
     fromMe: bool(payload.fromMe) ?? false,
@@ -358,7 +376,7 @@ const reactionMessage: StoreReducer = async (event, context) => {
       : (conversation.sender?.id ?? conversation.id);
   const existing =
     (await context.get("messages", target)) ??
-    emptyMessage(target, event.session, conversation.id, context.time);
+    emptyMessage(target, event.connection, conversation.id, context.time);
   if (existing.deleted === true) return;
   const key = `reaction:${reactor}`;
   if ((existing.fieldTimes?.[key] ?? -Infinity) > context.time) return;
@@ -384,7 +402,7 @@ const sentMessage: StoreReducer = async (event, context) => {
     context,
     pick({
       id,
-      session: event.session,
+      connection: event.connection,
       conversationId: conversation.id,
       createdAt: payloadTime(payload.timestamp) ?? context.time,
       fromMe: true,
@@ -410,7 +428,7 @@ const ackMessage: StoreReducer = async (event, context) => {
       (await context.get("messages", id)) ??
       emptyMessage(
         id,
-        event.session,
+        event.connection,
         conversation.id,
         payloadTime(payload.timestamp) ?? context.time,
       );
@@ -472,7 +490,7 @@ const voteMessage: StoreReducer = async (event, context) => {
   const time = payloadTime(payload.timestamp) ?? context.time;
   const existing =
     (await context.get("messages", target)) ??
-    emptyMessage(target, event.session, conversation.id, time);
+    emptyMessage(target, event.connection, conversation.id, time);
   const key = `vote:${voter.id}`;
   if ((existing.fieldTimes?.[key] ?? -Infinity) > time) return;
   context.put("messages", {
@@ -491,7 +509,7 @@ async function updateConversation(
 ): Promise<StoredConversation> {
   const existing = (await context.get("conversations", id)) ?? {
     ...emptyConversation(id, context.time),
-    session: event.session,
+    connection: event.connection,
   };
   const next = applyFields(existing, patch, context.time);
   context.put("conversations", next);
@@ -561,7 +579,7 @@ function clearChat(deleted: boolean): StoreReducer {
     context.deleteConversationMessages(id);
     const base = existing ?? {
       ...emptyConversation(id, context.time),
-      session: event.session,
+      connection: event.connection,
     };
     const row: Mutable<StoredConversation> = {
       ...base,
@@ -672,11 +690,16 @@ function callEvent(state: StoredCallState | undefined): StoreReducer {
     const existing: StoredCall = (await context.get("calls", callId)) ?? {
       id: callId,
       _t: context.time,
-      session: event.session,
+      connection: event.connection,
       state: "ringing",
       startedAt: context.time,
     };
-    const from = identity(payload.from);
+    const reported = identity(payload.from);
+    // Later call events often carry only the ID; keep what earlier ones knew.
+    const from =
+      reported !== undefined && existing.from?.id === reported.id
+        ? { ...existing.from, ...reported }
+        : reported;
     let next: StoredCall = applyFields(
       existing,
       pick({
@@ -726,7 +749,7 @@ const callParticipant: StoreReducer = async (event, context) => {
   const existing: StoredCall = (await context.get("calls", callId)) ?? {
     id: callId,
     _t: context.time,
-    session: event.session,
+    connection: event.connection,
     state: "active",
     startedAt: context.time,
   };
@@ -763,7 +786,7 @@ const callTelemetry: StoreReducer = async (event, context) => {
   const existing: StoredCall = (await context.get("calls", callId)) ?? {
     id: callId,
     _t: context.time,
-    session: event.session,
+    connection: event.connection,
     state: "ended",
     startedAt: context.time,
   };
@@ -805,7 +828,7 @@ const labelsUpdate: StoreReducer = async (event, context) => {
     if (id === undefined || labeled === undefined) return false;
     const existing = (await context.get("conversations", id)) ?? {
       ...emptyConversation(id, context.time),
-      session: event.session,
+      connection: event.connection,
     };
     context.put(
       "conversations",
@@ -853,17 +876,17 @@ function toggleLabel<
   };
 }
 
-function sessionEvent(
+function connectionEvent(
   patch: (payload: Payload) => Record<string, unknown>,
 ): StoreReducer {
   return async (event, context) => {
     if (!isRecord(event.payload)) return false;
-    const existing = (await context.get("sessions", event.session)) ?? {
-      id: event.session,
+    const existing = (await context.get("connections", event.connection)) ?? {
+      id: event.connection,
       _t: context.time,
     };
     context.put(
-      "sessions",
+      "connections",
       applyFields(existing, pick(patch(event.payload)), context.time),
     );
   };
@@ -948,7 +971,7 @@ export const BUILT_IN_REDUCERS: Readonly<Record<string, StoreReducer>> = {
   "call.participant_left": callParticipant,
   "call.telemetry": callTelemetry,
   "labels.update": labelsUpdate,
-  "session.status": sessionEvent((payload) =>
+  "connection.status": connectionEvent((payload) =>
     payload.source === "meta"
       ? {
           cloudAccountNotification: {
@@ -962,7 +985,7 @@ export const BUILT_IN_REDUCERS: Readonly<Record<string, StoreReducer>> = {
           statusReason: str(payload.statusReason),
         },
   ),
-  "session.connected": sessionEvent((payload) => ({
+  "connection.connected": connectionEvent((payload) => ({
     status: "connected",
     phoneNumber: str(payload.phoneNumber),
     pushName: str(payload.pushName),
@@ -970,11 +993,11 @@ export const BUILT_IN_REDUCERS: Readonly<Record<string, StoreReducer>> = {
     accountType: str(payload.accountType),
     businessName: str(payload.businessName),
   })),
-  "session.logged_out": sessionEvent((payload) => ({
+  "connection.logged_out": connectionEvent((payload) => ({
     status: "logged_out",
     loggedOutReason: str(payload.reason),
   })),
-  "session.phone_offline": sessionEvent((payload) => ({
+  "connection.phone_offline": connectionEvent((payload) => ({
     phoneOffline: {
       daysSinceLastSeen: num(payload.daysSinceLastSeen) ?? 0,
       daysRemaining: num(payload.daysRemaining) ?? 0,
@@ -1012,8 +1035,8 @@ export function keyHints(event: PolymorfaEvent): KeyHints {
     add("contacts", payload.id);
   } else if (event.event === "presence.update") {
     add("presence", (identity(payload.from) ?? identity(payload.sender))?.id);
-  } else if (event.event.startsWith("session.")) {
-    add("sessions", event.session);
+  } else if (event.event.startsWith("connection.")) {
+    add("connections", event.connection);
   } else if (event.event === "template.status") {
     add("templates", payload.templateId);
   } else if (event.event === "labels.update") {

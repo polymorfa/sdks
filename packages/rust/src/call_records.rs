@@ -14,7 +14,7 @@ enumeration!(CallDirection {Inbound=>"inbound",Outbound=>"outbound"});
 enumeration!(CallUpstream {LinkedDevice=>"linked_device",CloudApi=>"cloud_api"});
 enumeration!(CallOutcome {Answered=>"answered",Missed=>"missed",Declined=>"declined",Failed=>"failed",InProgress=>"in_progress"});
 enumeration!(CallRecordState {Offered=>"offered",Accepted=>"accepted",Rejected=>"rejected",Missed=>"missed",Ended=>"ended"});
-enumeration!(StatsGroupBy {Day=>"day",Hour=>"hour",Session=>"session",Outcome=>"outcome"});
+enumeration!(StatsGroupBy {Day=>"day",Hour=>"hour",Connection=>"connection",Outcome=>"outcome"});
 enumeration!(CallExportFormat {Csv=>"csv",Ndjson=>"ndjson"});
 enumeration!(ParticipantState {Invited=>"invited",Ringing=>"ringing",Connected=>"connected",Left=>"left"});
 enumeration!(ConnectionTransport {Webrtc=>"webrtc",Socket=>"socket",Sip=>"sip",Unknown=>"unknown"});
@@ -23,7 +23,7 @@ enumeration!(TelemetryStatus {Reported=>"reported",Unknown=>"unknown"});
 enumeration!(TelemetrySource {MediaServer=>"media_server"});
 enumeration!(CandidateType {Host=>"host",Srflx=>"srflx",Prflx=>"prflx",Relay=>"relay"});
 enumeration!(AppReportsStatus {Reported=>"reported",None=>"none"});
-model!(CallRecord {call_id:String,project_id:Option<String>,session_id:String,direction:CallDirection,upstream:CallUpstream,outcome:CallOutcome,state:CallRecordState,has_video:bool,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<String>});
+model!(CallRecord {call_id:String,project_id:Option<String>,connection_id:String,direction:CallDirection,upstream:CallUpstream,outcome:CallOutcome,state:CallRecordState,has_video:bool,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<String>});
 model!(CallEndReason {
     code: String,
     label: String
@@ -38,7 +38,7 @@ model!(AppError {
 });
 model!(AppConnection {connection_id:String,participant:String,client:Option<crate::voip::CallReportClient>,quality:Option<AppQuality>,errors:Vec<AppError>});
 model!(AppReports {status:AppReportsStatus,connections:Vec<AppConnection>,truncated:bool});
-model!(CallSummary {call_id:String,session_id:String,project_id:Option<String>,direction:CallDirection,state:CallRecordState,live:bool,backend:String,has_video:bool,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<CallEndReason>,answered_by:Option<String>,exclusive:Option<bool>});
+model!(CallSummary {call_id:String,connection_id:String,project_id:Option<String>,direction:CallDirection,state:CallRecordState,live:bool,backend:String,has_video:bool,peer_ref:Option<String>,started_at:String,connected_at:Option<String>,ended_at:Option<String>,duration_seconds:Option<f64>,end_reason:Option<CallEndReason>,answered_by:Option<String>,exclusive:Option<bool>});
 model!(HistoryEvent {
     event_id: String,
     r#type: String,
@@ -47,7 +47,7 @@ model!(HistoryEvent {
 model!(CallHistory {events:Vec<HistoryEvent>,truncated:bool});
 model!(CallCorrelation {
     call_id: String,
-    session_id: String
+    connection_id: String
 });
 model!(CallRecordDetail {call:CallSummary,participants:Vec<CallParticipant>,connections:Vec<CallConnection>,telemetry:CallTelemetry,app_reports:AppReports,history:CallHistory,correlation:CallCorrelation});
 model!(CallStatsMetrics {calls:u64,answered:u64,missed:u64,declined:u64,failed:u64,in_progress:u64,answer_rate:Option<f64>,total_duration_seconds:f64,average_duration_seconds:Option<f64>});
@@ -69,7 +69,7 @@ model!(CallExportPage {format:CallExportFormat,body:String,next_cursor:Option<St
 #[derive(Clone, Debug, Default)]
 pub struct CallFilters {
     pub project_id: Option<String>,
-    pub session_id: Option<String>,
+    pub connection_id: Option<String>,
     pub direction: Option<CallDirection>,
     pub upstream: Option<CallUpstream>,
     pub outcome: Option<CallOutcome>,
@@ -122,9 +122,9 @@ impl CallRecords<'_> {
             text(v, 64)?;
             q.insert("projectId".into(), v.clone().into());
         }
-        if let Some(v) = &p.session_id {
+        if let Some(v) = &p.connection_id {
             text(v, 128)?;
-            q.insert("sessionId".into(), v.clone().into());
+            q.insert("connectionId".into(), v.clone().into());
         }
         if let Some(v) = p.direction {
             q.insert("direction".into(), enum_value(v).into());

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Polymorfa\{WebhookRequest,Webhooks,WebhookSignatureException,MediaSocket,VideoFrame,AudioFrame,CallSocket,Credential,ConfigurationException};
 
-$raw = '{ "id":"event_1","session":"support","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}';
+$raw = '{ "id":"event_1","connection":"support","timestamp":"2026-10-11T00:00:00Z","event":"future.event","payload":{"x":1}}';
 $signature = hash_hmac('sha256', $raw, 'secret');
 $symfony = Symfony\Component\HttpFoundation\Request::create('/webhook', 'POST', server:['HTTP_X_WEBHOOK_SIGNATURE' => $signature], content:$raw);
 $laravel = Illuminate\Http\Request::createFromBase($symfony);

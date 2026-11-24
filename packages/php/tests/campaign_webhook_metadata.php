@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-$campaignMetadata = json_decode(file_get_contents(dirname(__DIR__, 3).'/contracts/fixtures/campaign-webhook-metadata.json'), true, 512, JSON_THROW_ON_ERROR);
+$campaignMetadata = json_decode(file_get_contents(dirname(__DIR__, 3).'/contracts/fixtures/connections/campaign-webhook-metadata.json'), true, 512, JSON_THROW_ON_ERROR);
 $campaignSigned = static function (array $value) use ($campaignMetadata): Polymorfa\WebhookEvent|Polymorfa\WebhookEventBatch {
     $raw = json_encode($value, JSON_THROW_ON_ERROR);
     return Polymorfa\Webhooks::constructDelivery($raw, hash_hmac('sha256', $raw, $campaignMetadata['secret']), $campaignMetadata['secret']);

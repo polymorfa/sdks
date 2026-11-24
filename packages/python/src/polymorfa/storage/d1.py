@@ -1,4 +1,4 @@
-"""Signed storage-only D1 Worker bridge, exact producer 9ae35e671f7f4868a67c1562422c5af9284b95c1."""
+"""Signed storage-only D1 Worker bridge, exact producer d80b581c9df122411e9149a7e39a33700a51571c."""
 
 from __future__ import annotations
 
@@ -36,7 +36,7 @@ from .core import (
 )
 
 D1_BRIDGE_CONTRACT = "polymorfa-d1-storage-v1"
-D1_BRIDGE_PRODUCER_COMMIT = "9ae35e671f7f4868a67c1562422c5af9284b95c1"
+D1_BRIDGE_PRODUCER_COMMIT = "d80b581c9df122411e9149a7e39a33700a51571c"
 _MAX_BODY = 8 * 1024 * 1024
 
 

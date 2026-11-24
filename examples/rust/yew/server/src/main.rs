@@ -32,7 +32,7 @@ struct App {
     username_hash: [u8; 32],
     password_hash: [u8; 32],
     user_id: String,
-    session: String,
+    connection: String,
     origin: String,
     users: Mutex<HashMap<String, AppSession>>,
 }
@@ -56,7 +56,7 @@ struct BrowserToken {
 }
 #[derive(Serialize)]
 struct BrowserGrant {
-    session: String,
+    connection: String,
     conversations: Vec<String>,
     allow: Vec<&'static str>,
 }
@@ -156,9 +156,9 @@ async fn connect(State(app): State<Arc<App>>, headers: HeaderMap) -> Response {
         return StatusCode::UNAUTHORIZED.into_response();
     }
     let request = polymorfa_sdk::models::CreateQuickLinkRequest {
-        purpose: Some(polymorfa_sdk::models::CreateQuickLinkPurpose::AddConnection),
-        session: Some(app.session.clone()),
-        add_connection: Some(polymorfa_sdk::models::ConnectionKind::LinkedDevices),
+        purpose: Some(polymorfa_sdk::models::CreateQuickLinkPurpose::AddMethod),
+        connection: Some(app.connection.clone()),
+        add_method: Some(polymorfa_sdk::models::ConnectionKind::LinkedDevices),
         connection_goal: Some(polymorfa_sdk::models::ConnectionGoal::Hybrid),
         ..Default::default()
     };
@@ -183,8 +183,8 @@ async fn token(
     let Some(user) = user else {
         return StatusCode::UNAUTHORIZED.into_response();
     };
-    // Both identity and number assignment are server-owned. No browser body or
-    // identity header chooses a session, customer, or ephemeral ID.
+    // Both identity and Connection assignment are server-owned. No browser body or
+    // identity header chooses a Connection, customer, or ephemeral ID.
     let result = app
         .client
         .client_tokens()
@@ -192,8 +192,8 @@ async fn token(
             &MintClientTokenRequest {
                 ephemeral_id: format!("example:{user}"),
                 ttl_seconds: Some(600),
-                target: ClientTokenTarget::Session {
-                    session: app.session.clone(),
+                target: ClientTokenTarget::Connection {
+                    connection: app.connection.clone(),
                     allow: None,
                 },
             },
@@ -217,7 +217,7 @@ async fn token(
                     expires_at: expiry.timestamp_millis(),
                     scopes: vec!["read_messages", "connect_whatsapp"],
                     grant: BrowserGrant {
-                        session: app.session.clone(),
+                        connection: app.connection.clone(),
                         conversations: Vec::new(),
                         allow: vec!["read_messages", "connect_whatsapp"],
                     },
@@ -239,16 +239,16 @@ async fn token(
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let username = std::env::var("EXAMPLE_APP_USERNAME")?;
     let password = std::env::var("EXAMPLE_APP_PASSWORD")?;
-    let session = std::env::var("POLYMORFA_SESSION")?;
+    let connection = std::env::var("POLYMORFA_CONNECTION")?;
     let peer = std::env::var("POLYMORFA_RECIPIENT")?;
     let webhook_secret = std::env::var("POLYMORFA_WEBHOOK_SECRET")?;
     if username.is_empty()
         || password.is_empty()
-        || session.is_empty()
+        || connection.is_empty()
         || peer.is_empty()
         || webhook_secret.is_empty()
     {
-        return Err("Set a nonempty example username, password, and authorized session".into());
+        return Err("Set a nonempty example username, password, and authorized Connection".into());
     }
     let credential = Credential::project_token(std::env::var("POLYMORFA_PROJECT_TOKEN")?)?;
     let port: u16 = std::env::var("POLYMORFA_EXAMPLE_PORT")
@@ -264,13 +264,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         username_hash: digest(&username),
         password_hash: digest(&password),
         user_id: uuid::Uuid::new_v4().to_string(),
-        session,
+        connection,
         origin: format!("http://127.0.0.1:{port}"),
         users: Mutex::new(HashMap::new()),
         peer,
         webhook_secret,
         local_test: std::env::var("POLYMORFA_EXAMPLE_TRANSPORT").as_deref()
-            == Ok("local-test-number"),
+            == Ok("local-test-connection"),
         conversation: Mutex::new(Default::default()),
         send_gate: tokio::sync::Mutex::new(()),
     });

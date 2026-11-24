@@ -9,7 +9,7 @@ final class Call
 {
     public readonly string $connectionId;
     public readonly float $startedAt;
-    public readonly string $session;
+    public readonly string $connection;
     public string $state;
     public ?string $endReason = null;
     public bool $answered = false;
@@ -51,7 +51,7 @@ final class Call
         bool $exclusive = false
     ) {
         $this->startedAt = microtime(true);
-        $this->session = $client->session() ?? '';
+        $this->connection = $client->connection() ?? '';
         $this->connectionId = rtrim(strtr(base64_encode(random_bytes(18)), '+/', '-_'), '=');
         $this->state = $direction === 'inbound' ? 'incoming' : 'ringing';
         $this->claimedBySelf = $exclusive;

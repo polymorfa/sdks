@@ -13,7 +13,7 @@ public sealed record UpdatePlatformWebhookInput(string? Url = null, IReadOnlyLis
 public sealed record ListPlatformWebhooksParameters(string? EventType = null, bool? Enabled = null, int? Limit = null, string? Cursor = null);
 public sealed record RotateWebhookSecretInput(int? OverlapSeconds = null);
 public record TestPlatformWebhookInput(string? EventType = null);
-public sealed record TestProjectWebhookPayloadInput(EncodedEventPayload Body, string SessionId, string? EventType = null) : TestPlatformWebhookInput(EventType);
+public sealed record TestProjectWebhookPayloadInput(EncodedEventPayload Body, string ConnectionId, string? EventType = null) : TestPlatformWebhookInput(EventType);
 public sealed record WebhookCreationReceipt(PlatformWebhook Webhook, string? OperationId, IdempotencyReceipt Idempotency, string? Secret, bool SecretAvailable)
 {
     public override string ToString() => $"WebhookCreationReceipt {{ WebhookId = {Webhook.Id}, SecretAvailable = {SecretAvailable}, Secret = [REDACTED] }}";
@@ -50,7 +50,7 @@ public sealed class PlatformWebhooks : Resource
     public Task<ApiResponse<WebhookDeletionReceipt>> DeleteAsync(string webhookId, RequestOptions? options = null) => Unwrap<WebhookDeletionReceipt>(HttpMethod.Delete, Path(webhookId), null, options);
     public Task<ApiResponse<EventReplayReceipt>> TestAsync(string webhookId, TestPlatformWebhookInput? body = null, RequestOptions? options = null)
     {
-        if (!project && body is TestProjectWebhookPayloadInput) throw new PolymorfaValidationException("Team webhook tests do not accept body or sessionId.", "invalid_parameter");
+        if (!project && body is TestProjectWebhookPayloadInput) throw new PolymorfaValidationException("Team webhook tests do not accept body or connectionId.", "invalid_parameter");
         return Unwrap<EventReplayReceipt>(HttpMethod.Post, Path(webhookId) + "/tests", body ?? new(), options);
     }
     public Task<ApiResponse<WebhookSecretRotationReceipt>> RotateSecretAsync(string webhookId, RotateWebhookSecretInput? body = null, RequestOptions? options = null) => Unwrap<WebhookSecretRotationReceipt>(HttpMethod.Post, Path(webhookId) + "/secret-rotations", body ?? new(), options);

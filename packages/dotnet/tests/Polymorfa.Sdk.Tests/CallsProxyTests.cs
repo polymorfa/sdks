@@ -25,7 +25,7 @@ internal static class CallsProxyTests
             var accept = fixture.AcceptAsync("/voip/ws");
             if (await Task.WhenAny(accept, forwarding, opening) == forwarding) await forwarding;
             if (opening.IsFaulted) await opening;
-            using var peer = await accept; var auth = await WebSocketFixture.ReceiveJsonAsync(peer); ResourceTests.Equal(auth.GetProperty("token").GetString(), "pmfa_ct_Zml4dHVyZQ"); await WebSocketFixture.TextAsync(peer, "{\"type\":\"ready\",\"session\":\"support\",\"participant\":\"client:user\"}"); await using var socket = await opening;
+            using var peer = await accept; var auth = await WebSocketFixture.ReceiveJsonAsync(peer); ResourceTests.Equal(auth.GetProperty("token").GetString(), "pmfa_ct_Zml4dHVyZQ"); await WebSocketFixture.TextAsync(peer, "{\"type\":\"ready\",\"connection\":\"support\",\"participant\":\"client:user\"}"); await using var socket = await opening;
             ResourceTests.True(socket.Connected); await socket.DisposeAsync(); await forwarding.WaitAsync(bound.Token);
             Console.WriteLine("PASS native Calls HTTP proxy and first-frame credential custody");
         }

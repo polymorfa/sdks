@@ -59,14 +59,14 @@ async fn actual_native_firestore_transactions_full_schema2_conformance() {
         .await
         .unwrap();
     let history = docs.iter().find(|d| d.fields.get("timestamp").is_some_and(|v| matches!(v.value_type,Some(gcloud_sdk::google::firestore::v1::value::ValueType::IntegerValue(n)) if n>1000))).unwrap();
-    let session = match &history.fields["sessionId"].value_type {
+    let connection = match &history.fields["connectionId"].value_type {
         Some(gcloud_sdk::google::firestore::v1::value::ValueType::StringValue(s)) => s.clone(),
         _ => panic!("Invalid fixture"),
     };
     let query = IndexQuery {
         index: "by_chat".into(),
         equals: BTreeMap::from([
-            ("sessionId".into(), session),
+            ("connectionId".into(), connection),
             ("chatId".into(), "chat".into()),
             ("unknown.field".into(), "ignored".into()),
         ]),
@@ -133,7 +133,7 @@ async fn actual_native_firestore_transactions_full_schema2_conformance() {
         document.name.clear();
         for (field, value) in [
             ("_id", id.as_str()),
-            ("sessionId", "safe"),
+            ("connectionId", "safe"),
             (
                 "messageId",
                 if mode == "identity" {

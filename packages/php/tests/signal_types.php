@@ -11,12 +11,12 @@ final class SignalTypes
     public static function consumer(SignalSidecarClient $client, string $raw, string $signature, string $timestamp, string $eventId, string $secret): void
     {
         $client->health();
-        foreach ($client->sessions()->sessions as $session) {
-            self::text($session->id);
-            self::number($session->leaseGeneration);
+        foreach ($client->connections()->connections as $connection) {
+            self::text($connection->id);
+            self::number($connection->leaseGeneration);
         }
-        self::text($client->send('session', new SignalSendRequest('target@lid', 'Hello'))->messageId);
-        $stream = $client->events('session');
+        self::text($client->send('connection', new SignalSendRequest('target@lid', 'Hello'))->messageId);
+        $stream = $client->events('connection');
         foreach ($stream as $event) {
             self::text($event->messageProto);
             self::number($event->timestamp);

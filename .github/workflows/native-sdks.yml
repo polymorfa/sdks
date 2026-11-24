@@ -15,14 +15,24 @@ jobs:
     runs-on: macos-26
     env:
       DEVELOPER_DIR: /Applications/Xcode_26.6.app/Contents/Developer
+      DOTNET_MULTILEVEL_LOOKUP: "0"
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-node@v6
         with:
           node-version: 24
       - uses: actions/setup-dotnet@v6
+        env:
+          # Keep the pinned MAUI workload away from preinstalled newer manifests.
+          DOTNET_INSTALL_DIR: ${{ runner.temp }}/polymorfa-maui-dotnet
         with:
-          dotnet-version: 10.0.401
+          dotnet-version: |
+            8.0.x
+            10.0.401
+      - name: Verify the pinned MAUI SDK is selected
+        run: |
+          dotnet --list-sdks
+          test "$(dotnet --version)" = "10.0.401"
       - name: Install the supported Xcode 26.6 workload set
         run: dotnet workload install maui-maccatalyst --version 10.0.401
       - name: Build existing browser components

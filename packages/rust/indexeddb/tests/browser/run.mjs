@@ -40,7 +40,7 @@ try {
     const rollbackName = name + '_provider_rollback';
     const entities = JSON.parse(module.entity_names());
     const database = await new Promise((resolve,reject) => {
-      const request = indexedDB.open(rollbackName,2);
+      const request = indexedDB.open(rollbackName,3);
       request.onupgradeneeded = () => {
         for (const entity of entities) request.result.createObjectStore(entity,{keyPath:'_id'});
         request.transaction.objectStore('messages').createIndex('unique_text','text',{unique:true});

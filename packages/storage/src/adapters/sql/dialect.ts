@@ -118,11 +118,11 @@ export function schemaVersionStatement(
   const version = quoteIdent(dialect, "version");
   switch (dialect) {
     case "postgres":
-      return `INSERT INTO ${meta} (${id}, ${version}) VALUES ('storage', ${STORAGE_SCHEMA_VERSION}) ON CONFLICT (${id}) DO UPDATE SET ${version} = EXCLUDED.${version}`;
+      return `INSERT INTO ${meta} (${id}, ${version}) VALUES ('storage', ${STORAGE_SCHEMA_VERSION}) ON CONFLICT (${id}) DO NOTHING`;
     case "mysql":
-      return `INSERT INTO ${meta} (${id}, ${version}) VALUES ('storage', ${STORAGE_SCHEMA_VERSION}) ON DUPLICATE KEY UPDATE ${version} = VALUES(${version})`;
+      return `INSERT INTO ${meta} (${id}, ${version}) VALUES ('storage', ${STORAGE_SCHEMA_VERSION}) ON DUPLICATE KEY UPDATE ${id} = ${id}`;
     case "sqlite":
-      return `INSERT INTO ${meta} (${id}, ${version}) VALUES ('storage', ${STORAGE_SCHEMA_VERSION}) ON CONFLICT (${id}) DO UPDATE SET ${version} = excluded.${version}`;
+      return `INSERT INTO ${meta} (${id}, ${version}) VALUES ('storage', ${STORAGE_SCHEMA_VERSION}) ON CONFLICT (${id}) DO NOTHING`;
   }
 }
 

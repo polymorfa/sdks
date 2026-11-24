@@ -13,13 +13,13 @@ file_put_contents($state.'.http', json_encode($record, JSON_THROW_ON_ERROR)."\n"
 header('Content-Type: application/json');
 header('X-Request-Id: calls_native');
 if ($path === '/messaging/voip/calls') {
-    if (($body['session'] ?? null) !== 'support' || isset($body['participant']) || $record['idempotency'] === null) {
+    if (($body['connection'] ?? null) !== 'support' || isset($body['participant']) || $record['idempotency'] === null) {
         http_response_code(422);
         echo '{"error":{"code":"wire_mismatch"}}';
         return;
     }
     file_put_contents($state.'.events', json_encode(['event' => 'call.accepted','callId' => 'outbound_1','payload' => ['answeredBy' => 'remote','exclusive' => false]], JSON_THROW_ON_ERROR)."\n", FILE_APPEND | LOCK_EX);
-    echo '{"success":true,"data":{"callId":"outbound_1","session":"support","video":false}}';
+    echo '{"success":true,"data":{"callId":"outbound_1","connection":"support","video":false}}';
 } elseif (str_ends_with($path, '/accept')) {
     echo '{"success":true,"data":{"answered":true,"answeredBy":"server:default","exclusive":false}}';
 } elseif (str_ends_with($path, '/participants')) {

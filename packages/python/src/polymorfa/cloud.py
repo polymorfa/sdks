@@ -59,4 +59,4 @@ class CloudCredentialHealth(TypedDict):
 class CloudReauthorization(TypedDict):
     quicklinkId: str
     url: str
-    session: str
+    connection: str

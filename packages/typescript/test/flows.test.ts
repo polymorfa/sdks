@@ -35,7 +35,7 @@ describe("project Flow lifecycle", () => {
       "Flow ID is required",
     );
     expect(() =>
-      flows.upload(null as unknown as string, { sessionId: "support" }),
+      flows.upload(null as unknown as string, { connectionId: "support" }),
     ).toThrow("Flow ID is required");
     for (const expectedUpdatedAt of [undefined, NaN, Infinity, -Infinity]) {
       expect(() =>
@@ -68,7 +68,7 @@ describe("project Flow lifecycle", () => {
       "sync",
     ] as const) {
       await flows[method]("flow/eu", {
-        sessionId: "support",
+        connectionId: "support",
         categories: ["APPOINTMENT_BOOKING"],
         requestId: "22222222-2222-4222-8222-222222222222",
       });
@@ -114,7 +114,7 @@ describe("project Flow lifecycle", () => {
     expect(() =>
       flows.upload("flow", {
         flowId: "another",
-        sessionId: "support",
+        connectionId: "support",
       } as FlowProviderRequest),
     ).toThrow("override");
     expect(server.requests).toHaveLength(0);
@@ -132,7 +132,7 @@ describe("project Flow lifecycle", () => {
       await expect(
         client(server).flows[action](
           "flow",
-          { sessionId: "support" },
+          { connectionId: "support" },
           { idempotencyKey: "request", maxNetworkRetries: 4 },
         ),
       ).rejects.toMatchObject({ status: 503 });
@@ -153,7 +153,7 @@ describe("project Flow lifecycle", () => {
     }));
     servers.push(server);
     const response = await client(server).flows.upload("flow", {
-      sessionId: "support",
+      connectionId: "support",
     });
     expectTypeOf(response.data).toEqualTypeOf<FlowProviderResult>();
     expect(response.data).toEqual(data);
@@ -222,7 +222,7 @@ describe("project Flow reads", () => {
   it("keeps project tokens bound, rejects malformed IDs locally, and preserves API authorization errors", async () => {
     const fetch = vi.fn<typeof globalThis.fetch>(async () =>
       Response.json(
-        { error: { code: "forbidden", message: "Missing sessions:read" } },
+        { error: { code: "forbidden", message: "Missing connections:read" } },
         { status: 403 },
       ),
     );

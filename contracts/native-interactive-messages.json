@@ -11,7 +11,7 @@
   },
   "baselineUnchanged": true,
   "published": false,
-  "claim": "Source and synthetic native wire-fixture attribution only. This does not establish runtime acceptance, package publication or customer availability.",
+  "claim": "Source and synthetic native wire-fixture attribution only. This does not establish runtime acceptance, package publication or customer availability. The original baseline attribution remains historical; currentBaseline binds the separate Connection migration.",
   "fields": {
     "mediaHeader": "/buttonsContent/properties/buttons/properties/media",
     "carousel": "/carouselContent/properties/carousel"
@@ -231,5 +231,9 @@
         ]
       }
     }
+  },
+  "currentBaseline": {
+    "sourceApiCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+    "operations": 672
   }
 }

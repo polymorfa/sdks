@@ -60,8 +60,8 @@ final class PlatformWebhooks extends PlatformResource
  * @return ApiResponse<ReplayReceipt> */
     public function test(string $id, array $body = [], ?RequestOptions $options = null): ApiResponse
     {
-        if ($this->prefix === '/platform' && (array_key_exists('body', $body) || array_key_exists('sessionId', $body))) {
-            throw new ValidationException('Team tests do not accept body or sessionId.');
+        if ($this->prefix === '/platform' && (array_key_exists('body', $body) || array_key_exists('connectionId', $body))) {
+            throw new ValidationException('Team tests do not accept body or connectionId.');
         }
         /** @var ApiResponse<ReplayReceipt> $response */ $response = $this->unwrapped('POST', $this->prefix.'/webhooks/'.self::segment($id).'/tests', $body === [] ? new \stdClass() : $body, options:$options);
         return $response;

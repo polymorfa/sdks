@@ -3,6 +3,9 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   PolymorfaClient,
   resetPermissionWarnings,
+  InboxController,
+  type GroupSource,
+  type InboxConversation,
   type InboxDataSource,
   type PolymorfaPermission,
 } from "@polymorfa/ui-kit/internal";
@@ -27,7 +30,7 @@ function tokenFetch(allow: readonly PolymorfaPermission[]) {
       value: "pmfa_ct_Zml4dHVyZQ",
       audience: "browser",
       expiresAt: Date.now() + 600_000,
-      grant: { session: "support", conversations: "all", allow },
+      grant: { connection: "support", conversations: "all", allow },
     });
   });
 }
@@ -251,5 +254,145 @@ describe("<pmfa-inbox>", () => {
     inbox.shadowRoot!.querySelector<HTMLButtonElement>(".pmfa-conv")!.click();
     const composer = inbox.shadowRoot!.querySelector("pmfa-compose-box");
     expect(composer?.getAttribute("attachments")).toBe("false");
+  });
+});
+
+describe("<pmfa-inbox> retained panels", () => {
+  // happy-dom keeps focus on a button whose panel was detached, and then
+  // cannot resolve `activeElement`. Move focus out of the inbox first.
+  function parkFocus() {
+    const sink = document.createElement("button");
+    document.body.append(sink);
+    sink.focus();
+  }
+  afterEach(parkFocus);
+  const group: InboxConversation = {
+    id: "120363",
+    kind: "group",
+    name: "Launch",
+    lastActivity: 3,
+    unreadCount: 0,
+  };
+  const groupSource: GroupSource = {
+    retrieve: vi.fn(async () => ({
+      id: "120363",
+      name: "Launch",
+      description: "",
+      ownerId: "1",
+      createdAt: 1_700_000_000,
+      participants: [{ id: "1", isAdmin: true, isSuperAdmin: false }],
+    })),
+    create: vi.fn(),
+    setSubject: vi.fn(),
+    setDescription: vi.fn(),
+    participants: vi.fn(),
+    inviteCode: vi.fn(),
+    revokeInviteCode: vi.fn(),
+    setting: vi.fn(),
+    leave: vi.fn(),
+  };
+
+  async function mount() {
+    const client = defineUiKit({
+      client: new PolymorfaClient({ fetch: tokenFetch(["read_messages"]) }),
+    });
+    await client.refresh();
+    const inbox = document.createElement("pmfa-inbox") as PolymorfaInboxElement;
+    inbox.source = {
+      ...source,
+      listConversations: async () => ({ conversations: [group] }),
+    };
+    inbox.contacts = { list: async () => [], lookup: async () => null };
+    inbox.groups = groupSource;
+    inbox.callLog = { list: async () => ({ entries: [] }) };
+    document.body.append(inbox);
+    await vi.waitFor(() =>
+      expect(
+        inbox.shadowRoot!.querySelector("[data-conversation-id='120363']"),
+      ).not.toBeNull(),
+    );
+    return inbox;
+  }
+
+  function openPanel(inbox: PolymorfaInboxElement, kind: string): Element {
+    if (kind === "new-chat")
+      inbox
+        .shadowRoot!.querySelector<HTMLButtonElement>("[data-inbox-new-chat]")!
+        .click();
+    else if (kind === "call-log")
+      inbox
+        .shadowRoot!.querySelector<HTMLButtonElement>(
+          "[data-inbox-view='calls']",
+        )!
+        .click();
+    else {
+      inbox
+        .shadowRoot!.querySelector<HTMLButtonElement>(
+          "[data-conversation-id='120363']",
+        )!
+        .click();
+      inbox
+        .shadowRoot!.querySelector<HTMLButtonElement>("[data-group-info]")!
+        .click();
+    }
+    return inbox.shadowRoot!.querySelector(`pmfa-${kind}`)!;
+  }
+
+  it.each(["new-chat", "call-log", "group-details"])(
+    "passes a new configuration to the open %s panel",
+    async (kind) => {
+      const inbox = await mount();
+      openPanel(inbox, kind);
+      const appearance = { theme: "dark" } as const;
+      parkFocus();
+      inbox.configuration = { ...inbox.configuration, appearance };
+      const panel = inbox.shadowRoot!.querySelector(
+        `pmfa-${kind}`,
+      ) as PolymorfaInboxElement | null;
+      expect(panel?.isConnected).toBe(true);
+      expect(panel!.configuration.appearance).toBe(appearance);
+    },
+  );
+
+  it.each(["new-chat", "call-log"])(
+    "opens a chat from the %s panel in the replacement controller",
+    async (kind) => {
+      const inbox = await mount();
+      const panel = openPanel(inbox, kind);
+      const next: InboxDataSource = {
+        ...source,
+        listConversations: async () => ({ conversations: [group] }),
+      };
+      // A host may swap the source, or hand the inbox its own controller.
+      if (kind === "call-log") inbox.source = next;
+      else inbox.controller = new InboxController(next);
+      const replacement = inbox.controller as InboxController;
+      expect(inbox.shadowRoot!.querySelector(`pmfa-${kind}`)).toBe(panel);
+      panel.dispatchEvent(
+        new CustomEvent("pmfa-open", {
+          detail: { id: "chat_9", lastActivity: 0, unreadCount: 0 },
+        }),
+      );
+      expect(replacement.getSnapshot().selectedId).toBe("chat_9");
+      expect(
+        inbox.shadowRoot!.querySelector(".pmfa-thread-name")?.textContent,
+      ).toBe("chat_9");
+    },
+  );
+
+  it("resets the group info toggle when the panel closes itself", async () => {
+    const inbox = await mount();
+    const info = openPanel(inbox, "group-details");
+    const toggle =
+      inbox.shadowRoot!.querySelector<HTMLButtonElement>("[data-group-info]")!;
+    expect(toggle.getAttribute("aria-expanded")).toBe("true");
+    info.dispatchEvent(new CustomEvent("pmfa-close"));
+    expect(inbox.shadowRoot!.querySelector("pmfa-group-details")).toBeNull();
+    expect(
+      inbox
+        .shadowRoot!.querySelector("[data-group-info]")
+        ?.getAttribute("aria-expanded"),
+    ).toBe("false");
+    expect(toggle.getAttribute("aria-label")).toBe("Show group info");
   });
 });

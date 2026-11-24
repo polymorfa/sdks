@@ -19,7 +19,7 @@ static async Task Run(string connectionString, string label)
         var iterations = int.TryParse(Environment.GetEnvironmentVariable("POLYMORFA_STORAGE_LIBSQL_RACE_ITERATIONS"), out var count) ? count : 20;
         if (iterations is < 1 or > 1000) throw new Exception("Invalid race iteration count");
         for (var iteration = 0; iteration < iterations; iteration++) await IndependentClients(connectionString, options);
-        var key = new Dictionary<string, string> { { "sessionId", "negative" }, { "messageId", "duplicate" } };
+        var key = new Dictionary<string, string> { { "connectionId", "negative" }, { "messageId", "duplicate" } };
         var row = StorageMerge.EmptyRow(StorageEntity.Messages, key) with { Revision = 1 };
         Check((await adapter.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row, null) })).Ok, "initial insert");
         var another = StorageMerge.EmptyRow(StorageEntity.Messages, key.ToDictionary(p => p.Key, p => p.Key == "messageId" ? "rollback-before-duplicate" : p.Value)) with { Revision = 1 };
@@ -51,7 +51,7 @@ static async Task IndependentClients(string connectionString, SqlStorageOptions 
     await using var second = new PausedNativeConnection(connectionString); await second.OpenAsync();
     await using var left = new LibSqlStorageAdapter(first, options with { CreateTables = false });
     await using var right = new LibSqlStorageAdapter(second, options with { CreateTables = false });
-    var row = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "sessionId", "independent" }, { "messageId", Guid.NewGuid().ToString("N") } }) with { Revision = 1 };
+    var row = StorageMerge.EmptyRow(StorageEntity.Messages, new Dictionary<string, string> { { "connectionId", "independent" }, { "messageId", Guid.NewGuid().ToString("N") } }) with { Revision = 1 };
     Check((await left.CommitAsync(new[] { new StoragePut(StorageEntity.Messages, row, null) })).Ok, "Independent initial insert");
     var start = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
     async Task<StorageCommitResult?> Race(LibSqlStorageAdapter client, PausedNativeConnection native)

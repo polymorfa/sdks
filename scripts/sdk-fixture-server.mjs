@@ -142,7 +142,10 @@ if (
     throw new Error("Invalid fixture port");
   const fixtures = JSON.parse(
     readFileSync(
-      new URL("../contracts/fixtures/behavior.json", import.meta.url),
+      new URL(
+        "../contracts/fixtures/connections/behavior.json",
+        import.meta.url,
+      ),
     ),
   );
   const scenarioIndex = process.argv.indexOf("--scenario");

@@ -30,16 +30,16 @@ final class HybridLink extends Resource
         /** @var ApiResponse<array{success:true,data:RoutingPolicy}> */ return $this->request('PUT', '/messaging/routing/hybrid', $body, query:$scope, options:$options);
     }
     /** @return ApiResponse<array{success:true,data:LinkState}> */
-    public function state(string $session, ?RequestOptions $options = null): ApiResponse
+    public function state(string $connection, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{success:true,data:LinkState}> */ return $this->request('GET', '/messaging/'.self::segment($session).'/hybrid-link', options:$options);
+        /** @var ApiResponse<array{success:true,data:LinkState}> */ return $this->request('GET', '/messaging/'.self::segment($connection).'/hybrid-link', options:$options);
     }
     /** @param array{expectedRevision:string,paused:bool} $body
      * @return ApiResponse<array{success:true,data:array{revision:string,paused:bool}}> */
-    public function setPaused(string $session, array $body, ?RequestOptions $options = null): ApiResponse
+    public function setPaused(string $connection, array $body, ?RequestOptions $options = null): ApiResponse
     {
         $this->server();
-        /** @var ApiResponse<array{success:true,data:array{revision:string,paused:bool}}> */ return $this->request('PUT', '/messaging/'.self::segment($session).'/hybrid-link', $body, options:$options);
+        /** @var ApiResponse<array{success:true,data:array{revision:string,paused:bool}}> */ return $this->request('PUT', '/messaging/'.self::segment($connection).'/hybrid-link', $body, options:$options);
     }
 }

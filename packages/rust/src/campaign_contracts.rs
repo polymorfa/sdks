@@ -32,7 +32,7 @@ enumeration!(AudienceProfileImportState{Queued="queued",Completed="completed",Ca
 enumeration!(AudienceProfileConflictReason{Quota="quota",RevisionConflict="revision_conflict"});
 enumeration!(StopConfirmationLocale{English="en",Portuguese="pt-BR",Spanish="es"});
 enumeration!(SignalCustodyMode{Standard="standard",ZeroKnowledge="zero_knowledge"});
-enumeration!(CampaignRecipientFailureReason{OptedOut="opted_out",ColdHeld="cold_held",CampaignCancelled="campaign_cancelled",InvalidRecipient="invalid_recipient",SessionNotConnected="session_not_connected",AckTimeout="ack_timeout",BlockedBySafety="blocked_by_safety",SendFailed="send_failed",MissingVariable="missing_variable",FrequencyCap="frequency_cap",Other="other"});
+enumeration!(CampaignRecipientFailureReason{OptedOut="opted_out",ColdHeld="cold_held",CampaignCancelled="campaign_cancelled",InvalidRecipient="invalid_recipient",ConnectionNotConnected="connection_not_connected",AckTimeout="ack_timeout",BlockedBySafety="blocked_by_safety",SendFailed="send_failed",MissingVariable="missing_variable",FrequencyCap="frequency_cap",Other="other"});
 model!(CampaignReplyButton{id:String,text:String};{};{});
 model!(CampaignReplyRow{id:String,title:String};{};{description:String});
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -100,8 +100,8 @@ model!(SetCampaignReplyFlowRequest{};{reply_flow_id:String};{});
 model!(CampaignReplyFlowAssignment{campaign_id:String};{reply_flow_id:String};{});
 pub use crate::campaigns::CampaignVariableValue as CampaignTestVariable;
 pub type AudienceProfileAttribute = Option<CampaignTestVariable>;
-model!(CampaignTestSendRequest{session_id:String,to:String};{};{sample_recipient_id:String,variables:BTreeMap<String,CampaignTestVariable>});
-model!(CampaignTestSender{session_id:String,phone:String};{};{});
+model!(CampaignTestSendRequest{connection_id:String,to:String};{};{sample_recipient_id:String,variables:BTreeMap<String,CampaignTestVariable>});
+model!(CampaignTestSender{connection_id:String,phone:String};{};{});
 model!(CampaignTestSend{id:String,campaign_id:String,status:CampaignTestStatus,from:CampaignTestSender,to:String,variables:BTreeMap<String,String>,created_at:u64};{message_id:String};{});
 model!(CampaignTrackedLinkReport{key:String,url:String,unique_opens:u64,total_opens:u64};{};{});
 model!(CampaignApprovalRequester{r#type:String,id:String};{};{});

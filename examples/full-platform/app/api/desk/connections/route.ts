@@ -26,7 +26,7 @@ export const GET = route(
   { demo: "handler" },
 );
 
-// Session controls are admin-only.
+// Connection controls are admin-only.
 export const POST = route(
   "admin",
   async ({ body, request }) => {
@@ -35,7 +35,7 @@ export const POST = route(
       case "quickLink":
         // QuickLink is hosted by Polymorfa: return the URL, embed nothing.
         return data.createQuickLink(idempotencyKey(request));
-      case "session":
+      case "connection":
         return data.connectionAction(
           text(body, "connectionId"),
           oneOf(body, "operation", ACTIONS),

@@ -101,10 +101,45 @@ public sealed class SqlStorageAdapter : IStorageAdapter, IAsyncDisposable
         }
     }
     private static bool Conflict(DbException error) => error switch { PostgresException p => p.SqlState is "23505" or "40001" or "40P01", MySqlException m => m.Number is 1062 or 1213 or 1205, SqliteException s => s.SqliteErrorCode is 5 or 6 || s.SqliteExtendedErrorCode is 2067 or 1555, _ => false };
-    public Task SetupAsync(CancellationToken cancellation = default) => WithConnection(async connection => { if (options.CreateTables) foreach (var statement in StorageSqlSchema.Statements(dialect, options)) { await using var command = Command(connection, null, statement, Array.Empty<object?>()); await command.ExecuteNonQueryAsync(cancellation).ConfigureAwait(false); } return true; }, cancellation);
+    private async Task<bool> TableExists(DbConnection connection, string name, CancellationToken cancellation)
+    {
+        var sql = dialect switch
+        {
+            StorageSqlDialect.Sqlite => "SELECT 1 FROM sqlite_master WHERE type='table' AND name=@p0",
+            StorageSqlDialect.Postgres => "SELECT 1 FROM information_schema.tables WHERE table_name=@p0 AND table_schema=COALESCE(@p1,current_schema())",
+            _ => "SELECT 1 FROM information_schema.tables WHERE table_name=@p0 AND table_schema=DATABASE()"
+        };
+        var values = dialect == StorageSqlDialect.Postgres ? new object?[] { options.TablePrefix + name, options.Schema } : new object?[] { options.TablePrefix + name };
+        await using var command = Command(connection, null, sql, values);
+        return await command.ExecuteScalarAsync(cancellation).ConfigureAwait(false) is not null;
+    }
+    private async Task VerifySchema(DbConnection connection, CancellationToken cancellation, DbTransaction? transaction = null)
+    {
+        await using var command = Command(connection, transaction, $"SELECT {Q("version")} FROM {StorageSqlSchema.Table(dialect, options, "storage_schema")} WHERE {Q("id")}='storage'", Array.Empty<object?>());
+        var version = await command.ExecuteScalarAsync(cancellation).ConfigureAwait(false);
+        if (version is null or DBNull || Convert.ToInt64(version, CultureInfo.InvariantCulture) != StorageSchema.Version)
+            throw new StorageValidationException("Storage schema 3 is required. Upgrade the retained store explicitly before opening it.");
+    }
+    private async Task PreflightSchema(DbConnection connection, CancellationToken cancellation)
+    {
+        if (await TableExists(connection, "storage_schema", cancellation).ConfigureAwait(false))
+        {
+            await VerifySchema(connection, cancellation).ConfigureAwait(false);
+            foreach (var entity in Enum.GetValues<StorageEntity>())
+            {
+                await using var command = Command(connection, null, $"SELECT {Q("connectionId")} FROM {Table(entity)} WHERE 1=0", Array.Empty<object?>());
+                await using var reader = await command.ExecuteReaderAsync(cancellation).ConfigureAwait(false);
+            }
+            return;
+        }
+        foreach (var name in Enum.GetValues<StorageEntity>().Select(entity => StorageSchema.Definition(entity).Name).Append("sessions"))
+            if (await TableExists(connection, name, cancellation).ConfigureAwait(false))
+                throw new StorageValidationException("An unversioned SDK store requires an explicit upgrade.");
+    }
+    public Task SetupAsync(CancellationToken cancellation = default) => WithConnection(async connection => { await PreflightSchema(connection, cancellation).ConfigureAwait(false); if (options.CreateTables) foreach (var statement in StorageSqlSchema.Statements(dialect, options)) { await using var command = Command(connection, null, statement, Array.Empty<object?>()); await command.ExecuteNonQueryAsync(cancellation).ConfigureAwait(false); } await VerifySchema(connection, cancellation).ConfigureAwait(false); return true; }, cancellation);
     public Task<IReadOnlyDictionary<string, StorageRow>> GetAsync(StorageEntity entity, IReadOnlyList<string> ids, CancellationToken cancellation = default) => WithConnection<IReadOnlyDictionary<string, StorageRow>>(async connection =>
     {
-        var result = new Dictionary<string, StorageRow>(StringComparer.Ordinal); foreach (var part in ids.Chunk(500)) { var marks = string.Join(",", Enumerable.Range(0, part.Length).Select(i => Mark(i))); await using var command = Command(connection, null, $"SELECT {Projection(entity)} FROM {Table(entity)} WHERE {Q("_id")} IN ({marks})", part); await using var reader = await command.ExecuteReaderAsync(cancellation).ConfigureAwait(false); while (await reader.ReadAsync(cancellation).ConfigureAwait(false)) { var row = Decode(entity, reader); result.Add(row.Id, row); } }
+        await VerifySchema(connection, cancellation).ConfigureAwait(false); var result = new Dictionary<string, StorageRow>(StringComparer.Ordinal); foreach (var part in ids.Chunk(500)) { var marks = string.Join(",", Enumerable.Range(0, part.Length).Select(i => Mark(i))); await using var command = Command(connection, null, $"SELECT {Projection(entity)} FROM {Table(entity)} WHERE {Q("_id")} IN ({marks})", part); await using var reader = await command.ExecuteReaderAsync(cancellation).ConfigureAwait(false); while (await reader.ReadAsync(cancellation).ConfigureAwait(false)) { var row = Decode(entity, reader); result.Add(row.Id, row); } }
         return result;
     }, cancellation);
     public Task<StorageCommitResult> CommitAsync(IReadOnlyList<StorageWrite> writes, CancellationToken cancellation = default)
@@ -114,6 +149,7 @@ public sealed class SqlStorageAdapter : IStorageAdapter, IAsyncDisposable
             await using DbTransaction transaction = connection is SqliteConnection local ? local.BeginTransaction(IsolationLevel.Serializable, deferred: false) : await connection.BeginTransactionAsync(cancellation).ConfigureAwait(false);
             try
             {
+                await VerifySchema(connection, cancellation, transaction).ConfigureAwait(false);
                 foreach (var write in writes)
                 {
                     var (entity, id, expected) = write switch { StoragePut p => (p.Entity, p.Row.Id, p.ExpectedRev), StorageRowDelete d => (d.Entity, d.Id, d.ExpectedRev), _ => throw Invalid() }; string sql; List<object?> values; List<Column>? boundColumns = null;
@@ -139,7 +175,7 @@ public sealed class SqlStorageAdapter : IStorageAdapter, IAsyncDisposable
         if (query.Range is { } range) foreach (var (op, value) in new[] { (">", range.Gt), (">=", range.Gte), ("<", range.Lt), ("<=", range.Lte) }) if (value.HasValue) { if (!double.IsFinite(value.Value)) throw Invalid(); clauses.Add($"{sort}{op}{Add(value.Value)}"); }
         var descending = query.Order == "desc"; var order = descending ? "DESC" : "ASC"; if (query.After is { } after) { var op = descending ? "<" : ">"; clauses.Add($"({sort}{op}{Add(after.Sort)} OR ({sort}={Add(after.Sort)} AND {Q("_id")}{op}{Add(after.Id)}))"); }
         var sql = $"SELECT {Projection(entity)} FROM {Table(entity)} WHERE {string.Join(" AND ", clauses)} ORDER BY {sort} {order},{Q("_id")} {order} LIMIT {query.Limit.ToString(CultureInfo.InvariantCulture)}";
-        return WithConnection<IReadOnlyList<StorageRow>>(async connection => { await using var command = Command(connection, null, sql, values); await using var reader = await command.ExecuteReaderAsync(cancellation).ConfigureAwait(false); var rows = new List<StorageRow>(); while (await reader.ReadAsync(cancellation).ConfigureAwait(false)) rows.Add(Decode(entity, reader)); return rows; }, cancellation);
+        return WithConnection<IReadOnlyList<StorageRow>>(async connection => { await VerifySchema(connection, cancellation).ConfigureAwait(false); await using var command = Command(connection, null, sql, values); await using var reader = await command.ExecuteReaderAsync(cancellation).ConfigureAwait(false); var rows = new List<StorageRow>(); while (await reader.ReadAsync(cancellation).ConfigureAwait(false)) rows.Add(Decode(entity, reader)); return rows; }, cancellation);
     }
     private static StorageValidationException Invalid() => new("Invalid customer SQL storage configuration or operation.");
     private static StorageProviderException Provider() => new("Customer SQL storage operation failed.");

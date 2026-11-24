@@ -16,7 +16,7 @@ public enum CampaignFollowUpStatus { WaitingReceipt, Scheduled, Sending, Sent, C
 [JsonConverter(typeof(CampaignFollowUpAnchorKindConverter))]
 public enum CampaignFollowUpAnchorKind { Delivered, Read }
 /// <summary>Receipt and outcome times are Unix milliseconds; absent receipts are null.</summary>
-public sealed record CampaignFollowUpSummary(string Id, string NumberId, CampaignFollowUpStatus Status, CampaignFollowUpAnchorKind? AnchorKind, long? FirstDeliveredAt, long? FirstReadAt, long? DueAt, long ExpiresAt, long? SentAt, long? DeliveredAt, long? ReadAt, long? RepliedAt, string? Reason, string? CommandId);
+public sealed record CampaignFollowUpSummary(string Id, string ConnectionId, CampaignFollowUpStatus Status, CampaignFollowUpAnchorKind? AnchorKind, long? FirstDeliveredAt, long? FirstReadAt, long? DueAt, long ExpiresAt, long? SentAt, long? DeliveredAt, long? ReadAt, long? RepliedAt, string? Reason, string? CommandId);
 public sealed record CampaignFollowUpReport(long Total, long Waiting, long Scheduled, long Sending, long Sent, long Delivered, long Read, long Replied, long Cancelled, long Expired, long Failed, long Unknown, long? NextDueAt);
 
 public sealed record CampaignVariantStrategy(string WinnerCriterion, int HoldoutPercent, bool AutoPromote, int TestWindowMinutes, int? TestSlicePercent = null);

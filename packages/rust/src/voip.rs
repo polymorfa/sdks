@@ -57,7 +57,7 @@ pub struct PlaceCallRequest {
     #[serde(flatten)]
     pub destination: CallDestination,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub session: Option<String>,
+    pub connection: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub video: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -69,7 +69,7 @@ pub struct PlaceCallRequest {
 #[serde(rename_all = "camelCase")]
 pub struct PlaceCallResult {
     pub call_id: String,
-    pub session: String,
+    pub connection: String,
     pub video: bool,
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
@@ -99,20 +99,20 @@ pub struct AddParticipantRequest {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CreateCallLinkRequest {
-    pub session: String,
+    pub connection: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub video: Option<bool>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct PreviewCallLinkRequest {
-    pub session: String,
+    pub connection: String,
     pub token: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub video: Option<bool>,
 }
 #[derive(Clone, Serialize, Deserialize)]
 pub struct CreatedCallLink {
-    pub session: String,
+    pub connection: String,
     pub token: String,
     pub url: String,
     pub video: bool,
@@ -120,7 +120,7 @@ pub struct CreatedCallLink {
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PreviewedCallLink {
-    pub session: String,
+    pub connection: String,
     pub video: bool,
     pub creator: ConversationReference,
     pub approval_required: bool,
@@ -144,7 +144,7 @@ pub struct HandRaisedRequest {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct SessionCallSettings {
+pub struct ConnectionCallSettings {
     /// Read-only RFC3339 exclusion end. None is not a coverage guarantee.
     pub simultaneous_calls_coverage_excluded_until: Option<String>,
     pub calls_enabled: bool,
@@ -159,7 +159,7 @@ pub struct SessionCallSettings {
 }
 #[derive(Clone, Debug, Serialize, Deserialize, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdateSessionCallSettingsRequest {
+pub struct UpdateConnectionCallSettingsRequest {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub calls_enabled: Option<bool>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -221,7 +221,7 @@ pub struct CallPermission {
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct CheckCallRequest {
-    pub session: String,
+    pub connection: String,
     pub to: String,
 }
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -300,9 +300,9 @@ impl Voip<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PlaceCallResult>>> {
         if !matches!(self.0.credential, Some(crate::Credential::ClientToken(_)))
-            && body.session.as_ref().is_none_or(|s| s.trim().is_empty())
+            && body.connection.as_ref().is_none_or(|s| s.trim().is_empty())
         {
-            return Err(configuration("session"));
+            return Err(configuration("connection"));
         }
         self.participant(body.participant.as_deref())?;
         match &body.destination {
@@ -501,7 +501,7 @@ impl Voip<'_> {
         body: &CreateCallLinkRequest,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CreatedCallLink>>> {
-        self.link(&body.session, &options)?;
+        self.link(&body.connection, &options)?;
         options.max_network_retries = Some(0);
         self.0
             .request(
@@ -518,7 +518,7 @@ impl Voip<'_> {
         body: &PreviewCallLinkRequest,
         mut options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<PreviewedCallLink>>> {
-        self.link(&body.session, &options)?;
+        self.link(&body.connection, &options)?;
         if body.token.is_empty()
             || body.token.len() > 256
             || !body
@@ -539,10 +539,10 @@ impl Voip<'_> {
             )
             .await
     }
-    fn link(&self, session: &str, options: &RequestOptions) -> Result<()> {
+    fn link(&self, connection: &str, options: &RequestOptions) -> Result<()> {
         self.0.server()?;
-        if session.trim().is_empty()
-            || session.len() > 128
+        if connection.trim().is_empty()
+            || connection.len() > 128
             || options.idempotency_key.is_some()
             || options
                 .headers
@@ -555,23 +555,23 @@ impl Voip<'_> {
     }
     pub async fn retrieve_call_settings(
         &self,
-        session: &str,
+        connection: &str,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<SessionCallSettings>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<ConnectionCallSettings>>> {
         self.0.server()?;
         self.0
             .get(
-                &format!("/platform/sessions/{}/call-settings", encode(session)),
+                &format!("/platform/connections/{}/call-settings", encode(connection)),
                 options,
             )
             .await
     }
     pub async fn update_call_settings(
         &self,
-        session: &str,
-        body: &UpdateSessionCallSettingsRequest,
+        connection: &str,
+        body: &UpdateConnectionCallSettingsRequest,
         options: RequestOptions,
-    ) -> Result<ApiResponse<SuccessEnvelope<SessionCallSettings>>> {
+    ) -> Result<ApiResponse<SuccessEnvelope<ConnectionCallSettings>>> {
         self.0.server()?;
         if body.calls_enabled.is_none()
             && body.conference_mode.is_none()
@@ -593,7 +593,7 @@ impl Voip<'_> {
         self.0
             .request(
                 Method::PUT,
-                &format!("/platform/sessions/{}/call-settings", encode(session)),
+                &format!("/platform/connections/{}/call-settings", encode(connection)),
                 &[],
                 Some(body),
                 options,
@@ -602,19 +602,19 @@ impl Voip<'_> {
     }
     pub async fn retrieve_call_permission(
         &self,
-        session: &str,
+        connection: &str,
         to: &str,
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CallPermission>>> {
         self.0.server()?;
-        if session.trim().is_empty() || to.trim().is_empty() {
-            return Err(configuration("session or to"));
+        if connection.trim().is_empty() || to.trim().is_empty() {
+            return Err(configuration("connection or to"));
         }
         self.0
             .get(
                 &format!(
                     "/messaging/{}/call-permissions/{}",
-                    encode(session),
+                    encode(connection),
                     encode(to)
                 ),
                 options,
@@ -627,8 +627,8 @@ impl Voip<'_> {
         options: RequestOptions,
     ) -> Result<ApiResponse<SuccessEnvelope<CallCheck>>> {
         self.0.server()?;
-        if body.session.trim().is_empty() || body.to.trim().is_empty() {
-            return Err(configuration("session or to"));
+        if body.connection.trim().is_empty() || body.to.trim().is_empty() {
+            return Err(configuration("connection or to"));
         }
         self.0
             .request(

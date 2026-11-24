@@ -12,11 +12,11 @@ let server: TestServer;
 afterEach(async () => {
   await server?.close();
 });
-it("serializes limits and single/reordered project and number priorities using revision guards", async () => {
+it("serializes limits and single/reordered project and connection priorities using revision guards", async () => {
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 1, projects: [], customers: [], numbers: [] },
+      data: { revision: 1, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -25,12 +25,12 @@ it("serializes limits and single/reordered project and number priorities using r
     maxNetworkRetries: 0,
   });
   await client.billing.getLimits({ projectId: id });
-  await client.billing.setLimit("number", id, {
+  await client.billing.setLimit("connection", id, {
     limitCredits: null,
     expectedRevision: 0,
   });
   await client.billing.getPriorities();
-  await client.billing.setPriority("number", id, {
+  await client.billing.setPriority("connection", id, {
     priority: 12,
     expectedRevision: 1,
   });
@@ -40,16 +40,16 @@ it("serializes limits and single/reordered project and number priorities using r
     expectedRevision: 2,
   });
   await client.billing.reorderPriorities({
-    scope: "number",
+    scope: "connection",
     projectId: other,
     resourceIds: [id],
     expectedRevision: 3,
   });
   expect(server.requests.map((r) => [r.method, r.path])).toEqual([
     ["GET", `/platform/billing/limits?projectId=${id}`],
-    ["PUT", `/platform/billing/limits/number/${id}`],
+    ["PUT", `/platform/billing/limits/connection/${id}`],
     ["GET", "/platform/billing/priorities"],
-    ["PUT", `/platform/billing/priorities/number/${id}`],
+    ["PUT", `/platform/billing/priorities/connection/${id}`],
     ["PUT", "/platform/billing/priorities"],
     ["PUT", "/platform/billing/priorities"],
   ]);
@@ -59,7 +59,7 @@ it("serializes limits and single/reordered project and number priorities using r
     expectedRevision: 2,
   });
   expect(JSON.parse(server.requests[5]!.body)).toEqual({
-    scope: "number",
+    scope: "connection",
     projectId: other,
     resourceIds: [id],
     expectedRevision: 3,
@@ -78,7 +78,7 @@ it("serializes limits and single/reordered project and number priorities using r
     }),
   ).toThrow(PolymorfaValidationError);
   expect(() =>
-    client.billing.setPriority("number", id, {
+    client.billing.setPriority("connection", id, {
       priority: 1,
       expectedRevision: -1,
     }),
@@ -160,7 +160,7 @@ it("filters project directories without loading customer and number lists", asyn
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 1, projects: [], customers: [], numbers: [] },
+      data: { revision: 1, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -180,7 +180,7 @@ it("serializes project-scoped mixed funding controls and rejects duplicate or in
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 5, projects: [], customers: [], numbers: [] },
+      data: { revision: 5, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -190,7 +190,7 @@ it("serializes project-scoped mixed funding controls and rejects duplicate or in
   });
   await client.billing.getPriorities({ projectId: id });
   const resources = [
-    { scope: "number" as const, resourceId: other },
+    { scope: "connection" as const, resourceId: other },
     { scope: "customer" as const, resourceId: id },
   ];
   await client.billing.reorderPriorities({
@@ -231,7 +231,7 @@ it("normalizes scoped IDs, preserves distinct resource kinds, and validates proj
   server = await startTestServer(() => ({
     headers: { "content-type": "application/json" },
     body: JSON.stringify({
-      data: { revision: 5, projects: [], customers: [], numbers: [] },
+      data: { revision: 5, projects: [], customers: [], connections: [] },
     }),
   }));
   const client = new Client({
@@ -248,7 +248,7 @@ it("normalizes scoped IDs, preserves distinct resource kinds, and validates proj
     scope: "resource",
     projectId: resourceId,
     resources: [
-      { scope: "number", resourceId },
+      { scope: "connection", resourceId },
       { scope: "customer", resourceId },
     ],
     expectedRevision: 5,
@@ -259,7 +259,7 @@ it("normalizes scoped IDs, preserves distinct resource kinds, and validates proj
   expect(JSON.parse(server.requests[1]!.body)).toMatchObject({
     projectId: resourceId.toLowerCase(),
     resources: [
-      { scope: "number", resourceId: resourceId.toLowerCase() },
+      { scope: "connection", resourceId: resourceId.toLowerCase() },
       { scope: "customer", resourceId: resourceId.toLowerCase() },
     ],
   });
@@ -271,8 +271,8 @@ it("normalizes scoped IDs, preserves distinct resource kinds, and validates proj
       scope: "resource",
       projectId: resourceId,
       resources: [
-        { scope: "number", resourceId },
-        { scope: "number", resourceId: resourceId.toLowerCase() },
+        { scope: "connection", resourceId },
+        { scope: "connection", resourceId: resourceId.toLowerCase() },
       ],
       expectedRevision: 5,
     }),

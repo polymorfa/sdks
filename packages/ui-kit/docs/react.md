@@ -32,6 +32,8 @@ the grant for rendering only. `appearance` and `locale` work as before.
 | ---------------------------------------- | --------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | `<Inbox/>`                               | `read_messages` | List, chat and contact panel. Composer needs `send_message`, contact panel `read_contact`, the call button `voip_place` |
 | `<ConversationList/>`, `<ContactPanel/>` |                 | Inbox parts, usable alone                                                                                               |
+| `<NewChat onOpen/>`                      | `read_contact`  | Contacts directory, number lookup and, with `groups_manage`, New group                                                  |
+| `<GroupDetails groupId/>`                | `groups_read`   | Group info and roster; changes need `groups_manage`                                                                     |
 | `<QuickLinkButton url/>`                 |                 | Link to a QuickLink your server already created; no token or handler call                                               |
 | `<CallButton to/>`                       | `voip_place`    | Places a call with the browser Calls client and shows `CallSurface`                                                     |
 
@@ -73,6 +75,55 @@ controllers are disposed by the binding. `useController` and
 The chat and template components add the shared `@polymorfa/ui-kit/appearance` stylesheet
 to the document on mount and use `pmfa-*` class names, so a host stylesheet
 can adjust them. Visible text comes from the provider's locale.
+
+## New chat, contacts and groups
+
+`<Inbox/>` shows a New chat button above the list when contacts can be read.
+It opens `<NewChat/>` in the list column: the WhatsApp account's contacts,
+searchable by name (ignoring case and accents) or by number. A number that is
+not saved can be checked on WhatsApp and then messaged. The chosen chat opens
+as a draft and joins the list with its first message. Nothing is sent until
+the user sends a message.
+
+```tsx
+import { GroupDetails, NewChat } from "@polymorfa/ui-kit/react";
+
+<NewChat onOpen={(conversation) => inbox.open(conversation)} onClose={close} />
+<GroupDetails groupId="120363012345678901" selfId={accountUserId} />
+```
+
+`<NewChat groups={false}/>` hides New group. Pass `contacts` or `groups` to
+read from your own backend instead of the API. Group conversations
+(`kind: "group"`) name the author of each run of messages and show Group info
+instead of the contact panel: name, description, members (named from your
+contacts), admin actions, invite link, settings and Exit group. WhatsApp
+decides whether this account may make each change; a refusal shows as an
+error. The API does not report a group's current settings, so the settings
+apply a choice without showing one as current. `selfId` is optional; the
+API does not report the account's own user ID.
+
+Group actions require `groups_read` or `groups_manage` in the token's
+ceiling and the number's live client rules. Customer-scoped tokens may carry
+these actions. Picture uploads use `client.messaging().groups.setPicture`
+with base64 image bytes; client tokens cannot supply a URL. GroupDetails
+does not include a picture picker.
+
+## Call log
+
+`<CallLog/>` lists the Connection's calls from `GET /messaging/{connection}/calls`
+with the client token (`read_calls`): newest first, consecutive calls with
+the same person merged with a count, missed incoming calls in red, an
+All/Missed filter, call back and open chat. `<Inbox/>` shows it behind a
+Chats/Calls switch when the grant allows `read_calls`.
+
+```tsx
+<CallLog onOpen={(conversation) => inbox.open(conversation)} />
+```
+
+Pass `source` for your own backend, or `onCall` to place calls yourself.
+The regional call-history API is a separate deployment dependency. Until it
+is configured, the default source reports an error; pass `source` for local
+sample data or your own authorized records.
 
 ## Chat
 
@@ -238,7 +289,7 @@ import {
 
 // Create once in the browser; call dispose() when the app releases it.
 const calls = createBrowserCalls({
-  session: "support",
+  connection: "support",
   getClientToken: createClientTokenProvider(),
 });
 await calls.connect();
@@ -317,23 +368,23 @@ and its camera and microphone choices. A failed answer shows a notice on the
 incoming card: on the call itself when it is still ringing, or on the next
 waiting call when the answered call's media failed.
 
-### Choosing an outgoing Number
+### Choosing an outgoing Connection
 
-`CallNumberPicker` selects an application-authorized Number. Each option has a
+`CallConnectionPicker` selects an application-authorized Connection. Each option has a
 unique `id`, a display `label`, and the `controller` of a separate
 `createBrowserCalls` instance. Supply `value` and `onChange`; use the selected
-instance for `DialPad` and keep each active `CallSurface` under its fixed Number
+instance for `DialPad` and keep each active `CallSurface` under its fixed Connection
 label. The picker locks while any supplied client places, answers, or carries a
 call and rechecks state in its change handler.
 
-The component does not discover Numbers or mint credentials. Give each client
-its own token provider, authorized for that Number's session. Selection must
-never replace the token or session on an existing client. The session option
-does not override the session bound to the client token.
+The component does not discover Connections or mint credentials. Give each client
+its own token provider, authorized for that Connection's connection. Selection must
+never replace the token or connection on an existing client. The connection option
+does not override the connection bound to the client token.
 
 The picker includes its own styles and follows the provider's appearance and
 locale. Use `className` for its root or `classNames` and appearance element
-styles for `callNumberPicker`, `callNumberLabel` and `callNumberSelect`.
+styles for `callConnectionPicker`, `callConnectionLabel` and `callConnectionSelect`.
 An unstyled provider skips the bundled stylesheet.
 
 ## Controlled inbox rows
@@ -388,7 +439,7 @@ apply to reply snippets and exclude stale body/media content. `OrderCartView`
 and `ContentUnavailable` are available separately.
 
 `ChatDetails` accepts customer fields such as `name`, `phoneNumber`, `observedName`,
-`labels`, `sendingNumber`, `lastActivity` and `retentionDays`. Use `onContact` and
+`labels`, `sendingConnection`, `lastActivity` and `retentionDays`. Use `onContact` and
 `onClose` for host navigation. Its `children` slot can hold developer details
 without exposing raw identifiers in the default view.
 

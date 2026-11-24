@@ -335,16 +335,16 @@ export function validateCampaignTestSend(
   const input = contractFields(
     value,
     [
-      "sessionId",
+      "connectionId",
       "to",
       "sampleRecipientId",
       "variables",
       ...(project ? ["projectId"] : []),
     ],
-    ["sessionId", "to", ...(project ? ["projectId"] : [])],
+    ["connectionId", "to", ...(project ? ["projectId"] : [])],
     "body",
   );
-  contractUuid(input.sessionId, "body.sessionId");
+  contractUuid(input.connectionId, "body.connectionId");
   contractString(input.to, "body.to", 1, 32);
   if (project) contractUuid(input.projectId, "body.projectId");
   if (input.sampleRecipientId !== undefined)
@@ -413,7 +413,7 @@ export function validateRecipientExport(
         "cold_held",
         "campaign_cancelled",
         "invalid_recipient",
-        "session_not_connected",
+        "connection_not_connected",
         "ack_timeout",
         "blocked_by_safety",
         "send_failed",

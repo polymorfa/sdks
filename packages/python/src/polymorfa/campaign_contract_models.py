@@ -109,7 +109,7 @@ class CampaignReplyFlow(TypedDict):
 
 
 class CampaignTestSendRequest(TypedDict):
-    sessionId: str
+    connectionId: str
     to: str
     sampleRecipientId: NotRequired[str]
     variables: NotRequired[dict[str, str | int | float | bool]]
@@ -120,7 +120,7 @@ class PlatformCampaignTestSendRequest(CampaignTestSendRequest):
 
 
 class CampaignTestSender(TypedDict):
-    sessionId: str
+    connectionId: str
     phone: str
 
 
@@ -165,7 +165,7 @@ CampaignRecipientFailureReason = Literal[
     "cold_held",
     "campaign_cancelled",
     "invalid_recipient",
-    "session_not_connected",
+    "connection_not_connected",
     "ack_timeout",
     "blocked_by_safety",
     "send_failed",

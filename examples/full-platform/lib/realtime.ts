@@ -64,12 +64,12 @@ export function publish(event: RealtimeEvent): void {
 /** Builds and publishes an app event in the webhook envelope. */
 export function emit<K extends keyof AppEventPayloads>(
   event: K,
-  session: string,
+  connection: string,
   payload: AppEventPayloads[K],
 ): void {
   publish({
     id: `evt_${crypto.randomUUID()}`,
-    session,
+    connection,
     timestamp: new Date().toISOString(),
     event,
     payload,
@@ -79,12 +79,12 @@ export function emit<K extends keyof AppEventPayloads>(
 /** Publishes a webhook-shaped event that the app synthesizes, e.g. in demo mode. */
 export function emitWebhook<K extends keyof WebhookPayloadMap>(
   event: K,
-  session: string,
+  connection: string,
   payload: WebhookPayloadMap[K],
 ): void {
   publish({
     id: `evt_${crypto.randomUUID()}`,
-    session,
+    connection,
     timestamp: new Date().toISOString(),
     event,
     payload,

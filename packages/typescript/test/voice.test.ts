@@ -1003,7 +1003,7 @@ describe("voice webhooks", () => {
     const body = Buffer.from(
       JSON.stringify({
         id: "evt_1",
-        session: "",
+        connection: "",
         timestamp: "2026-09-19T10:00:05.000Z",
         event: type,
         payload,
@@ -1011,7 +1011,7 @@ describe("voice webhooks", () => {
     );
     const event = await constructWebhookEvent(body, sign(body), secret);
     expect(event.event).toBe(type);
-    expect(event.session).toBe("");
+    expect(event.connection).toBe("");
     expect(event.payload).toEqual(payload);
     if (isEvent(event, "voice.asset_ready")) {
       expectTypeOf(event.payload.durationMs).toEqualTypeOf<number>();

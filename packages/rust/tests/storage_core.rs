@@ -22,9 +22,13 @@ fn key(values: &[(&str, &str)]) -> RowKey {
 fn fields(name: &str, value: Value, version: f64) -> FieldWrites {
     BTreeMap::from([(name.into(), FieldWrite { value, version })])
 }
-fn batch(session: &str, event: Option<&str>, operations: Vec<StorageOperation>) -> OperationBatch {
+fn batch(
+    connection: &str,
+    event: Option<&str>,
+    operations: Vec<StorageOperation>,
+) -> OperationBatch {
     OperationBatch {
-        session_id: session.into(),
+        connection_id: connection.into(),
         event_id: event.map(str::to_owned),
         event_type: None,
         operations,
@@ -102,7 +106,7 @@ async fn long_chat_clear_renews_live_lease_between_queries() {
             Some("seed"),
             vec![upsert(
                 Entity::Messages,
-                key(&[("sessionId", "slow"), ("messageId", "m")]),
+                key(&[("connectionId", "slow"), ("messageId", "m")]),
                 BTreeMap::from([
                     (
                         "chatId".into(),
@@ -128,7 +132,7 @@ async fn long_chat_clear_renews_live_lease_between_queries() {
             "slow",
             Some("clear"),
             vec![StorageOperation::ClearChat {
-                session_id: "slow".into(),
+                connection_id: "slow".into(),
                 chat_id: "chat".into(),
                 up_to: 1.,
             }],
@@ -168,7 +172,12 @@ async fn row_planning_renews_live_lease_between_entity_reads() {
                 .map(|name| {
                     (
                         (*name).to_owned(),
-                        if *name == "sessionId" { "slow" } else { "one" }.to_owned(),
+                        if *name == "connectionId" {
+                            "slow"
+                        } else {
+                            "one"
+                        }
+                        .to_owned(),
                     )
                 })
                 .collect();
@@ -206,7 +215,7 @@ async fn an_expired_planning_read_cannot_renew_or_write_a_replay_marker() {
     .unwrap();
     let operations = vec![upsert(
         Entity::Messages,
-        key(&[("sessionId", "slow"), ("messageId", "m")]),
+        key(&[("connectionId", "slow"), ("messageId", "m")]),
         fields("text", json!("must stay absent"), 1.),
     )];
     assert!(matches!(
@@ -221,18 +230,18 @@ async fn an_expired_planning_read_cannot_renew_or_write_a_replay_marker() {
 #[test]
 fn schema_canonical_merge_and_presence_are_portable() {
     assert_eq!(schema::ALL_ENTITIES.len(), 17);
-    assert_eq!(schema::SCHEMA_VERSION, 2);
+    assert_eq!(schema::SCHEMA_VERSION, 3);
     assert_eq!(
         encode_key(
             Entity::Messages,
-            &key(&[("sessionId", "s.a/💎"), ("messageId", "!'()")])
+            &key(&[("connectionId", "s.a/💎"), ("messageId", "!'()")])
         )
         .unwrap(),
         "ks%2Ea%2F%F0%9F%92%8E:!'()"
     );
     for entity in schema::ALL_ENTITIES {
         let d = entity.definition();
-        assert_eq!(d.key[0], "sessionId");
+        assert_eq!(d.key[0], "connectionId");
         for index in d.indexes {
             assert!(d.fields.iter().any(|(f, _)| *f == index.sort));
         }
@@ -257,7 +266,7 @@ fn schema_canonical_merge_and_presence_are_portable() {
     );
     let row = empty_row(
         Entity::Messages,
-        &key(&[("sessionId", "s"), ("messageId", "m")]),
+        &key(&[("connectionId", "s"), ("messageId", "m")]),
     )
     .unwrap();
     let (a, _) = merge_fields(Entity::Messages, &row, &fields("text", json!("a"), 2.)).unwrap();
@@ -269,10 +278,10 @@ fn schema_canonical_merge_and_presence_are_portable() {
             .1
     );
     let absent: StorageOperation = serde_json::from_value(
-        json!({"kind":"checkpoint","sessionId":"s","stream":"events","cursor":"x"}),
+        json!({"kind":"checkpoint","connectionId":"s","stream":"events","cursor":"x"}),
     )
     .unwrap();
-    let null:StorageOperation=serde_json::from_value(json!({"kind":"checkpoint","sessionId":"s","stream":"events","cursor":"x","expectedCursor":null})).unwrap();
+    let null:StorageOperation=serde_json::from_value(json!({"kind":"checkpoint","connectionId":"s","stream":"events","cursor":"x","expectedCursor":null})).unwrap();
     assert!(matches!(
         absent,
         StorageOperation::Checkpoint {
@@ -292,7 +301,7 @@ fn schema_canonical_merge_and_presence_are_portable() {
 async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_rows() {
     let memory = Arc::new(MemoryAdapter::new());
     let store = Arc::new(Storage::new(memory.clone(), StorageOptions::default()).unwrap());
-    let k = key(&[("sessionId", "s"), ("messageId", "m")]);
+    let k = key(&[("connectionId", "s"), ("messageId", "m")]);
     let first = batch(
         "s",
         Some("evt"),
@@ -307,7 +316,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
     let current = memory.rows(Entity::Messages)[0].clone();
     let mut created = empty_row(
         Entity::Messages,
-        &key(&[("sessionId", "s"), ("messageId", "new")]),
+        &key(&[("connectionId", "s"), ("messageId", "new")]),
     )
     .unwrap();
     created.revision = 1;
@@ -355,7 +364,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
         "10"
     );
     let checkpoint = |expected| StorageOperation::Checkpoint {
-        session_id: "s".into(),
+        connection_id: "s".into(),
         stream: "events".into(),
         cursor: "next".into(),
         expected_cursor: expected,
@@ -387,7 +396,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
         f.extend(fields("chatId", json!("chat"), i as f64));
         operations.push(upsert(
             Entity::Messages,
-            key(&[("sessionId", "big"), ("messageId", &i.to_string())]),
+            key(&[("connectionId", "big"), ("messageId", &i.to_string())]),
             f,
         ));
     }
@@ -398,7 +407,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
     assert_eq!(memory.rows(Entity::Messages).len(), 2001);
     let query = IndexQuery {
         index: "by_chat".into(),
-        equals: key(&[("sessionId", "big"), ("chatId", "chat")]),
+        equals: key(&[("connectionId", "big"), ("chatId", "chat")]),
         range: None,
         order: Some("asc".into()),
         limit: 17,
@@ -424,11 +433,11 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
             vec![
                 upsert(
                     Entity::Chats,
-                    key(&[("sessionId", "big"), ("chatId", "chat")]),
+                    key(&[("connectionId", "big"), ("chatId", "chat")]),
                     fields("clearedAt", json!(1000), 1000.),
                 ),
                 StorageOperation::ClearChat {
-                    session_id: "big".into(),
+                    connection_id: "big".into(),
                     chat_id: "chat".into(),
                     up_to: 1000.,
                 },
@@ -439,10 +448,10 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
     assert_eq!(memory.rows(Entity::Messages).len(), 1000);
     let late = StorageOperation::Upsert {
         entity: Entity::Messages,
-        key: key(&[("sessionId", "big"), ("messageId", "late")]),
+        key: key(&[("connectionId", "big"), ("messageId", "late")]),
         fields: fields("text", json!("must stay absent"), 1001.),
         guard: Some(ChatWatermarkGuard {
-            session_id: "big".into(),
+            connection_id: "big".into(),
             chat_id: "chat".into(),
             timestamp: 500.,
         }),
@@ -454,7 +463,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
     assert!(store
         .get(
             Entity::Messages,
-            &key(&[("sessionId", "big"), ("messageId", "late")])
+            &key(&[("connectionId", "big"), ("messageId", "late")])
         )
         .await
         .unwrap()
@@ -465,7 +474,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
             None,
             vec![upsert(
                 Entity::Messages,
-                key(&[("sessionId", "foreign"), ("messageId", "m")]),
+                key(&[("connectionId", "foreign"), ("messageId", "m")]),
                 FieldWrites::new()
             )]
         ))
@@ -477,7 +486,7 @@ async fn memory_atomicity_engine_replay_concurrency_checkpoints_clear_and_2000_r
             None,
             vec![upsert(
                 Entity::Leases,
-                key(&[("sessionId", "s")]),
+                key(&[("connectionId", "s")]),
                 FieldWrites::new()
             )]
         ))
@@ -542,7 +551,7 @@ async fn durable_fences_reject_expired_paused_writer_and_preserve_generation_on_
             Some("old"),
             vec![upsert(
                 Entity::Messages,
-                key(&[("sessionId", "s"), ("messageId", "m")]),
+                key(&[("connectionId", "s"), ("messageId", "m")]),
                 fields("text", json!("old"), 1.),
             )],
         ))
@@ -555,7 +564,7 @@ async fn durable_fences_reject_expired_paused_writer_and_preserve_generation_on_
         Some("new"),
         vec![upsert(
             Entity::Messages,
-            key(&[("sessionId", "s"), ("messageId", "m")]),
+            key(&[("connectionId", "s"), ("messageId", "m")]),
             fields("text", json!("new"), 2.),
         )],
     ))
@@ -573,7 +582,7 @@ async fn durable_fences_reject_expired_paused_writer_and_preserve_generation_on_
     assert_eq!(
         new.get(
             Entity::Messages,
-            &key(&[("sessionId", "s"), ("messageId", "m")])
+            &key(&[("connectionId", "s"), ("messageId", "m")])
         )
         .await
         .unwrap()
@@ -640,10 +649,10 @@ async fn failed_chunk_never_commits_later_rows_or_marker_and_replay_can_finish()
     let operations = (0..3)
         .map(|i| StorageOperation::Upsert {
             entity: Entity::Messages,
-            key: key(&[("sessionId", "s"), ("messageId", &i.to_string())]),
+            key: key(&[("connectionId", "s"), ("messageId", &i.to_string())]),
             fields: fields("text", json!("value"), 1.),
             guard: Some(ChatWatermarkGuard {
-                session_id: "s".into(),
+                connection_id: "s".into(),
                 chat_id: "c".into(),
                 timestamp: 1.,
             }),

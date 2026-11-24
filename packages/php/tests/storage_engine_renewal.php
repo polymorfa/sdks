@@ -21,11 +21,11 @@ foreach (['slow','expired','stolen'] as $scenario) {
     });
     $ops = [];
     foreach (['a','b','c'] as $id) {
-        $ops[] = new Upsert('messages', ['sessionId' => 'renew','messageId' => $id], ['chatId' => new FieldWrite('chat', 0),'timestamp' => new FieldWrite(1, 0)]);
+        $ops[] = new Upsert('messages', ['connectionId' => 'renew','messageId' => $id], ['chatId' => new FieldWrite('chat', 0),'timestamp' => new FieldWrite(1, 0)]);
     }
     $engine->apply(new Batch('renew', $ops));
     $queries = 0;
-    $leaseId = Schema::encodeKey('leases', ['sessionId' => 'renew']);
+    $leaseId = Schema::encodeKey('leases', ['connectionId' => 'renew']);
     $adapter->onQuery = static function ($memory) use (&$clock, &$queries, $scenario, $leaseId): void {
         $clock += $scenario === 'expired' ? 11000 : 4000;
         $queries++;
@@ -57,7 +57,7 @@ echo "PHP clear planning: unchanged10sTTL with4s per query renews conditionally;
 foreach (['slow','expired','stolen'] as $scenario) {
     $clock = 0;
     $reads = 0;
-    $leaseId = Schema::encodeKey('leases', ['sessionId' => 'planning']);
+    $leaseId = Schema::encodeKey('leases', ['connectionId' => 'planning']);
     $adapter = new class () extends StorageEngineMemory {
         public ?Closure $onGet = null;
         public function get(string $entity, array $ids, ?Polymorfa\CancellationToken $cancellation = null): array
@@ -81,9 +81,9 @@ foreach (['slow','expired','stolen'] as $scenario) {
         return $clock;
     });
     $batch = new Batch('planning', [
-        new Upsert('chats', ['sessionId' => 'planning','chatId' => 'chat'], ['name' => new FieldWrite('chat', 0)]),
-        new Upsert('contacts', ['sessionId' => 'planning','contactId' => 'contact'], ['pushName' => new FieldWrite('contact', 0)]),
-        new Upsert('messages', ['sessionId' => 'planning','messageId' => 'message'], ['text' => new FieldWrite('message', 0)]),
+        new Upsert('chats', ['connectionId' => 'planning','chatId' => 'chat'], ['name' => new FieldWrite('chat', 0)]),
+        new Upsert('contacts', ['connectionId' => 'planning','contactId' => 'contact'], ['pushName' => new FieldWrite('contact', 0)]),
+        new Upsert('messages', ['connectionId' => 'planning','messageId' => 'message'], ['text' => new FieldWrite('message', 0)]),
     ], 'planning-event');
     if ($scenario === 'slow') {
         storageCheck($engine->apply($batch)->applied && $clock > 10000, 'bounded planning renews unchanged10sTTL between4s native reads');

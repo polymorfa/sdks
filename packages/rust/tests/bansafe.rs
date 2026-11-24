@@ -10,17 +10,17 @@ fn enforcement() -> Value {
 }
 fn number() -> Value {
     let mut v = health();
-    v.as_object_mut().unwrap().extend(json!({"sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","enforcement":enforcement()}).as_object().unwrap().clone());
+    v.as_object_mut().unwrap().extend(json!({"connectionId":"sid","connection":"support","phoneNumber":"+1555","projectId":"project","enforcement":enforcement()}).as_object().unwrap().clone());
     v
 }
 fn finding() -> Value {
-    json!({"id":"finding","key":"delivery","title":"Delivery","summary":"Check delivery","fix":"Slow down","status":"open","severity":"warning","occurrences":2,"reopenedCount":1,"evidence":{"failed":0.1},"sessionId":"sid","session":"support","phoneNumber":"+1555","firstSeenAt":"then","lastSeenAt":"now","acknowledgedAt":null,"acknowledgedBy":null,"acknowledgementNote":null,"snoozedUntil":null,"resolvedAt":null,"resolveReason":null})
+    json!({"id":"finding","key":"delivery","title":"Delivery","summary":"Check delivery","fix":"Slow down","status":"open","severity":"warning","occurrences":2,"reopenedCount":1,"evidence":{"failed":0.1},"connectionId":"sid","connection":"support","phoneNumber":"+1555","firstSeenAt":"then","lastSeenAt":"now","acknowledgedAt":null,"acknowledgedBy":null,"acknowledgementNote":null,"snoozedUntil":null,"resolvedAt":null,"resolveReason":null})
 }
 fn incident() -> Value {
-    json!({"id":"incident","sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","kind":"customer_report","source":"customer","resolution":"open","ambiguous":true,"startedAt":"now","endsAt":null,"closedAt":null,"closedBy":null,"claimId":"claim","note":"reported","reportedBy":"member","createdAt":"now"})
+    json!({"id":"incident","connectionId":"sid","connection":"support","phoneNumber":"+1555","projectId":"project","kind":"customer_report","source":"customer","resolution":"open","ambiguous":true,"startedAt":"now","endsAt":null,"closedAt":null,"closedBy":null,"claimId":"claim","note":"reported","reportedBy":"member","createdAt":"now"})
 }
 fn claim() -> Value {
-    json!({"id":"claim","incidentId":"incident","sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","status":"under_review","verdict":"inconclusive","windowStart":"then","windowEnd":"now","measuredCents":2.123456,"capCents":3.0,"amountCents":0.0,"evidence":{"attributionRuleVersion":1,"windowDays":7,"deviceEvidence":true,"otherDevices":2,"restrictedInWindow":true,"criticalFindingDays":1,"sharedConnection":false,"simultaneousCalls":false,"measuredHours":100},"summary":"Review","reason":"evidence","decidedAt":null,"paidAt":null,"createdAt":"now"})
+    json!({"id":"claim","incidentId":"incident","connectionId":"sid","connection":"support","phoneNumber":"+1555","projectId":"project","status":"under_review","verdict":"inconclusive","windowStart":"then","windowEnd":"now","measuredCents":2.123456,"capCents":3.0,"amountCents":0.0,"evidence":{"attributionRuleVersion":1,"windowDays":7,"deviceEvidence":true,"otherDevices":2,"restrictedInWindow":true,"criticalFindingDays":1,"sharedConnection":false,"simultaneousCalls":false,"linkedDeviceInteractive":false,"measuredHours":100},"summary":"Review","reason":"evidence","decidedAt":null,"paidAt":null,"createdAt":"now"})
 }
 fn signal() -> Value {
     json!({"key":"delivery","label":"Delivery","group":"delivery","kind":"code_counts","unit":"count","description":"Codes","measured":true,"value":[1.0,2.0],"sampleSize":2,"codes":[{"code":429,"count":2}]})
@@ -29,7 +29,7 @@ fn snapshot() -> Value {
     json!({"bucketStart":"then","flushedAt":"now","receivedAt":"now","partial":false,"recordVersion":2,"signals":[signal()]})
 }
 fn collection() -> Value {
-    json!({"sessionId":"sid","session":"support","projectId":"project","collection":{"state":"fresh","latestFlushedAt":"now","latestReceivedAt":"now","freshUntil":"later","recordVersion":2,"collectorVersion":1,"partial":false,"droppedRecords":0}})
+    json!({"connectionId":"sid","connection":"support","projectId":"project","collection":{"state":"fresh","latestFlushedAt":"now","latestReceivedAt":"now","freshUntil":"later","recordVersion":2,"collectorVersion":1,"partial":false,"droppedRecords":0}})
 }
 fn page(item: Value) -> Value {
     json!({"data":[item],"page":{"nextCursor":"next","hasMore":true}})
@@ -70,7 +70,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
         "GET",
         "/platform/bansafe/health/support/history?limit=5&since=then",
         None,
-        json!({"data":{"sessionId":"sid","session":"support","points":[point]}}),
+        json!({"data":{"connectionId":"sid","connection":"support","points":[point]}}),
         client.ban_safe().list_health_history(
             "support",
             &ListHealthHistoryParameters {
@@ -134,14 +134,14 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
     wire_team!(
         client,
         "GET",
-        "/platform/bansafe/health-actions?session=support&status=succeeded",
+        "/platform/bansafe/health-actions?connection=support&status=succeeded",
         None,
         page(
-            json!({"id":"action","sessionId":"sid","session":"support","projectId":"project","mode":"apply","action":"slow_down","status":"succeeded","health":51.0,"threshold":55.0,"healthSource":"rules_v1","estimatorVersion":"rules1","modelVersion":null,"slowDownMps":1.0,"evaluatedAt":"then","createdAt":"then","completedAt":"now","outcome":"applied"})
+            json!({"id":"action","connectionId":"sid","connection":"support","projectId":"project","mode":"apply","action":"slow_down","status":"succeeded","health":51.0,"threshold":55.0,"healthSource":"rules_v1","estimatorVersion":"rules1","modelVersion":null,"slowDownMps":1.0,"evaluatedAt":"then","createdAt":"then","completedAt":"now","outcome":"applied"})
         ),
         client.ban_safe().list_health_actions(
             &ListHealthActionsParameters {
-                session: Some("support".into()),
+                connection: Some("support".into()),
                 status: Some(HealthActionStatus::Succeeded),
                 ..Default::default()
             },
@@ -168,7 +168,7 @@ async fn health_explanations_findings_enforcement_and_telemetry_native_wire() {
         .as_object_mut()
         .unwrap()
         .extend(enforcement().as_object().unwrap().clone());
-    summary.as_object_mut().unwrap().extend(json!({"sessionId":"sid","session":"support","phoneNumber":"+1555","projectId":"project","liftRequires":"clean","enforcement":enforcement()}).as_object().unwrap().clone());
+    summary.as_object_mut().unwrap().extend(json!({"connectionId":"sid","connection":"support","phoneNumber":"+1555","projectId":"project","liftRequires":"clean","enforcement":enforcement()}).as_object().unwrap().clone());
     summary.as_object_mut().unwrap().remove("exitProgress");
     wire_team!(
         client,
@@ -190,12 +190,12 @@ async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
     wire_team!(
         client,
         "GET",
-        "/platform/bansafe/incidents?session=support",
+        "/platform/bansafe/incidents?connection=support",
         None,
         page(incident()),
         client.ban_safe().list_incidents(
             &ListIncidentsParameters {
-                session: Some("support".into()),
+                connection: Some("support".into()),
                 ..Default::default()
             },
             RequestOptions::default()
@@ -205,11 +205,11 @@ async fn incident_receipt_retraction_and_claim_evidence_native_wire() {
         client,
         "POST",
         "/platform/bansafe/incidents",
-        Some(json!({"session":"support","occurredAt":"now","note":"reported"})),
-        json!({"data":{"incidentId":"incident","created":true,"sessionId":"sid","session":"support","occurredAt":"now"}}),
+        Some(json!({"connection":"support","occurredAt":"now","note":"reported"})),
+        json!({"data":{"incidentId":"incident","created":true,"connectionId":"sid","connection":"support","occurredAt":"now"}}),
         client.ban_safe().create_incident(
             &ReportIncidentRequest {
-                session: "support".into(),
+                connection: "support".into(),
                 occurred_at: Some("now".into()),
                 note: Some("reported".into())
             },

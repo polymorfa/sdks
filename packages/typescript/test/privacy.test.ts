@@ -121,7 +121,7 @@ describe("MessagingClient privacy", () => {
     expectTypeOf<MessagingClient["privacy"]>().toEqualTypeOf<PrivacyResource>();
   });
 
-  it("gets every privacy setting with metadata and an encoded session", async () => {
+  it("gets every privacy setting with metadata and an encoded connection", async () => {
     const { client, requests } = await privacyServer();
 
     const result = await client.privacy.get("support/eu", {

@@ -50,7 +50,7 @@ internal static class MutationTests
 {
     internal static async Task Run(PausedNativeConnection connection, LibSqlStorageAdapter adapter)
     {
-        var key = new Dictionary<string, string> { { "sessionId", "immutable" }, { "messageId", "prepared" } };
+        var key = new Dictionary<string, string> { { "connectionId", "immutable" }, { "messageId", "prepared" } };
         var row = StorageMerge.EmptyRow(StorageEntity.Messages, key);
         var fields = row.Fields.ToDictionary(p => p.Key, p => p.Value);
         using var document = JsonDocument.Parse("{\"original\":true}");
@@ -65,7 +65,7 @@ internal static class MutationTests
         connection.Release.TrySetResult(); await held; if (!(await commit).Ok) throw new Exception("Prepared commit failed");
         var saved = (await adapter.GetAsync(StorageEntity.Messages, new[] { row.Id }))[row.Id];
         if (!saved.Fields["extra"].GetProperty("original").GetBoolean() || saved.Versions["extra"] != 2) throw new Exception("Caller mutation changed prepared writes");
-        var equals = new Dictionary<string, string> { { "sessionId", "immutable" }, { "chatId", "original-chat" } };
+        var equals = new Dictionary<string, string> { { "connectionId", "immutable" }, { "chatId", "original-chat" } };
         connection.Arm(); held = adapter.GetAsync(StorageEntity.Messages, new[] { row.Id }); await connection.Started.Task.WaitAsync(TimeSpan.FromSeconds(5));
         var query = adapter.QueryAsync(StorageEntity.Messages, new("by_chat", equals, 10)); equals["chatId"] = "mutated-chat";
         connection.Release.TrySetResult(); await held; if ((await query).Single().Id != row.Id) throw new Exception("Caller mutation changed prepared query");

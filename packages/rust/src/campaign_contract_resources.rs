@@ -801,7 +801,7 @@ fn custody_path(project: &str, customer: Option<&str>) -> Result<String> {
     }
     Ok(format!("{p}/signal-custody"))
 }
-/// Future defaults only, with no existing-Number custody conversion.
+/// Future defaults only, with no existing-Connection custody conversion.
 pub struct SignalCustodyResource<'a> {
     http: &'a HttpTransport,
     project_id: &'a str,

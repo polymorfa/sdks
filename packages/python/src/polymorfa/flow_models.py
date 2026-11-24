@@ -37,9 +37,9 @@ class ValidationIssue(ValidationPosition, total=False):
     pointers: list[ValidationPointer]
 
 
-class NumberLink(TypedDict):
-    session: str
-    sessionId: NotRequired[str]
+class ConnectionLink(TypedDict):
+    connection: str
+    connectionId: NotRequired[str]
     wabaId: str
     metaFlowId: str
     status: str
@@ -59,7 +59,7 @@ class Summary(TypedDict):
     status: DraftStatus
     version: str
     screenCount: int
-    metaLinks: list[NumberLink]
+    metaLinks: list[ConnectionLink]
     createdAt: int
     updatedAt: int
 
@@ -82,7 +82,7 @@ class UpdateFlow(TypedDict):
 
 
 class ProviderInput(TypedDict):
-    sessionId: str
+    connectionId: str
     categories: NotRequired[list[Category]]
     requestId: NotRequired[str]
 
@@ -92,8 +92,8 @@ class ProviderOperation(TypedDict):
     requestId: str | None
     flowId: str
     flowName: str
-    sessionId: str
-    session: str
+    connectionId: str
+    connection: str
     action: Literal["create", "upload", "publish", "deprecate", "delete"]
     state: Literal["pending", "succeeded", "rejected", "uncertain", "superseded"]
     resolution: Literal["response", "reconciled", "superseded"] | None
@@ -119,7 +119,7 @@ class Endpoint(TypedDict):
     teamId: str
     projectId: str
     flowId: str
-    sessionId: str
+    connectionId: str
     mode: Literal["forward", "function", "direct"]
     url: str | None
     functionId: str | None
@@ -163,11 +163,11 @@ class EndpointSet(TypedDict):
     encryption: Custody
 
 
-class NumberInput(TypedDict):
-    sessionId: str
+class ConnectionInput(TypedDict):
+    connectionId: str
 
 
-class EndpointCommon(NumberInput):
+class EndpointCommon(ConnectionInput):
     enabled: NotRequired[bool]
     expectedRevision: NotRequired[int]
 
@@ -193,7 +193,7 @@ SetEndpoint = ForwardEndpoint | FunctionEndpoint | DirectEndpoint
 
 
 class ListEndpointReceipts(TypedDict, total=False):
-    sessionId: str
+    connectionId: str
     limit: int
 
 
@@ -201,7 +201,7 @@ class EndpointReceipt(TypedDict):
     id: str
     flowId: str
     endpointId: str
-    sessionId: str
+    connectionId: str
     mode: Literal["forward", "function"]
     action: Literal["ping", "INIT", "data_exchange", "BACK", "error_notification"] | None
     outcome: Literal["running", "succeeded", "rejected", "failed", "timeout", "unavailable"]

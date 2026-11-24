@@ -1,9 +1,9 @@
 import { key, literal, p } from "./recipes.mjs";
-// Evidence: packages/typescript/src/messaging/{messages,sessions,business}.ts,
+// Evidence: packages/typescript/src/messaging/{messages,connections,business}.ts,
 // src/client.ts, src/platform/developer-resources.ts and the native wire tests.
 export function render(id, { client, request }) {
-  const s = p("session"),
-    sid = p("sessionId");
+  const s = p("connection"),
+    sid = p("connectionId");
   const b = request.body ? literal(request.body, "typescript") : "";
   const q = request.query ? literal(request.query, "typescript") : "";
   const calls = {
@@ -13,14 +13,14 @@ export function render(id, { client, request }) {
     setTyping: `sdk.messages.setTyping(${s}, ${b})`,
     sendReaction: `sdk.messages.react(${s}, ${b})`,
     starMessage: `sdk.messages.star(${s}, ${b})`,
-    listPlatformSessions: "sdk.sessions.list()",
-    getSession: `sdk.sessions.retrieve(${sid})`,
-    getSessionAccount: `sdk.sessions.account(${sid})`,
-    startPlatformSession: `sdk.sessions.start(${sid})`,
-    stopPlatformSession: `sdk.sessions.stop(${sid})`,
-    restartSession: `sdk.sessions.restart(${sid})`,
-    logoutSession: `sdk.sessions.logout(${sid})`,
-    deletePlatformSession: `sdk.sessions.delete(${sid})`,
+    listPlatformConnections: "sdk.connections.list()",
+    getConnection: `sdk.connections.retrieve(${sid})`,
+    getConnectionAccount: `sdk.connections.account(${sid})`,
+    startPlatformConnection: `sdk.connections.start(${sid})`,
+    stopPlatformConnection: `sdk.connections.stop(${sid})`,
+    restartConnection: `sdk.connections.restart(${sid})`,
+    logoutConnection: `sdk.connections.logout(${sid})`,
+    deletePlatformConnection: `sdk.connections.delete(${sid})`,
     getOwnBusinessProfile: `sdk.business.getProfile(${s})`,
     getBusinessMerchantCompliance: `sdk.business.getMerchantCompliance(${s})`,
     getBusinessLinkedAccounts: `sdk.business.getLinkedAccounts(${s})`,

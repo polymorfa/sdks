@@ -25,15 +25,15 @@ or hyphens. The default database name is `polymorfa_<namespace>`; set
 the same database to a different namespace. Browser origin and application code
 control access; namespacing does not grant tenant authority.
 
-The adapter installs all 17 schema-2 object stores at database version 2. Each
+The adapter installs all 17 schema-3 object stores at database version 3. Existing schema-2 databases are refused without changing their stores or version. Stop other writers and call `adapter.upgrade_schema2().await` explicitly before opening them. The upgrade checks all 17 stores and the namespace owner, preserves row IDs, revisions and opaque fields, and aborts on conflicts, blocking or cancellation. Each
 commit uses one native readwrite transaction over every affected store, with at
-most 1,000 writes including the engine's session fence. Revision checks and writes
+most 1,000 writes including the engine's connection fence. Revision checks and writes
 share that transaction. A stale revision or request error aborts earlier writes.
 Queries require complete named index scope and filter a bounded scan;
 `max_query_rows` defaults to 100,000 and accepts 1 to 1,000,000. Exceeding the bound
 returns an error rather than partial results. JSON fields and revision metadata
 are preserved. The exact source contract is
-`3bacf46f9c4213426314001586f5bae43aaa77de`.
+`d80b581c9df122411e9149a7e39a33700a51571c`.
 
 `close()` releases the connection; later operations reopen it. Dropping a polled
 operation future signals cancellation and aborts an active transaction. An

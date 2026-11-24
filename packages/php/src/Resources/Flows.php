@@ -91,14 +91,14 @@ final class Flows extends Resource
     }
     /**
  * @return ApiResponse<EndpointState> */
-    public function endpoint(string $id, string $sessionId, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<EndpointState> */ return $this->flowRequest('GET', self::path($id).'/endpoint', self::number($sessionId), $options);
+    public function endpoint(string $id, string $connectionId, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<EndpointState> */ return $this->flowRequest('GET', self::path($id).'/endpoint', self::number($connectionId), $options);
     }
     /** @param EndpointInput $input
  * @return ApiResponse<EndpointSetResult> */
     public function setEndpoint(string $id, array $input, ?RequestOptions $options = null): ApiResponse
     {
-        self::number($input['sessionId']);
+        self::number($input['connectionId']);
         if ($input['mode'] === 'forward' || $input['mode'] === 'direct') {
             $url = parse_url($input['url']);
             if (strlen($input['url']) > 2048 || $url === false || ($url['scheme'] ?? '') !== 'https' || empty($url['host']) || isset($url['user']) || isset($url['pass']) || isset($url['fragment'])) {
@@ -118,8 +118,8 @@ final class Flows extends Resource
     }
     /**
  * @return ApiResponse<array{ok:true}> */
-    public function deleteEndpoint(string $id, string $sessionId, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<array{ok:true}> */ return $this->flowRequest('DELETE', self::path($id).'/endpoint', self::number($sessionId), $options);
+    public function deleteEndpoint(string $id, string $connectionId, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<array{ok:true}> */ return $this->flowRequest('DELETE', self::path($id).'/endpoint', self::number($connectionId), $options);
     }
     /** @param ReceiptParams $params
  * @return ApiResponse<list<Receipt>> */
@@ -132,13 +132,13 @@ final class Flows extends Resource
     }
     /**
  * @return ApiResponse<Custody> */
-    public function encryptionKey(string $sessionId, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<Custody> */ return $this->flowRequest('GET', '', self::number($sessionId), $options, '/platform/flow-encryption-keys');
+    public function encryptionKey(string $connectionId, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<Custody> */ return $this->flowRequest('GET', '', self::number($connectionId), $options, '/platform/flow-encryption-keys');
     }
     /**
  * @return ApiResponse<Rotation> */
-    public function rotateEncryptionKey(string $sessionId, ?RequestOptions $options = null): ApiResponse
-    { /** @var ApiResponse<Rotation> */ return $this->flowRequest('POST', '', self::number($sessionId), $options, '/platform/flow-encryption-keys/rotate');
+    public function rotateEncryptionKey(string $connectionId, ?RequestOptions $options = null): ApiResponse
+    { /** @var ApiResponse<Rotation> */ return $this->flowRequest('POST', '', self::number($connectionId), $options, '/platform/flow-encryption-keys/rotate');
     }
     /** @param array<string,mixed> $input */
     private static function validateUpdate(array $input): void
@@ -155,12 +155,12 @@ final class Flows extends Resource
         } return '/'.self::segment($id);
     }
     /**
- * @return array{sessionId:string} */
+ * @return array{connectionId:string} */
     private static function number(string $id): array
     {
         if (trim($id) === '') {
-            throw new ValidationException('sessionId is required.', 'invalid_parameter');
-        } return ['sessionId' => $id];
+            throw new ValidationException('connectionId is required.', 'invalid_parameter');
+        } return ['connectionId' => $id];
     }
     /** @param array<string,mixed> $input
  * @return ApiResponse<mixed> */

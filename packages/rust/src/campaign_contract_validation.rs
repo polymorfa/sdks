@@ -260,7 +260,7 @@ pub(crate) fn assignment(v: &SetCampaignReplyFlowRequest) -> Result<()> {
     Ok(())
 }
 pub(crate) fn test_send(v: &CampaignTestSendRequest) -> Result<()> {
-    uuid(&v.session_id, "sessionId")?;
+    uuid(&v.connection_id, "connectionId")?;
     text(&v.to, 1, 32, "to")?;
     if let Some(s) = &v.sample_recipient_id {
         uuid(s, "sampleRecipientId")?;

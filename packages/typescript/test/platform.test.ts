@@ -129,30 +129,30 @@ describe("Client teams and projects", () => {
   });
 });
 
-describe("Client sessions", () => {
-  it("lists sessions with optional project scope", async () => {
+describe("Client connections", () => {
+  it("lists connections with optional project scope", async () => {
     const { client, requests } = await platformServer();
-    await client.sessions.list();
-    await client.sessions.list({ projectId: "project_1" });
+    await client.connections.list();
+    await client.connections.list({ projectId: "project_1" });
     expect(requests.map(({ path }) => path)).toEqual([
-      "/platform/sessions",
-      "/platform/sessions?projectId=project_1",
+      "/platform/connections",
+      "/platform/connections?projectId=project_1",
     ]);
   });
 
-  it("maps stop, delete, tier override, and testing-session operations", async () => {
+  it("maps stop, delete, tier override, and testing-connection operations", async () => {
     const { client, requests } = await platformServer();
-    await client.sessions.stop("session/a", { projectId: "project_1" });
-    await client.sessions.delete("session/a");
-    await client.sessions.setTierOverride("session/a", {
+    await client.connections.stop("connection/a", { projectId: "project_1" });
+    await client.connections.delete("connection/a");
+    await client.connections.setTierOverride("connection/a", {
       projectId: "project_1",
       quoteId: "quote_1",
     });
 
     expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-      "POST /platform/sessions/session%2Fa/stop",
-      "DELETE /platform/sessions/session%2Fa",
-      "PATCH /platform/sessions/session%2Fa",
+      "POST /platform/connections/connection%2Fa/stop",
+      "DELETE /platform/connections/connection%2Fa",
+      "PATCH /platform/connections/connection%2Fa",
     ]);
     expect(requests[0]?.body).toBe('{"projectId":"project_1"}');
     expect(requests[2]?.body).toBe(
@@ -161,17 +161,17 @@ describe("Client sessions", () => {
   });
 });
 
-it("reads and updates unified session configuration through Platform", async () => {
+it("reads and updates unified connection configuration through Platform", async () => {
   const { client, requests } = await platformServer();
   const patch = {
     revision: 4,
     configuration: { reset: ["historySync.mode" as const] },
   };
-  await client.sessions.retrieve("support/eu");
-  await client.sessions.update("support/eu", patch);
+  await client.connections.retrieve("support/eu");
+  await client.connections.update("support/eu", patch);
   expect(requests.map(({ method, path }) => `${method} ${path}`)).toEqual([
-    "GET /platform/sessions/support%2Feu",
-    "PUT /platform/sessions/support%2Feu",
+    "GET /platform/connections/support%2Feu",
+    "PUT /platform/connections/support%2Feu",
   ]);
   expect(JSON.parse(requests[1]!.body)).toEqual(patch);
 });

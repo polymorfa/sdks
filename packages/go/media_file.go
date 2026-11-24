@@ -76,14 +76,14 @@ func (r *MessagingMedia) DownloadToFile(ctx context.Context, id, path string, fi
 	}
 	return writeAPIMedia(ctx, d, path, file)
 }
-func (r *Chats) DownloadMessageMediaToFile(ctx context.Context, session, chat, message, path string, file MediaFileOptions, o ...RequestOptions) (APIMediaFileResult, error) {
+func (r *Chats) DownloadMessageMediaToFile(ctx context.Context, connection, chat, message, path string, file MediaFileOptions, o ...RequestOptions) (APIMediaFileResult, error) {
 	if err := serverOnly(r.t); err != nil {
 		return APIMediaFileResult{}, err
 	}
 	if err := checkMediaFile(path, file); err != nil {
 		return APIMediaFileResult{}, err
 	}
-	d, err := r.DownloadMessageMediaStream(ctx, session, chat, message, o...)
+	d, err := r.DownloadMessageMediaStream(ctx, connection, chat, message, o...)
 	if err != nil {
 		return APIMediaFileResult{}, err
 	}
