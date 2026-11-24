@@ -11,7 +11,7 @@ public sealed record ContactUserInfo(string Id, string Status, string PictureId,
 public sealed record ContactPicture(string Url);
 public sealed record BusinessProfileCategory(string Id, string Name);
 public sealed record BusinessProfileHours(string DayOfWeek, string Mode, string OpenTime, string CloseTime);
-public sealed record BusinessProfile(string Id, string Address, string Email, string Description, IReadOnlyList<string> Websites, string CoverPhotoId, IReadOnlyList<BusinessProfileCategory> Categories, IReadOnlyDictionary<string, string> Options, string HoursTimeZone, IReadOnlyList<BusinessProfileHours> Hours, string? Bsuid = null, string? PhoneNumber = null, string? Username = null);
+public sealed record BusinessProfile(string Id, string Address, string Email, string Description, IReadOnlyList<string> Websites, string CoverPhotoId, IReadOnlyList<BusinessProfileCategory> Categories, IReadOnlyDictionary<string, string> Options, string HoursTimeZone, IReadOnlyList<BusinessProfileHours> Hours, string? Bsuid = null, string? PhoneNumber = null, string? Username = null, ContactEncryption? Encryption = null);
 public sealed record ProfileData(string Name, string Status, string? ProfilePicUrl = null, string? PhonePlatform = null, string? AccountType = null);
 public sealed record SetProfileNameRequest(string Name);
 public sealed record SetProfileStatusRequest(string Status);

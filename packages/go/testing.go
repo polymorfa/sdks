@@ -10,11 +10,11 @@ type TestingConfiguration struct {
 		Name   string `json:"name,omitempty"`
 		Status string `json:"status,omitempty"`
 	} `json:"profile,omitempty"`
-	AccountType      string `json:"accountType,omitempty"`
-	PrimaryPlatform  string `json:"primaryPlatform,omitempty"`
-	ReplyBehavior    string `json:"replyBehavior,omitempty"`
-	FailureScenario  string `json:"failureScenario,omitempty"`
-	HistoryFixtureID string `json:"historyFixtureId,omitempty"`
+	AccountType      WhatsAppAccountType    `json:"accountType,omitempty"`
+	PrimaryPlatform  TestingPrimaryPlatform `json:"primaryPlatform,omitempty"`
+	ReplyBehavior    string                 `json:"replyBehavior,omitempty"`
+	FailureScenario  string                 `json:"failureScenario,omitempty"`
+	HistoryFixtureID string                 `json:"historyFixtureId,omitempty"`
 }
 type TestingHistoryMessage struct {
 	ID          string `json:"id"`

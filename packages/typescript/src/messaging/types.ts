@@ -795,7 +795,10 @@ export interface BusinessProfileHours {
   readonly closeTime: string;
 }
 
+export type ContactEncryption = "end_to_end" | "hybrid" | "not_end_to_end";
+
 export interface BusinessProfile extends ConversationIdentity {
+  readonly encryption?: ContactEncryption;
   readonly address: string;
   readonly email: string;
   readonly description: string;

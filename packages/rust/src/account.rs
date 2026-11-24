@@ -83,6 +83,8 @@ pub struct BusinessProfile {
     pub options: BTreeMap<String, String>,
     pub hours_time_zone: String,
     pub hours: Vec<BusinessProfileHours>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub encryption: Option<crate::business_account_modes::ContactEncryption>,
 }
 pub struct Contacts<'a>(pub(crate) &'a HttpTransport);
 impl Contacts<'_> {

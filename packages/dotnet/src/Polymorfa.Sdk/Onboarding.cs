@@ -24,6 +24,14 @@ public sealed record UnlinkTestingPhoneDeviceResponse(string Connection, int Dev
 public sealed class Testing : Resource
 {
     internal Testing(HttpTransport http) : base(http) { }
+    public Task<ApiResponse<TestingAccountMode>> SetAccountModeAsync(string connection, TestingAccountModeRequest input, RequestOptions? options = null)
+    {
+        Http.Credential.RequireServer();
+        CampaignContractValidation.Unicode(connection);
+        if (connection is null || connection.Length is < 1 or > 256) throw new PolymorfaValidationException("Invalid connection.", "invalid_parameter");
+        BusinessAccountModeValidation.Fields(input.AccountType, input.PrimaryPlatform);
+        return ExistingContractCodec.Request<TestingAccountMode>(Http, HttpMethod.Put, PhonePath(connection) + "/account-mode", ExistingContractCodec.Capture(input), options);
+    }
     private static string Path(string projectId) => "/messaging/projects/" + E(projectId);
     private static string PhonePath(string connection) => "/messaging/" + E(connection) + "/phone";
     private Task<ApiResponse<T>> Request<T>(HttpMethod method, string path, object? body, RequestOptions? options) { Http.Credential.RequireServer(); return Http.RequestAsync<T>(method, path, body, options); }

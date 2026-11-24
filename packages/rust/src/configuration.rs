@@ -299,29 +299,18 @@ pub struct TestingProfile {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub status: Option<String>,
 }
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum TestingAccountType {
-    WhatsappApp,
-    BusinessApp,
-    MetaCloud,
-    MetaCoexistence,
-}
-#[derive(Clone, Copy, Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum TestingPrimaryPlatform {
-    Android,
-    Ios,
-}
+pub use crate::business_account_modes::TestingPrimaryPlatform;
+/// Account type of a Test connection. Shares the Business account-mode enum.
+pub type TestingAccountType = crate::business_account_modes::WhatsAppAccountType;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct TestingConfiguration {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub profile: Option<TestingProfile>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub account_type: Option<TestingAccountType>,
+    pub account_type: Option<crate::business_account_modes::WhatsAppAccountType>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub primary_platform: Option<TestingPrimaryPlatform>,
+    pub primary_platform: Option<crate::business_account_modes::TestingPrimaryPlatform>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reply_behavior: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
