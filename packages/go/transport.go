@@ -23,7 +23,7 @@ import (
 	"time"
 )
 
-const Version = "0.1.0-dev.0"
+const Version = "0.1.0-preview.20261124042948"
 const APIVersion = "2026-09-22"
 
 type CredentialKind string

@@ -1,0 +1,1684 @@
+{
+  "schemaVersion": 1,
+  "repository": "polymorfa/sdks",
+  "sourceSha": "b95d65a942c838646ed12a393ad203d11754ec75",
+  "fingerprint": "55f79cec9dfe40392f7ee919e0d3d51ca54d2bf5709cb10296435764e1537207",
+  "channel": "preview",
+  "versions": {
+    "semver": "0.1.0-preview.20261124042948",
+    "python": "0.1.0a0.dev20261124042948",
+    "goTag": "packages/go/v0.1.0-preview.20261124042948"
+  },
+  "sourceSdkCommit": "e24cb176fc1124f5fe852ff6c77902648fd13b4a",
+  "acceptance": null,
+  "preview": {
+    "apiAcceptance": "not-verified",
+    "apiSource": {
+      "repository": "polymorfa/polymorfa",
+      "sourceSha": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+      "apiVersion": "2026-09-22",
+      "contracts": {
+        "messaging": {
+          "sourcePath": "apps/api/docs/openapi.json",
+          "sha256": "e84c7ff814c6b59ca7f32c3fda1aedbed3f672e728910adb883f0aa8c6cf3ab7"
+        },
+        "platform": {
+          "sourcePath": "apps/api/docs/openapi.management.json",
+          "sha256": "e09ed3e8aa24e4f56fc64223ea3e54a9d603cdc533173ac0920a9d14f61be559"
+        }
+      }
+    },
+    "authorization": {
+      "eventName": "workflow_dispatch",
+      "ref": "refs/heads/main",
+      "runUrl": "https://github.com/polymorfa/sdks/actions/runs/45326798187",
+      "actor": "purpshell"
+    },
+    "featureContracts": [
+      {
+        "file": "contracts/abprops-capabilities.json",
+        "sha256": "115cc79d68564d8dde80e79db7700eb6adcc2470af0a18eab058000840559044",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/analytics-device-signals.json",
+        "sha256": "98a058e4b56d2e88c5f962f341734595996dc29251f48f2ce361ccec6e66554c",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/ban-credit-waivers.json",
+        "sha256": "fee483894956ed413ceec82e9acdbe3e84d8f828ac84baf2f0ad223d060dc436",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/calls-guests.candidate.json",
+        "sha256": "f91711684d65c00b12c32020452ea1f389d6e572ac947cca651f9d0930bbf7ec",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "97fce0e939b41a8b9b4d280d3a033921d248f358",
+        "sourceAccepted": false,
+        "published": false
+      },
+      {
+        "file": "contracts/calls-simultaneous-calls.json",
+        "sha256": "9eceefb65a88646806653140afc742ce818f30d8bc5b6dec50b19e761ef8a544",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "c1a43a1eb409ad57c2b9677c606a3d42d7b5598c",
+        "sourceAccepted": true,
+        "published": false
+      },
+      {
+        "file": "contracts/campaign-ab-tests.json",
+        "sha256": "5c11a3a8c5c18812a6dc268040adb3dd41326ab581fab4c24421133095422b2e",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "8d248b578a7c76034b30a5a97349adcd15ce5c55",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/campaign-conversions.json",
+        "sha256": "f261085572844f29cb443a3c72c78385525a100de22b8de89afbf9c52ee20165",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "7d1b7d6eb035447dc8c5d20420e4cc172ba99b37",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/campaign-custody-20261014.json",
+        "sha256": "bf5fcf1b9cd62f7e49554ea9fc151206fc1c0a6d11320ad7acb03052f09a93a5",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/campaign-follow-ups.json",
+        "sha256": "80f17574a80255375db4a0d4154aa698977ef14835597d4369449b98301d59b1",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/campaign-frequency-cap.json",
+        "sha256": "1621bc7148bf7fe4fd70267105cbc6fe936ea26307869d335480e502c1b67964",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/campaign-message-variations.json",
+        "sha256": "07aa2573bc2e4154b39a1691f02d12562bd7bb79ab06b936baeecf1387add2d7",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "9dc523d940edc5954a37ad85647b89be1cd58e3c",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/campaign-paused-reasons.json",
+        "sha256": "e2a553bfac43bcf03ce655ec997641c8d5274eb8888d6e86cd1c8a215564735a",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/campaign-segments-drip.json",
+        "sha256": "1a8e4e017cccb1cc3c456b9ec91fdb34a3cbd688987f81c3a7ab8a9c668acb4e",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/client-token-ceilings.json",
+        "sha256": "5abcfad6b745a040c506b635e859b447b2555bd1a075b0ed3413e286a0c6e0cf",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/cloud-api-supplements.json",
+        "sha256": "75f2f91323f2d27c4c1ca6e9dea3de3ae7df961b356c37d7513fb69450d66f14",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "29abb7b66a8e225af4df5cf354e9836ccb2ce04c",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/feature-evaluation.json",
+        "sha256": "e38536fd15fcf0ba99df452ddfcd4120aa60033c4c3e38919fb5e043d90fdf08",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/idempotency-replay.json",
+        "sha256": "c678168b5a23d49ed4f27cc0094a3715788c6056c04b236c8ca689daf9f75b95",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "1001684aff8317a455f74e526009f37cd3d98f2b",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/interactive-messages.json",
+        "sha256": "d370e621cfb177e087e9f294ec1347c0ec45abefbc4b77a599c615babf3b497e",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "3766dc9aef4669aa6eec79919e4388c59ad75794",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/machine-credentials.source.json",
+        "sha256": "d1d8f6f1b544cc74bfe2f01578bf9c4a142c220430551d88066aa86f5f074d42",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "f180dc1ee2bd45dbecf01702f73bdd75c664634b",
+        "sourceAccepted": null,
+        "published": null
+      },
+      {
+        "file": "contracts/official-api-round2.json",
+        "sha256": "336d1fc35f201ddf29fbf50a794c84b14af23a025658b47ff6a8a59ae2ba17c6",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "9bb1e2ed92d8b4a07ff727f8e7ae185498f0868f",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/passkeys.candidate.json",
+        "sha256": "5a0a9887288125b6fde5305721424e05fb1ec46f5a468338564e2659fd377b46",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "c9902b86e4a1b52092029486cc16c1699456d539",
+        "sourceAccepted": true,
+        "published": false
+      },
+      {
+        "file": "contracts/request-logs.json",
+        "sha256": "bb5cc6a0251aa5721932f42bb561a283c24a9a95c4cb69a299f9a3eae74b3343",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "f97fb511cf3cd7bf14fbccf21a679c0f7a6ebbf3",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/testing-events.json",
+        "sha256": "c728fdebbff52491135674ed55b07cf6d78c8e5fa1b05cb46e58e9892978806b",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/testing-phone.json",
+        "sha256": "ae27286b4df3da285e8fd3d7f57d28a64c5935ef64ecbd5ccaf560b17d501ed4",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/webhook-phone-offline.json",
+        "sha256": "a6ba2fc4e447f48f5aafc0ff68e395580e24c025c16f2f286acc2283d0c823ed",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "4380e1113f4b6e5830852f35b13e0ee15b6e340b",
+        "sourceAccepted": null,
+        "published": false
+      },
+      {
+        "file": "contracts/whatsapp-message-ids.json",
+        "sha256": "a5e373f59ef503d8fe5738613cec8b44dac5ad18db932ca7ab2c21ecf9918d5b",
+        "repository": "polymorfa/polymorfa",
+        "sourceCommit": "6a457a0ed8a7d6cabdb1e326d7053a1e8f9c2b41",
+        "sourceAccepted": null,
+        "published": null
+      }
+    ],
+    "coverage": {
+      "path": "contracts/coverage.json",
+      "sha256": "abb0b3e0fac0125fbbf3bb6a5d150c3a64d8837eee42c5d1a1cf4e80113a2fb7",
+      "sourceCommit": "15db8b1c9d88e2ceccb58c851e731feabb659a39",
+      "operationCount": 672,
+      "languages": {
+        "typescript": {
+          "counts": {
+            "covered": 460,
+            "partial": 1,
+            "missing": 51,
+            "excluded": 160
+          },
+          "incomplete": [
+            {
+              "operationId": "getGroupCapabilities",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyConfirmation",
+              "status": "missing"
+            },
+            {
+              "operationId": "listStoredStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportProjectCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "retryHistoryChunk",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteHistoryMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "createMediaUploadGrant",
+              "status": "missing"
+            },
+            {
+              "operationId": "uploadEncryptedMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "submitPasskeyAssertion",
+              "status": "missing"
+            },
+            {
+              "operationId": "issuePasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "confirmPasskey",
+              "status": "missing"
+            },
+            {
+              "operationId": "bootstrapRecentStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "removeRecentSticker",
+              "status": "missing"
+            },
+            {
+              "operationId": "requestStickerReupload",
+              "status": "missing"
+            },
+            {
+              "operationId": "createCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "setTestingAccountMode",
+              "status": "missing"
+            },
+            {
+              "operationId": "setStickerFavorite",
+              "status": "missing"
+            },
+            {
+              "operationId": "setCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "cancelAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfiles",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfileConsent",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "listCampaignLaunchApprovals",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "listFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSummary",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "listProjectRequestLogs",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceFromCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendPlatformCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "releaseConnectionInspectorClaim",
+              "status": "missing"
+            },
+            {
+              "operationId": "acceptFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "withdrawFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "putAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "setPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCallSettings",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectSignalCustody",
+              "status": "missing"
+            }
+          ]
+        },
+        "go": {
+          "counts": {
+            "covered": 454,
+            "partial": 7,
+            "missing": 51,
+            "excluded": 160
+          },
+          "incomplete": [
+            {
+              "operationId": "getGroupCapabilities",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyConfirmation",
+              "status": "missing"
+            },
+            {
+              "operationId": "listStoredStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportProjectCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "retryHistoryChunk",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteHistoryMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "createMediaUploadGrant",
+              "status": "missing"
+            },
+            {
+              "operationId": "uploadEncryptedMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "submitPasskeyAssertion",
+              "status": "missing"
+            },
+            {
+              "operationId": "issuePasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "confirmPasskey",
+              "status": "missing"
+            },
+            {
+              "operationId": "bootstrapRecentStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "removeRecentSticker",
+              "status": "missing"
+            },
+            {
+              "operationId": "requestStickerReupload",
+              "status": "missing"
+            },
+            {
+              "operationId": "createCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "setTestingAccountMode",
+              "status": "missing"
+            },
+            {
+              "operationId": "setStickerFavorite",
+              "status": "missing"
+            },
+            {
+              "operationId": "setCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "cancelAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfiles",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfileConsent",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "listCampaignLaunchApprovals",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "listFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSummary",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "listProjectRequestLogs",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceFromCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendPlatformCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "releaseConnectionInspectorClaim",
+              "status": "missing"
+            },
+            {
+              "operationId": "acceptFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "withdrawFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "createProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "putAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "setPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCallSettings",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectSignalCustody",
+              "status": "missing"
+            }
+          ]
+        },
+        "python": {
+          "counts": {
+            "covered": 454,
+            "partial": 7,
+            "missing": 51,
+            "excluded": 160
+          },
+          "incomplete": [
+            {
+              "operationId": "getGroupCapabilities",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyConfirmation",
+              "status": "missing"
+            },
+            {
+              "operationId": "listStoredStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportProjectCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "retryHistoryChunk",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteHistoryMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "createMediaUploadGrant",
+              "status": "missing"
+            },
+            {
+              "operationId": "uploadEncryptedMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "submitPasskeyAssertion",
+              "status": "missing"
+            },
+            {
+              "operationId": "issuePasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "confirmPasskey",
+              "status": "missing"
+            },
+            {
+              "operationId": "bootstrapRecentStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "removeRecentSticker",
+              "status": "missing"
+            },
+            {
+              "operationId": "requestStickerReupload",
+              "status": "missing"
+            },
+            {
+              "operationId": "createCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "setTestingAccountMode",
+              "status": "missing"
+            },
+            {
+              "operationId": "setStickerFavorite",
+              "status": "missing"
+            },
+            {
+              "operationId": "setCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "cancelAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfiles",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfileConsent",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "listCampaignLaunchApprovals",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "listFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSummary",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "listProjectRequestLogs",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceFromCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendPlatformCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "releaseConnectionInspectorClaim",
+              "status": "missing"
+            },
+            {
+              "operationId": "acceptFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "withdrawFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "createProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "putAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "setPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCallSettings",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectSignalCustody",
+              "status": "missing"
+            }
+          ]
+        },
+        "php": {
+          "counts": {
+            "covered": 454,
+            "partial": 7,
+            "missing": 51,
+            "excluded": 160
+          },
+          "incomplete": [
+            {
+              "operationId": "getGroupCapabilities",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyConfirmation",
+              "status": "missing"
+            },
+            {
+              "operationId": "listStoredStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportProjectCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "retryHistoryChunk",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteHistoryMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "createMediaUploadGrant",
+              "status": "missing"
+            },
+            {
+              "operationId": "uploadEncryptedMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "submitPasskeyAssertion",
+              "status": "missing"
+            },
+            {
+              "operationId": "issuePasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "confirmPasskey",
+              "status": "missing"
+            },
+            {
+              "operationId": "bootstrapRecentStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "removeRecentSticker",
+              "status": "missing"
+            },
+            {
+              "operationId": "requestStickerReupload",
+              "status": "missing"
+            },
+            {
+              "operationId": "createCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "setTestingAccountMode",
+              "status": "missing"
+            },
+            {
+              "operationId": "setStickerFavorite",
+              "status": "missing"
+            },
+            {
+              "operationId": "setCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "cancelAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfiles",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfileConsent",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "listCampaignLaunchApprovals",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "listFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSummary",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "listProjectRequestLogs",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceFromCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendPlatformCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "releaseConnectionInspectorClaim",
+              "status": "missing"
+            },
+            {
+              "operationId": "acceptFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "withdrawFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "createProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "putAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "setPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCallSettings",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectSignalCustody",
+              "status": "missing"
+            }
+          ]
+        },
+        "dotnet": {
+          "counts": {
+            "covered": 454,
+            "partial": 7,
+            "missing": 51,
+            "excluded": 160
+          },
+          "incomplete": [
+            {
+              "operationId": "getGroupCapabilities",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyConfirmation",
+              "status": "missing"
+            },
+            {
+              "operationId": "listStoredStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportProjectCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "retryHistoryChunk",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteHistoryMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "createMediaUploadGrant",
+              "status": "missing"
+            },
+            {
+              "operationId": "uploadEncryptedMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "submitPasskeyAssertion",
+              "status": "missing"
+            },
+            {
+              "operationId": "issuePasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "confirmPasskey",
+              "status": "missing"
+            },
+            {
+              "operationId": "bootstrapRecentStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "removeRecentSticker",
+              "status": "missing"
+            },
+            {
+              "operationId": "requestStickerReupload",
+              "status": "missing"
+            },
+            {
+              "operationId": "createCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "setTestingAccountMode",
+              "status": "missing"
+            },
+            {
+              "operationId": "setStickerFavorite",
+              "status": "missing"
+            },
+            {
+              "operationId": "setCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "cancelAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfiles",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfileConsent",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "listCampaignLaunchApprovals",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "listFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSummary",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "listProjectRequestLogs",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceFromCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendPlatformCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "releaseConnectionInspectorClaim",
+              "status": "missing"
+            },
+            {
+              "operationId": "acceptFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "withdrawFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "createProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "putAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "setPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCallSettings",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectSignalCustody",
+              "status": "missing"
+            }
+          ]
+        },
+        "rust": {
+          "counts": {
+            "covered": 454,
+            "partial": 7,
+            "missing": 51,
+            "excluded": 160
+          },
+          "incomplete": [
+            {
+              "operationId": "getGroupCapabilities",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPasskeyConfirmation",
+              "status": "missing"
+            },
+            {
+              "operationId": "listStoredStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportProjectCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "retryHistoryChunk",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteHistoryMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "createMediaUploadGrant",
+              "status": "missing"
+            },
+            {
+              "operationId": "uploadEncryptedMedia",
+              "status": "missing"
+            },
+            {
+              "operationId": "submitPasskeyAssertion",
+              "status": "missing"
+            },
+            {
+              "operationId": "issuePasskeyChallenge",
+              "status": "missing"
+            },
+            {
+              "operationId": "confirmPasskey",
+              "status": "missing"
+            },
+            {
+              "operationId": "bootstrapRecentStickers",
+              "status": "missing"
+            },
+            {
+              "operationId": "removeRecentSticker",
+              "status": "missing"
+            },
+            {
+              "operationId": "requestStickerReupload",
+              "status": "missing"
+            },
+            {
+              "operationId": "createCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "setTestingAccountMode",
+              "status": "missing"
+            },
+            {
+              "operationId": "setStickerFavorite",
+              "status": "missing"
+            },
+            {
+              "operationId": "setCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "cancelAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "deleteAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfiles",
+              "status": "missing"
+            },
+            {
+              "operationId": "getAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "listAudienceProfileConsent",
+              "status": "missing"
+            },
+            {
+              "operationId": "getPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "listCampaignLaunchApprovals",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCampaignLinks",
+              "status": "missing"
+            },
+            {
+              "operationId": "exportCampaignRecipients",
+              "status": "missing"
+            },
+            {
+              "operationId": "listFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "getStopConfirmationSummary",
+              "status": "missing"
+            },
+            {
+              "operationId": "getCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "listProjectRequestLogs",
+              "status": "missing"
+            },
+            {
+              "operationId": "getProjectSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createAudienceProfileImport",
+              "status": "missing"
+            },
+            {
+              "operationId": "createAudienceFromCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "createPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "testSendPlatformCampaign",
+              "status": "missing"
+            },
+            {
+              "operationId": "releaseConnectionInspectorClaim",
+              "status": "missing"
+            },
+            {
+              "operationId": "acceptFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "withdrawFeatureTerms",
+              "status": "missing"
+            },
+            {
+              "operationId": "createProjectWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "createTeamWebhook",
+              "status": "partial"
+            },
+            {
+              "operationId": "putAudienceProfile",
+              "status": "missing"
+            },
+            {
+              "operationId": "setPlatformCampaignReplyFlow",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCallSettings",
+              "status": "partial"
+            },
+            {
+              "operationId": "updateStopConfirmationSettings",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateCustomerSignalCustody",
+              "status": "missing"
+            },
+            {
+              "operationId": "updateProjectSignalCustody",
+              "status": "missing"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
