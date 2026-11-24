@@ -70,13 +70,16 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
             stream = archive.extractfile(member)
             assert stream is not None
             files[member.name] = stream.read()
-    assert {
+    required_files = {
         "composer.json",
         "src/HttpTransport.php",
+        "src/Storage/schema3.json",
         "LICENSE",
         "README.md",
         "release-contract.json",
-    } <= files.keys()
+    }
+    missing = required_files - files.keys()
+    assert not missing, f"Missing required mirror files: {', '.join(sorted(missing))}"
     composer = json.loads(files["composer.json"])
     assert composer["name"] == "polymorfa/sdk"
     assert composer["autoload"]["psr-4"]["Polymorfa\\"] == "src/"

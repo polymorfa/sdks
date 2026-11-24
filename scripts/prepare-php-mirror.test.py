@@ -20,7 +20,7 @@ SCRATCH.mkdir(parents=True, exist_ok=True)
 
 
 class MirrorPreparation(unittest.TestCase):
-    def fixture(self, root, nightly=False, extra=None, tamper=False, preview=False):
+    def fixture(self, root, nightly=False, extra=None, tamper=False, preview=False, omit_schema=False):
         version = "0.2.3-preview.20261116120000" if preview else "0.2.3-dev.20261011120000" if nightly else "0.2.3"
         receipt = {
             "schemaVersion": 1,
@@ -41,11 +41,12 @@ class MirrorPreparation(unittest.TestCase):
             "src/HttpTransport.php": f"<?php const SDK_VERSION = '{version}';\n".encode(),
             # Both storage schema resources ship in the real archive.
             "src/Storage/schema2.json": b'{"schemaVersion":2}\n',
-            "src/Storage/schema3.json": b'{"schemaVersion":3}\n',
             "README.md": b"SDK development source\n",
             "LICENSE": b"MIT\n",
             "release-contract.json": json.dumps(inner).encode(),
         }
+        if not omit_schema:
+            contents["src/Storage/schema3.json"] = b'{"schemaVersion":3}\n'
         packs = root / "packs"
         packs.mkdir()
         receipt_path = root / "receipt.json"
@@ -98,6 +99,15 @@ class MirrorPreparation(unittest.TestCase):
             plan = module.prepare(packs, receipt, root / "mirror")
             self.assertEqual(plan["composerBranchVersion"], "dev-preview")
             self.assertNotIn("proposedTag", plan)
+
+    def test_missing_runtime_storage_schema_never_creates_output(self):
+        with TemporaryDirectory(dir=SCRATCH) as scratch:
+            root = Path(scratch)
+            packs, receipt, _ = self.fixture(root, omit_schema=True)
+            output = root / "mirror"
+            with self.assertRaisesRegex(AssertionError, r"src/Storage/schema3\.json"):
+                module.prepare(packs, receipt, output)
+            self.assertFalse(output.exists())
 
     def test_mismatched_receipt_never_creates_output(self):
         with TemporaryDirectory(dir=SCRATCH) as scratch:
