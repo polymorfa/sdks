@@ -127,6 +127,7 @@ test("release source refuses a dirty, mismatched or unmerged revision", async ()
     "release-policy.mjs",
     "check-coverage.mjs",
     "interactive-supplement.mjs",
+    "audience-profile-filter-coverage.mjs",
     "native-supplements.mjs",
   ])
     copyFileSync(
@@ -215,6 +216,7 @@ test("pack rejects foreign source and fingerprints before changing package input
     "release-policy.mjs",
     "check-coverage.mjs",
     "interactive-supplement.mjs",
+    "audience-profile-filter-coverage.mjs",
     "native-supplements.mjs",
   ])
     copyFileSync(
