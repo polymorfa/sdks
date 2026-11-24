@@ -240,7 +240,7 @@ pub enum PhonePlatform {
     MetaCloud,
     Unknown,
 }
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum WhatsAppAccountType {
     WhatsappApp,

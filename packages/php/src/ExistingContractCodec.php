@@ -64,6 +64,7 @@ final class ExistingContractCodec
             'platformRecipients' => $l($platformRecipient),
             'addedRecipients' => $o(['campaignId' => 'string','added' => 'int','recipientCount' => 'int','duplicateCount' => 'int','invalidCount' => 'int','invalidRows' => $l($o(['row' => 'int','reason' => $e(['missing_phone','invalid_phone','invalid_variables','invalid_entry'])]))]),
             'groupCapabilities' => $o(['status' => $e(['synced','unknown']),'syncedAt' => $n('string'),'checkedAt' => $n('string'),'capabilities' => $l($o(['key' => $e(['polls.endTime','polls.hideVoters','polls.creatorEdit']),'kind' => $e(['feature']),'unit' => $e([null]),'value' => $n('bool'),'source' => $n($e(['server','client_default']))]))]),
+            'testingAccountMode' => $o(['connection' => 'string', 'accountType' => $e(['whatsapp_app','business_app','meta_cloud','meta_coexistence']), 'primaryPlatform' => $n($e(['android','ios'])), 'changed' => 'bool', 'unlinkedDevices' => $l('int')]),
             'testingPhone' => $o(['connection' => 'string','phone' => 'string','online' => 'bool','devices' => $l($o(['deviceId' => 'int']))]),
             'testingSend' => $o(['connection' => 'string','to' => 'string','messageId' => $n('string')]),
             'testingUnlink' => $o(['connection' => 'string','deviceId' => 'int','unlinked' => $e([true])]),

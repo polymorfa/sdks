@@ -4,6 +4,7 @@ from typing import Literal
 
 from typing_extensions import Never, NotRequired, TypedDict
 
+from .business_account_modes import TestingPrimaryPlatform, WhatsAppAccountType
 from .campaign_contract_models import SignalCustodyMode
 from .configuration import Hms, ObservationPatch
 
@@ -19,8 +20,8 @@ class TestingProfile(TypedDict, total=False):
 
 class TestingConfiguration(TypedDict, total=False):
     profile: TestingProfile
-    accountType: Literal["whatsapp_app", "business_app", "meta_cloud", "meta_coexistence"]
-    primaryPlatform: Literal["android", "ios"]
+    accountType: WhatsAppAccountType
+    primaryPlatform: TestingPrimaryPlatform
     replyBehavior: Literal["off", "echo"]
     failureScenario: Literal["none", "reject-send"]
     historyFixtureId: str

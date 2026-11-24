@@ -1,9 +1,10 @@
+import type { WhatsAppAccountType } from "./types.js";
+
 /** Initial identity of an isolated simulated account. No real credentials or message content. */
 export interface TestingConfiguration {
   profile?: { name?: string; status?: string };
-  accountType?:
-    "whatsapp_app" | "business_app" | "meta_cloud" | "meta_coexistence";
-  primaryPlatform?: "android" | "ios";
+  accountType?: WhatsAppAccountType;
+  primaryPlatform?: TestingPrimaryPlatform;
   replyBehavior?: "off" | "echo";
   failureScenario?: "none" | "reject-send";
   historyFixtureId?: string;
@@ -153,4 +154,19 @@ export interface UnlinkTestingPhoneDeviceResponse {
   connection: string;
   deviceId: number;
   unlinked: true;
+}
+
+export type TestingPrimaryPlatform = "android" | "ios";
+export type TestingAccountModeRequest =
+  | { accountType: "meta_cloud"; primaryPlatform?: never }
+  | {
+      accountType: Exclude<WhatsAppAccountType, "meta_cloud">;
+      primaryPlatform?: TestingPrimaryPlatform;
+    };
+export interface TestingAccountMode {
+  connection: string;
+  accountType: WhatsAppAccountType;
+  primaryPlatform: TestingPrimaryPlatform | null;
+  changed: boolean;
+  unlinkedDevices: number[];
 }

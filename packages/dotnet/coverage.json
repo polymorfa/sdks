@@ -5254,6 +5254,12 @@
       "published": false,
       "language": "dotnet"
     },
+    "businessAccountModes": {
+      "inventory": "contracts/native-business-account-modes.json",
+      "baselineUnchanged": true,
+      "published": false,
+      "language": "dotnet"
+    },
     "interactiveMessages": {
       "inventory": "contracts/native-interactive-messages.json",
       "language": "dotnet",

@@ -1097,3 +1097,19 @@ Event-stream items expose a decoded Connection view. A retained native body's
 old account selector becomes `connection` in that view. The event's encoded
 payload keeps the original bytes. Mixed selector generations are refused;
 active webhook verification and parsing keep the current envelope contract.
+
+## Business account-mode supplement
+
+All six SDKs expose the Test Connection account-mode operation, the corresponding
+QuickLink testing fields and optional business contact encryption values. See
+the package READMEs for the native calls. The separately produced
+`contracts/business-account-modes.json` binds API source
+`15db8b1c9d88e2ceccb58c851e731feabb659a39`; it does not replace the API baseline
+or other supplements. `contracts/native-business-account-modes.json` attributes
+the native fixtures. Check receipts and package consumers remain separate gates.
+This source is not a package release or proof that the API is deployed.
+
+The existing documentation snippet catalog must be rebound to the actual combined
+SDK source after these public changes. It retains its baseline recipes. The new
+account-mode operation has no catalog recipe until the consuming API reference
+can bind this separate supplement; it keeps the documented cURL fallback.
