@@ -416,7 +416,7 @@ export async function acceptedContract(expected, output) {
     `No exact ${expected.environment} API acceptance receipt for ${expected.sourceSha}`,
   );
 }
-export async function publishedProvenance(tag, output) {
+export async function publishedProvenance(tag) {
   const response = await fetch(
     `https://registry.npmjs.org/@polymorfa%2fsdk/${encodeURIComponent(tag)}`,
     { signal: AbortSignal.timeout(30_000), redirect: "error" },
@@ -438,18 +438,17 @@ export async function publishedProvenance(tag, output) {
     `sha512-${createHash("sha512").update(bytes).digest("base64")}`,
     pkg.dist.integrity,
   );
-  const archive = join(output, "published-sdk.tgz");
-  writeFileSync(archive, bytes, { mode: 0o600 });
-  const files = execFileSync("tar", ["-tzf", archive], {
+  const files = execFileSync("tar", ["-tzf", "-"], {
+    input: bytes,
     encoding: "utf8",
   }).split("\n");
   if (!files.includes("package/dist/release-contract.json")) return null;
   const provenance = JSON.parse(
-    execFileSync(
-      "tar",
-      ["-xzOf", archive, "package/dist/release-contract.json"],
-      { encoding: "utf8", maxBuffer: 2 * 1024 * 1024 },
-    ),
+    execFileSync("tar", ["-xzOf", "-", "package/dist/release-contract.json"], {
+      input: bytes,
+      encoding: "utf8",
+      maxBuffer: 2 * 1024 * 1024,
+    }),
   );
   assert.equal(provenance.packageVersion, pkg.version);
   assert.equal(provenance.repository, "polymorfa/sdks");
@@ -487,7 +486,7 @@ async function prepare() {
     channel === "preview" ? null : await acceptedContract(expected, output);
   const preview = channel === "preview" ? previewProvenance() : undefined;
   const fingerprint = publicationFingerprint();
-  const previous = await publishedProvenance(releaseTag(channel), output);
+  const previous = await publishedProvenance(releaseTag(channel));
   if (channel === "nightly" && previous?.fingerprint === fingerprint) {
     writeFileSync(process.env.GITHUB_OUTPUT, "publish=false\n", { flag: "a" });
     console.log(

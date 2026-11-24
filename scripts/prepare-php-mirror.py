@@ -50,7 +50,7 @@ def prepare(packs: Path, receipt_path: Path, output: Path) -> dict:
         "release-contract.json",
     }
     # Exact runtime resources the source loads; no other non-PHP file is mirrored.
-    allowed_resources = {"src/Storage/schema2.json"}
+    allowed_resources = {"src/Storage/schema2.json", "src/Storage/schema3.json"}
     files = {}
     with tarfile.open(archive_path) as archive:
         members = archive.getmembers()

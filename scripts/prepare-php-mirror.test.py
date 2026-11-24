@@ -39,8 +39,9 @@ class MirrorPreparation(unittest.TestCase):
                 }
             ).encode(),
             "src/HttpTransport.php": f"<?php const SDK_VERSION = '{version}';\n".encode(),
-            # The real archive carries the schema-2 resource the storage engine loads.
+            # Both storage schema resources ship in the real archive.
             "src/Storage/schema2.json": b'{"schemaVersion":2}\n',
+            "src/Storage/schema3.json": b'{"schemaVersion":3}\n',
             "README.md": b"SDK development source\n",
             "LICENSE": b"MIT\n",
             "release-contract.json": json.dumps(inner).encode(),
