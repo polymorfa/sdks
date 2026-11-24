@@ -122,7 +122,11 @@ public sealed record PutAudienceProfileRequest(IReadOnlyList<string> Tags, IRead
 public sealed record AudienceConsentAssertion([property: JsonRequired] string Id, [property: JsonRequired] long ProfileRevision, [property: JsonRequired] long CreatedAt, [property: JsonRequired, CampaignLiteral("campaigns")] string Purpose, [property: JsonRequired] bool Allowed, [property: JsonRequired] AudienceProfileSource Source, [property: JsonRequired] string Reference, [property: JsonRequired] long AssertedAt);
 public sealed record AudienceProfilePageInfo([property: JsonRequired, JsonIgnore(Condition = JsonIgnoreCondition.Never)] string? NextCursor, [property: JsonRequired] bool HasMore);
 public sealed record AudienceProfilePage<T>([property: JsonRequired] IReadOnlyList<T> Data, [property: JsonRequired] AudienceProfilePageInfo Page);
-public sealed record ListAudienceProfilesParameters(string? Cursor = null, int? Limit = null);
+public sealed record ListAudienceProfilesParameters(string? Cursor = null, int? Limit = null)
+{
+    public string? Tag { get; init; }
+    public string? PhonePrefix { get; init; }
+}
 public sealed record DeleteAudienceProfileResult([property: JsonRequired] bool Deleted, [property: JsonRequired] string Phone, [property: JsonRequired] long Revision);
 public sealed record AudienceProfileImportMapping(string Phone, string Tags, string Attributes, string? ExpectedRevision = null, string? ProvenanceReference = null, string? ConsentAllowed = null, string? ConsentAssertedAt = null, string? ConsentReference = null);
 public sealed record CreateAudienceProfileImportRequest(string ReplayKey, string CsvBase64, AudienceProfileImportMapping? Mapping = null);

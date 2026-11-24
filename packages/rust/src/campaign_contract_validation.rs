@@ -317,7 +317,35 @@ pub(crate) fn phone(s: &str) -> Result<()> {
         "phone",
     )
 }
+pub(crate) fn profile_list(
+    v: &ListAudienceProfilesParameters,
+) -> Result<Vec<(&'static str, String)>> {
+    let base = ListAudienceProfilesParameters {
+        cursor: v.cursor.clone(),
+        limit: v.limit,
+        ..Default::default()
+    };
+    let mut q = page(&base)?;
+    if let Some(tag) = &v.tag {
+        bytes(tag, 1, 48, "tag")?;
+        ensure(!ascii_control(tag), "tag")?;
+        q.push(("tag", tag.clone()));
+    }
+    if let Some(prefix) = &v.phone_prefix {
+        let digits = prefix.strip_prefix('+').unwrap_or("");
+        ensure(
+            (1..=15).contains(&digits.len()) && digits.bytes().all(|b| b.is_ascii_digit()),
+            "phonePrefix",
+        )?;
+        q.push(("phonePrefix", prefix.clone()));
+    }
+    Ok(q)
+}
 pub(crate) fn page(v: &ListAudienceProfilesParameters) -> Result<Vec<(&'static str, String)>> {
+    ensure(
+        v.tag.is_none() && v.phone_prefix.is_none(),
+        "consent filters",
+    )?;
     let mut q = Vec::new();
     if let Some(s) = &v.cursor {
         uuid(s, "cursor")?;

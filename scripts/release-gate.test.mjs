@@ -349,6 +349,7 @@ test("preview records held source while nightly and stable feature gates remain 
     "release-policy.mjs",
     "check-coverage.mjs",
     "interactive-supplement.mjs",
+    "audience-profile-filter-coverage.mjs",
     "native-supplements.mjs",
   ])
     copyFileSync(

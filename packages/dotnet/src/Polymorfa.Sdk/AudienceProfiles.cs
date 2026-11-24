@@ -7,7 +7,7 @@ public sealed class AudienceProfiles : Resource
         get;
     }
     internal AudienceProfiles(HttpTransport http) : base(http) => Imports = new(http);
-    public Task<ApiResponse<AudienceProfilePage<AudienceProfile>>> ListAsync(ListAudienceProfilesParameters? parameters = null, RequestOptions? options = null) => CampaignContractCodec.Request<AudienceProfilePage<AudienceProfile>>(Http, HttpMethod.Get, "/platform/audience-profiles", options: CampaignContractOptions.Select(options), query: CampaignContractValidation.Page(parameters));
+    public Task<ApiResponse<AudienceProfilePage<AudienceProfile>>> ListAsync(ListAudienceProfilesParameters? parameters = null, RequestOptions? options = null) => CampaignContractCodec.Request<AudienceProfilePage<AudienceProfile>>(Http, HttpMethod.Get, "/platform/audience-profiles", options: CampaignContractOptions.Select(options), query: CampaignContractValidation.ProfileList(parameters));
 
     private static string Path(string phone) => "/platform/audience-profiles/" + Uri.EscapeDataString(CampaignContractValidation.Phone(phone));
     public Task<ApiResponse<DataEnvelope<AudienceProfile>>> RetrieveAsync(string phone, RequestOptions? options = null) => CampaignContractCodec.Request<DataEnvelope<AudienceProfile>>(Http, HttpMethod.Get, Path(phone), options: CampaignContractOptions.Select(options));

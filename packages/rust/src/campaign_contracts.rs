@@ -163,6 +163,8 @@ model!(DeleteAudienceProfileResult{deleted:bool,phone:String,revision:u64};{};{}
 pub struct ListAudienceProfilesParameters {
     pub cursor: Option<String>,
     pub limit: Option<u32>,
+    pub tag: Option<String>,
+    pub phone_prefix: Option<String>,
 }
 model!(AudienceProfilePageMetadata{has_more:bool};{next_cursor:String};{});
 #[derive(Clone, Debug, Serialize, Deserialize)]

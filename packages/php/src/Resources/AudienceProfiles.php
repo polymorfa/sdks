@@ -10,6 +10,7 @@ namespace Polymorfa\Resources;
  * @phpstan-import-type Consent from \Polymorfa\AudienceProfileModels
  * @phpstan-import-type ProfilePage from \Polymorfa\AudienceProfileModels
  * @phpstan-import-type ConsentPage from \Polymorfa\AudienceProfileModels
+ * @phpstan-import-type ListParams from \Polymorfa\AudienceProfileModels
  * @phpstan-import-type PageParams from \Polymorfa\AudienceProfileModels
  * @phpstan-import-type DeleteResult from \Polymorfa\AudienceProfileModels
  */
@@ -23,11 +24,11 @@ final class AudienceProfiles extends Resource
         $this->imports = new AudienceProfileImports($transport);
     }
 
-    /** @param PageParams $params
+    /** @param ListParams $params
      * @return \Polymorfa\ApiResponse<ProfilePage> */
     public function list(array $params = [], ?\Polymorfa\RequestOptions $options = null): \Polymorfa\ApiResponse
     {
-        \Polymorfa\CampaignContractValidation::page($params);
+        \Polymorfa\CampaignContractValidation::profileList($params);
         /** @var \Polymorfa\ApiResponse<ProfilePage> */
         return \Polymorfa\CampaignContract::request($this->transport, 'GET', '/platform/audience-profiles', $params, null, $options, 'profiles', false, false, true);
     }
